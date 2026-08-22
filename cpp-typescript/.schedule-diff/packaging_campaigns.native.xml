@@ -78,6 +78,9 @@
       
       
       
+      
+      
+      
       <size_minimum>2</size_minimum>
       <size_multiple>2</size_multiple>
       <size_maximum>12</size_maximum>
@@ -97,6 +100,9 @@
       
       
       
+      
+      
+      
       <cost>4</cost>
       
       
@@ -107,6 +113,9 @@
       
       
       <duration>PT9H</duration>
+      
+      
+      
       
       
       
@@ -129,6 +138,9 @@
       
       
       
+      
+      
+      
       <cost>4</cost>
       
       
@@ -139,6 +151,9 @@
       
       
       <duration>PT8H</duration>
+      
+      
+      
       
       
       
@@ -161,6 +176,9 @@
       
       
       
+      
+      
+      
       <cost>4</cost>
       
       
@@ -171,6 +189,9 @@
       
       
       <duration>PT11H</duration>
+      
+      
+      
       
       
       
@@ -187,6 +208,9 @@
       
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

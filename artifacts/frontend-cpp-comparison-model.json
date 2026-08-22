@@ -1,0 +1,3041 @@
+{
+  "current": "2026-08-21T11:50:16.628Z",
+  "plan": {
+    "autoFence": 86313600
+  },
+  "calendars": [
+    {
+      "name": "API-E2E-343c58ea56cb468a84caccdd4ea2ce20",
+      "buckets": []
+    },
+    {
+      "name": "CAL-EM-WORKDAY 电子制造工作日历",
+      "default": 0,
+      "buckets": [
+        {
+          "start": "2026-01-01T00:00:00.000Z",
+          "value": 1,
+          "priority": 20,
+          "days": 62,
+          "startTime": 46800,
+          "endTime": 61200
+        },
+        {
+          "start": "2026-01-01T00:00:00.000Z",
+          "value": 1,
+          "priority": 10,
+          "days": 62,
+          "startTime": 28800,
+          "endTime": 43200
+        }
+      ]
+    },
+    {
+      "name": "day",
+      "default": 0,
+      "buckets": [
+        {
+          "start": "2026-08-24T00:00:00.000Z",
+          "end": "2026-08-25T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-29T00:00:00.000Z",
+          "end": "2026-08-30T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-18T00:00:00.000Z",
+          "end": "2026-08-19T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-12T00:00:00.000Z",
+          "end": "2026-09-13T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-20T00:00:00.000Z",
+          "end": "2026-09-21T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-23T00:00:00.000Z",
+          "end": "2026-08-24T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-17T00:00:00.000Z",
+          "end": "2026-08-18T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-10T00:00:00.000Z",
+          "end": "2026-09-11T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-03T00:00:00.000Z",
+          "end": "2026-10-04T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-19T00:00:00.000Z",
+          "end": "2026-09-20T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-30T00:00:00.000Z",
+          "end": "2026-10-01T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-11T00:00:00.000Z",
+          "end": "2026-08-12T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-06T00:00:00.000Z",
+          "end": "2026-09-07T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-21T00:00:00.000Z",
+          "end": "2026-09-22T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-27T00:00:00.000Z",
+          "end": "2026-08-28T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-25T00:00:00.000Z",
+          "end": "2026-08-26T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-13T00:00:00.000Z",
+          "end": "2026-09-14T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-29T00:00:00.000Z",
+          "end": "2026-09-30T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-15T00:00:00.000Z",
+          "end": "2026-09-16T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-05T00:00:00.000Z",
+          "end": "2026-10-06T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-09T00:00:00.000Z",
+          "end": "2026-09-10T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-12T00:00:00.000Z",
+          "end": "2026-08-13T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-14T00:00:00.000Z",
+          "end": "2026-09-15T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-27T00:00:00.000Z",
+          "end": "2026-09-28T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-08T00:00:00.000Z",
+          "end": "2026-09-09T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-18T00:00:00.000Z",
+          "end": "2026-09-19T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-16T00:00:00.000Z",
+          "end": "2026-08-17T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-10T00:00:00.000Z",
+          "end": "2026-08-11T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-20T00:00:00.000Z",
+          "end": "2026-08-21T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-23T00:00:00.000Z",
+          "end": "2026-09-24T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-02T00:00:00.000Z",
+          "end": "2026-09-03T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-02T00:00:00.000Z",
+          "end": "2026-10-03T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-09T00:00:00.000Z",
+          "end": "2026-08-10T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-22T00:00:00.000Z",
+          "end": "2026-08-23T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-31T00:00:00.000Z",
+          "end": "2026-09-01T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-11T00:00:00.000Z",
+          "end": "2026-09-12T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-28T00:00:00.000Z",
+          "end": "2026-09-29T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-21T00:00:00.000Z",
+          "end": "2026-08-22T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-15T00:00:00.000Z",
+          "end": "2026-08-16T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-22T00:00:00.000Z",
+          "end": "2026-09-23T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-01T00:00:00.000Z",
+          "end": "2026-09-02T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-25T00:00:00.000Z",
+          "end": "2026-09-26T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-07T00:00:00.000Z",
+          "end": "2026-09-08T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-26T00:00:00.000Z",
+          "end": "2026-08-27T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-03T00:00:00.000Z",
+          "end": "2026-09-04T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-17T00:00:00.000Z",
+          "end": "2026-09-18T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-28T00:00:00.000Z",
+          "end": "2026-08-29T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-04T00:00:00.000Z",
+          "end": "2026-09-05T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-30T00:00:00.000Z",
+          "end": "2026-08-31T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-05T00:00:00.000Z",
+          "end": "2026-09-06T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-14T00:00:00.000Z",
+          "end": "2026-08-15T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-24T00:00:00.000Z",
+          "end": "2026-09-25T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-16T00:00:00.000Z",
+          "end": "2026-09-17T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-13T00:00:00.000Z",
+          "end": "2026-08-14T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-07T00:00:00.000Z",
+          "end": "2026-10-08T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-06T00:00:00.000Z",
+          "end": "2026-10-07T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-04T00:00:00.000Z",
+          "end": "2026-10-05T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-08-19T00:00:00.000Z",
+          "end": "2026-08-20T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-10-01T00:00:00.000Z",
+          "end": "2026-10-02T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        },
+        {
+          "start": "2026-09-26T00:00:00.000Z",
+          "end": "2026-09-27T00:00:00.000Z",
+          "value": 0,
+          "priority": 10,
+          "days": 127,
+          "startTime": 0,
+          "endTime": 86400
+        }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "name": "MES Compensation Location e2a2b292"
+    },
+    {
+      "name": "LOC-EM-RM-WH"
+    },
+    {
+      "name": "LOC-EM-FG-WH"
+    },
+    {
+      "name": "LOC-EM-FACTORY"
+    },
+    {
+      "name": "LOC-EM-ASSY"
+    },
+    {
+      "name": "LOC-EM-SMT"
+    }
+  ],
+  "suppliers": [
+    {
+      "name": "SUP-SEMICON-01"
+    },
+    {
+      "name": "SUP-MECH-01"
+    },
+    {
+      "name": "SUP-PCB-01"
+    }
+  ],
+  "items": [
+    {
+      "name": "RM-CASE-BOTTOM",
+      "type": "mts",
+      "cost": 35
+    },
+    {
+      "name": "RM-FLASH-16M",
+      "type": "mts",
+      "cost": 12
+    },
+    {
+      "name": "FG-CTRL-100",
+      "type": "mts",
+      "cost": 980
+    },
+    {
+      "name": "RM-ETH-PHY",
+      "type": "mts",
+      "cost": 32
+    },
+    {
+      "name": "SA-PWR-100",
+      "type": "mts",
+      "cost": 120
+    },
+    {
+      "name": "PK-BOX-100",
+      "type": "mts",
+      "cost": 6
+    },
+    {
+      "name": "SA-PCBA-100",
+      "type": "mts",
+      "cost": 420
+    },
+    {
+      "name": "RM-SCREW-M3",
+      "type": "mts",
+      "cost": 0.12
+    },
+    {
+      "name": "MES Compensation Output e2a2b292",
+      "type": "mts"
+    },
+    {
+      "name": "MES Compensation Component e2a2b292",
+      "type": "mts"
+    },
+    {
+      "name": "RM-HEATSINK",
+      "type": "mts",
+      "cost": 18
+    },
+    {
+      "name": "PK-MANUAL-100",
+      "type": "mts",
+      "cost": 1.2
+    },
+    {
+      "name": "RM-CONNECTOR-KIT",
+      "type": "mts",
+      "cost": 38
+    },
+    {
+      "name": "RM-MCU-STM32",
+      "type": "mts",
+      "cost": 85
+    },
+    {
+      "name": "RM-PASSIVE-KIT",
+      "type": "mts",
+      "cost": 28
+    },
+    {
+      "name": "SA-CASE-100",
+      "type": "mts",
+      "cost": 95
+    },
+    {
+      "name": "RM-SOLDER-PASTE",
+      "type": "mts",
+      "cost": 360
+    },
+    {
+      "name": "PK-LABEL-100",
+      "type": "mts",
+      "cost": 0.8
+    },
+    {
+      "name": "RM-CASE-TOP",
+      "type": "mts",
+      "cost": 32
+    },
+    {
+      "name": "RM-PCB-CTRL-100",
+      "type": "mts",
+      "cost": 48
+    },
+    {
+      "name": "RM-PCB-PWR-100",
+      "type": "mts",
+      "cost": 18
+    },
+    {
+      "name": "RM-TRANSFORMER-24V",
+      "type": "mts",
+      "cost": 42
+    },
+    {
+      "name": "RM-PWR-IC",
+      "type": "mts",
+      "cost": 16
+    }
+  ],
+  "operations": [
+    {
+      "name": "MES Compensation Route e2a2b292",
+      "type": "routing",
+      "location": "MES Compensation Location e2a2b292",
+      "priority": 1,
+      "sizeMinimum": 1,
+      "suboperations": [
+        {
+          "operation": "MES Compensation Step 2 e2a2b292",
+          "priority": 2,
+          "effectiveStart": "1971-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "MES Compensation Step 1 e2a2b292",
+          "priority": 1,
+          "effectiveStart": "1971-01-01T00:00:00.000Z"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "RT-FG-CTRL-100",
+      "type": "routing",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 40,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "suboperations": [
+        {
+          "operation": "OP-FG-020-AGING",
+          "priority": 20,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-FG-040-PACK",
+          "priority": 40,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-FG-010-FINAL-ASSY",
+          "priority": 10,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-FG-030-FINAL-QC",
+          "priority": 30,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "OP-PCBA-050-DIP",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 50,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 600,
+      "durationPer": 90,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PCBA-040-AOI",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-FG-030-FINAL-QC",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 30,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 300,
+      "durationPer": 120,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-FG-020-AGING",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "MES Compensation Step 2 e2a2b292",
+      "type": "fixed_time",
+      "location": "MES Compensation Location e2a2b292",
+      "priority": 2,
+      "effectiveStart": "1971-01-01T00:00:00.000Z",
+      "sizeMinimum": 1,
+      "suboperations": [],
+      "dependencies": []
+    },
+    {
+      "name": "OP-FG-010-FINAL-ASSY",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 10,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 900,
+      "durationPer": 180,
+      "suboperations": [],
+      "dependencies": []
+    },
+    {
+      "name": "OP-PCBA-060-PROGRAM",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 60,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 300,
+      "durationPer": 25,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PCBA-050-DIP",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "RT-PWR-100",
+      "type": "routing",
+      "item": "SA-PWR-100",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 20,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "suboperations": [
+        {
+          "operation": "OP-PWR-010-ASSY",
+          "priority": 10,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PWR-020-TEST",
+          "priority": 20,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "RT-CASE-100",
+      "type": "routing",
+      "item": "SA-CASE-100",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 30,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "suboperations": [
+        {
+          "operation": "OP-CASE-010-ASSY",
+          "priority": 10,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "MES Compensation Step 1 e2a2b292",
+      "type": "fixed_time",
+      "location": "MES Compensation Location e2a2b292",
+      "priority": 1,
+      "effectiveStart": "1971-01-01T00:00:00.000Z",
+      "sizeMinimum": 1,
+      "suboperations": [],
+      "dependencies": []
+    },
+    {
+      "name": "OP-PWR-020-TEST",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 20,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 300,
+      "durationPer": 75,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PWR-010-ASSY",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-PCBA-020-MOUNT",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 20,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 900,
+      "durationPer": 75,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PCBA-010-PRINT",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-PWR-010-ASSY",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 10,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 600,
+      "durationPer": 80,
+      "suboperations": [],
+      "dependencies": []
+    },
+    {
+      "name": "RT-PCBA-100",
+      "type": "routing",
+      "item": "SA-PCBA-100",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 10,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "suboperations": [
+        {
+          "operation": "OP-PCBA-060-PROGRAM",
+          "priority": 60,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PCBA-020-MOUNT",
+          "priority": 20,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PCBA-050-DIP",
+          "priority": 50,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PCBA-010-PRINT",
+          "priority": 10,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PCBA-070-FCT",
+          "priority": 70,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PCBA-030-REFLOW",
+          "priority": 30,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "operation": "OP-PCBA-040-AOI",
+          "priority": 40,
+          "effectiveStart": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "OP-PCBA-010-PRINT",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 10,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 600,
+      "durationPer": 12,
+      "suboperations": [],
+      "dependencies": []
+    },
+    {
+      "name": "OP-CASE-010-ASSY",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 10,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 300,
+      "durationPer": 55,
+      "suboperations": [],
+      "dependencies": []
+    },
+    {
+      "name": "OP-PCBA-030-REFLOW",
+      "type": "fixed_time",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 30,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 2700,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PCBA-020-MOUNT",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-FG-040-PACK",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 40,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 300,
+      "durationPer": 65,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-FG-030-FINAL-QC",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-PCBA-040-AOI",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 40,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 300,
+      "durationPer": 35,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PCBA-030-REFLOW",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-PCBA-070-FCT",
+      "type": "time_per",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 70,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 600,
+      "durationPer": 150,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-PCBA-060-PROGRAM",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    },
+    {
+      "name": "OP-FG-020-AGING",
+      "type": "fixed_time",
+      "location": "LOC-EM-FACTORY",
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "priority": 20,
+      "effectiveStart": "2026-01-01T00:00:00.000Z",
+      "batchWindow": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "sizeMaximum": 200,
+      "duration": 28800,
+      "suboperations": [],
+      "dependencies": [
+        {
+          "operation": "OP-FG-010-FINAL-ASSY",
+          "quantity": 1,
+          "safetyLeadtime": 0,
+          "hardSafetyLeadtime": 0
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "name": "RES-FINAL-ASSY-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-ASSY-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-FINAL-QC-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-TEST-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-AOI-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-TEST-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-SMT-MF-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-SMT-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-CASE-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-ASSY-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-SMT-HS-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-SMT-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-AGING-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-TEST-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-REFLOW-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-SMT-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-PROGRAM-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-TEST-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-FCT-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-TEST-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-PWR-TEST-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-TEST-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-PRINT-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 160,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-SMT-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-PWR-ASSY-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-ASSY-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-DIP-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-DIP-CTRL",
+      "setup": "CTRL-100"
+    },
+    {
+      "name": "RES-LOGISTICS-01",
+      "type": "default",
+      "maximum": 2,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-LOGISTICS",
+      "setup": "LOGISTICS"
+    },
+    {
+      "name": "RES-PACK-01",
+      "type": "default",
+      "maximum": 1,
+      "available": "CAL-EM-WORKDAY 电子制造工作日历",
+      "location": "LOC-EM-FACTORY",
+      "cost": 85,
+      "efficiency": 100,
+      "setupMatrix": "SETUP-PACK-CTRL",
+      "setup": "CTRL-100"
+    }
+  ],
+  "skills": [
+    {
+      "name": "SKILL-SOLDER DIP 与手工焊"
+    },
+    {
+      "name": "SKILL-TEST 烧录与电子测试"
+    },
+    {
+      "name": "SKILL-ASSEMBLY 结构与总装"
+    },
+    {
+      "name": "SKILL-QC 电子产品质量检验"
+    },
+    {
+      "name": "SKILL-LOGISTICS 厂内物流"
+    },
+    {
+      "name": "SKILL-SMT SMT 设备操作"
+    }
+  ],
+  "resourceSkills": [
+    {
+      "resource": "RES-REFLOW-01",
+      "skill": "SKILL-SMT SMT 设备操作",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-FINAL-QC-01",
+      "skill": "SKILL-QC 电子产品质量检验",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-SMT-MF-01",
+      "skill": "SKILL-SMT SMT 设备操作",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-PROGRAM-01",
+      "skill": "SKILL-TEST 烧录与电子测试",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-AOI-01",
+      "skill": "SKILL-QC 电子产品质量检验",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-FINAL-ASSY-01",
+      "skill": "SKILL-ASSEMBLY 结构与总装",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-PACK-01",
+      "skill": "SKILL-ASSEMBLY 结构与总装",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-AGING-01",
+      "skill": "SKILL-TEST 烧录与电子测试",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-PWR-TEST-01",
+      "skill": "SKILL-TEST 烧录与电子测试",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-CASE-01",
+      "skill": "SKILL-ASSEMBLY 结构与总装",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-SMT-HS-01",
+      "skill": "SKILL-SMT SMT 设备操作",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-FCT-01",
+      "skill": "SKILL-TEST 烧录与电子测试",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-LOGISTICS-01",
+      "skill": "SKILL-LOGISTICS 厂内物流",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-PWR-ASSY-01",
+      "skill": "SKILL-ASSEMBLY 结构与总装",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-PRINT-01",
+      "skill": "SKILL-SMT SMT 设备操作",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "resource": "RES-DIP-01",
+      "skill": "SKILL-SOLDER DIP 与手工焊",
+      "priority": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "SETUP-DIP-CTRL",
+      "rules": [
+        {
+          "from": ".*",
+          "to": ".*",
+          "duration": 900,
+          "cost": 0,
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "SETUP-ASSY-CTRL",
+      "rules": [
+        {
+          "from": ".*",
+          "to": ".*",
+          "duration": 900,
+          "cost": 0,
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "SETUP-SMT-CTRL",
+      "rules": [
+        {
+          "from": ".*",
+          "to": ".*",
+          "duration": 900,
+          "cost": 0,
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "SETUP-TEST-CTRL",
+      "rules": [
+        {
+          "from": ".*",
+          "to": ".*",
+          "duration": 900,
+          "cost": 0,
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "SETUP-LOGISTICS",
+      "rules": [
+        {
+          "from": ".*",
+          "to": ".*",
+          "duration": 0,
+          "cost": 0,
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "SETUP-PACK-CTRL",
+      "rules": [
+        {
+          "from": ".*",
+          "to": ".*",
+          "duration": 900,
+          "cost": 0,
+          "priority": 10
+        }
+      ]
+    }
+  ],
+  "itemSuppliers": [
+    {
+      "supplier": "SUP-PCB-01",
+      "item": "RM-SOLDER-PASTE",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 360,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-SEMICON-01",
+      "item": "RM-TRANSFORMER-24V",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 42,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "PK-BOX-100",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 172800,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 6,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-SEMICON-01",
+      "item": "RM-PWR-IC",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 16,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-PCB-01",
+      "item": "RM-PCB-PWR-100",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 432000,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 18,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-SEMICON-01",
+      "item": "RM-MCU-STM32",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 604800,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 85,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-SEMICON-01",
+      "item": "RM-FLASH-16M",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 604800,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 12,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "PK-LABEL-100",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 172800,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 0.8,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-SEMICON-01",
+      "item": "RM-PASSIVE-KIT",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 28,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "RM-CASE-BOTTOM",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 35,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "RM-HEATSINK",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 18,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-PCB-01",
+      "item": "RM-PCB-CTRL-100",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 432000,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 48,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "RM-SCREW-M3",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 100,
+      "batchWindow": 86400,
+      "cost": 0.12,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "PK-MANUAL-100",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 172800,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 1.2,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-SEMICON-01",
+      "item": "RM-CONNECTOR-KIT",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 38,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "supplier": "SUP-MECH-01",
+      "item": "RM-CASE-TOP",
+      "location": "LOC-EM-RM-WH",
+      "leadtime": 345600,
+      "extraSafetyLeadtime": 86400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 10,
+      "batchWindow": 86400,
+      "cost": 32,
+      "priority": 1,
+      "resourceQuantity": 1,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "itemDistributions": [
+    {
+      "item": "PK-LABEL-100",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-SOLDER-PASTE",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-FLASH-16M",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "SA-PWR-100",
+      "origin": "LOC-EM-FACTORY",
+      "destination": "LOC-EM-FG-WH",
+      "leadtime": 7200,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 14400,
+      "cost": 0.5,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.025,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "FG-CTRL-100",
+      "origin": "LOC-EM-FACTORY",
+      "destination": "LOC-EM-FG-WH",
+      "leadtime": 7200,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 14400,
+      "cost": 1,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "PK-BOX-100",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-PCB-CTRL-100",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "SA-CASE-100",
+      "origin": "LOC-EM-FACTORY",
+      "destination": "LOC-EM-FG-WH",
+      "leadtime": 7200,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 14400,
+      "cost": 0.5,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.025,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-CONNECTOR-KIT",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "PK-MANUAL-100",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-PASSIVE-KIT",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-CASE-BOTTOM",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-ETH-PHY",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-HEATSINK",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-TRANSFORMER-24V",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-CASE-TOP",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "SA-PCBA-100",
+      "origin": "LOC-EM-FACTORY",
+      "destination": "LOC-EM-FG-WH",
+      "leadtime": 7200,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 14400,
+      "cost": 0.5,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.025,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-PWR-IC",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-SCREW-M3",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-PCB-PWR-100",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "item": "RM-MCU-STM32",
+      "origin": "LOC-EM-RM-WH",
+      "destination": "LOC-EM-FACTORY",
+      "leadtime": 14400,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1,
+      "batchWindow": 28800,
+      "cost": 0.25,
+      "priority": 1,
+      "resource": "RES-LOGISTICS-01",
+      "resourceQuantity": 0.05,
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "buffers": [
+    {
+      "name": "PK-BOX-100 @ LOC-EM-RM-WH",
+      "item": "PK-BOX-100",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 65,
+      "minimum": 10,
+      "maximum": 0
+    },
+    {
+      "name": "RM-TRANSFORMER-24V @ LOC-EM-FACTORY",
+      "item": "RM-TRANSFORMER-24V",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-CONNECTOR-KIT @ LOC-EM-FACTORY",
+      "item": "RM-CONNECTOR-KIT",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PASSIVE-KIT @ LOC-EM-FACTORY",
+      "item": "RM-PASSIVE-KIT",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "SA-PCBA-100 @ LOC-EM-FACTORY",
+      "item": "SA-PCBA-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-CASE-TOP @ LOC-EM-FACTORY",
+      "item": "RM-CASE-TOP",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PWR-IC @ LOC-EM-FACTORY",
+      "item": "RM-PWR-IC",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "PK-MANUAL-100 @ LOC-EM-RM-WH",
+      "item": "PK-MANUAL-100",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 90,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-SOLDER-PASTE @ LOC-EM-RM-WH",
+      "item": "RM-SOLDER-PASTE",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 8,
+      "minimum": 2,
+      "maximum": 0
+    },
+    {
+      "name": "RM-CASE-BOTTOM @ LOC-EM-FACTORY",
+      "item": "RM-CASE-BOTTOM",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-CASE-BOTTOM @ LOC-EM-RM-WH",
+      "item": "RM-CASE-BOTTOM",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 75,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PCB-CTRL-100 @ LOC-EM-RM-WH",
+      "item": "RM-PCB-CTRL-100",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 45,
+      "minimum": 10,
+      "maximum": 0
+    },
+    {
+      "name": "PK-MANUAL-100 @ LOC-EM-FACTORY",
+      "item": "PK-MANUAL-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PCB-CTRL-100 @ LOC-EM-FACTORY",
+      "item": "RM-PCB-CTRL-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PASSIVE-KIT @ LOC-EM-RM-WH",
+      "item": "RM-PASSIVE-KIT",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 170,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-TRANSFORMER-24V @ LOC-EM-RM-WH",
+      "item": "RM-TRANSFORMER-24V",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 55,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-SCREW-M3 @ LOC-EM-RM-WH",
+      "item": "RM-SCREW-M3",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 900,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "SA-CASE-100 @ LOC-EM-FG-WH",
+      "item": "SA-CASE-100",
+      "location": "LOC-EM-FG-WH",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-HEATSINK @ LOC-EM-FACTORY",
+      "item": "RM-HEATSINK",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "SA-PWR-100 @ LOC-EM-FACTORY",
+      "item": "SA-PWR-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-CONNECTOR-KIT @ LOC-EM-RM-WH",
+      "item": "RM-CONNECTOR-KIT",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 65,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "SA-PWR-100 @ LOC-EM-FG-WH",
+      "item": "SA-PWR-100",
+      "location": "LOC-EM-FG-WH",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "SA-CASE-100 @ LOC-EM-FACTORY",
+      "item": "SA-CASE-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PCB-PWR-100 @ LOC-EM-FACTORY",
+      "item": "RM-PCB-PWR-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-ETH-PHY @ LOC-EM-FACTORY",
+      "item": "RM-ETH-PHY",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PWR-IC @ LOC-EM-RM-WH",
+      "item": "RM-PWR-IC",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 220,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-PCB-PWR-100 @ LOC-EM-RM-WH",
+      "item": "RM-PCB-PWR-100",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 70,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-MCU-STM32 @ LOC-EM-FACTORY",
+      "item": "RM-MCU-STM32",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-MCU-STM32 @ LOC-EM-RM-WH",
+      "item": "RM-MCU-STM32",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 35,
+      "minimum": 8,
+      "maximum": 0
+    },
+    {
+      "name": "PK-LABEL-100 @ LOC-EM-FACTORY",
+      "item": "PK-LABEL-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-FLASH-16M @ LOC-EM-RM-WH",
+      "item": "RM-FLASH-16M",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 50,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "PK-LABEL-100 @ LOC-EM-RM-WH",
+      "item": "PK-LABEL-100",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 85,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "FG-CTRL-100 @ LOC-EM-FG-WH",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "onhand": 8,
+      "minimum": 5,
+      "maximum": 0
+    },
+    {
+      "name": "RM-CASE-TOP @ LOC-EM-RM-WH",
+      "item": "RM-CASE-TOP",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 75,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-SCREW-M3 @ LOC-EM-FACTORY",
+      "item": "RM-SCREW-M3",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "SA-PCBA-100 @ LOC-EM-FG-WH",
+      "item": "SA-PCBA-100",
+      "location": "LOC-EM-FG-WH",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "PK-BOX-100 @ LOC-EM-FACTORY",
+      "item": "PK-BOX-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "FG-CTRL-100 @ LOC-EM-FACTORY",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 5,
+      "maximum": 0
+    },
+    {
+      "name": "RM-HEATSINK @ LOC-EM-RM-WH",
+      "item": "RM-HEATSINK",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 75,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-FLASH-16M @ LOC-EM-FACTORY",
+      "item": "RM-FLASH-16M",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-SOLDER-PASTE @ LOC-EM-FACTORY",
+      "item": "RM-SOLDER-PASTE",
+      "location": "LOC-EM-FACTORY",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "name": "RM-ETH-PHY @ LOC-EM-RM-WH",
+      "item": "RM-ETH-PHY",
+      "location": "LOC-EM-RM-WH",
+      "onhand": 32,
+      "minimum": 5,
+      "maximum": 0
+    },
+    {
+      "name": "MES Compensation Component e2a2b292 @ MES Compensation Location e2a2b292",
+      "item": "MES Compensation Component e2a2b292",
+      "location": "MES Compensation Location e2a2b292",
+      "onhand": 0,
+      "minimum": 0,
+      "maximum": 0
+    }
+  ],
+  "flows": [
+    {
+      "type": "start",
+      "operation": "OP-PCBA-050-DIP",
+      "buffer": "RM-CONNECTOR-KIT @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "连接器套料投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-010-FINAL-ASSY",
+      "buffer": "SA-PWR-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "电源模块投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-010-FINAL-ASSY",
+      "buffer": "PK-LABEL-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "铭牌标签投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-010-FINAL-ASSY",
+      "buffer": "SA-PCBA-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "PCBA 投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-010-FINAL-ASSY",
+      "buffer": "RM-SCREW-M3 @ LOC-EM-FACTORY",
+      "quantity": -4,
+      "priority": 1,
+      "name": "总装螺钉投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-010-FINAL-ASSY",
+      "buffer": "SA-CASE-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "机壳组件投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "MES Compensation Step 1 e2a2b292",
+      "buffer": "MES Compensation Component e2a2b292 @ MES Compensation Location e2a2b292",
+      "quantity": -2,
+      "priority": 1,
+      "effectiveStart": "1971-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "end",
+      "operation": "OP-PWR-020-TEST",
+      "buffer": "SA-PWR-100 @ LOC-EM-FACTORY",
+      "quantity": 1,
+      "priority": 1,
+      "name": "RT-PWR-100 完工产出",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-020-MOUNT",
+      "buffer": "RM-FLASH-16M @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "Flash 投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-020-MOUNT",
+      "buffer": "RM-PWR-IC @ LOC-EM-FACTORY",
+      "quantity": -2,
+      "priority": 1,
+      "name": "电源 IC 投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-020-MOUNT",
+      "buffer": "RM-PASSIVE-KIT @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "无源器件套料投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-020-MOUNT",
+      "buffer": "RM-ETH-PHY @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "以太网 PHY 投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-020-MOUNT",
+      "buffer": "RM-MCU-STM32 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "MCU 投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PWR-010-ASSY",
+      "buffer": "RM-PASSIVE-KIT @ LOC-EM-FACTORY",
+      "quantity": -0.35,
+      "priority": 1,
+      "name": "电源无源套料投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PWR-010-ASSY",
+      "buffer": "RM-PCB-PWR-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "电源裸板投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PWR-010-ASSY",
+      "buffer": "RM-TRANSFORMER-24V @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "变压器投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PWR-010-ASSY",
+      "buffer": "RM-PWR-IC @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "电源 IC 投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-010-PRINT",
+      "buffer": "RM-SOLDER-PASTE @ LOC-EM-FACTORY",
+      "quantity": -0.025,
+      "priority": 1,
+      "name": "锡膏投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-PCBA-010-PRINT",
+      "buffer": "RM-PCB-CTRL-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "控制板裸板投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "end",
+      "operation": "OP-CASE-010-ASSY",
+      "buffer": "SA-CASE-100 @ LOC-EM-FACTORY",
+      "quantity": 1,
+      "priority": 1,
+      "name": "RT-CASE-100 完工产出",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-CASE-010-ASSY",
+      "buffer": "RM-CASE-BOTTOM @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "下壳投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-CASE-010-ASSY",
+      "buffer": "RM-HEATSINK @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "散热片投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-CASE-010-ASSY",
+      "buffer": "RM-CASE-TOP @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "上壳投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-CASE-010-ASSY",
+      "buffer": "RM-SCREW-M3 @ LOC-EM-FACTORY",
+      "quantity": -4,
+      "priority": 1,
+      "name": "预装螺钉投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-040-PACK",
+      "buffer": "PK-MANUAL-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "说明书投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "end",
+      "operation": "OP-FG-040-PACK",
+      "buffer": "FG-CTRL-100 @ LOC-EM-FACTORY",
+      "quantity": 1,
+      "priority": 1,
+      "name": "RT-FG-CTRL-100 完工产出",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "start",
+      "operation": "OP-FG-040-PACK",
+      "buffer": "PK-BOX-100 @ LOC-EM-FACTORY",
+      "quantity": -1,
+      "priority": 1,
+      "name": "包装盒投入",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "end",
+      "operation": "OP-PCBA-070-FCT",
+      "buffer": "SA-PCBA-100 @ LOC-EM-FACTORY",
+      "quantity": 1,
+      "priority": 1,
+      "name": "RT-PCBA-100 完工产出",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "loads": [
+    {
+      "type": "default",
+      "operation": "OP-PCBA-050-DIP",
+      "resource": "RES-DIP-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-050-DIP 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-FG-030-FINAL-QC",
+      "resource": "RES-FINAL-QC-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-FG-030-FINAL-QC 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-FG-010-FINAL-ASSY",
+      "resource": "RES-FINAL-ASSY-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-FG-010-FINAL-ASSY 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PCBA-060-PROGRAM",
+      "resource": "RES-PROGRAM-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-060-PROGRAM 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PWR-020-TEST",
+      "resource": "RES-PWR-TEST-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "PWR-100",
+      "name": "OP-PWR-020-TEST 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PCBA-020-MOUNT",
+      "resource": "RES-SMT-HS-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-020-MOUNT 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PWR-010-ASSY",
+      "resource": "RES-PWR-ASSY-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "PWR-100",
+      "name": "OP-PWR-010-ASSY 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PCBA-010-PRINT",
+      "resource": "RES-PRINT-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-010-PRINT 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-CASE-010-ASSY",
+      "resource": "RES-CASE-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CASE-100",
+      "name": "OP-CASE-010-ASSY 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PCBA-030-REFLOW",
+      "resource": "RES-REFLOW-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-030-REFLOW 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-FG-040-PACK",
+      "resource": "RES-PACK-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-FG-040-PACK 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PCBA-040-AOI",
+      "resource": "RES-AOI-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-040-AOI 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-PCBA-070-FCT",
+      "resource": "RES-FCT-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-PCBA-070-FCT 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "type": "default",
+      "operation": "OP-FG-020-AGING",
+      "resource": "RES-AGING-01",
+      "quantity": 1,
+      "priority": 1,
+      "setup": "CTRL-100",
+      "name": "OP-FG-020-AGING 主资源",
+      "effectiveStart": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "dependencies": [
+    {
+      "operation": "OP-PCBA-050-DIP",
+      "blockedBy": "OP-PCBA-040-AOI",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-FG-030-FINAL-QC",
+      "blockedBy": "OP-FG-020-AGING",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-PCBA-060-PROGRAM",
+      "blockedBy": "OP-PCBA-050-DIP",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-PWR-020-TEST",
+      "blockedBy": "OP-PWR-010-ASSY",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-PCBA-020-MOUNT",
+      "blockedBy": "OP-PCBA-010-PRINT",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-PCBA-030-REFLOW",
+      "blockedBy": "OP-PCBA-020-MOUNT",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-FG-040-PACK",
+      "blockedBy": "OP-FG-030-FINAL-QC",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-PCBA-040-AOI",
+      "blockedBy": "OP-PCBA-030-REFLOW",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-PCBA-070-FCT",
+      "blockedBy": "OP-PCBA-060-PROGRAM",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    },
+    {
+      "operation": "OP-FG-020-AGING",
+      "blockedBy": "OP-FG-010-FINAL-ASSY",
+      "quantity": 1,
+      "safetyLeadtime": 0,
+      "hardSafetyLeadtime": 0
+    }
+  ],
+  "demands": [
+    {
+      "name": "SO-CODEX-20260821-003-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-27T08:00:00.000Z",
+      "quantity": 10,
+      "priority": 3,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-002-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-26T08:00:00.000Z",
+      "quantity": 8,
+      "priority": 2,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-005-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-29T08:00:00.000Z",
+      "quantity": 9,
+      "priority": 5,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-008-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-09-01T08:00:00.000Z",
+      "quantity": 6,
+      "priority": 8,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-007-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-31T08:00:00.000Z",
+      "quantity": 12,
+      "priority": 7,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-001-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-25T08:00:00.000Z",
+      "quantity": 6,
+      "priority": 1,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-009-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-09-02T08:00:00.000Z",
+      "quantity": 8,
+      "priority": 9,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-010-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-09-03T08:00:00.000Z",
+      "quantity": 10,
+      "priority": 10,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-006-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-30T08:00:00.000Z",
+      "quantity": 5,
+      "priority": 6,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    },
+    {
+      "name": "SO-CODEX-20260821-004-10",
+      "item": "FG-CTRL-100",
+      "location": "LOC-EM-FG-WH",
+      "due": "2026-08-28T08:00:00.000Z",
+      "quantity": 7,
+      "priority": 4,
+      "group": "SO-CODEX-20260821-GROUP",
+      "status": "open",
+      "maxLateness": 2592000,
+      "minShipment": 1
+    }
+  ],
+  "demandGroups": [
+    {
+      "name": "SO-CODEX-20260821-GROUP",
+      "policy": "independent"
+    }
+  ],
+  "operationPlans": [],
+  "solver": {
+    "constraints": 52,
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "minimumDelay": 3600,
+    "administrativeLeadTime": 0,
+    "rotateResources": true,
+    "algorithm": "heuristic",
+    "iterationMax": 0,
+    "resourceIterationMax": 500,
+    "moveApprovedEarly": 0,
+    "erasePreviousFirst": true
+  }
+}

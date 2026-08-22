@@ -60,6 +60,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1</size_maximum>
@@ -73,6 +76,9 @@
       
       
       <duration>PT17H</duration>
+      
+      
+      
       
       
       
@@ -92,6 +98,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1</size_maximum>
@@ -101,6 +110,9 @@
       
     </operation>
     <operation name="maintain ENG-INSP" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -147,6 +159,9 @@
       
       
       
+      
+      
+      
       <cost>30</cost>
       
       
@@ -157,6 +172,9 @@
       
       
       <duration>PT11H</duration>
+      
+      
+      
       
       
       
@@ -176,6 +194,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1</size_maximum>
@@ -192,6 +213,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1</size_maximum>
@@ -201,6 +225,9 @@
       
     </operation>
     <operation name="maintain GEAR-OH" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -247,6 +274,9 @@
       
       
       
+      
+      
+      
       <cost>30</cost>
       
       
@@ -257,6 +287,9 @@
       
       
       <duration>PT7H</duration>
+      
+      
+      
       
       
       
@@ -276,6 +309,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1</size_maximum>
@@ -292,6 +328,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1</size_maximum>
@@ -301,6 +340,9 @@
       
     </operation>
     <operation name="maintain AVIO-REP" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -341,6 +383,9 @@
       
       
       <duration>PT2H</duration>
+      
+      
+      
       
       
       

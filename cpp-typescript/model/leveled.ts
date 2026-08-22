@@ -115,6 +115,11 @@ export class HasLevel extends HeaderModelAdapter {
         let buffers: LeveledEntity[] = [];
         const resources = entities("Resource");
 
+        // Keep the creation point identical to leveled.cpp: automatic
+        // delivery operations are created before the buffer/producer fixed
+        // point, so Operation::all() has the same traversal order as native.
+        for (const demand of entities("Demand")) call(demand, "getDeliveryOperation");
+
         // Buffer replenishment discovery can create purchase and distribution
         // operations, flows and even origin buffers. Match the native fixed
         // point loop before traversing the supply graph.
@@ -327,9 +332,15 @@ export class HasLevel extends HeaderModelAdapter {
   private static collectGroupedDeliveries(): Map<LeveledEntity, Set<unknown>> {
     const result = new Map<LeveledEntity, Set<unknown>>();
     for (const demand of entities("Demand")) {
-      const delivery = call(demand, "getDeliveryOperation");
       const owner = call(demand, "getOwner");
-      if (!(delivery instanceof HeaderModelAdapter) || !owner || String(call(owner, "getPolicy") ?? "INDEPENDENT") === "INDEPENDENT") continue;
+      const policy = call(owner, "getPolicy");
+      const policyName = call(owner, "getPolicyString");
+      // Independent demands are intentionally resolved after clustering. The
+      // native solver leaves their automatic delivery operation at cluster 0
+      // until Demand::getCluster() is queried during demand bucketing.
+      if (!owner || Number(policy) === 64 || String(policyName ?? policy ?? "INDEPENDENT").toLowerCase() === "independent") continue;
+      const delivery = call(demand, "getDeliveryOperation");
+      if (!(delivery instanceof HeaderModelAdapter)) continue;
       const groups = result.get(delivery as LeveledEntity) ?? new Set<unknown>();
       groups.add(owner);
       result.set(delivery as LeveledEntity, groups);

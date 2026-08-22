@@ -1,0 +1,602 @@
+[ts-clusters] {"numberOfClusters":2,"demands":[{"name":"SO-CODEX-20260821-GROUP","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-003-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-002-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-005-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-008-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-007-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-001-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-009-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-010-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-006-10","cluster":0,"resolvedOperation":null},{"name":"SO-CODEX-20260821-004-10","cluster":0,"resolvedOperation":null}],"operations":[{"name":"RT-FG-CTRL-100","cluster":2},{"name":"Ship FG-CTRL-100 from LOC-EM-FACTORY to LOC-EM-FG-WH valid from 2026-01-01T00:00:00","cluster":2}]}
+[operation] alternate-ask {"demand":null,"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-21T23:06:14","alternates":["RT-FG-CTRL-100"]}
+[operation] alternate-try {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-FG-CTRL-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-21T23:06:14","steps":["OP-FG-010-FINAL-ASSY","OP-FG-020-AGING","OP-FG-030-FINAL-QC","OP-FG-040-PACK"]}
+[operation] ask {"demand":null,"operation":"OP-FG-040-PACK","quantity":5,"operationQuantity":5,"end":"2026-08-21T23:06:14","operationEnd":"2026-08-21T23:06:14"}
+[operation] leadtime-reject {"operation":"OP-FG-040-PACK","originalStart":"2026-08-21T16:49:35","threshold":"2026-08-21T23:06:14","nextDate":"2026-08-24T08:10:25"}
+[operation] alternate-reject {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","quantity":0,"nextDate":"2026-08-24T08:10:25"}
+[operation] alternate-answer {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":0,"remainingQuantity":5,"nextDate":"2026-08-24T08:10:25"}
+[buffer] safety-stock-replenish {"buffer":"FG-CTRL-100 @ LOC-EM-FACTORY","date":"2026-08-21T23:06:14","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-08-21T23:06:14","replyQuantity":0,"replyDate":"2026-08-24T08:10:25"}
+[operation] alternate-ask {"demand":null,"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T08:10:25","alternates":["RT-FG-CTRL-100"]}
+[operation] alternate-try {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-FG-CTRL-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-24T08:10:25","steps":["OP-FG-010-FINAL-ASSY","OP-FG-020-AGING","OP-FG-030-FINAL-QC","OP-FG-040-PACK"]}
+[operation] ask {"demand":null,"operation":"OP-FG-040-PACK","quantity":5,"operationQuantity":5,"end":"2026-08-24T08:10:25","operationEnd":"2026-08-24T08:10:25"}
+[resource] ask {"demand":null,"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","start":"2026-08-24T08:00:00","end":"2026-08-24T08:10:25"}
+[resource] input {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T08:00:00","end":"2026-08-24T08:10:25","feasible":true}
+[resource] answer {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T08:00:00","onhand":0}
+[buffer] shortage {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T08:00:00","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T08:00:00","alternates":["Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T08:00:00","operationEnd":"2026-08-24T08:00:00"}
+[operation] leadtime-reject {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","originalStart":"2026-08-21T13:00:00","threshold":"2026-08-21T23:06:14","nextDate":"2026-08-24T12:00:00"}
+[operation] alternate-reject {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":0,"nextDate":"2026-08-24T12:00:00"}
+[operation] alternate-answer {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":0,"remainingQuantity":5,"nextDate":"2026-08-24T12:00:00"}
+[buffer] replenish {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":0,"producerDate":"2026-08-24T12:00:00","eventCountBefore":2,"eventCountAfter":2,"remaining":5}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":5,"quantity":0,"date":"2026-08-24T12:00:00","plan":null}
+[operation] material-reject {"demand":null,"operation":"OP-FG-040-PACK","start":"2026-08-24T08:05:25","end":"2026-08-24T08:10:25","asked":5,"answerQuantity":0,"answerDate":"2026-08-24T13:10:25"}
+[operation] alternate-reject {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","quantity":0,"nextDate":"2026-08-24T13:10:25"}
+[operation] alternate-answer {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":0,"remainingQuantity":5,"nextDate":"2026-08-24T13:10:25"}
+[buffer] safety-stock-replenish {"buffer":"FG-CTRL-100 @ LOC-EM-FACTORY","date":"2026-08-21T23:06:14","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-08-24T08:10:25","replyQuantity":0,"replyDate":"2026-08-24T13:10:25"}
+[operation] alternate-ask {"demand":null,"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T13:10:25","alternates":["RT-FG-CTRL-100"]}
+[operation] alternate-try {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-FG-CTRL-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-24T13:10:25","steps":["OP-FG-010-FINAL-ASSY","OP-FG-020-AGING","OP-FG-030-FINAL-QC","OP-FG-040-PACK"]}
+[operation] ask {"demand":null,"operation":"OP-FG-040-PACK","quantity":5,"operationQuantity":5,"end":"2026-08-24T13:10:25","operationEnd":"2026-08-24T13:10:25"}
+[resource] ask {"demand":null,"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","start":"2026-08-24T13:00:00","end":"2026-08-24T13:10:25"}
+[resource] input {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T13:00:00","end":"2026-08-24T13:10:25","feasible":true}
+[resource] answer {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T13:00:00","onhand":0}
+[buffer] shortage {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T13:00:00","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T13:00:00","alternates":["Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T13:00:00","operationEnd":"2026-08-24T13:00:00"}
+[resource] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00"}
+[resource] input {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00","feasible":true}
+[resource] answer {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T08:00:00","onhand":90}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00"}
+[operation] alternate-segment {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00"}
+[operation] alternate-answer {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T13:00:00","onhand":0}
+[buffer] shortage {"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T13:00:00","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T13:00:00","alternates":["Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","alternate":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T13:00:00","operationEnd":"2026-08-24T13:00:00"}
+[resource] ask {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00"}
+[resource] input {"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00","feasible":true}
+[resource] answer {"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T08:00:00","onhand":65}
+[buffer] answer {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00"}
+[operation] alternate-segment {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","alternate":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T08:00:00","end":"2026-08-24T12:00:00"}
+[operation] alternate-answer {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] ask {"demand":null,"operation":"OP-FG-030-FINAL-QC","quantity":5,"operationQuantity":5,"end":"2026-08-24T13:00:00","operationEnd":"2026-08-24T13:00:00"}
+[resource] ask {"demand":null,"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","start":"2026-08-24T11:45:00","end":"2026-08-24T12:00:00"}
+[resource] input {"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:45:00","end":"2026-08-24T12:00:00","feasible":true}
+[resource] answer {"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-FG-020-AGING","quantity":5,"operationQuantity":5,"end":"2026-08-24T11:45:00","operationEnd":"2026-08-24T11:45:00"}
+[operation] leadtime-reject {"operation":"OP-FG-020-AGING","originalStart":"2026-08-21T11:45:00","threshold":"2026-08-21T23:06:14","nextDate":"2026-08-24T17:00:00"}
+[operation] alternate-reject {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","quantity":0,"nextDate":"2026-08-25T08:10:00"}
+[operation] alternate-answer {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":0,"remainingQuantity":5,"nextDate":"2026-08-25T08:10:00"}
+[buffer] safety-stock-replenish {"buffer":"FG-CTRL-100 @ LOC-EM-FACTORY","date":"2026-08-21T23:06:14","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-08-24T13:10:25","replyQuantity":0,"replyDate":"2026-08-25T08:10:00"}
+[operation] alternate-ask {"demand":null,"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-25T08:10:00","alternates":["RT-FG-CTRL-100"]}
+[operation] alternate-try {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-FG-CTRL-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-25T08:10:00","steps":["OP-FG-010-FINAL-ASSY","OP-FG-020-AGING","OP-FG-030-FINAL-QC","OP-FG-040-PACK"]}
+[operation] ask {"demand":null,"operation":"OP-FG-040-PACK","quantity":5,"operationQuantity":5,"end":"2026-08-25T08:10:00","operationEnd":"2026-08-25T08:10:00"}
+[resource] ask {"demand":null,"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","start":"2026-08-24T16:59:35","end":"2026-08-25T08:10:00"}
+[resource] input {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T16:59:35","end":"2026-08-25T08:10:00","feasible":true}
+[resource] answer {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:59:35","onhand":0}
+[buffer] shortage {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:59:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:59:35","alternates":["Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:59:35","operationEnd":"2026-08-24T16:59:35"}
+[resource] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35"}
+[resource] input {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35","feasible":true}
+[resource] answer {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T11:59:35","onhand":90}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35"}
+[operation] alternate-segment {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35"}
+[operation] alternate-answer {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:59:35","onhand":0}
+[buffer] shortage {"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:59:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:59:35","alternates":["Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","alternate":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:59:35","operationEnd":"2026-08-24T16:59:35"}
+[resource] ask {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35"}
+[resource] input {"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35","feasible":true}
+[resource] answer {"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T11:59:35","onhand":65}
+[buffer] answer {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35"}
+[operation] alternate-segment {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","alternate":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T11:59:35","end":"2026-08-24T16:59:35"}
+[operation] alternate-answer {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] ask {"demand":null,"operation":"OP-FG-030-FINAL-QC","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:59:35","operationEnd":"2026-08-24T16:59:35"}
+[resource] ask {"demand":null,"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","start":"2026-08-24T16:44:35","end":"2026-08-24T16:59:35"}
+[resource] input {"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T16:44:35","end":"2026-08-24T16:59:35","feasible":true}
+[resource] answer {"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-FG-020-AGING","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:44:35","operationEnd":"2026-08-24T16:44:35"}
+[operation] leadtime-reject {"operation":"OP-FG-020-AGING","originalStart":"2026-08-21T16:44:35","threshold":"2026-08-21T23:06:14","nextDate":"2026-08-24T17:00:00"}
+[operation] alternate-reject {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","quantity":0,"nextDate":"2026-08-26T08:10:00"}
+[operation] alternate-answer {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":0,"remainingQuantity":5,"nextDate":"2026-08-26T08:10:00"}
+[buffer] safety-stock-replenish {"buffer":"FG-CTRL-100 @ LOC-EM-FACTORY","date":"2026-08-21T23:06:14","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-08-25T08:10:00","replyQuantity":0,"replyDate":"2026-08-26T08:10:00"}
+[operation] alternate-ask {"demand":null,"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-26T08:10:00","alternates":["RT-FG-CTRL-100"]}
+[operation] alternate-try {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-FG-CTRL-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-26T08:10:00","steps":["OP-FG-010-FINAL-ASSY","OP-FG-020-AGING","OP-FG-030-FINAL-QC","OP-FG-040-PACK"]}
+[operation] ask {"demand":null,"operation":"OP-FG-040-PACK","quantity":5,"operationQuantity":5,"end":"2026-08-26T08:10:00","operationEnd":"2026-08-26T08:10:00"}
+[resource] ask {"demand":null,"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","start":"2026-08-25T16:59:35","end":"2026-08-26T08:10:00"}
+[resource] input {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-25T16:59:35","end":"2026-08-26T08:10:00","feasible":true}
+[resource] answer {"operation":"OP-FG-040-PACK","resource":"RES-PACK-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-25T16:59:35","onhand":0}
+[buffer] shortage {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-25T16:59:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-25T16:59:35","alternates":["Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-25T16:59:35","operationEnd":"2026-08-25T16:59:35"}
+[resource] ask {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35"}
+[resource] input {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35","feasible":true}
+[resource] answer {"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-25T11:59:35","onhand":90}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35"}
+[operation] alternate-segment {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35"}
+[operation] alternate-answer {"operation":"Replenish PK-MANUAL-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-MANUAL-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-25T16:59:35","onhand":0}
+[buffer] shortage {"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-25T16:59:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-25T16:59:35","alternates":["Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","alternate":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-25T16:59:35","operationEnd":"2026-08-25T16:59:35"}
+[resource] ask {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35"}
+[resource] input {"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35","feasible":true}
+[resource] answer {"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-25T11:59:35","onhand":65}
+[buffer] answer {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35"}
+[operation] alternate-segment {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","alternate":"Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-25T11:59:35","end":"2026-08-25T16:59:35"}
+[operation] alternate-answer {"operation":"Replenish PK-BOX-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-BOX-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] ask {"demand":null,"operation":"OP-FG-030-FINAL-QC","quantity":5,"operationQuantity":5,"end":"2026-08-25T16:59:35","operationEnd":"2026-08-25T16:59:35"}
+[resource] ask {"demand":null,"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","start":"2026-08-25T16:44:35","end":"2026-08-25T16:59:35"}
+[resource] input {"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-25T16:44:35","end":"2026-08-25T16:59:35","feasible":true}
+[resource] answer {"operation":"OP-FG-030-FINAL-QC","resource":"RES-FINAL-QC-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-FG-020-AGING","quantity":5,"operationQuantity":5,"end":"2026-08-25T16:44:35","operationEnd":"2026-08-25T16:44:35"}
+[resource] ask {"demand":null,"operation":"OP-FG-020-AGING","resource":"RES-AGING-01","start":"2026-08-24T16:44:35","end":"2026-08-25T16:44:35"}
+[resource] input {"operation":"OP-FG-020-AGING","resource":"RES-AGING-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T16:44:35","end":"2026-08-25T16:44:35","feasible":true}
+[resource] answer {"operation":"OP-FG-020-AGING","resource":"RES-AGING-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-FG-010-FINAL-ASSY","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:44:35","operationEnd":"2026-08-24T16:44:35"}
+[resource] ask {"demand":null,"operation":"OP-FG-010-FINAL-ASSY","resource":"RES-FINAL-ASSY-01","start":"2026-08-24T16:14:35","end":"2026-08-24T16:44:35"}
+[resource] input {"operation":"OP-FG-010-FINAL-ASSY","resource":"RES-FINAL-ASSY-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T16:14:35","end":"2026-08-24T16:44:35","feasible":true}
+[resource] answer {"operation":"OP-FG-010-FINAL-ASSY","resource":"RES-FINAL-ASSY-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"SA-PWR-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:14:35","onhand":0}
+[buffer] shortage {"buffer":"SA-PWR-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:14:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish SA-PWR-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:14:35","alternates":["RT-PWR-100"]}
+[operation] alternate-try {"operation":"Replenish SA-PWR-100 @ LOC-EM-FACTORY","alternate":"RT-PWR-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-PWR-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-24T16:14:35","steps":["OP-PWR-010-ASSY","OP-PWR-020-TEST"]}
+[operation] ask {"demand":null,"operation":"OP-PWR-020-TEST","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:14:35","operationEnd":"2026-08-24T16:14:35"}
+[resource] ask {"demand":null,"operation":"OP-PWR-020-TEST","resource":"RES-PWR-TEST-01","start":"2026-08-24T15:48:20","end":"2026-08-24T16:14:35"}
+[resource] input {"operation":"OP-PWR-020-TEST","resource":"RES-PWR-TEST-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:48:20","end":"2026-08-24T16:14:35","feasible":true}
+[resource] answer {"operation":"OP-PWR-020-TEST","resource":"RES-PWR-TEST-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-PWR-010-ASSY","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:48:20","operationEnd":"2026-08-24T15:48:20"}
+[resource] ask {"demand":null,"operation":"OP-PWR-010-ASSY","resource":"RES-PWR-ASSY-01","start":"2026-08-24T15:16:40","end":"2026-08-24T15:48:20"}
+[resource] input {"operation":"OP-PWR-010-ASSY","resource":"RES-PWR-ASSY-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:16:40","end":"2026-08-24T15:48:20","feasible":true}
+[resource] answer {"operation":"OP-PWR-010-ASSY","resource":"RES-PWR-ASSY-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","requested":1.75,"date":"2026-08-24T15:31:40","onhand":0}
+[buffer] shortage {"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T15:31:40","onhand":-1.75,"shortage":1.75}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","quantity":1.75,"end":"2026-08-24T15:31:40","alternates":["Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","alternate":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":1.75,"childQuantity":1.75}
+[operation] ask {"demand":null,"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":1.75,"operationQuantity":1.75,"end":"2026-08-24T15:31:40","operationEnd":"2026-08-24T15:31:40"}
+[resource] ask {"demand":null,"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[resource] input {"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":2,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40","feasible":true}
+[resource] answer {"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":2,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-RM-WH","requested":2,"date":"2026-08-24T10:31:40","onhand":170}
+[buffer] answer {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-RM-WH","requested":2,"remainingShortage":0,"quantity":2,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":2,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-segment {"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","alternate":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":1.75,"remainingQuantity":0,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-answer {"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","quantity":1.75,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","iteration":0,"requested":1.75,"replenished":1.75,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","requested":1.75,"remainingShortage":0,"quantity":1.75,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-PCB-PWR-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T15:31:40","onhand":0}
+[buffer] shortage {"buffer":"RM-PCB-PWR-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T15:31:40","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T15:31:40","alternates":["Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY","alternate":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:31:40","operationEnd":"2026-08-24T15:31:40"}
+[resource] ask {"demand":null,"operation":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[resource] input {"operation":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40","feasible":true}
+[resource] answer {"operation":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-PCB-PWR-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T10:31:40","onhand":70}
+[buffer] answer {"demand":null,"buffer":"RM-PCB-PWR-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-segment {"operation":"Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY","alternate":"Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-answer {"operation":"Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-PCB-PWR-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-PCB-PWR-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-TRANSFORMER-24V @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T15:31:40","onhand":0}
+[buffer] shortage {"buffer":"RM-TRANSFORMER-24V @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T15:31:40","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T15:31:40","alternates":["Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY","alternate":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:31:40","operationEnd":"2026-08-24T15:31:40"}
+[resource] ask {"demand":null,"operation":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[resource] input {"operation":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40","feasible":true}
+[resource] answer {"operation":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-TRANSFORMER-24V @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T10:31:40","onhand":55}
+[buffer] answer {"demand":null,"buffer":"RM-TRANSFORMER-24V @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-segment {"operation":"Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY","alternate":"Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-answer {"operation":"Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-TRANSFORMER-24V @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-TRANSFORMER-24V @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T15:31:40","onhand":0}
+[buffer] shortage {"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T15:31:40","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T15:31:40","alternates":["Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","alternate":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:31:40","operationEnd":"2026-08-24T15:31:40"}
+[resource] ask {"demand":null,"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[resource] input {"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40","feasible":true}
+[resource] answer {"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T10:31:40","onhand":220}
+[buffer] answer {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-segment {"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","alternate":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T10:31:40","end":"2026-08-24T15:31:40"}
+[operation] alternate-answer {"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"OP-PWR-010-ASSY","quantity":5,"start":"2026-08-24T15:16:40","end":"2026-08-24T15:48:20"}
+[operation] answer {"demand":null,"operation":"OP-PWR-020-TEST","quantity":5,"start":"2026-08-24T15:48:20","end":"2026-08-24T16:14:35"}
+[operation] routing-answer {"demand":null,"operation":"RT-PWR-100","quantity":5,"start":"2026-08-24T15:16:40","end":"2026-08-24T16:14:35"}
+[operation] alternate-segment {"operation":"Replenish SA-PWR-100 @ LOC-EM-FACTORY","alternate":"RT-PWR-100","quantity":5,"remainingQuantity":0,"start":"2026-08-24T15:16:40","end":"2026-08-24T16:14:35"}
+[operation] alternate-answer {"operation":"Replenish SA-PWR-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"SA-PWR-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"SA-PWR-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"PK-LABEL-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:14:35","onhand":0}
+[buffer] shortage {"buffer":"PK-LABEL-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:14:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish PK-LABEL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:14:35","alternates":["Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish PK-LABEL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:14:35","operationEnd":"2026-08-24T16:14:35"}
+[resource] ask {"demand":null,"operation":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35"}
+[resource] input {"operation":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35","feasible":true}
+[resource] answer {"operation":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"PK-LABEL-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T11:14:35","onhand":85}
+[buffer] answer {"demand":null,"buffer":"PK-LABEL-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35"}
+[operation] alternate-segment {"operation":"Replenish PK-LABEL-100 @ LOC-EM-FACTORY","alternate":"Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35"}
+[operation] alternate-answer {"operation":"Replenish PK-LABEL-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"PK-LABEL-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"PK-LABEL-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"SA-PCBA-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:14:35","onhand":0}
+[buffer] shortage {"buffer":"SA-PCBA-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:14:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish SA-PCBA-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:14:35","alternates":["RT-PCBA-100"]}
+[operation] alternate-try {"operation":"Replenish SA-PCBA-100 @ LOC-EM-FACTORY","alternate":"RT-PCBA-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-PCBA-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-24T16:14:35","steps":["OP-PCBA-010-PRINT","OP-PCBA-020-MOUNT","OP-PCBA-030-REFLOW","OP-PCBA-040-AOI","OP-PCBA-050-DIP","OP-PCBA-060-PROGRAM","OP-PCBA-070-FCT"]}
+[operation] ask {"demand":null,"operation":"OP-PCBA-070-FCT","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:14:35","operationEnd":"2026-08-24T16:14:35"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-070-FCT","resource":"RES-FCT-01","start":"2026-08-24T15:52:05","end":"2026-08-24T16:14:35"}
+[resource] input {"operation":"OP-PCBA-070-FCT","resource":"RES-FCT-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:52:05","end":"2026-08-24T16:14:35","feasible":true}
+[resource] answer {"operation":"OP-PCBA-070-FCT","resource":"RES-FCT-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-PCBA-060-PROGRAM","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:52:05","operationEnd":"2026-08-24T15:52:05"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-060-PROGRAM","resource":"RES-PROGRAM-01","start":"2026-08-24T15:45:00","end":"2026-08-24T15:52:05"}
+[resource] input {"operation":"OP-PCBA-060-PROGRAM","resource":"RES-PROGRAM-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:45:00","end":"2026-08-24T15:52:05","feasible":true}
+[resource] answer {"operation":"OP-PCBA-060-PROGRAM","resource":"RES-PROGRAM-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-PCBA-050-DIP","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:45:00","operationEnd":"2026-08-24T15:45:00"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-050-DIP","resource":"RES-DIP-01","start":"2026-08-24T15:27:30","end":"2026-08-24T15:45:00"}
+[resource] input {"operation":"OP-PCBA-050-DIP","resource":"RES-DIP-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:27:30","end":"2026-08-24T15:45:00","feasible":true}
+[resource] answer {"operation":"OP-PCBA-050-DIP","resource":"RES-DIP-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"RM-CONNECTOR-KIT @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T15:27:30","onhand":0}
+[buffer] shortage {"buffer":"RM-CONNECTOR-KIT @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T15:27:30","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T15:27:30","alternates":["Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY","alternate":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:27:30","operationEnd":"2026-08-24T15:27:30"}
+[resource] ask {"demand":null,"operation":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T10:27:30","end":"2026-08-24T15:27:30"}
+[resource] input {"operation":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T10:27:30","end":"2026-08-24T15:27:30","feasible":true}
+[resource] answer {"operation":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-CONNECTOR-KIT @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T10:27:30","onhand":65}
+[buffer] answer {"demand":null,"buffer":"RM-CONNECTOR-KIT @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T10:27:30","end":"2026-08-24T15:27:30"}
+[operation] alternate-segment {"operation":"Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY","alternate":"Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T10:27:30","end":"2026-08-24T15:27:30"}
+[operation] alternate-answer {"operation":"Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-CONNECTOR-KIT @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-CONNECTOR-KIT @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] ask {"demand":null,"operation":"OP-PCBA-040-AOI","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:27:30","operationEnd":"2026-08-24T15:27:30"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-040-AOI","resource":"RES-AOI-01","start":"2026-08-24T15:19:35","end":"2026-08-24T15:27:30"}
+[resource] input {"operation":"OP-PCBA-040-AOI","resource":"RES-AOI-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:19:35","end":"2026-08-24T15:27:30","feasible":true}
+[resource] answer {"operation":"OP-PCBA-040-AOI","resource":"RES-AOI-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-PCBA-030-REFLOW","quantity":5,"operationQuantity":5,"end":"2026-08-24T15:19:35","operationEnd":"2026-08-24T15:19:35"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-030-REFLOW","resource":"RES-REFLOW-01","start":"2026-08-24T14:34:35","end":"2026-08-24T15:19:35"}
+[resource] input {"operation":"OP-PCBA-030-REFLOW","resource":"RES-REFLOW-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T14:34:35","end":"2026-08-24T15:19:35","feasible":true}
+[resource] answer {"operation":"OP-PCBA-030-REFLOW","resource":"RES-REFLOW-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[operation] ask {"demand":null,"operation":"OP-PCBA-020-MOUNT","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:34:35","operationEnd":"2026-08-24T14:34:35"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-020-MOUNT","resource":"RES-SMT-HS-01","start":"2026-08-24T14:13:20","end":"2026-08-24T14:34:35"}
+[resource] input {"operation":"OP-PCBA-020-MOUNT","resource":"RES-SMT-HS-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T14:13:20","end":"2026-08-24T14:34:35","feasible":true}
+[resource] answer {"operation":"OP-PCBA-020-MOUNT","resource":"RES-SMT-HS-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"RM-FLASH-16M @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T14:13:20","onhand":0}
+[buffer] shortage {"buffer":"RM-FLASH-16M @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:13:20","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-FLASH-16M @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T14:13:20","alternates":["Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-FLASH-16M @ LOC-EM-FACTORY","alternate":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:13:20","operationEnd":"2026-08-24T14:13:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[resource] input {"operation":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20","feasible":true}
+[resource] answer {"operation":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-FLASH-16M @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T09:13:20","onhand":50}
+[buffer] answer {"demand":null,"buffer":"RM-FLASH-16M @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-segment {"operation":"Replenish RM-FLASH-16M @ LOC-EM-FACTORY","alternate":"Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-answer {"operation":"Replenish RM-FLASH-16M @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-FLASH-16M @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-FLASH-16M @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","requested":10,"date":"2026-08-24T14:13:20","onhand":0}
+[buffer] shortage {"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:13:20","onhand":-10,"shortage":10}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","quantity":10,"end":"2026-08-24T14:13:20","alternates":["Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","alternate":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":10,"childQuantity":10}
+[operation] ask {"demand":null,"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":10,"operationQuantity":10,"end":"2026-08-24T14:13:20","operationEnd":"2026-08-24T14:13:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[resource] input {"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":10,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20","feasible":true}
+[resource] answer {"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":10,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-RM-WH","requested":10,"date":"2026-08-24T09:13:20","onhand":220}
+[buffer] answer {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-RM-WH","requested":10,"remainingShortage":0,"quantity":10,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":10,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-segment {"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","alternate":"Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":10,"remainingQuantity":0,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-answer {"operation":"Replenish RM-PWR-IC @ LOC-EM-FACTORY","quantity":10,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","iteration":0,"requested":10,"replenished":10,"producerDate":"2030-12-31T00:00:00","eventCountBefore":4,"eventCountAfter":5,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-PWR-IC @ LOC-EM-FACTORY","requested":10,"remainingShortage":0,"quantity":10,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T14:13:20","onhand":0}
+[buffer] shortage {"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:13:20","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T14:13:20","alternates":["Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","alternate":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:13:20","operationEnd":"2026-08-24T14:13:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[resource] input {"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20","feasible":true}
+[resource] answer {"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T09:13:20","onhand":170}
+[buffer] answer {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-segment {"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","alternate":"Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-answer {"operation":"Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":4,"eventCountAfter":5,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-PASSIVE-KIT @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-ETH-PHY @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T14:13:20","onhand":0}
+[buffer] shortage {"buffer":"RM-ETH-PHY @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:13:20","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-ETH-PHY @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T14:13:20","alternates":["Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-ETH-PHY @ LOC-EM-FACTORY","alternate":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:13:20","operationEnd":"2026-08-24T14:13:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[resource] input {"operation":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20","feasible":true}
+[resource] answer {"operation":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-ETH-PHY @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T09:13:20","onhand":32}
+[buffer] answer {"demand":null,"buffer":"RM-ETH-PHY @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-segment {"operation":"Replenish RM-ETH-PHY @ LOC-EM-FACTORY","alternate":"Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-answer {"operation":"Replenish RM-ETH-PHY @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-ETH-PHY @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-ETH-PHY @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-MCU-STM32 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T14:13:20","onhand":0}
+[buffer] shortage {"buffer":"RM-MCU-STM32 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:13:20","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-MCU-STM32 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T14:13:20","alternates":["Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-MCU-STM32 @ LOC-EM-FACTORY","alternate":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:13:20","operationEnd":"2026-08-24T14:13:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[resource] input {"operation":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20","feasible":true}
+[resource] answer {"operation":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-MCU-STM32 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T09:13:20","onhand":35}
+[buffer] answer {"demand":null,"buffer":"RM-MCU-STM32 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-segment {"operation":"Replenish RM-MCU-STM32 @ LOC-EM-FACTORY","alternate":"Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T09:13:20","end":"2026-08-24T14:13:20"}
+[operation] alternate-answer {"operation":"Replenish RM-MCU-STM32 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-MCU-STM32 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-MCU-STM32 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] ask {"demand":null,"operation":"OP-PCBA-010-PRINT","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:13:20","operationEnd":"2026-08-24T14:13:20"}
+[resource] ask {"demand":null,"operation":"OP-PCBA-010-PRINT","resource":"RES-PRINT-01","start":"2026-08-24T14:02:20","end":"2026-08-24T14:13:20"}
+[resource] input {"operation":"OP-PCBA-010-PRINT","resource":"RES-PRINT-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T14:02:20","end":"2026-08-24T14:13:20","feasible":true}
+[resource] answer {"operation":"OP-PCBA-010-PRINT","resource":"RES-PRINT-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"RM-SOLDER-PASTE @ LOC-EM-FACTORY","requested":0.125,"date":"2026-08-24T14:02:20","onhand":0}
+[buffer] shortage {"buffer":"RM-SOLDER-PASTE @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:02:20","onhand":-0.125,"shortage":0.125}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY","quantity":0.125,"end":"2026-08-24T14:02:20","alternates":["Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY","alternate":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":0.125,"childQuantity":0.125}
+[operation] ask {"demand":null,"operation":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":0.125,"operationQuantity":0.125,"end":"2026-08-24T14:02:20","operationEnd":"2026-08-24T14:02:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20"}
+[resource] input {"operation":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":1,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20","feasible":true}
+[resource] answer {"operation":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":1,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-SOLDER-PASTE @ LOC-EM-RM-WH","requested":1,"date":"2026-08-24T09:02:20","onhand":8}
+[buffer] answer {"demand":null,"buffer":"RM-SOLDER-PASTE @ LOC-EM-RM-WH","requested":1,"remainingShortage":0,"quantity":1,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":1,"start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20"}
+[operation] alternate-segment {"operation":"Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY","alternate":"Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":0.125,"remainingQuantity":0,"start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20"}
+[operation] alternate-answer {"operation":"Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY","quantity":0.125,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-SOLDER-PASTE @ LOC-EM-FACTORY","iteration":0,"requested":0.125,"replenished":0.125,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-SOLDER-PASTE @ LOC-EM-FACTORY","requested":0.125,"remainingShortage":0,"quantity":0.125,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-PCB-CTRL-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T14:02:20","onhand":0}
+[buffer] shortage {"buffer":"RM-PCB-CTRL-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T14:02:20","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T14:02:20","alternates":["Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY","alternate":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T14:02:20","operationEnd":"2026-08-24T14:02:20"}
+[resource] ask {"demand":null,"operation":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20"}
+[resource] input {"operation":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20","feasible":true}
+[resource] answer {"operation":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-PCB-CTRL-100 @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T09:02:20","onhand":45}
+[buffer] answer {"demand":null,"buffer":"RM-PCB-CTRL-100 @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20"}
+[operation] alternate-segment {"operation":"Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY","alternate":"Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T09:02:20","end":"2026-08-24T14:02:20"}
+[operation] alternate-answer {"operation":"Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-PCB-CTRL-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-PCB-CTRL-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-010-PRINT","quantity":5,"start":"2026-08-24T14:02:20","end":"2026-08-24T14:13:20"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-020-MOUNT","quantity":5,"start":"2026-08-24T14:13:20","end":"2026-08-24T14:34:35"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-030-REFLOW","quantity":5,"start":"2026-08-24T14:34:35","end":"2026-08-24T15:19:35"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-040-AOI","quantity":5,"start":"2026-08-24T15:19:35","end":"2026-08-24T15:27:30"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-050-DIP","quantity":5,"start":"2026-08-24T15:27:30","end":"2026-08-24T15:45:00"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-060-PROGRAM","quantity":5,"start":"2026-08-24T15:45:00","end":"2026-08-24T15:52:05"}
+[operation] answer {"demand":null,"operation":"OP-PCBA-070-FCT","quantity":5,"start":"2026-08-24T15:52:05","end":"2026-08-24T16:14:35"}
+[operation] routing-answer {"demand":null,"operation":"RT-PCBA-100","quantity":5,"start":"2026-08-24T14:02:20","end":"2026-08-24T16:14:35"}
+[operation] alternate-segment {"operation":"Replenish SA-PCBA-100 @ LOC-EM-FACTORY","alternate":"RT-PCBA-100","quantity":5,"remainingQuantity":0,"start":"2026-08-24T14:02:20","end":"2026-08-24T16:14:35"}
+[operation] alternate-answer {"operation":"Replenish SA-PCBA-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"SA-PCBA-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"SA-PCBA-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","requested":20,"date":"2026-08-24T16:14:35","onhand":0}
+[buffer] shortage {"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:14:35","onhand":-20,"shortage":20}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","quantity":20,"end":"2026-08-24T16:14:35","alternates":["Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","alternate":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":20,"childQuantity":20}
+[operation] ask {"demand":null,"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":20,"operationQuantity":20,"end":"2026-08-24T16:14:35","operationEnd":"2026-08-24T16:14:35"}
+[resource] ask {"demand":null,"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35"}
+[resource] input {"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":20,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35","feasible":true}
+[resource] answer {"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":20,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-RM-WH","requested":20,"date":"2026-08-24T11:14:35","onhand":900}
+[buffer] answer {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-RM-WH","requested":20,"remainingShortage":0,"quantity":20,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":20,"start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35"}
+[operation] alternate-segment {"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","alternate":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":20,"remainingQuantity":0,"start":"2026-08-24T11:14:35","end":"2026-08-24T16:14:35"}
+[operation] alternate-answer {"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","quantity":20,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","iteration":0,"requested":20,"replenished":20,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","requested":20,"remainingShortage":0,"quantity":20,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"SA-CASE-100 @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:14:35","onhand":0}
+[buffer] shortage {"buffer":"SA-CASE-100 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:14:35","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish SA-CASE-100 @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:14:35","alternates":["RT-CASE-100"]}
+[operation] alternate-try {"operation":"Replenish SA-CASE-100 @ LOC-EM-FACTORY","alternate":"RT-CASE-100","remainingQuantity":5,"childQuantity":5}
+[operation] routing-ask {"demand":null,"operation":"RT-CASE-100","quantity":5,"operationPlanQuantity":5,"end":"2026-08-24T16:14:35","steps":["OP-CASE-010-ASSY"]}
+[operation] ask {"demand":null,"operation":"OP-CASE-010-ASSY","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:14:35","operationEnd":"2026-08-24T16:14:35"}
+[resource] ask {"demand":null,"operation":"OP-CASE-010-ASSY","resource":"RES-CASE-01","start":"2026-08-24T15:50:00","end":"2026-08-24T16:14:35"}
+[resource] input {"operation":"OP-CASE-010-ASSY","resource":"RES-CASE-01","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-08-24T15:50:00","end":"2026-08-24T16:14:35","feasible":true}
+[resource] answer {"operation":"OP-CASE-010-ASSY","resource":"RES-CASE-01","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"RM-CASE-BOTTOM @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:05:00","onhand":0}
+[buffer] shortage {"buffer":"RM-CASE-BOTTOM @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:05:00","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:05:00","alternates":["Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY","alternate":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:05:00","operationEnd":"2026-08-24T16:05:00"}
+[resource] ask {"demand":null,"operation":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[resource] input {"operation":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00","feasible":true}
+[resource] answer {"operation":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-CASE-BOTTOM @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T11:05:00","onhand":75}
+[buffer] answer {"demand":null,"buffer":"RM-CASE-BOTTOM @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-segment {"operation":"Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY","alternate":"Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-answer {"operation":"Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-CASE-BOTTOM @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-CASE-BOTTOM @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-HEATSINK @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:05:00","onhand":0}
+[buffer] shortage {"buffer":"RM-HEATSINK @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:05:00","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-HEATSINK @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:05:00","alternates":["Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-HEATSINK @ LOC-EM-FACTORY","alternate":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:05:00","operationEnd":"2026-08-24T16:05:00"}
+[resource] ask {"demand":null,"operation":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[resource] input {"operation":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00","feasible":true}
+[resource] answer {"operation":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-HEATSINK @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T11:05:00","onhand":75}
+[buffer] answer {"demand":null,"buffer":"RM-HEATSINK @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-segment {"operation":"Replenish RM-HEATSINK @ LOC-EM-FACTORY","alternate":"Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-answer {"operation":"Replenish RM-HEATSINK @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-HEATSINK @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-HEATSINK @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-CASE-TOP @ LOC-EM-FACTORY","requested":5,"date":"2026-08-24T16:05:00","onhand":0}
+[buffer] shortage {"buffer":"RM-CASE-TOP @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:05:00","onhand":-5,"shortage":5}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-CASE-TOP @ LOC-EM-FACTORY","quantity":5,"end":"2026-08-24T16:05:00","alternates":["Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-CASE-TOP @ LOC-EM-FACTORY","alternate":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":5,"childQuantity":5}
+[operation] ask {"demand":null,"operation":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"operationQuantity":5,"end":"2026-08-24T16:05:00","operationEnd":"2026-08-24T16:05:00"}
+[resource] ask {"demand":null,"operation":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[resource] input {"operation":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00","feasible":true}
+[resource] answer {"operation":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":5,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-CASE-TOP @ LOC-EM-RM-WH","requested":5,"date":"2026-08-24T11:05:00","onhand":75}
+[buffer] answer {"demand":null,"buffer":"RM-CASE-TOP @ LOC-EM-RM-WH","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-segment {"operation":"Replenish RM-CASE-TOP @ LOC-EM-FACTORY","alternate":"Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":5,"remainingQuantity":0,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-answer {"operation":"Replenish RM-CASE-TOP @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-CASE-TOP @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-CASE-TOP @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[buffer] ask {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","requested":20,"date":"2026-08-24T16:05:00","onhand":0}
+[buffer] shortage {"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","iteration":0,"date":"2026-08-24T16:05:00","onhand":-20,"shortage":20}
+[operation] alternate-ask {"demand":null,"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","quantity":20,"end":"2026-08-24T16:05:00","alternates":["Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00"]}
+[operation] alternate-try {"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","alternate":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","remainingQuantity":20,"childQuantity":20}
+[operation] ask {"demand":null,"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":20,"operationQuantity":20,"end":"2026-08-24T16:05:00","operationEnd":"2026-08-24T16:05:00"}
+[resource] ask {"demand":null,"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[resource] input {"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","questionQuantity":-0.05,"operationQuantity":20,"loadQuantity":-0.05}
+[resource] candidate {"demand":null,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00","feasible":true}
+[resource] answer {"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","resource":"RES-LOGISTICS-01","answerQuantity":0.05,"operationQuantity":20,"loadQuantity":-0.05}
+[buffer] ask {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-RM-WH","requested":20,"date":"2026-08-24T11:05:00","onhand":900}
+[buffer] answer {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-RM-WH","requested":20,"remainingShortage":0,"quantity":20,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":20,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-segment {"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","alternate":"Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00","quantity":20,"remainingQuantity":0,"start":"2026-08-24T11:05:00","end":"2026-08-24T16:05:00"}
+[operation] alternate-answer {"operation":"Replenish RM-SCREW-M3 @ LOC-EM-FACTORY","quantity":20,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","iteration":0,"requested":20,"replenished":20,"producerDate":"2030-12-31T00:00:00","eventCountBefore":4,"eventCountAfter":5,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"RM-SCREW-M3 @ LOC-EM-FACTORY","requested":20,"remainingShortage":0,"quantity":20,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"OP-CASE-010-ASSY","quantity":5,"start":"2026-08-24T15:50:00","end":"2026-08-24T16:14:35"}
+[operation] routing-answer {"demand":null,"operation":"RT-CASE-100","quantity":5,"start":"2026-08-24T15:50:00","end":"2026-08-24T16:14:35"}
+[operation] alternate-segment {"operation":"Replenish SA-CASE-100 @ LOC-EM-FACTORY","alternate":"RT-CASE-100","quantity":5,"remainingQuantity":0,"start":"2026-08-24T15:50:00","end":"2026-08-24T16:14:35"}
+[operation] alternate-answer {"operation":"Replenish SA-CASE-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"SA-CASE-100 @ LOC-EM-FACTORY","iteration":0,"requested":5,"replenished":5,"producerDate":"2030-12-31T00:00:00","eventCountBefore":2,"eventCountAfter":3,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"SA-CASE-100 @ LOC-EM-FACTORY","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"OP-FG-010-FINAL-ASSY","quantity":5,"start":"2026-08-24T16:14:35","end":"2026-08-24T16:44:35"}
+[operation] answer {"demand":null,"operation":"OP-FG-020-AGING","quantity":5,"start":"2026-08-24T16:44:35","end":"2026-08-25T16:44:35"}
+[operation] answer {"demand":null,"operation":"OP-FG-030-FINAL-QC","quantity":5,"start":"2026-08-25T16:44:35","end":"2026-08-25T16:59:35"}
+[operation] answer {"demand":null,"operation":"OP-FG-040-PACK","quantity":5,"start":"2026-08-25T16:59:35","end":"2026-08-26T08:10:00"}
+[operation] routing-answer {"demand":null,"operation":"RT-FG-CTRL-100","quantity":5,"start":"2026-08-24T16:14:35","end":"2026-08-26T08:10:00"}
+[operation] alternate-segment {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","alternate":"RT-FG-CTRL-100","quantity":5,"remainingQuantity":0,"start":"2026-08-24T16:14:35","end":"2026-08-26T08:10:00"}
+[operation] alternate-answer {"operation":"Replenish FG-CTRL-100 @ LOC-EM-FACTORY","quantity":5,"remainingQuantity":0,"nextDate":"2030-12-31T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"FG-CTRL-100 @ LOC-EM-FACTORY","date":"2026-08-21T23:06:14","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-08-26T08:10:00","replyQuantity":5,"replyDate":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-001-10","attempt":1,"quantity":6,"requestDate":"2026-08-25T08:00:00","lastDate":"2026-09-24T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-001-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":6,"operationQuantity":6,"end":"2026-08-25T08:00:00","operationEnd":"2026-08-25T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-001-10","attempt":1,"result":true,"quantity":6,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-002-10","attempt":1,"quantity":8,"requestDate":"2026-08-26T08:00:00","lastDate":"2026-09-25T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-002-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":8,"operationQuantity":8,"end":"2026-08-26T08:00:00","operationEnd":"2026-08-26T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-002-10","attempt":1,"result":true,"quantity":8,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-003-10","attempt":1,"quantity":10,"requestDate":"2026-08-27T08:00:00","lastDate":"2026-09-26T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-003-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":10,"operationQuantity":10,"end":"2026-08-27T08:00:00","operationEnd":"2026-08-27T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-003-10","attempt":1,"result":true,"quantity":10,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-004-10","attempt":1,"quantity":7,"requestDate":"2026-08-28T08:00:00","lastDate":"2026-09-27T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-004-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":7,"operationQuantity":7,"end":"2026-08-28T08:00:00","operationEnd":"2026-08-28T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-004-10","attempt":1,"result":true,"quantity":7,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-005-10","attempt":1,"quantity":9,"requestDate":"2026-08-29T08:00:00","lastDate":"2026-09-28T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-005-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":9,"operationQuantity":9,"end":"2026-08-29T08:00:00","operationEnd":"2026-08-29T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-005-10","attempt":1,"result":true,"quantity":9,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-006-10","attempt":1,"quantity":5,"requestDate":"2026-08-30T08:00:00","lastDate":"2026-09-29T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-006-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":5,"operationQuantity":5,"end":"2026-08-30T08:00:00","operationEnd":"2026-08-30T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-006-10","attempt":1,"result":true,"quantity":5,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-007-10","attempt":1,"quantity":12,"requestDate":"2026-08-31T08:00:00","lastDate":"2026-09-30T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-007-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":12,"operationQuantity":12,"end":"2026-08-31T08:00:00","operationEnd":"2026-08-31T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-007-10","attempt":1,"result":true,"quantity":12,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-008-10","attempt":1,"quantity":6,"requestDate":"2026-09-01T08:00:00","lastDate":"2026-10-01T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-008-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":6,"operationQuantity":6,"end":"2026-09-01T08:00:00","operationEnd":"2026-09-01T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-008-10","attempt":1,"result":true,"quantity":6,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-009-10","attempt":1,"quantity":8,"requestDate":"2026-09-02T08:00:00","lastDate":"2026-10-02T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-009-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":8,"operationQuantity":8,"end":"2026-09-02T08:00:00","operationEnd":"2026-09-02T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-009-10","attempt":1,"result":true,"quantity":8,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"SO-CODEX-20260821-010-10","attempt":1,"quantity":10,"requestDate":"2026-09-03T08:00:00","lastDate":"2026-10-03T08:00:00"}
+[operation] ask {"demand":"SO-CODEX-20260821-010-10","operation":"Ship FG-CTRL-100 @ LOC-EM-FG-WH","quantity":10,"operationQuantity":10,"end":"2026-09-03T08:00:00","operationEnd":"2026-09-03T08:00:00"}
+[demand] reply {"demand":"SO-CODEX-20260821-010-10","attempt":1,"result":true,"quantity":10,"date":"2030-12-31T00:00:00"}

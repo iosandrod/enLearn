@@ -2,11 +2,11 @@ import { readdir, readFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import tsCompiler from "typescript";
-import { extractHeaderApi } from "./header-api.mjs";
+import { extractHeaderApi, resolveNativeSourceRoot } from "./header-api.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const project = resolve(here, "..");
-const sourceRoot = resolve(project, "..", "src");
+const sourceRoot = resolveNativeSourceRoot(project);
 const mode = process.argv[2] ?? "all";
 
 async function walk(directory, extension, ignored = new Set()) {
@@ -235,7 +235,7 @@ if (mode === "all" || mode === "public-api" || mode === "class-model") {
   }
 
   const [headerApi, targetModels] = await Promise.all([
-    extractHeaderApi(project),
+    extractHeaderApi(project, sourceRoot),
     Promise.resolve(collectTypeScriptModels([...actual.values()])),
   ]);
   for (const declaration of headerApi) {

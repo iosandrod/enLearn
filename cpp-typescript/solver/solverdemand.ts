@@ -2,6 +2,7 @@ import { Demand, DemandGroup } from "../model/demand.js";
 import { CommandCreateOperationPlan } from "../model/actions.js";
 import { OperationItemDistribution } from "../model/itemdistribution.js";
 import { OperationItemSupplier } from "../model/itemsupplier.js";
+import { OperationDelivery } from "../model/operation.js";
 import { OperationPlan } from "../model/operationplan.js";
 import { Date as PlanningDate, Duration } from "../utils/date.js";
 import { CommandList, CommandManager } from "../utils/actions.js";
@@ -70,6 +71,20 @@ function solveDemandLineSemantic(
   let bestDate = new PlanningDate(firstDate);
   const manager = data.getCommandManager() ?? solver.getCommandManager();
 
+  // Native cluster-0 auto deliveries are answered as delivery plans only.
+  // Their material graph belongs to the upstream cluster and is handled by
+  // the safety-stock pass, so it must not be re-entered from this demand pass.
+  const solveDelivery = (): OperationPlan | null => {
+    const previousPropagate = data.propagate;
+    if (data.cluster === 0 && operation instanceof OperationDelivery) data.propagate = false;
+    try {
+      const result = solver.solve(operation, data);
+      return result instanceof OperationPlan ? result : null;
+    } finally {
+      data.propagate = previousPropagate;
+    }
+  };
+
   const ask = (quantity: number, date: PlanningDate): OperationPlan | null => {
     data.state.q_qty = quantity;
     data.state.q_qty_min = minimum;
@@ -80,10 +95,79 @@ function solveDemandLineSemantic(
     data.state.curBuffer = null;
     data.state.curOwnerOpplan = null;
     data.state.forceAccept = false;
+    data.state.keepAssignments = null;
     data.accept_partial_reply = false;
     data.broken_path = false;
-    const result = solver.solve(operation, data);
+    // C++ starts every demand probe with a fresh material-path and dependency
+    // context. Reusing either collection leaks the previous probe into the
+    // next one and can turn a valid retry into a false loop/broken-path reply.
+    data.clearRecentBuffers();
+    data.clearDependencies();
+    data.setConstraintOwner(demand.getConstraints());
+    const result = solveDelivery();
     return result instanceof OperationPlan ? result : null;
+  };
+
+  const coordinatedAccept = (
+    initialRemainder: number,
+    date: PlanningDate,
+    stopAtMinimum = false,
+  ): { plan: OperationPlan | null; quantity: number } => {
+    let remainder = Math.max(0, initialRemainder);
+    let accepted = 0;
+    let lastPlan: OperationPlan | null = null;
+    let tries = 7;
+    let coordinationDate = new PlanningDate(date);
+    let coordinationFlag = true;
+    const coordinationStep = new Duration(24 * 3600);
+    const previousCoordinationRun = data.coordination_run;
+
+    try {
+      while (remainder > roundingError && (!stopAtMinimum || remainder > minimum)) {
+        data.state.q_qty = remainder;
+        data.state.q_qty_min = minimum;
+        data.state.q_date = new PlanningDate(coordinationDate);
+        data.state.q_date_max = new PlanningDate(lastDate);
+        data.state.curDemand = demand;
+        data.state.curBatch = demand.getBatch();
+        data.state.curBuffer = null;
+        data.state.curOwnerOpplan = null;
+        data.state.forceAccept = false;
+        data.state.keepAssignments = null;
+        data.state.dependency = null;
+        data.state.blockedOpplan = null;
+        data.coordination_run = coordinationFlag;
+        data.accept_partial_reply = false;
+        data.broken_path = false;
+        data.setConstraintOwner(demand.getConstraints());
+        data.clearDependencies();
+        data.clearRecentBuffers();
+
+        const result = solveDelivery();
+        const answer = Math.max(0, data.state.a_qty);
+        if (answer < roundingError) {
+          if (coordinationFlag) {
+            coordinationFlag = false;
+          } else if (tries-- > 0) {
+            coordinationFlag = true;
+            coordinationDate = coordinationDate.subtract(coordinationStep) as PlanningDate;
+          } else {
+            break;
+          }
+          continue;
+        }
+
+        if (result instanceof OperationPlan) lastPlan = result;
+        coordinationFlag = true;
+        accepted += answer;
+        remainder = Math.max(0, remainder - answer);
+      }
+    } finally {
+      data.coordination_run = previousCoordinationRun;
+    }
+
+    data.state.a_qty = accepted;
+    return { plan: lastPlan, quantity: accepted };
   };
 
   // Native frePPLe uses a do-while loop: even zero max-lateness gets one
@@ -95,6 +179,7 @@ function solveDemandLineSemantic(
       requestDate: requestDate.toString(), lastDate: lastDate.toString(),
     });
     const bookmark = manager.setBookmark();
+    let askedQuantity = planQuantity;
     let result = ask(planQuantity, requestDate);
     let answer = Math.max(0, data.state.a_qty);
     let nextDate = new PlanningDate(data.state.a_date);
@@ -131,6 +216,7 @@ function solveDemandLineSemantic(
           else high = probe;
           delta = Math.abs(high - low);
         }
+        askedQuantity = low;
         if (answer <= roundingError) {
           manager.rollback(bookmark);
           result = ask(low, requestDate);
@@ -149,7 +235,7 @@ function solveDemandLineSemantic(
       if (remainder < minimum && answer + roundingError >= minimum
         && !forceAccept && answer > bestAnswer) {
         bestAnswer = answer;
-        bestAsked = planQuantity;
+        bestAsked = askedQuantity;
         bestDate = new PlanningDate(requestDate);
       }
 
@@ -173,8 +259,20 @@ function solveDemandLineSemantic(
       }
       manager.rollback(bookmark);
     } else {
+      let acceptedQuantity = answer;
+      if (answer + roundingError < askedQuantity) {
+        manager.rollback(bookmark);
+        const coordinated = coordinatedAccept(answer, requestDate);
+        acceptedQuantity = coordinated.quantity;
+        result = coordinated.plan;
+        if (acceptedQuantity <= roundingError) {
+          manager.rollback(bookmark);
+          break;
+        }
+      }
+
       acceptedPlan = result;
-      planQuantity = Math.max(0, planQuantity - answer);
+      planQuantity = Math.max(0, planQuantity - acceptedQuantity);
       bestAnswer = 0;
       if (solver.getAutocommit() && allowCommit) solver.commit();
     }
@@ -192,18 +290,8 @@ function solveDemandLineSemantic(
   // remainder below minshipment. If no better reply appears before the
   // lateness fence, C++ recreates and accepts that best partial answer.
   if (bestAnswer > roundingError && data.constrainedPlanning) {
-    let bestRemainder = bestAsked;
-    while (bestRemainder > roundingError && bestRemainder > minimum) {
-      const bookmark = manager.setBookmark();
-      const result = ask(bestRemainder, bestDate);
-      const answer = Math.max(0, data.state.a_qty);
-      if (!(result instanceof OperationPlan) || answer < roundingError) {
-        manager.rollback(bookmark);
-        break;
-      }
-      acceptedPlan = result;
-      bestRemainder -= answer;
-    }
+    const coordinated = coordinatedAccept(bestAsked, bestDate, true);
+    if (coordinated.plan) acceptedPlan = coordinated.plan;
     if (solver.getAutocommit() && allowCommit) solver.commit();
   }
 

@@ -42,6 +42,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>2</size_maximum>
@@ -60,6 +63,9 @@
       
       
       
+      
+      
+      
       <size_maximum>2</size_maximum>
       <cost>1</cost>
       
@@ -71,6 +77,9 @@
       
       
       <duration>PT1S</duration>
+      
+      
+      
       
       
       
@@ -92,6 +101,9 @@
       
       
       
+      
+      
+      
       <size_maximum>2</size_maximum>
       <cost>1</cost>
       
@@ -103,6 +115,9 @@
       
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       
@@ -124,6 +139,9 @@
       
       
       
+      
+      
+      
       <size_maximum>2</size_maximum>
       <cost>1</cost>
       
@@ -135,6 +153,9 @@
       
       
       <duration>P180D</duration>
+      
+      
+      
       
       
       
@@ -151,6 +172,9 @@
       
       
       <duration>PT1S</duration>
+      
+      
+      
       
       
       

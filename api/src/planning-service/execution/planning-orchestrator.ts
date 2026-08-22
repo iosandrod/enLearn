@@ -18,6 +18,7 @@ import { resolvePlanningParameters } from './planning-parameters';
 import { preflightPlanningData } from './planning-preflight';
 import { PlanningResultWriter, resultSummary } from './planning-result.writer';
 import { PlanningRunRepository } from './planning-run.repository';
+import { normalizePlanningSnapshotForEngine } from './planning-snapshot-normalizer';
 
 export class PlanningOrchestrator {
   private readonly repository: PlanningRunRepository;
@@ -82,16 +83,28 @@ export class PlanningOrchestrator {
 
     try {
       await progress(8, '正在读取一致性数据快照');
-      const snapshot = await this.loader.load(request.accountId);
+      const loadedSnapshot = await this.loader.load(request.accountId);
+      const normalization = normalizePlanningSnapshotForEngine(loadedSnapshot);
+      const snapshot = normalization.snapshot;
+      if (normalization.addedBuffers.length) {
+        await progress(
+          16,
+          `已为本地排产输入补齐 ${normalization.addedBuffers.length} 个零库存物料缓冲`
+        );
+      }
       await progress(20, '正在校验计划数据完整性');
       const preflight = preflightPlanningData(snapshot);
       if (!preflight.ok) throw new PlanningPreflightError(preflight);
       const parameters = resolvePlanningParameters(snapshot, request.overrides);
       const input = buildFreppleInput(snapshot, parameters);
-      await progress(35, '正在调用 frePPLe 求解器');
+      await progress(35, `正在调用${engineDisplayName(this.engine.mode)}排产算法`);
       const result = await this.engine.solve(input.request, {
         onLog: (line) => log.write(line),
-        onProcess: (processId) => progress(40, 'frePPLe 求解进程已启动', { processId }),
+        onProcess: (processId) => progress(
+          40,
+          `${engineDisplayName(this.engine.mode)}排产进程已启动`,
+          { processId }
+        ),
         signal: controller.signal
       });
       await progress(78, '正在校验并写入计划结果');
@@ -142,6 +155,10 @@ export class PlanningOrchestrator {
       log.close();
     }
   }
+}
+
+function engineDisplayName(mode: PlanningEngine['mode']) {
+  return mode === 'cpp-typescript' ? '本地 cpp-typescript ' : mode === 'http' ? '远程 ' : 'frePPLe ';
 }
 
 export async function markPlanningRunFailed(options: {

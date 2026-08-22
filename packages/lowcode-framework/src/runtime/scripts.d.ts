@@ -75,6 +75,7 @@ export declare function invokeRegisteredLowCodeScriptApi(name: string, payload: 
 export declare function registerLowCodeScriptExecutor(executor: LowCodeScriptExecutor): () => void;
 export declare function getLowCodeScriptExecutor(): LowCodeScriptExecutor | undefined;
 export declare function preloadLowCodeScriptRuntime(): Promise<void>;
+export declare function compactLowCodeScriptContext(context: LowCodeScriptContextSnapshot, maxPayloadBytes?: number): LowCodeScriptContextSnapshot;
 export declare function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor;
 export declare function toLowCodeScriptSerializable(value: unknown): LowCodeScriptSerializable;
 export declare function executeLowCodeScript(request: LowCodeScriptExecutionRequest, handleCapability: LowCodeScriptCapabilityHandler): Promise<LowCodeScriptExecutionResult>;

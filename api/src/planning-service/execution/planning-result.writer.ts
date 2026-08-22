@@ -124,7 +124,10 @@ function mapResultRows(options: {
     account_id: options.accountId,
     plan_version_id: options.planVersionId
   };
-  const planCommon = { ...common, source: 'frepple' };
+  const planCommon = {
+    ...common,
+    source: options.result.engine.mode === 'cpp-typescript' ? 'cpp-typescript' : 'frepple'
+  };
   const operationPlans = options.result.operationPlans.map((row) => ({
     id: operationPlanIds.get(row.reference),
     ...planCommon,

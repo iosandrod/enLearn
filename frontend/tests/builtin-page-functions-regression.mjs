@@ -11,7 +11,7 @@ const editFunctions = getBuiltinLowCodePageFunctions('edit');
 
 assert.deepEqual(
   listFunctions.map((item) => item.name),
-  ['create', 'edit', 'approve', 'unapprove', 'close', 'open', 'refresh', 'print', 'exit'],
+  ['create', 'edit', 'delete', 'approve', 'unapprove', 'close', 'open', 'refresh', 'print', 'exit'],
 );
 assert.deepEqual(
   editFunctions.map((item) => item.name),
@@ -35,6 +35,10 @@ const baseContext = {
   updateRecords: async (rows, values) => {
     calls.push(['updateRecords', rows, values]);
     return [{ id: 'row-1', ...values }];
+  },
+  deleteRecords: async (rows) => {
+    calls.push(['deleteRecords', rows]);
+    return [{ id: 'row-1', deleted: true }];
   },
   invokeService: async (serviceName, serviceMethod, postData) => {
     calls.push(['invokeService', serviceName, serviceMethod, postData]);
@@ -60,6 +64,14 @@ await assert.rejects(
 
 await resolveBuiltinLowCodePageFunction('list', 'edit').execute(baseContext);
 assert.deepEqual(calls.shift(), ['navigateToEdit', { id: 'row-1', status: 'draft' }]);
+
+await resolveBuiltinLowCodePageFunction('list', 'delete').execute(baseContext);
+assert.deepEqual(calls.shift(), [
+  'deleteRecords',
+  [{ id: 'row-1', status: 'draft' }],
+]);
+assert.deepEqual(calls.shift(), ['refresh']);
+assert.deepEqual(calls.shift(), ['notify', '删除成功。', 'success']);
 
 await resolveBuiltinLowCodePageFunction('list', 'approve').execute(baseContext);
 assert.deepEqual(calls.shift(), [
@@ -187,7 +199,7 @@ const [listPageFunctionSource, editPageFunctionSource, pageFunctionIndexSource] 
 
 assert.match(
   listPageFunctionSource,
-  /BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS[\s\S]*?id: 'list\.create'[\s\S]*?id: 'list\.exit'/,
+  /BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS[\s\S]*?id: 'list\.create'[\s\S]*?id: 'list\.delete'[\s\S]*?id: 'list\.exit'/,
   'List-page executable functions must live in list-page-function.ts.',
 );
 assert.match(

@@ -289,7 +289,7 @@ export type PlanningRunOutput = PlanningResultSummary & {
 };
 
 export interface PlanningEngine {
-  readonly mode: 'http' | 'process';
+  readonly mode: 'http' | 'process' | 'cpp-typescript';
   solve(
     request: PlanningEngineRequest,
     options?: {
@@ -305,7 +305,7 @@ export type PlanningEngineCapabilities = {
   bridgePath?: string;
   endpoint?: string;
   executable?: string;
-  mode: 'http' | 'process';
+  mode: 'http' | 'process' | 'cpp-typescript';
   reason?: string;
 };
 

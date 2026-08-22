@@ -1,0 +1,639 @@
+Deleting previous plan
+Start solving cluster 2
+Start safety stock replenishment pass for cluster 2
+Finished safety stock replenishment pass
+Start safety stock replenishment pass for cluster 2
+Finished safety stock replenishment pass
+Start scanning excess in cluster 2
+Finished excess scan
+End solving cluster 2
+Start solving cluster 1
+Start safety stock replenishment pass for cluster 1
+  Buffer 'FG-CTRL-100 @ LOC-EM-FACTORY' solves for safety stock
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-21T11:50:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-21T11:50:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-21T11:50:16
+        Operation 'OP-FG-040-PACK' answers: 0  2026-08-21T11:55:16
+      Routing operation 'RT-FG-CTRL-100' answers: 0  2026-08-21T11:55:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 0  2026-08-21T11:55:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-21T12:50:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-21T12:50:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-21T12:50:16
+          Resource 'RES-PACK-01' is asked: 1  2026-08-21T11:55:00 / 2026-08-21T12:00:00
+          Resource 'RES-PACK-01' answers: 1  2026-08-21T12:00:00
+          Operation 'OP-FG-030-FINAL-QC' is asked: 5  2026-08-21T11:55:00
+          Operation 'OP-FG-030-FINAL-QC' answers: 0  2026-08-21T11:55:16
+        Operation 'OP-FG-040-PACK' answers: 0  2026-08-21T13:00:16
+      Routing operation 'RT-FG-CTRL-100' answers: 0  2026-08-21T13:00:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 0  2026-08-21T13:00:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-21T13:50:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-21T13:50:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-21T13:50:16
+          Resource 'RES-PACK-01' is asked: 1  2026-08-21T13:45:16 / 2026-08-21T13:50:16
+          Resource 'RES-PACK-01' answers: 1  2026-08-21T13:50:16
+          Operation 'OP-FG-030-FINAL-QC' is asked: 5  2026-08-21T13:45:16
+            Resource 'RES-FINAL-QC-01' is asked: 1  2026-08-21T13:40:16 / 2026-08-21T13:45:16
+            Resource 'RES-FINAL-QC-01' answers: 1  2026-08-21T13:45:16
+            Operation 'OP-FG-020-AGING' is asked: 5  2026-08-21T13:40:16
+            Operation 'OP-FG-020-AGING' answers: 0  2026-08-24T11:50:16
+          Operation 'OP-FG-030-FINAL-QC' answers: 0  2026-08-24T11:55:16
+        Operation 'OP-FG-040-PACK' answers: 0  2026-08-24T13:00:16
+      Routing operation 'RT-FG-CTRL-100' answers: 0  2026-08-24T13:00:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 0  2026-08-24T13:00:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T13:00:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-24T13:00:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-24T13:00:16
+          Resource 'RES-PACK-01' is asked: 1  2026-08-24T11:55:16 / 2026-08-24T13:00:16
+          Resource 'RES-PACK-01' answers: 1  2026-08-24T13:00:16
+          Operation 'OP-FG-030-FINAL-QC' is asked: 5  2026-08-24T11:55:16
+            Resource 'RES-FINAL-QC-01' is asked: 1  2026-08-24T11:50:16 / 2026-08-24T11:55:16
+            Resource 'RES-FINAL-QC-01' answers: 1  2026-08-24T11:55:16
+            Operation 'OP-FG-020-AGING' is asked: 5  2026-08-24T11:50:16
+              Resource 'RES-AGING-01' is asked: 1  2026-08-21T11:50:16 / 2026-08-24T11:50:16
+              Resource 'RES-AGING-01' answers: 1  2026-08-24T11:50:16
+              Operation 'OP-FG-010-FINAL-ASSY' is asked: 5  2026-08-21T11:50:16
+              Operation 'OP-FG-010-FINAL-ASSY' answers: 0  2026-08-21T13:05:16
+            Operation 'OP-FG-020-AGING' answers: 0  2026-08-24T13:05:16
+          Operation 'OP-FG-030-FINAL-QC' answers: 0  2026-08-24T13:10:16
+        Operation 'OP-FG-040-PACK' answers: 0  2026-08-24T13:15:16
+      Routing operation 'RT-FG-CTRL-100' answers: 0  2026-08-24T13:15:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 0  2026-08-24T13:15:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T14:00:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-24T14:00:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-24T14:00:16
+          Resource 'RES-PACK-01' is asked: 1  2026-08-24T13:55:16 / 2026-08-24T14:00:16
+          Resource 'RES-PACK-01' answers: 1  2026-08-24T14:00:16
+          Operation 'OP-FG-030-FINAL-QC' is asked: 5  2026-08-24T13:55:16
+            Resource 'RES-FINAL-QC-01' is asked: 1  2026-08-24T13:50:16 / 2026-08-24T13:55:16
+            Resource 'RES-FINAL-QC-01' answers: 1  2026-08-24T13:55:16
+            Operation 'OP-FG-020-AGING' is asked: 5  2026-08-24T13:50:16
+              Resource 'RES-AGING-01' is asked: 1  2026-08-21T13:50:16 / 2026-08-24T13:50:16
+              Resource 'RES-AGING-01' answers: 1  2026-08-24T13:50:16
+              Operation 'OP-FG-010-FINAL-ASSY' is asked: 5  2026-08-21T13:50:16
+                Resource 'RES-FINAL-ASSY-01' is asked: 1  2026-08-21T13:35:16 / 2026-08-21T13:50:16
+                Resource 'RES-FINAL-ASSY-01' answers: 1  2026-08-21T13:50:16
+                Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-21T13:35:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-21T13:35:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' tries alternate 'RT-PWR-100' 
+                    Routing operation 'RT-PWR-100' is asked: 5  2026-08-21T13:35:16 using step dependencies
+                      Operation 'OP-PWR-020-TEST' is asked: 5  2026-08-21T13:35:16
+                        Resource 'RES-PWR-TEST-01' is asked: 1  2026-08-21T13:15:16 / 2026-08-21T13:35:16
+                        Resource 'RES-PWR-TEST-01' answers: 1  2026-08-21T13:35:16
+                        Operation 'OP-PWR-010-ASSY' is asked: 5  2026-08-21T13:15:16
+                          Resource 'RES-PWR-ASSY-01' is asked: 1  2026-08-21T11:50:16 / 2026-08-21T13:15:16
+                          Resource 'RES-PWR-ASSY-01' answers: 1  2026-08-21T13:15:16
+                          Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 1.75  2026-08-21T13:05:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 1.75  2026-08-21T13:05:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' tries alternate 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                              Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 1.75  2026-08-21T13:05:16
+                              Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 0  2026-08-21T16:50:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers: 0  2026-08-21T16:50:16
+                          Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers short: 0  2026-08-21T16:50:16
+                        Operation 'OP-PWR-010-ASSY' answers: 0  2026-08-24T08:00:16
+                      Operation 'OP-PWR-020-TEST' answers: 0  2026-08-24T08:05:16
+                    Routing operation 'RT-PWR-100' answers: 0  2026-08-24T08:05:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' answers: 0  2026-08-24T08:05:16
+                Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' answers short: 0  2026-08-24T08:05:16
+              Operation 'OP-FG-010-FINAL-ASSY' answers: 0  2026-08-24T08:20:16
+            Operation 'OP-FG-020-AGING' answers: 0  2026-08-25T08:20:16
+          Operation 'OP-FG-030-FINAL-QC' answers: 0  2026-08-25T08:25:16
+        Operation 'OP-FG-040-PACK' answers: 0  2026-08-25T08:30:16
+      Routing operation 'RT-FG-CTRL-100' answers: 0  2026-08-25T08:30:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 0  2026-08-25T08:30:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:30:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-25T08:30:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-25T08:30:16
+          Resource 'RES-PACK-01' is asked: 1  2026-08-25T08:25:16 / 2026-08-25T08:30:16
+          Resource 'RES-PACK-01' answers: 1  2026-08-25T08:30:16
+          Operation 'OP-FG-030-FINAL-QC' is asked: 5  2026-08-25T08:25:16
+            Resource 'RES-FINAL-QC-01' is asked: 1  2026-08-25T08:20:16 / 2026-08-25T08:25:16
+            Resource 'RES-FINAL-QC-01' answers: 1  2026-08-25T08:25:16
+            Operation 'OP-FG-020-AGING' is asked: 5  2026-08-25T08:20:16
+              Resource 'RES-AGING-01' is asked: 1  2026-08-24T08:20:16 / 2026-08-25T08:20:16
+              Resource 'RES-AGING-01' answers: 1  2026-08-25T08:20:16
+              Operation 'OP-FG-010-FINAL-ASSY' is asked: 5  2026-08-24T08:20:16
+                Resource 'RES-FINAL-ASSY-01' is asked: 1  2026-08-24T08:05:16 / 2026-08-24T08:20:16
+                Resource 'RES-FINAL-ASSY-01' answers: 1  2026-08-24T08:20:16
+                Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T08:05:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T08:05:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' tries alternate 'RT-PWR-100' 
+                    Routing operation 'RT-PWR-100' is asked: 5  2026-08-24T08:05:16 using step dependencies
+                      Operation 'OP-PWR-020-TEST' is asked: 5  2026-08-24T08:05:16
+                        Resource 'RES-PWR-TEST-01' is asked: 1  2026-08-21T16:45:16 / 2026-08-24T08:05:16
+                        Resource 'RES-PWR-TEST-01' answers: 1  2026-08-24T08:05:16
+                        Operation 'OP-PWR-010-ASSY' is asked: 5  2026-08-21T16:45:16
+                          Resource 'RES-PWR-ASSY-01' is asked: 1  2026-08-21T16:20:16 / 2026-08-21T16:45:16
+                          Resource 'RES-PWR-ASSY-01' answers: 1  2026-08-21T16:45:16
+                          Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 1.75  2026-08-21T16:35:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 1.75  2026-08-21T16:35:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' tries alternate 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                              Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 1.75  2026-08-21T16:35:16
+                              Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 0  2026-08-21T16:50:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers: 0  2026-08-21T16:50:16
+                          Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers short: 0  2026-08-21T16:50:16
+                        Operation 'OP-PWR-010-ASSY' answers: 0  2026-08-24T08:00:16
+                      Applying lazy delay P1D
+                      Operation 'OP-PWR-020-TEST' answers: 0  2026-08-25T08:05:16
+                    Routing operation 'RT-PWR-100' answers: 0  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' answers: 0  2026-08-25T08:05:16
+                Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' answers short: 0  2026-08-25T08:05:16
+              Operation 'OP-FG-010-FINAL-ASSY' answers: 0  2026-08-25T08:20:16
+            Operation 'OP-FG-020-AGING' answers: 0  2026-08-26T08:20:16
+          Operation 'OP-FG-030-FINAL-QC' answers: 0  2026-08-26T08:25:16
+        Operation 'OP-FG-040-PACK' answers: 0  2026-08-26T08:30:16
+      Routing operation 'RT-FG-CTRL-100' answers: 0  2026-08-26T08:30:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 0  2026-08-26T08:30:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-26T08:30:16
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'RT-FG-CTRL-100' 
+      Routing operation 'RT-FG-CTRL-100' is asked: 5  2026-08-26T08:30:16 using step dependencies
+        Operation 'OP-FG-040-PACK' is asked: 5  2026-08-26T08:30:16
+          Resource 'RES-PACK-01' is asked: 1  2026-08-26T08:25:16 / 2026-08-26T08:30:16
+          Resource 'RES-PACK-01' answers: 1  2026-08-26T08:30:16
+          Operation 'OP-FG-030-FINAL-QC' is asked: 5  2026-08-26T08:25:16
+            Resource 'RES-FINAL-QC-01' is asked: 1  2026-08-26T08:20:16 / 2026-08-26T08:25:16
+            Resource 'RES-FINAL-QC-01' answers: 1  2026-08-26T08:25:16
+            Operation 'OP-FG-020-AGING' is asked: 5  2026-08-26T08:20:16
+              Resource 'RES-AGING-01' is asked: 1  2026-08-25T08:20:16 / 2026-08-26T08:20:16
+              Resource 'RES-AGING-01' answers: 1  2026-08-26T08:20:16
+              Operation 'OP-FG-010-FINAL-ASSY' is asked: 5  2026-08-25T08:20:16
+                Resource 'RES-FINAL-ASSY-01' is asked: 1  2026-08-25T08:05:16 / 2026-08-25T08:20:16
+                Resource 'RES-FINAL-ASSY-01' answers: 1  2026-08-25T08:20:16
+                Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' tries alternate 'RT-PWR-100' 
+                    Routing operation 'RT-PWR-100' is asked: 5  2026-08-25T08:05:16 using step dependencies
+                      Operation 'OP-PWR-020-TEST' is asked: 5  2026-08-25T08:05:16
+                        Resource 'RES-PWR-TEST-01' is asked: 1  2026-08-24T16:45:16 / 2026-08-25T08:05:16
+                        Resource 'RES-PWR-TEST-01' answers: 1  2026-08-25T08:05:16
+                        Operation 'OP-PWR-010-ASSY' is asked: 5  2026-08-24T16:45:16
+                          Resource 'RES-PWR-ASSY-01' is asked: 1  2026-08-24T16:20:16 / 2026-08-24T16:45:16
+                          Resource 'RES-PWR-ASSY-01' answers: 1  2026-08-24T16:45:16
+                          Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 1.75  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 1.75  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' tries alternate 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                              Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 1.75  2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T11:35:16 / 2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T16:35:16
+                                Buffer 'RM-PASSIVE-KIT @ LOC-EM-RM-WH' is asked: 2  2026-08-24T11:35:16
+                                Buffer 'RM-PASSIVE-KIT @ LOC-EM-RM-WH' answers: 2
+                              Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 2
+                            Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers: 1.75
+                          Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers: 1.75
+                          Buffer 'RM-PCB-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY' tries alternate 'Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                              Operation 'Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T11:35:16 / 2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T16:35:16
+                                Buffer 'RM-PCB-PWR-100 @ LOC-EM-RM-WH' is asked: 5  2026-08-24T11:35:16
+                                Buffer 'RM-PCB-PWR-100 @ LOC-EM-RM-WH' answers: 5
+                              Operation 'Ship RM-PCB-PWR-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                            Alternate operation 'Replenish RM-PCB-PWR-100 @ LOC-EM-FACTORY' answers: 5
+                          Buffer 'RM-PCB-PWR-100 @ LOC-EM-FACTORY' answers: 5
+                          Buffer 'RM-TRANSFORMER-24V @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY' tries alternate 'Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                              Operation 'Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T11:35:16 / 2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T16:35:16
+                                Buffer 'RM-TRANSFORMER-24V @ LOC-EM-RM-WH' is asked: 5  2026-08-24T11:35:16
+                                Buffer 'RM-TRANSFORMER-24V @ LOC-EM-RM-WH' answers: 5
+                              Operation 'Ship RM-TRANSFORMER-24V from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                            Alternate operation 'Replenish RM-TRANSFORMER-24V @ LOC-EM-FACTORY' answers: 5
+                          Buffer 'RM-TRANSFORMER-24V @ LOC-EM-FACTORY' answers: 5
+                          Buffer 'RM-PWR-IC @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-PWR-IC @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:35:16
+                            Alternate operation 'Replenish RM-PWR-IC @ LOC-EM-FACTORY' tries alternate 'Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                              Operation 'Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T11:35:16 / 2026-08-24T16:35:16
+                                Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T16:35:16
+                                Buffer 'RM-PWR-IC @ LOC-EM-RM-WH' is asked: 5  2026-08-24T11:35:16
+                                Buffer 'RM-PWR-IC @ LOC-EM-RM-WH' answers: 5
+                              Operation 'Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                            Alternate operation 'Replenish RM-PWR-IC @ LOC-EM-FACTORY' answers: 5
+                          Buffer 'RM-PWR-IC @ LOC-EM-FACTORY' answers: 5
+                        Operation 'OP-PWR-010-ASSY' answers: 5
+                      Operation 'OP-PWR-020-TEST' answers: 5
+                    Routing operation 'RT-PWR-100' answers: 5
+                  Alternate operation 'Replenish SA-PWR-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'PK-LABEL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish PK-LABEL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish PK-LABEL-100 @ LOC-EM-FACTORY' tries alternate 'Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                    Operation 'Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-25T08:05:16
+                      Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T13:05:16 / 2026-08-25T08:05:16
+                      Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-25T08:05:16
+                      Buffer 'PK-LABEL-100 @ LOC-EM-RM-WH' is asked: 5  2026-08-24T13:05:16
+                      Buffer 'PK-LABEL-100 @ LOC-EM-RM-WH' answers: 5
+                    Operation 'Ship PK-LABEL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                  Alternate operation 'Replenish PK-LABEL-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'PK-LABEL-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'SA-PCBA-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-PCBA-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-PCBA-100 @ LOC-EM-FACTORY' tries alternate 'RT-PCBA-100' 
+                    Routing operation 'RT-PCBA-100' is asked: 5  2026-08-25T08:05:16 using step dependencies
+                      Operation 'OP-PCBA-070-FCT' is asked: 5  2026-08-25T08:05:16
+                        Resource 'RES-FCT-01' is asked: 1  2026-08-24T16:55:16 / 2026-08-25T08:05:16
+                        Resource 'RES-FCT-01' answers: 1  2026-08-25T08:05:16
+                        Operation 'OP-PCBA-060-PROGRAM' is asked: 5  2026-08-24T16:55:16
+                          Resource 'RES-PROGRAM-01' is asked: 1  2026-08-24T16:48:11 / 2026-08-24T16:55:16
+                          Resource 'RES-PROGRAM-01' answers: 1  2026-08-24T16:55:16
+                          Operation 'OP-PCBA-050-DIP' is asked: 5  2026-08-24T16:48:11
+                            Resource 'RES-DIP-01' is asked: 1  2026-08-24T16:30:41 / 2026-08-24T16:48:11
+                            Resource 'RES-DIP-01' answers: 1  2026-08-24T16:48:11
+                            Operation 'OP-PCBA-040-AOI' is asked: 5  2026-08-24T16:30:41
+                              Resource 'RES-AOI-01' is asked: 1  2026-08-24T16:25:41 / 2026-08-24T16:30:41
+                              Resource 'RES-AOI-01' answers: 1  2026-08-24T16:30:41
+                              Operation 'OP-PCBA-030-REFLOW' is asked: 5  2026-08-24T16:25:41
+                                Resource 'RES-REFLOW-01' is asked: 1  2026-08-24T15:40:41 / 2026-08-24T16:25:41
+                                Resource 'RES-REFLOW-01' answers: 1  2026-08-24T16:25:41
+                                Operation 'OP-PCBA-020-MOUNT' is asked: 5  2026-08-24T15:40:41
+                                  Resource 'RES-SMT-HS-01' is asked: 1  2026-08-24T15:19:26 / 2026-08-24T15:40:41
+                                  Resource 'RES-SMT-HS-01' answers: 1  2026-08-24T15:40:41
+                                  Operation 'OP-PCBA-010-PRINT' is asked: 5  2026-08-24T15:19:26
+                                    Resource 'RES-PRINT-01' is asked: 1  2026-08-24T15:09:26 / 2026-08-24T15:19:26
+                                    Resource 'RES-PRINT-01' answers: 1  2026-08-24T15:19:26
+                                    Buffer 'RM-SOLDER-PASTE @ LOC-EM-FACTORY' is asked: 0.125  2026-08-24T15:09:26
+                                      Alternate operation 'Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY' is asked: 0.125  2026-08-24T15:09:26
+                                      Alternate operation 'Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY' tries alternate 'Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                        Operation 'Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 0.125  2026-08-24T15:09:26
+                                          Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:09:26 / 2026-08-24T15:09:26
+                                          Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:09:26
+                                          Buffer 'RM-SOLDER-PASTE @ LOC-EM-RM-WH' is asked: 1  2026-08-24T10:09:26
+                                          Buffer 'RM-SOLDER-PASTE @ LOC-EM-RM-WH' answers: 1
+                                        Operation 'Ship RM-SOLDER-PASTE from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 1
+                                      Alternate operation 'Replenish RM-SOLDER-PASTE @ LOC-EM-FACTORY' answers: 0.125
+                                    Buffer 'RM-SOLDER-PASTE @ LOC-EM-FACTORY' answers: 0.125
+                                    Buffer 'RM-PCB-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:09:26
+                                      Alternate operation 'Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:09:26
+                                      Alternate operation 'Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY' tries alternate 'Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                        Operation 'Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T15:09:26
+                                          Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:09:26 / 2026-08-24T15:09:26
+                                          Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:09:26
+                                          Buffer 'RM-PCB-CTRL-100 @ LOC-EM-RM-WH' is asked: 5  2026-08-24T10:09:26
+                                          Buffer 'RM-PCB-CTRL-100 @ LOC-EM-RM-WH' answers: 5
+                                        Operation 'Ship RM-PCB-CTRL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                                      Alternate operation 'Replenish RM-PCB-CTRL-100 @ LOC-EM-FACTORY' answers: 5
+                                    Buffer 'RM-PCB-CTRL-100 @ LOC-EM-FACTORY' answers: 5
+                                  Operation 'OP-PCBA-010-PRINT' answers: 5
+                                  Buffer 'RM-FLASH-16M @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-FLASH-16M @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-FLASH-16M @ LOC-EM-FACTORY' tries alternate 'Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                      Operation 'Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:19:26 / 2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:19:26
+                                        Buffer 'RM-FLASH-16M @ LOC-EM-RM-WH' is asked: 5  2026-08-24T10:19:26
+                                        Buffer 'RM-FLASH-16M @ LOC-EM-RM-WH' answers: 5
+                                      Operation 'Ship RM-FLASH-16M from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                                    Alternate operation 'Replenish RM-FLASH-16M @ LOC-EM-FACTORY' answers: 5
+                                  Buffer 'RM-FLASH-16M @ LOC-EM-FACTORY' answers: 5
+                                  Buffer 'RM-PWR-IC @ LOC-EM-FACTORY' is asked: 10  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-PWR-IC @ LOC-EM-FACTORY' is asked: 10  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-PWR-IC @ LOC-EM-FACTORY' tries alternate 'Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                      Operation 'Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 10  2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:19:26 / 2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:19:26
+                                        Buffer 'RM-PWR-IC @ LOC-EM-RM-WH' is asked: 10  2026-08-24T10:19:26
+                                        Buffer 'RM-PWR-IC @ LOC-EM-RM-WH' answers: 10
+                                      Operation 'Ship RM-PWR-IC from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 10
+                                    Alternate operation 'Replenish RM-PWR-IC @ LOC-EM-FACTORY' answers: 10
+                                  Buffer 'RM-PWR-IC @ LOC-EM-FACTORY' answers: 10
+                                  Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' is asked: 4.75  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' tries alternate 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                      Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 4.75  2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:19:26 / 2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:19:26
+                                        Buffer 'RM-PASSIVE-KIT @ LOC-EM-RM-WH' is asked: 5  2026-08-24T10:19:26
+                                        Buffer 'RM-PASSIVE-KIT @ LOC-EM-RM-WH' answers: 5
+                                      Operation 'Ship RM-PASSIVE-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                                    Alternate operation 'Replenish RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers: 4.75
+                                  Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' answers: 5
+                                  Buffer 'RM-ETH-PHY @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-ETH-PHY @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-ETH-PHY @ LOC-EM-FACTORY' tries alternate 'Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                      Operation 'Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:19:26 / 2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:19:26
+                                        Buffer 'RM-ETH-PHY @ LOC-EM-RM-WH' is asked: 5  2026-08-24T10:19:26
+                                        Buffer 'RM-ETH-PHY @ LOC-EM-RM-WH' answers: 5
+                                      Operation 'Ship RM-ETH-PHY from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                                    Alternate operation 'Replenish RM-ETH-PHY @ LOC-EM-FACTORY' answers: 5
+                                  Buffer 'RM-ETH-PHY @ LOC-EM-FACTORY' answers: 5
+                                  Buffer 'RM-MCU-STM32 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-MCU-STM32 @ LOC-EM-FACTORY' is asked: 5  2026-08-24T15:19:26
+                                    Alternate operation 'Replenish RM-MCU-STM32 @ LOC-EM-FACTORY' tries alternate 'Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                      Operation 'Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T10:19:26 / 2026-08-24T15:19:26
+                                        Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T15:19:26
+                                        Buffer 'RM-MCU-STM32 @ LOC-EM-RM-WH' is asked: 5  2026-08-24T10:19:26
+                                        Buffer 'RM-MCU-STM32 @ LOC-EM-RM-WH' answers: 5
+                                      Operation 'Ship RM-MCU-STM32 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                                    Alternate operation 'Replenish RM-MCU-STM32 @ LOC-EM-FACTORY' answers: 5
+                                  Buffer 'RM-MCU-STM32 @ LOC-EM-FACTORY' answers: 5
+                                Operation 'OP-PCBA-020-MOUNT' answers: 5
+                              Operation 'OP-PCBA-030-REFLOW' answers: 5
+                            Operation 'OP-PCBA-040-AOI' answers: 5
+                            Buffer 'RM-CONNECTOR-KIT @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:30:41
+                              Alternate operation 'Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY' is asked: 5  2026-08-24T16:30:41
+                              Alternate operation 'Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY' tries alternate 'Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                                Operation 'Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-24T16:30:41
+                                  Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T11:30:41 / 2026-08-24T16:30:41
+                                  Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-24T16:30:41
+                                  Buffer 'RM-CONNECTOR-KIT @ LOC-EM-RM-WH' is asked: 5  2026-08-24T11:30:41
+                                  Buffer 'RM-CONNECTOR-KIT @ LOC-EM-RM-WH' answers: 5
+                                Operation 'Ship RM-CONNECTOR-KIT from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                              Alternate operation 'Replenish RM-CONNECTOR-KIT @ LOC-EM-FACTORY' answers: 5
+                            Buffer 'RM-CONNECTOR-KIT @ LOC-EM-FACTORY' answers: 5
+                          Operation 'OP-PCBA-050-DIP' answers: 5
+                        Operation 'OP-PCBA-060-PROGRAM' answers: 5
+                      Operation 'OP-PCBA-070-FCT' answers: 5
+                    Routing operation 'RT-PCBA-100' answers: 5
+                  Alternate operation 'Replenish SA-PCBA-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'SA-PCBA-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'RM-SCREW-M3 @ LOC-EM-FACTORY' is asked: 20  2026-08-25T08:05:16
+                  Alternate operation 'Replenish RM-SCREW-M3 @ LOC-EM-FACTORY' is asked: 20  2026-08-25T08:05:16
+                  Alternate operation 'Replenish RM-SCREW-M3 @ LOC-EM-FACTORY' tries alternate 'Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                    Operation 'Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 20  2026-08-25T08:05:16
+                      Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T13:05:16 / 2026-08-25T08:05:16
+                      Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-25T08:05:16
+                      Buffer 'RM-SCREW-M3 @ LOC-EM-RM-WH' is asked: 20  2026-08-24T13:05:16
+                      Buffer 'RM-SCREW-M3 @ LOC-EM-RM-WH' answers: 20
+                    Operation 'Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 20
+                  Alternate operation 'Replenish RM-SCREW-M3 @ LOC-EM-FACTORY' answers: 20
+                Buffer 'RM-SCREW-M3 @ LOC-EM-FACTORY' answers: 20
+                Buffer 'SA-CASE-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-CASE-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:05:16
+                  Alternate operation 'Replenish SA-CASE-100 @ LOC-EM-FACTORY' tries alternate 'RT-CASE-100' 
+                    Routing operation 'RT-CASE-100' is asked: 5  2026-08-25T08:05:16
+                      Operation 'OP-CASE-010-ASSY' is asked: 5  2026-08-25T08:05:16
+                        Resource 'RES-CASE-01' is asked: 1  2026-08-24T16:45:16 / 2026-08-25T08:05:16
+                        Resource 'RES-CASE-01' answers: 1  2026-08-25T08:05:16
+                        Buffer 'RM-CASE-BOTTOM @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY' tries alternate 'Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                            Operation 'Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T13:00:16 / 2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-25T08:00:16
+                              Buffer 'RM-CASE-BOTTOM @ LOC-EM-RM-WH' is asked: 5  2026-08-24T13:00:16
+                              Buffer 'RM-CASE-BOTTOM @ LOC-EM-RM-WH' answers: 5
+                            Operation 'Ship RM-CASE-BOTTOM from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                          Alternate operation 'Replenish RM-CASE-BOTTOM @ LOC-EM-FACTORY' answers: 5
+                        Buffer 'RM-CASE-BOTTOM @ LOC-EM-FACTORY' answers: 5
+                        Buffer 'RM-HEATSINK @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-HEATSINK @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-HEATSINK @ LOC-EM-FACTORY' tries alternate 'Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                            Operation 'Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T13:00:16 / 2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-25T08:00:16
+                              Buffer 'RM-HEATSINK @ LOC-EM-RM-WH' is asked: 5  2026-08-24T13:00:16
+                              Buffer 'RM-HEATSINK @ LOC-EM-RM-WH' answers: 5
+                            Operation 'Ship RM-HEATSINK from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                          Alternate operation 'Replenish RM-HEATSINK @ LOC-EM-FACTORY' answers: 5
+                        Buffer 'RM-HEATSINK @ LOC-EM-FACTORY' answers: 5
+                        Buffer 'RM-CASE-TOP @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-CASE-TOP @ LOC-EM-FACTORY' is asked: 5  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-CASE-TOP @ LOC-EM-FACTORY' tries alternate 'Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                            Operation 'Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T13:00:16 / 2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-25T08:00:16
+                              Buffer 'RM-CASE-TOP @ LOC-EM-RM-WH' is asked: 5  2026-08-24T13:00:16
+                              Buffer 'RM-CASE-TOP @ LOC-EM-RM-WH' answers: 5
+                            Operation 'Ship RM-CASE-TOP from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+                          Alternate operation 'Replenish RM-CASE-TOP @ LOC-EM-FACTORY' answers: 5
+                        Buffer 'RM-CASE-TOP @ LOC-EM-FACTORY' answers: 5
+                        Buffer 'RM-SCREW-M3 @ LOC-EM-FACTORY' is asked: 20  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-SCREW-M3 @ LOC-EM-FACTORY' is asked: 20  2026-08-25T08:00:16
+                          Alternate operation 'Replenish RM-SCREW-M3 @ LOC-EM-FACTORY' tries alternate 'Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+                            Operation 'Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 20  2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-24T13:00:16 / 2026-08-25T08:00:16
+                              Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-25T08:00:16
+                              Buffer 'RM-SCREW-M3 @ LOC-EM-RM-WH' is asked: 20  2026-08-24T13:00:16
+                              Buffer 'RM-SCREW-M3 @ LOC-EM-RM-WH' answers: 20
+                            Operation 'Ship RM-SCREW-M3 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 20
+                          Alternate operation 'Replenish RM-SCREW-M3 @ LOC-EM-FACTORY' answers: 20
+                        Buffer 'RM-SCREW-M3 @ LOC-EM-FACTORY' answers: 20
+                      Operation 'OP-CASE-010-ASSY' answers: 5
+                    Routing operation 'RT-CASE-100' answers: 5
+                  Alternate operation 'Replenish SA-CASE-100 @ LOC-EM-FACTORY' answers: 5
+                Buffer 'SA-CASE-100 @ LOC-EM-FACTORY' answers: 5
+              Operation 'OP-FG-010-FINAL-ASSY' answers: 5
+            Operation 'OP-FG-020-AGING' answers: 5
+          Operation 'OP-FG-030-FINAL-QC' answers: 5
+          Buffer 'PK-MANUAL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-26T08:25:16
+            Alternate operation 'Replenish PK-MANUAL-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-26T08:25:16
+            Alternate operation 'Replenish PK-MANUAL-100 @ LOC-EM-FACTORY' tries alternate 'Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+              Operation 'Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-26T08:25:16
+                Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-25T13:25:16 / 2026-08-26T08:25:16
+                Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-26T08:25:16
+                Buffer 'PK-MANUAL-100 @ LOC-EM-RM-WH' is asked: 5  2026-08-25T13:25:16
+                Buffer 'PK-MANUAL-100 @ LOC-EM-RM-WH' answers: 5
+              Operation 'Ship PK-MANUAL-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+            Alternate operation 'Replenish PK-MANUAL-100 @ LOC-EM-FACTORY' answers: 5
+          Buffer 'PK-MANUAL-100 @ LOC-EM-FACTORY' answers: 5
+          Buffer 'PK-BOX-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-26T08:25:16
+            Alternate operation 'Replenish PK-BOX-100 @ LOC-EM-FACTORY' is asked: 5  2026-08-26T08:25:16
+            Alternate operation 'Replenish PK-BOX-100 @ LOC-EM-FACTORY' tries alternate 'Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' 
+              Operation 'Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' is asked: 5  2026-08-26T08:25:16
+                Resource 'RES-LOGISTICS-01' is asked: 0.05  2026-08-25T13:25:16 / 2026-08-26T08:25:16
+                Resource 'RES-LOGISTICS-01' answers: 0.05  2026-08-26T08:25:16
+                Buffer 'PK-BOX-100 @ LOC-EM-RM-WH' is asked: 5  2026-08-25T13:25:16
+                Buffer 'PK-BOX-100 @ LOC-EM-RM-WH' answers: 5
+              Operation 'Ship PK-BOX-100 from LOC-EM-RM-WH to LOC-EM-FACTORY valid from 2026-01-01T00:00:00' answers: 5
+            Alternate operation 'Replenish PK-BOX-100 @ LOC-EM-FACTORY' answers: 5
+          Buffer 'PK-BOX-100 @ LOC-EM-FACTORY' answers: 5
+        Operation 'OP-FG-040-PACK' answers: 5
+      Routing operation 'RT-FG-CTRL-100' answers: 5
+    Alternate operation 'Replenish FG-CTRL-100 @ LOC-EM-FACTORY' answers: 5
+  Buffer 'FG-CTRL-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'FG-CTRL-100 @ LOC-EM-FG-WH' solves for safety stock
+  Buffer 'FG-CTRL-100 @ LOC-EM-FG-WH' solved for safety stock
+  Buffer 'SA-CASE-100 @ LOC-EM-FG-WH' solves for safety stock
+  Buffer 'SA-CASE-100 @ LOC-EM-FG-WH' solved for safety stock
+  Buffer 'SA-PCBA-100 @ LOC-EM-FG-WH' solves for safety stock
+  Buffer 'SA-PCBA-100 @ LOC-EM-FG-WH' solved for safety stock
+  Buffer 'SA-PWR-100 @ LOC-EM-FG-WH' solves for safety stock
+  Buffer 'SA-PWR-100 @ LOC-EM-FG-WH' solved for safety stock
+  Buffer 'PK-LABEL-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'PK-LABEL-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'SA-CASE-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'SA-CASE-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'SA-PCBA-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'SA-PCBA-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'SA-PWR-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'PK-LABEL-100 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'PK-LABEL-100 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-CASE-BOTTOM @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-CASE-BOTTOM @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-CASE-TOP @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-CASE-TOP @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-HEATSINK @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-HEATSINK @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-PCB-PWR-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-PCB-PWR-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-SCREW-M3 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-SCREW-M3 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-TRANSFORMER-24V @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-TRANSFORMER-24V @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-CASE-BOTTOM @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-CASE-BOTTOM @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-CASE-TOP @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-CASE-TOP @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-HEATSINK @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-HEATSINK @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-PCB-PWR-100 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-PCB-PWR-100 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-SCREW-M3 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-SCREW-M3 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-TRANSFORMER-24V @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-TRANSFORMER-24V @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'PK-BOX-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'PK-BOX-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'PK-MANUAL-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'PK-MANUAL-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'PK-BOX-100 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'PK-BOX-100 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'PK-MANUAL-100 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'PK-MANUAL-100 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-ETH-PHY @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-ETH-PHY @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-FLASH-16M @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-FLASH-16M @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-MCU-STM32 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-MCU-STM32 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-PASSIVE-KIT @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-PWR-IC @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-PWR-IC @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-CONNECTOR-KIT @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-CONNECTOR-KIT @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-FLASH-16M @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-FLASH-16M @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-MCU-STM32 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-MCU-STM32 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-PASSIVE-KIT @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-PASSIVE-KIT @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-PCB-CTRL-100 @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-PCB-CTRL-100 @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-PWR-IC @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-PWR-IC @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-SOLDER-PASTE @ LOC-EM-FACTORY' solves for safety stock
+  Buffer 'RM-SOLDER-PASTE @ LOC-EM-FACTORY' solved for safety stock
+  Buffer 'RM-CONNECTOR-KIT @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-CONNECTOR-KIT @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-PCB-CTRL-100 @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-PCB-CTRL-100 @ LOC-EM-RM-WH' solved for safety stock
+  Buffer 'RM-SOLDER-PASTE @ LOC-EM-RM-WH' solves for safety stock
+  Buffer 'RM-SOLDER-PASTE @ LOC-EM-RM-WH' solved for safety stock
+Finished safety stock replenishment pass
+Start safety stock replenishment pass for cluster 1
+Finished safety stock replenishment pass
+Start scanning excess in cluster 1
+Scanning buffer FG-CTRL-100 @ LOC-EM-FACTORY
+Scanning buffer FG-CTRL-100 @ LOC-EM-FG-WH
+Scanning buffer SA-CASE-100 @ LOC-EM-FG-WH
+Scanning buffer SA-PCBA-100 @ LOC-EM-FG-WH
+Scanning buffer SA-PWR-100 @ LOC-EM-FG-WH
+Scanning buffer PK-LABEL-100 @ LOC-EM-FACTORY
+Scanning buffer SA-CASE-100 @ LOC-EM-FACTORY
+Scanning buffer SA-PCBA-100 @ LOC-EM-FACTORY
+Scanning buffer SA-PWR-100 @ LOC-EM-FACTORY
+Scanning buffer PK-LABEL-100 @ LOC-EM-RM-WH
+Scanning buffer RM-CASE-BOTTOM @ LOC-EM-FACTORY
+Scanning buffer RM-CASE-TOP @ LOC-EM-FACTORY
+Scanning buffer RM-HEATSINK @ LOC-EM-FACTORY
+Scanning buffer RM-PCB-PWR-100 @ LOC-EM-FACTORY
+Scanning buffer RM-SCREW-M3 @ LOC-EM-FACTORY
+Scanning buffer RM-TRANSFORMER-24V @ LOC-EM-FACTORY
+Scanning buffer RM-CASE-BOTTOM @ LOC-EM-RM-WH
+Scanning buffer RM-CASE-TOP @ LOC-EM-RM-WH
+Scanning buffer RM-HEATSINK @ LOC-EM-RM-WH
+Scanning buffer RM-PCB-PWR-100 @ LOC-EM-RM-WH
+Scanning buffer RM-SCREW-M3 @ LOC-EM-RM-WH
+Scanning buffer RM-TRANSFORMER-24V @ LOC-EM-RM-WH
+Scanning buffer PK-BOX-100 @ LOC-EM-FACTORY
+Scanning buffer PK-MANUAL-100 @ LOC-EM-FACTORY
+Scanning buffer PK-BOX-100 @ LOC-EM-RM-WH
+Scanning buffer PK-MANUAL-100 @ LOC-EM-RM-WH
+Scanning buffer RM-ETH-PHY @ LOC-EM-FACTORY
+Scanning buffer RM-FLASH-16M @ LOC-EM-FACTORY
+Scanning buffer RM-MCU-STM32 @ LOC-EM-FACTORY
+Scanning buffer RM-PASSIVE-KIT @ LOC-EM-FACTORY
+Scanning buffer RM-PWR-IC @ LOC-EM-FACTORY
+Scanning buffer RM-CONNECTOR-KIT @ LOC-EM-FACTORY
+Scanning buffer RM-FLASH-16M @ LOC-EM-RM-WH
+Scanning buffer RM-MCU-STM32 @ LOC-EM-RM-WH
+Scanning buffer RM-PASSIVE-KIT @ LOC-EM-RM-WH
+Scanning buffer RM-PCB-CTRL-100 @ LOC-EM-FACTORY
+Scanning buffer RM-PWR-IC @ LOC-EM-RM-WH
+Scanning buffer RM-SOLDER-PASTE @ LOC-EM-FACTORY
+Scanning buffer RM-CONNECTOR-KIT @ LOC-EM-RM-WH
+Scanning buffer RM-PCB-CTRL-100 @ LOC-EM-RM-WH
+Scanning buffer RM-SOLDER-PASTE @ LOC-EM-RM-WH
+Finished excess scan
+End solving cluster 1
+Start solving cluster 0
+Start safety stock replenishment pass for cluster 0
+Finished safety stock replenishment pass
+Planning demand 'SO-CODEX-20260821-001-10': 1, 2026-08-25T08:00:00, 6
+  Demand 'SO-CODEX-20260821-001-10' asks: 6  2026-08-25T08:00:00
+    Operation 'undefined' is asked: 6  2026-08-25T08:00:00
+    Operation 'undefined' answers: 6
+  Demand 'SO-CODEX-20260821-001-10' gets answer: 6  0  0
+Planning demand 'SO-CODEX-20260821-002-10': 2, 2026-08-26T08:00:00, 8
+  Demand 'SO-CODEX-20260821-002-10' asks: 8  2026-08-26T08:00:00
+    Operation 'undefined' is asked: 8  2026-08-26T08:00:00
+    Operation 'undefined' answers: 8
+  Demand 'SO-CODEX-20260821-002-10' gets answer: 8  0  6
+Planning demand 'SO-CODEX-20260821-003-10': 3, 2026-08-27T08:00:00, 10
+  Demand 'SO-CODEX-20260821-003-10' asks: 10  2026-08-27T08:00:00
+    Operation 'undefined' is asked: 10  2026-08-27T08:00:00
+    Operation 'undefined' answers: 10
+  Demand 'SO-CODEX-20260821-003-10' gets answer: 10  0  14
+Planning demand 'SO-CODEX-20260821-004-10': 4, 2026-08-28T08:00:00, 7
+  Demand 'SO-CODEX-20260821-004-10' asks: 7  2026-08-28T08:00:00
+    Operation 'undefined' is asked: 7  2026-08-28T08:00:00
+    Operation 'undefined' answers: 7
+  Demand 'SO-CODEX-20260821-004-10' gets answer: 7  0  24
+Planning demand 'SO-CODEX-20260821-005-10': 5, 2026-08-29T08:00:00, 9
+  Demand 'SO-CODEX-20260821-005-10' asks: 9  2026-08-29T08:00:00
+    Operation 'undefined' is asked: 9  2026-08-29T08:00:00
+    Operation 'undefined' answers: 9
+  Demand 'SO-CODEX-20260821-005-10' gets answer: 9  0  31
+Planning demand 'SO-CODEX-20260821-006-10': 6, 2026-08-30T08:00:00, 5
+  Demand 'SO-CODEX-20260821-006-10' asks: 5  2026-08-30T08:00:00
+    Operation 'undefined' is asked: 5  2026-08-30T08:00:00
+    Operation 'undefined' answers: 5
+  Demand 'SO-CODEX-20260821-006-10' gets answer: 5  0  40
+Planning demand 'SO-CODEX-20260821-007-10': 7, 2026-08-31T08:00:00, 12
+  Demand 'SO-CODEX-20260821-007-10' asks: 12  2026-08-31T08:00:00
+    Operation 'undefined' is asked: 12  2026-08-31T08:00:00
+    Operation 'undefined' answers: 12
+  Demand 'SO-CODEX-20260821-007-10' gets answer: 12  0  45
+Planning demand 'SO-CODEX-20260821-008-10': 8, 2026-09-01T08:00:00, 6
+  Demand 'SO-CODEX-20260821-008-10' asks: 6  2026-09-01T08:00:00
+    Operation 'undefined' is asked: 6  2026-09-01T08:00:00
+    Operation 'undefined' answers: 6
+  Demand 'SO-CODEX-20260821-008-10' gets answer: 6  0  57
+Planning demand 'SO-CODEX-20260821-009-10': 9, 2026-09-02T08:00:00, 8
+  Demand 'SO-CODEX-20260821-009-10' asks: 8  2026-09-02T08:00:00
+    Operation 'undefined' is asked: 8  2026-09-02T08:00:00
+    Operation 'undefined' answers: 8
+  Demand 'SO-CODEX-20260821-009-10' gets answer: 8  0  63
+Planning demand 'SO-CODEX-20260821-010-10': 10, 2026-09-03T08:00:00, 10
+  Demand 'SO-CODEX-20260821-010-10' asks: 10  2026-09-03T08:00:00
+    Operation 'undefined' is asked: 10  2026-09-03T08:00:00
+    Operation 'undefined' answers: 10
+  Demand 'SO-CODEX-20260821-010-10' gets answer: 10  0  71
+Start safety stock replenishment pass for cluster 0
+Finished safety stock replenishment pass
+Start scanning excess in cluster 0
+Finished excess scan
+End solving cluster 0

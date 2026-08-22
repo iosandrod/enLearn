@@ -7,7 +7,7 @@ begin;
 with desired_context as (
   select '{
     "dataSourceKeys": ["runtimeCapabilities", "summary", "versionOptions"],
-    "formBlockIds": ["planning_console_filter"],
+    "formBlockIds": ["planning_console_filter", "planning_console_result_filter"],
     "searchSourceKeys": [],
     "gridBlockIds": ["planning_console_runs_grid"]
   }'::jsonb as value

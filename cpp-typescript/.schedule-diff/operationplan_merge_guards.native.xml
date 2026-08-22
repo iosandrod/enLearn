@@ -34,6 +34,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>50</size_maximum>
@@ -57,12 +60,18 @@
       
       
       
+      
+      
+      
     </operation>
     <operation name="make resource guard product" xsi:type="operation_fixed_time">
       
       <location name="merge guard plant" />
       
       <duration>PT4H</duration>
+      
+      
+      
       
       
       
@@ -79,6 +88,9 @@
       <location name="merge guard plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

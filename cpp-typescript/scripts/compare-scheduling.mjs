@@ -3,14 +3,14 @@ import { spawnSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import pg from "pg";
 import { buildComplexScenarios } from "./complex-scenarios.mjs";
 
-const { Client } = pg;
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const projectDirectory = resolve(scriptDirectory, "..");
 const workspaceDirectory = resolve(projectDirectory, "..");
 const outputDirectory = resolve(projectDirectory, ".schedule-diff");
+const nativeBinDirectory = process.env.FREPPLE_NATIVE_BIN
+  ?? resolve(workspaceDirectory, "../frepple-master/bin");
 const databaseUrl = process.env.FREPPLE_TEST_DATABASE
   ?? "postgresql://postgres:123456@127.0.0.1:5432/frepple";
 const dockerImage = process.env.FREPPLE_NATIVE_IMAGE ?? "frepple-source-runtime:9.18-dev";
@@ -394,6 +394,8 @@ function durationXml(seconds) {
 }
 
 async function prepareDatabase() {
+  const { default: pg } = await import("pg");
+  const { Client } = pg;
   const client = new Client({ connectionString: databaseUrl });
   await client.connect();
   try {
@@ -465,6 +467,10 @@ function nativeExporter(containerResultPath, model) {
   ]));
   return `import datetime, frepple, json\n`
     + `frepple.solver_mrp(**${"{solver_json}"}).solve()\n`
+    + (process.env.FREPPLE_NATIVE_CLUSTER_DEBUG === "1"
+      ? `print("[native-clusters]", [(d.name, d.cluster, getattr(d, "operation", None) and d.operation.name, getattr(getattr(d, "operation", None), "cluster", None)) for d in frepple.demands()])\n`
+        + `print("[native-operations]", [(o.name, o.cluster, o.level) for o in frepple.operations()])\n`
+      : "")
     + `def stamp(value):\n`
     + `    return value.strftime("%Y-%m-%dT%H:%M:%S")\n`
     + `def name(value):\n`
@@ -572,7 +578,7 @@ function nativeExporter(containerResultPath, model) {
     + `    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)\n`;
 }
 
-function generateNativeXml(model, exporterContainerPath) {
+export function generateNativeXml(model, exporterContainerPath) {
   const calendarXml = (model.calendars ?? []).map((calendar) => `
     <calendar name="${xmlEscape(calendar.name)}">
       <default>${calendar.default ?? 0}</default>
@@ -632,13 +638,40 @@ function generateNativeXml(model, exporterContainerPath) {
         </itemdistribution>`).join("")}</itemdistributions>` : ""}
     </item>`;
   }).join("");
-  const operationXml = model.operations.map((operation) => {
+  // frePPLe creates a typed placeholder when a suboperation reference is
+  // encountered before its definition. Emit leaf operations first so a
+  // routing/alternate reference resolves to the existing typed operation
+  // instead of silently becoming operation_fixed_time.
+  const operationsByName = new Map(model.operations.map((operation) => [operation.name, operation]));
+  const dependenciesByOperation = new Map();
+  for (const dependency of model.dependencies ?? []) {
+    const dependencies = dependenciesByOperation.get(dependency.operation) ?? [];
+    dependencies.push(dependency);
+    dependenciesByOperation.set(dependency.operation, dependencies);
+  }
+  const orderedOperations = [];
+  const visitedOperations = new Set();
+  const visitingOperations = new Set();
+  const appendOperation = (name) => {
+    if (visitedOperations.has(name) || visitingOperations.has(name)) return;
+    const operation = operationsByName.get(name);
+    if (!operation) return;
+    visitingOperations.add(name);
+    for (const child of operation.suboperations ?? []) appendOperation(child.operation);
+    for (const dependency of dependenciesByOperation.get(name) ?? []) appendOperation(dependency.blockedBy);
+    visitingOperations.delete(name);
+    visitedOperations.add(name);
+    orderedOperations.push(operation);
+  };
+  for (const operation of model.operations) appendOperation(operation.name);
+
+  const operationXml = orderedOperations.map((operation) => {
     const operationType = operation.type === "routing" ? "operation_routing"
       : operation.type === "alternate" ? "operation_alternate"
         : operation.type === "split" ? "operation_split"
           : operation.type === "time_per" ? "operation_time_per" : "operation_fixed_time";
     const duration = operation.type === "fixed_time" || operation.type === "time_per"
-      ? `<duration>${durationXml(operation.duration)}</duration>` : "";
+      ? `<duration>${durationXml(operation.duration ?? 0)}</duration>` : "";
     const suboperations = operation.suboperations?.length ? `
       <suboperations>${operation.suboperations.map((suboperation) => `
         <suboperation>
@@ -667,6 +700,9 @@ function generateNativeXml(model, exporterContainerPath) {
       ${duration}
       ${operation.posttime !== undefined ? `<posttime>${durationXml(operation.posttime)}</posttime>` : ""}
       ${operation.hardPosttime !== undefined ? `<hard_posttime>${operation.hardPosttime ? "true" : "false"}</hard_posttime>` : ""}
+      ${operation.priority !== undefined ? `<priority>${operation.priority}</priority>` : ""}
+      ${operation.effectiveStart ? `<effective_start>${operation.effectiveStart}</effective_start>` : ""}
+      ${operation.effectiveEnd ? `<effective_end>${operation.effectiveEnd}</effective_end>` : ""}
       ${operation.batchWindow !== undefined ? `<batchwindow>${durationXml(operation.batchWindow)}</batchwindow>` : ""}
       ${operation.sizeMinimum !== undefined ? `<size_minimum>${operation.sizeMinimum}</size_minimum>` : ""}
       ${operation.sizeMultiple !== undefined ? `<size_multiple>${operation.sizeMultiple}</size_multiple>` : ""}
@@ -700,7 +736,7 @@ function generateNativeXml(model, exporterContainerPath) {
     <resource name="${xmlEscape(resource.name)}"${resource.type === "buckets" ? " xsi:type=\"resource_buckets\"" : ""}>
       ${resource.owner ? `<owner name="${xmlEscape(resource.owner)}" />` : ""}
       <maximum>${resource.maximum}</maximum>
-      <maxearly>${durationXml(resource.maxearly)}</maxearly>
+      <maxearly>${durationXml(resource.maxearly ?? 0)}</maxearly>
       ${resource.cost !== undefined ? `<cost>${resource.cost}</cost>` : ""}
       ${resource.location ? `<location name="${xmlEscape(resource.location)}" />` : ""}
       ${resource.available ? `<available name="${xmlEscape(resource.available)}" />` : ""}
@@ -710,7 +746,7 @@ function generateNativeXml(model, exporterContainerPath) {
       ${resource.setup !== undefined ? `<setup>${xmlEscape(resource.setup)}</setup>` : ""}
     </resource>`).join("");
   const loadXml = model.loads.map((load) => `
-    <load${load.type ? ` xsi:type="load_${load.type}"` : ""}>
+    <load${load.type && load.type !== "default" ? ` xsi:type="load_${load.type}"` : ""}>
       <operation name="${xmlEscape(load.operation)}" />
       <resource name="${xmlEscape(load.resource)}" />
       <quantity>${load.quantity}</quantity>
@@ -740,10 +776,13 @@ function generateNativeXml(model, exporterContainerPath) {
       ${flow.priority !== undefined ? `<priority>${flow.priority}</priority>` : ""}
       ${flow.transferBatch !== undefined ? `<transferbatch>${flow.transferBatch}</transferbatch>` : ""}
     </flow>`).join("");
+  const demandOperationXml = (demand) => demand.operation !== undefined && demand.operation !== null && demand.operation !== ""
+    ? `<operation name="${xmlEscape(demand.operation)}" />`
+    : "";
   const standaloneDemandXml = model.demands.filter((demand) => !demand.group).map((demand) => `
     <demand name="${xmlEscape(demand.name)}">
       <quantity>${demand.quantity}</quantity><due>${demand.due}</due><priority>${demand.priority}</priority>
-      <item name="${xmlEscape(demand.item)}" /><operation name="${xmlEscape(demand.operation)}" />
+      <item name="${xmlEscape(demand.item)}" />${demandOperationXml(demand)}
       ${demand.location ? `<location name="${xmlEscape(demand.location)}" />` : ""}
       ${demand.status !== undefined ? `<status>${xmlEscape(demand.status)}</status>` : ""}
       ${demand.maxLateness !== undefined ? `<maxlateness>${durationXml(demand.maxLateness)}</maxlateness>` : ""}
@@ -756,7 +795,7 @@ function generateNativeXml(model, exporterContainerPath) {
       <members>${model.demands.filter((demand) => demand.group === group.name).map((demand) => `
         <demand name="${xmlEscape(demand.name)}">
           <quantity>${demand.quantity}</quantity><due>${demand.due}</due><priority>${demand.priority}</priority>
-          <item name="${xmlEscape(demand.item)}" /><operation name="${xmlEscape(demand.operation)}" />
+          <item name="${xmlEscape(demand.item)}" />${demandOperationXml(demand)}
           ${demand.location ? `<location name="${xmlEscape(demand.location)}" />` : ""}
           ${demand.status !== undefined ? `<status>${xmlEscape(demand.status)}</status>` : ""}
           ${demand.maxLateness !== undefined ? `<maxlateness>${durationXml(demand.maxLateness)}</maxlateness>` : ""}
@@ -870,7 +909,7 @@ ${nativeModelFixups}${exporter}?>
 `;
 }
 
-async function runNative(model, name) {
+export async function runNative(model, name) {
   const inputPath = resolve(outputDirectory, `${name}.native.xml`);
   const resultPath = resolve(outputDirectory, `${name}.native.json`);
   const workspaceInputPath = inputPath.slice(workspaceDirectory.length).replaceAll("\\", "/");
@@ -880,9 +919,11 @@ async function runNative(model, name) {
   await writeFile(inputPath, generateNativeXml(model, containerResultPath), "utf8");
   const nativeRun = run("docker", [
     "run", "--rm", "--add-host", "host.docker.internal:host-gateway",
-    "-v", `${workspaceDirectory}:/workspace`, "-w", "/workspace",
-    "-e", "LD_LIBRARY_PATH=/workspace/bin", "-e", "FREPPLE_HOME=/workspace/bin", "-e", "TZ=EST",
-    "--entrypoint", "/workspace/bin/frepple", dockerImage, "-validate", containerInputPath,
+    "-v", `${workspaceDirectory}:/workspace`,
+    "-v", `${nativeBinDirectory}:/native-bin:ro`,
+    "-w", "/workspace",
+    "-e", "LD_LIBRARY_PATH=/native-bin", "-e", "FREPPLE_HOME=/native-bin", "-e", "TZ=EST",
+    "--entrypoint", "/native-bin/frepple", dockerImage, "-validate", containerInputPath,
   ]);
   if (process.env.FREPPLE_NATIVE_TRACE === "1") {
     if (nativeRun.stdout) process.stderr.write(nativeRun.stdout);
@@ -953,16 +994,19 @@ async function recordResults(client, name, nativeResult, typescriptResult, diffe
   }
 }
 
-async function typescriptWorker(modelPath, resultPath) {
-  const model = JSON.parse(await readFile(modelPath, "utf8"));
+export async function typescriptWorker(modelPath, resultPath, outputMode = "comparison") {
+  const model = normalizePlanningDates(JSON.parse(await readFile(modelPath, "utf8")));
   // Buffer is the stable root of the model's circular ESM graph. Loading it first
   // prevents operation -> operationplan -> flowplan -> buffer -> itemdistribution
   // from evaluating OperationItemDistribution before OperationFixedTime exists.
   const bufferModule = await import("../dist/model/buffer.js");
   const [
     { Date: PlanningDate }, { Plan }, { CalendarDefault, CalendarBucket }, { ItemMTS, ItemMTO }, { LocationDefault }, { SupplierDefault },
-    { ItemSupplier }, { ItemDistribution },
-    { OperationFixedTime, OperationTimePer, OperationRouting, OperationAlternate, OperationSplit }, { SubOperation },
+    { ItemSupplier, OperationItemSupplier }, { ItemDistribution, OperationItemDistribution },
+    {
+      Operation, OperationFixedTime, OperationTimePer, OperationRouting, OperationAlternate,
+      OperationSplit, OperationDelivery, OperationInventory,
+    }, { SubOperation },
     { BufferDefault }, { ResourceDefault, ResourceBuckets }, { SkillDefault }, { ResourceSkillDefault },
     { SetupMatrixDefault, SetupMatrixRuleDefault },
     { LoadDefault, LoadBucketizedPercentage, LoadBucketizedFromStart, LoadBucketizedFromEnd }, { FlowStart, FlowEnd, FlowTransferBatch },
@@ -1037,6 +1081,10 @@ async function typescriptWorker(modelPath, resultPath) {
     if (fields.item) operation.setItem(items.get(fields.item) ?? null);
     if (fields.location) operation.setLocation(locations.get(fields.location) ?? null);
     if (fields.available) operation.setAvailable(calendars.get(fields.available) ?? null);
+    if (fields.priority !== undefined) operation.setPriority(fields.priority);
+    if (fields.effectiveStart !== undefined) operation.setEffectiveStart(fields.effectiveStart);
+    if (fields.effectiveEnd !== undefined) operation.setEffectiveEnd(fields.effectiveEnd);
+    if (fields.fence !== undefined) operation.setFence(fields.fence);
     if (fields.search) operation.setSearch(fields.search);
     if (fields.posttime !== undefined) operation.setPostTime(fields.posttime);
     if (operation instanceof OperationRouting && fields.hardPosttime !== undefined) {
@@ -1044,6 +1092,7 @@ async function typescriptWorker(modelPath, resultPath) {
     }
     if (fields.batchWindow !== undefined) operation.setBatchWindow(fields.batchWindow);
     if (fields.sizeMinimum !== undefined) operation.setSizeMinimum(fields.sizeMinimum);
+    if (fields.sizeMinimumCalendar) operation.setSizeMinimumCalendar(calendars.get(fields.sizeMinimumCalendar) ?? null);
     if (fields.sizeMultiple !== undefined) operation.setSizeMultiple(fields.sizeMultiple);
     if (fields.sizeMaximum !== undefined) operation.setSizeMaximum(fields.sizeMaximum);
     if (fields.cost !== undefined) operation.setCost(fields.cost);
@@ -1108,6 +1157,15 @@ async function typescriptWorker(modelPath, resultPath) {
   for (const fields of model.resources) {
     if (fields.owner) resources.get(fields.name)?.setOwner(resources.get(fields.owner) ?? null);
   }
+  const applyEffective = (entity, fields) => {
+    if (!entity || !fields) return;
+    if (fields.effectiveStart !== undefined && typeof entity.setEffectiveStart === "function") {
+      entity.setEffectiveStart(fields.effectiveStart);
+    }
+    if (fields.effectiveEnd !== undefined && typeof entity.setEffectiveEnd === "function") {
+      entity.setEffectiveEnd(fields.effectiveEnd);
+    }
+  };
   for (const fields of model.itemSuppliers ?? []) {
     const association = new ItemSupplier(
       suppliers.get(fields.supplier) ?? null,
@@ -1123,9 +1181,10 @@ async function typescriptWorker(modelPath, resultPath) {
     if (fields.sizeMinimum !== undefined) association.setSizeMinimum(fields.sizeMinimum);
     if (fields.sizeMultiple !== undefined) association.setSizeMultiple(fields.sizeMultiple);
     if (fields.sizeMaximum !== undefined) association.setSizeMaximum(fields.sizeMaximum);
+    if (fields.batchWindow !== undefined) association.setBatchWindow(fields.batchWindow);
+    if (fields.fence !== undefined) association.setFence(fields.fence);
     if (fields.cost !== undefined) association.setCost(fields.cost);
-    if (fields.effectiveStart) association.setEffectiveStart(fields.effectiveStart);
-    if (fields.effectiveEnd) association.setEffectiveEnd(fields.effectiveEnd);
+    applyEffective(association, fields);
   }
   for (const fields of model.itemDistributions ?? []) {
     const association = new ItemDistribution(
@@ -1140,20 +1199,22 @@ async function typescriptWorker(modelPath, resultPath) {
     if (fields.sizeMinimum !== undefined) association.setSizeMinimum(fields.sizeMinimum);
     if (fields.sizeMultiple !== undefined) association.setSizeMultiple(fields.sizeMultiple);
     if (fields.sizeMaximum !== undefined) association.setSizeMaximum(fields.sizeMaximum);
+    if (fields.batchWindow !== undefined) association.setBatchWindow(fields.batchWindow);
+    if (fields.fence !== undefined) association.setFence(fields.fence);
     if (fields.cost !== undefined) association.setCost(fields.cost);
-    if (fields.effectiveStart) association.setEffectiveStart(fields.effectiveStart);
-    if (fields.effectiveEnd) association.setEffectiveEnd(fields.effectiveEnd);
+    applyEffective(association, fields);
   }
   for (const fields of model.buffers) {
     if (fields.producing) buffers.get(fields.name)?.setProducingOperation(operations.get(fields.producing) ?? null);
   }
   const skills = new Map((model.skills ?? []).map((fields) => [fields.name, new SkillDefault(fields.name)]));
   for (const fields of model.resourceSkills ?? []) {
-    new ResourceSkillDefault(
+    const association = new ResourceSkillDefault(
       skills.get(fields.skill) ?? null,
       resources.get(fields.resource) ?? null,
       fields.priority ?? 1,
     );
+    applyEffective(association, fields);
   }
   for (const fields of model.loads) {
     const Constructor = fields.type === "bucketized_percentage" ? LoadBucketizedPercentage
@@ -1164,12 +1225,14 @@ async function typescriptWorker(modelPath, resultPath) {
       resources.get(fields.resource) ?? null,
       fields.quantity,
     );
-    if (fields.offset !== undefined) load.setOffset(fields.offset);
+    if (fields.quantityFixed !== undefined) load.setQuantityFixed(fields.quantityFixed);
+    if (fields.offset !== undefined && typeof load.setOffset === "function") load.setOffset(fields.offset);
     if (fields.name) load.setName(fields.name);
     if (fields.priority !== undefined) load.setPriority(fields.priority);
     if (fields.search) load.setSearch(fields.search);
     if (fields.skill) load.setSkill(skills.get(fields.skill) ?? null);
     if (fields.setup !== undefined) load.setSetupString(fields.setup);
+    applyEffective(load, fields);
   }
   for (const fields of model.flows) {
     const Constructor = fields.type === "start" ? FlowStart
@@ -1181,8 +1244,11 @@ async function typescriptWorker(modelPath, resultPath) {
     );
     if (fields.name) flow.setName(fields.name);
     if (fields.quantityFixed !== undefined) flow.setQuantityFixed(fields.quantityFixed);
+    if (fields.offset !== undefined) flow.setOffset(fields.offset);
     if (fields.priority !== undefined) flow.setPriority(fields.priority);
+    if (fields.search) flow.setSearch(fields.search);
     if (fields.transferBatch !== undefined) flow.setTransferBatch(fields.transferBatch);
+    applyEffective(flow, fields);
   }
   const demandGroups = new Map();
   for (const fields of model.demandGroups ?? []) {
@@ -1191,10 +1257,15 @@ async function typescriptWorker(modelPath, resultPath) {
     if (fields.status !== undefined) group.setStatus(fields.status);
     demandGroups.set(fields.name, group);
   }
+  const demands = new Map();
   for (const fields of model.demands) {
     const demand = new DemandDefault(fields.name);
     demand.setItem(items.get(fields.item) ?? null);
-    demand.setOperation(operations.get(fields.operation) ?? null);
+    if (fields.operation) {
+      const operation = operations.get(fields.operation);
+      if (!operation) throw new Error(`Unknown demand operation '${fields.operation}' on demand '${fields.name}'`);
+      demand.setOperation(operation);
+    }
     if (fields.location) demand.setLocation(locations.get(fields.location) ?? null);
     demand.setQuantity(fields.quantity);
     demand.setDue(fields.due);
@@ -1204,14 +1275,78 @@ async function typescriptWorker(modelPath, resultPath) {
     if (fields.minShipment !== undefined) demand.setMinShipment(fields.minShipment);
     if (fields.batch !== undefined) demand.setBatch(fields.batch);
     if (fields.group !== undefined) demand.setOwner(demandGroups.get(fields.group) ?? null);
+    demands.set(fields.name, demand);
   }
+  const bufferFor = (fields, locationField = "location") => {
+    const item = items.get(fields.item) ?? null;
+    const location = locations.get(fields[locationField]) ?? null;
+    if (!item || !location) return null;
+    return BufferDefault.findOrCreate(item, location, fields.batch ?? "");
+  };
+  const itemSupplierFor = (fields) => {
+    const item = items.get(fields.item) ?? null;
+    const supplier = suppliers.get(fields.supplier) ?? null;
+    if (!item || !supplier) return null;
+    for (const association of item.getSuppliers?.() ?? []) {
+      if (!(association instanceof ItemSupplier)) continue;
+      if (association.getSupplier() !== supplier) continue;
+      if (fields.location && association.getLocation() !== (locations.get(fields.location) ?? null)) continue;
+      return association;
+    }
+    const association = new ItemSupplier(supplier, item, 0);
+    if (fields.location) association.setLocation(locations.get(fields.location) ?? null);
+    return association;
+  };
+  const itemDistributionFor = (fields) => {
+    const item = items.get(fields.item) ?? null;
+    const origin = locations.get(fields.origin) ?? null;
+    const destination = locations.get(fields.destination ?? fields.location) ?? null;
+    if (!item || !origin || !destination) return null;
+    for (const association of item.getDistributions?.() ?? []) {
+      if (!(association instanceof ItemDistribution)) continue;
+      if (association.getOrigin() === origin && association.getDestination() === destination) return association;
+    }
+    return new ItemDistribution(item, origin, destination, 0);
+  };
+  const operationForImportedPlan = (fields) => {
+    if (fields.operation) return operations.get(fields.operation) ?? null;
+    const orderType = String(fields.orderType ?? "").toUpperCase();
+    if (orderType === "STCK") {
+      const buffer = bufferFor(fields);
+      if (!buffer) return null;
+      return Operation.find(`Inventory ${buffer.getName()}`) ?? new OperationInventory(buffer);
+    }
+    if (orderType === "DLVR") {
+      const buffer = bufferFor(fields);
+      if (!buffer) return null;
+      const operation = new OperationDelivery();
+      operation.setBuffer(buffer);
+      return operation;
+    }
+    if (orderType === "PO") {
+      const buffer = bufferFor(fields);
+      const association = itemSupplierFor(fields);
+      if (!buffer || !association) return null;
+      return OperationItemSupplier.findOrCreate(association, buffer);
+    }
+    if (orderType === "DO") {
+      const origin = bufferFor(fields, "origin");
+      const destination = fields.destination ? bufferFor(fields, "destination") : bufferFor(fields);
+      const association = itemDistributionFor(fields);
+      if (!origin || !destination || !association) return null;
+      return OperationItemDistribution.findOrCreate(association, origin, destination);
+    }
+    return null;
+  };
   const importedOperationPlans = new Map();
   for (const fields of model.operationPlans ?? []) {
-    const operation = operations.get(fields.operation) ?? null;
-    if (!operation) throw new Error(`Unknown operation '${fields.operation}' on operationplan '${fields.reference}'`);
+    const operation = operationForImportedPlan(fields);
+    if (!operation) throw new Error(`Unknown operation for operationplan '${fields.reference}'`);
     const operationPlan = new OperationPlan(operation);
     if (fields.batch !== undefined) operationPlan.setBatch(fields.batch);
     if (fields.reference !== undefined) operationPlan.setReference(fields.reference);
+    if (fields.remark !== undefined) operationPlan.setRemark(fields.remark);
+    if (fields.demand !== undefined) operationPlan.setDemand(demands.get(fields.demand) ?? null);
     if (fields.quantityCompleted !== undefined) operationPlan.setQuantityCompletedRaw(fields.quantityCompleted);
     operationPlan.setOperationPlanParameters(
       fields.quantity,
@@ -1433,9 +1568,274 @@ async function typescriptWorker(modelPath, resultPath) {
     totalCost: metric(summary.totalCost + operationPlan.totalCost),
     setupPenalty: metric(summary.setupPenalty + operationPlan.setupPenalty),
   }), { operationCost: 0, resourceCost: 0, setupCost: 0, totalCost: 0, setupPenalty: 0 });
+  if (outputMode === "planning") {
+    const exportedStatuses = new Set(["proposed", "approved", "confirmed", "completed", "closed"]);
+    const exported = operationPlans
+      .map((row, index) => ({ row, operationPlan: operationPlanRows[index].operationPlan }))
+      .filter(({ row }) => exportedStatuses.has(row.status));
+    // Hidden replenishment and distribution plans can be part of an owner's
+    // internal chain without being exported as visible planning rows.
+    let exportedPlans;
+    const operationPlanReference = new Map(
+      exported.map(({ operationPlan, row }) => [operationPlan, row.reference])
+    );
+    const callMethod = (value, method, ...args) => {
+      if (!value || typeof value !== "object") return undefined;
+      const callback = Reflect.get(value, method);
+      return typeof callback === "function" ? Reflect.apply(callback, value, args) : undefined;
+    };
+    const dateText = (value) => value && typeof value.toString === "function"
+      ? `${value.toString()}Z`
+      : null;
+    const durationSeconds = (value) => {
+      if (value && typeof value === "object" && Number.isFinite(value.seconds)) return metric(value.seconds);
+      return Number.isFinite(Number(value)) ? metric(Number(value)) : null;
+    };
+    const itemName = (value) => named(callMethod(value, "getItem"));
+    const locationName = (value) => named(callMethod(value, "getLocation"));
+    const demandFor = (operationPlan) =>
+      operationPlan.getDemand() ?? operationPlan.getOwner()?.getDemand() ?? null;
+    const operationType = (operationPlan) => {
+      const operation = operationPlan.getOperation();
+      const directType = operationPlan.getOrderType();
+      const ownerOperation = operationPlan.getOwner()?.getOperation();
+      // Match frePPLe's export order: inventory, purchase and distribution
+      // operations are visible by their dedicated order type even though they
+      // are hidden implementation operations.
+      if (["STCK", "PO", "DO"].includes(directType)) return directType;
+      if (operation?.getHidden?.()) return demandFor(operationPlan) ? "DLVR" : null;
+      if (directType === "MO" && ownerOperation?.getType?.() === "operation_routing") return "WO";
+      if (directType === "ALT") return "MO";
+      return ["STCK", "MO", "WO", "PO", "DO", "DLVR"].includes(directType) ? directType : null;
+    };
+    exportedPlans = new Set(exported
+      .filter(({ operationPlan }) => operationType(operationPlan) !== null)
+      .map(({ operationPlan }) => operationPlan));
+    const operationRow = ({ operationPlan, row }) => {
+      const operation = operationPlan.getOperation();
+      const type = operationType(operationPlan);
+      if (!type) return null;
+      const demand = demandFor(operationPlan);
+      const directType = operationPlan.getOrderType();
+      const operationName = type === "STCK" || type === "PO" || type === "DO" || type === "DLVR"
+        ? null : named(operation);
+      let item = operationName ? named(operation?.getItem?.()) : null;
+      let location = operationName ? named(operation?.getLocation?.()) : null;
+      let origin = null;
+      let destination = null;
+      let supplier = null;
+      if (type === "STCK") {
+        const buffer = callMethod(operation, "getBuffer");
+        item = itemName(buffer);
+        location = locationName(buffer);
+      } else if (type === "PO") {
+        const buffer = callMethod(operation, "getBuffer");
+        const itemSupplier = callMethod(operation, "getItemSupplier");
+        item = itemName(buffer);
+        location = locationName(buffer);
+        supplier = named(callMethod(itemSupplier, "getSupplier"));
+      } else if (type === "DO") {
+        const originBuffer = callMethod(operation, "getOrigin");
+        const destinationBuffer = callMethod(operation, "getDestination");
+        item = itemName(destinationBuffer) ?? itemName(originBuffer);
+        origin = locationName(originBuffer);
+        destination = locationName(destinationBuffer);
+        location = destination;
+      } else if (type === "DLVR") {
+        item = named(demand?.getItem?.());
+        location = named(demand?.getLocation?.());
+      }
+      let color = null;
+      if (type !== "STCK" && type !== "DLVR" && !demand) {
+        const rawColor = Number(operationPlan.getColorPython?.() ?? 999999);
+        color = rawColor === 999999 || !Number.isFinite(rawColor) ? null : metric(rawColor);
+      }
+      const owner = operationPlan.getOwner();
+      const ownerReference = owner && exportedPlans.has(owner)
+        ? operationPlanReference.get(owner) ?? null : null;
+      return {
+        reference: row.reference,
+        type,
+        quantity: row.quantity,
+        quantityCompleted: row.quantityCompleted,
+        status: row.status,
+        start: dateText(operationPlan.getStart()),
+        end: dateText(operationPlan.getEnd()),
+        criticality: metric(operationPlan.getCriticality()),
+        delay: durationSeconds(operationPlan.getDelay()),
+        operation: operationName,
+        owner: ownerReference,
+        item,
+        origin,
+        destination,
+        supplier,
+        location,
+        demand: demand ? named(demand) : null,
+        due: demand ? dateText(demand.getDue()) : null,
+        name: named(operation),
+        batch: operationPlan.getBatch() || null,
+        remark: operationPlan.getRemark() || null,
+        color,
+        plan: {}
+      };
+    };
+    const planningOperationPlans = exported
+      .map(operationRow)
+      .filter(Boolean);
+    const validPlanReferences = new Set(planningOperationPlans.map((row) => row.reference));
+    const planningMaterials = exported.flatMap(({ operationPlan }) => {
+      const reference = operationPlanReference.get(operationPlan);
+      if (!reference || !validPlanReferences.has(reference)) return [];
+      return [...operationPlan.getFlowPlans()].flatMap((flowPlan) => {
+        const quantity = metric(flowPlan.getQuantity());
+        const buffer = flowPlan.getBuffer();
+        const item = itemName(buffer);
+        const location = locationName(buffer);
+        if (!quantity || !item || !location) return [];
+        return [{
+          operationPlanReference: reference,
+          item,
+          location,
+          quantity,
+          date: dateText(flowPlan.getDate()),
+          onhand: metric(flowPlan.getOnhand()),
+          minimum: metric(buffer.getMinimum()),
+          periodOfCover: durationSeconds(flowPlan.getPeriodOfCover()),
+          status: ["confirmed", "closed"].includes(flowPlan.getStatus())
+            ? flowPlan.getStatus() : "proposed"
+        }];
+      });
+    }).filter((row) => row.date);
+    const planningResources = exported.flatMap(({ operationPlan }) => {
+      const reference = operationPlanReference.get(operationPlan);
+      if (!reference || !validPlanReferences.has(reference)) return [];
+      return [...operationPlan.getLoadPlans()].flatMap((loadPlan) => {
+        const quantity = metric(loadPlan.getQuantity());
+        const resource = named(loadPlan.getResource());
+        if (!resource || quantity >= 0) return [];
+        const setupValue = loadPlan.getSetup();
+        return [{
+          operationPlanReference: reference,
+          resource,
+          quantity: metric(-quantity),
+          setup: typeof setupValue === "string" ? setupValue || null : null,
+          status: ["confirmed", "closed"].includes(loadPlan.getStatus())
+            ? loadPlan.getStatus() : "proposed"
+        }];
+      });
+    });
+    const diagnosticOwner = (problem, entity) => {
+      const owner = problem.getOwner();
+      if (owner instanceof OperationPlan) {
+        if (entity.toLowerCase() === "operationplan") return operationPlanReference.get(owner) ?? null;
+        return named(owner.getOperation());
+      }
+      return named(owner);
+    };
+    const planningProblems = Problem.all().map((problem) => {
+      const entity = problem.getEntity();
+      return {
+        entity,
+        owner: diagnosticOwner(problem, entity),
+        name: problem.getName(),
+        description: problem.getDescription(),
+        start: dateText(problem.getStart()),
+        end: dateText(problem.getEnd())
+      };
+    }).filter((row) => row.owner && row.start && row.end);
+    const demandNames = new Set((model.demands ?? []).map((fields) => fields.name));
+    const planningConstraints = [...(model.demands ?? [])]
+      .filter((fields) => demandNames.has(fields.name))
+      .flatMap((fields) => {
+        const demand = DemandDefault.find(fields.name);
+        if (!demand) return [];
+        return [...demand.getConstraints()].map((constraint) => {
+          const entity = constraint.getEntity();
+          return {
+            demand: demand.getName(),
+            forecast: null,
+            item: named(demand.getItem()),
+            entity,
+            owner: diagnosticOwner(constraint, entity),
+            name: constraint.getName(),
+            description: constraint.getDescription(),
+            start: dateText(constraint.getStart()),
+            end: dateText(constraint.getEnd())
+          };
+        });
+      }).filter((row) => row.owner && row.start && row.end);
+    const planningResourcePlans = resourcePlans.map((bucket) => ({
+      resource: bucket.resource,
+      start: dateText(bucket.start),
+      available: bucket.available,
+      unavailable: bucket.unavailable,
+      setup: bucket.setup,
+      load: bucket.load,
+      free: bucket.free,
+      loadConfirmed: bucket.loadConfirmed
+    }));
+    const referenceBuffers = [...new Map(
+      BufferDefault.all().map((buffer) => {
+        const item = itemName(buffer);
+        const location = locationName(buffer);
+        return [
+          buffer.getName(),
+          { name: buffer.getName(), item, location, batch: buffer.getBatch() || null }
+        ];
+      }).filter(([, row]) => row.item && row.location)
+    ).values()];
+    const referenceOperations = [...new Map(
+      Operation.all().map((operation) => [operation.getName(), {
+        name: operation.getName(),
+        hidden: Boolean(operation.getHidden?.()),
+        buffers: [...operation.getFlows()].map((flow) => named(flow.getBuffer())).filter(Boolean),
+        resources: [...operation.getLoads()].map((load) => named(load.getResource())).filter(Boolean),
+        suboperations: [...operation.getSubOperations()].map((suboperation) =>
+          named(suboperation.getOperation?.() ?? suboperation)).filter(Boolean)
+      }])
+    ).values()];
+    const referenceDemands = [...new Set([
+      ...(model.demands ?? []).map((fields) => fields.name),
+      ...(model.demandGroups ?? []).map((fields) => fields.name)
+    ])];
+    await writeFile(resultPath, JSON.stringify({
+      operationPlans: planningOperationPlans,
+      operationPlanMaterials: planningMaterials,
+      operationPlanResources: planningResources,
+      problems: planningProblems,
+      constraints: planningConstraints,
+      resourcePlans: planningResourcePlans,
+      engine: {
+        mode: "cpp-typescript",
+        algorithm: "cpp-typescript",
+        references: {
+          buffers: referenceBuffers,
+          demands: referenceDemands,
+          operations: referenceOperations
+        }
+      }
+    }, null, 2), "utf8");
+    return;
+  }
   await writeFile(resultPath, JSON.stringify({
     operationPlans, deliveries, dependencies, problems, inventoryProfiles, resourcePlans, costSummary,
   }, null, 2), "utf8");
+}
+
+function normalizePlanningDates(value) {
+  if (Array.isArray(value)) return value.map(normalizePlanningDates);
+  if (!value || typeof value !== "object") {
+    if (typeof value === "string") {
+      return value.replace(
+        /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\.\d+(Z|[+-]\d{2}:\d{2})$/,
+        "$1$2"
+      );
+    }
+    return value;
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, normalizePlanningDates(entry)])
+  );
 }
 
 async function main() {
@@ -1485,8 +1885,14 @@ async function main() {
   }
 }
 
-if (process.argv[2] === "--typescript-worker") {
-  await typescriptWorker(resolve(process.argv[3]), resolve(process.argv[4]));
-} else {
-  await main();
+const isDirectExecution =
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+  if (process.argv[2] === "--typescript-worker") {
+    await typescriptWorker(resolve(process.argv[3]), resolve(process.argv[4]));
+  } else {
+    await main();
+  }
 }

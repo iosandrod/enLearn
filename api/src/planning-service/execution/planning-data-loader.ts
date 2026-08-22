@@ -54,11 +54,16 @@ export class PlanningDataLoader {
 
 export function createPlanningPool() {
   const env = getEnv();
-  const configuredConnectionString = env.DIRECT_URL ?? env.DATABASE_URL;
+  const configured = selectPlanningConnectionString(env);
+  const configuredConnectionString = configured.value;
   if (!configuredConnectionString?.trim()) {
-    throw new Error('DIRECT_URL or DATABASE_URL is required for planning execution.');
+    throw new Error(
+      'PLANNING_DATABASE_URL, DATABASE_URL, or DIRECT_URL is required for planning execution.'
+    );
   }
-  const connectionString = resolvePlanningConnectionString(configuredConnectionString);
+  const connectionString = configured.kind === 'direct'
+    ? resolvePlanningConnectionString(configuredConnectionString)
+    : normalizePlanningPoolConnectionString(configuredConnectionString);
   const pool = new Pool({
     connectionString: normalizePostgresConnectionString(connectionString),
     connectionTimeoutMillis: 30_000,
@@ -74,6 +79,44 @@ export function createPlanningPool() {
     console.warn(`Planning database pool discarded a failed idle connection: ${error.message}`);
   });
   return pool;
+}
+
+function normalizePlanningPoolConnectionString(value: string) {
+  const normalized = normalizePostgresConnectionString(value);
+  try {
+    const url = new URL(normalized);
+    url.searchParams.delete('sslmode');
+    url.searchParams.delete('uselibpqcompat');
+    return url.toString();
+  } catch {
+    return normalized;
+  }
+}
+
+function selectPlanningConnectionString(env: Record<string, string | undefined>) {
+  const planningDatabaseUrl = env.PLANNING_DATABASE_URL?.trim();
+  if (planningDatabaseUrl) return { kind: 'planning' as const, value: planningDatabaseUrl };
+
+  // A repeatable-read planning snapshot can outlive the transaction-pooler
+  // connection window. Prefer Supabase's session pooler when it is available.
+  const directUrl = env.DIRECT_URL?.trim();
+  if (directUrl && isSessionPoolConnectionString(directUrl)) {
+    return { kind: 'session' as const, value: directUrl };
+  }
+
+  const databaseUrl = env.DATABASE_URL?.trim();
+  if (databaseUrl) return { kind: 'pooled' as const, value: databaseUrl };
+
+  return { kind: 'direct' as const, value: directUrl ?? '' };
+}
+
+function isSessionPoolConnectionString(value: string) {
+  try {
+    const url = new URL(normalizePostgresConnectionString(value));
+    return url.hostname.toLowerCase().includes('.pooler.supabase.com') && url.port === '5432';
+  } catch {
+    return false;
+  }
 }
 
 async function loadTable(client: PoolClient, table: PlanningInputTable, accountId: string) {

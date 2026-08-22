@@ -28,6 +28,7 @@ export type BuiltinLowCodePageFunctionContext = {
     rows: Record<string, unknown>[],
     values: Record<string, unknown>,
   ): Promise<unknown[]>;
+  deleteRecords(rows: Record<string, unknown>[]): Promise<unknown[]>;
   invokeService(
     serviceName: string,
     serviceMethod: string,
@@ -181,6 +182,21 @@ export async function executeListPageTransition(
     throw new Error(`${operation}未找到状态字段，请通过 args.values 或 args.field/args.value 指定。`);
   }
   const result = await context.updateRecords(rows, values);
+  await context.refresh();
+  context.notify(
+    readPageFunctionString(context.args.message) || `${operation}成功。`,
+    'success',
+  );
+  return result;
+}
+
+/** 按当前列表数据源逐条删除选中记录，并在完成后刷新页面。 */
+export async function executeListPageDelete(
+  context: BuiltinLowCodePageFunctionContext,
+  operation = '删除',
+) {
+  const rows = requireSelectedPageRows(context, operation);
+  const result = await context.deleteRecords(rows);
   await context.refresh();
   context.notify(
     readPageFunctionString(context.args.message) || `${operation}成功。`,

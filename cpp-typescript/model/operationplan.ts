@@ -211,9 +211,13 @@ export class OperationPlan extends HeaderModelAdapter {
     return Number(call(this.operation, "getCluster") ?? call(call(this.operation, "getBuffer"), "getCluster") ?? 0);
   }
 
-  activate(_createSubOperationPlans = true, _useStart = false): boolean {
+  activate(createSubOperationPlans = true, useStart = false): boolean {
     if (!this.operation) throw new LogicException("Initializing an invalid operationplan");
-    if (this.quantity < 0) return false;
+    const instantiated = call(this.operation, "extraInstantiate", this, createSubOperationPlans, useStart);
+    if (this.quantity < 0 || instantiated === false || this.quantity === 0 && this.getProposed() && !this.owner) {
+      this.dispose();
+      return false;
+    }
     // OperationPlan::activate recursively activates owned plans.  Child plans
     // don't have their own create command in C++; their top owner controls the
     // complete transaction and is the only plan scanned for command excess.

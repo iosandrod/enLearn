@@ -1048,6 +1048,15 @@ staticDependency.dispose();
 assert.deepEqual(dependencyTarget.getDependencies(), []);
 for (const value of [dependencySourcePlan, dependencyTargetPlan, dependencySource, dependencyTarget]) value.dispose();
 
+// Isolate the level/cluster fixture from model objects intentionally retained
+// by earlier lifecycle tests, including native-style auto delivery operations.
+Demand.clear();
+Operation.clear();
+Buffer.clear();
+Resource.clear();
+Item.clear();
+Location.clear();
+
 const levelItem = new ItemMTS("level-item");
 const levelLocation = new LocationDefault("level-location");
 const levelBuffer = new Buffer("level-buffer");
@@ -1703,6 +1712,30 @@ solverState.a_cost = 11;
 solverState.requireFull = true;
 const solverData = new SolverCreateSolverData(solverDefaults);
 Object.assign(solverData.state, solverState);
+
+// Native createsBatches skips operations loading a constrained resource unless
+// enforceBatchWindow is explicitly set on the operation.
+const constrainedBatchOperation = new OperationFixedTime("solver-constrained-batch-operation");
+constrainedBatchOperation.setDuration(3_600);
+constrainedBatchOperation.setBatchWindow(86_400);
+const constrainedBatchResource = new ResourceDefault("solver-constrained-batch-resource");
+const constrainedBatchLoad = new LoadDefault(constrainedBatchOperation, constrainedBatchResource, 1);
+const constrainedBatchBuffer = new Buffer("solver-constrained-batch-buffer");
+const constrainedBatchFlow = new FlowEnd(constrainedBatchOperation, constrainedBatchBuffer, 1);
+const constrainedBatchFirst = new OperationPlan(constrainedBatchOperation);
+constrainedBatchFirst.setStartEndAndQuantity("2026-09-01T08:00:00", "2026-09-01T09:00:00", 3);
+constrainedBatchFirst.createFlowLoads();
+constrainedBatchFirst.activate();
+const constrainedBatchSecond = new OperationPlan(constrainedBatchOperation);
+constrainedBatchSecond.setStartEndAndQuantity("2026-09-01T10:00:00", "2026-09-01T11:00:00", 4);
+constrainedBatchSecond.createFlowLoads();
+constrainedBatchSecond.activate();
+solverData.createsBatches(constrainedBatchOperation);
+assert.deepEqual([...constrainedBatchOperation.getOperationPlans()].map((value) => value.getQuantity()), [3, 4]);
+constrainedBatchOperation.setBoolProperty("enforceBatchWindow", true);
+solverData.createsBatches(constrainedBatchOperation);
+assert.deepEqual([...constrainedBatchOperation.getOperationPlans()].map((value) => value.getQuantity()), [7]);
+
 const partialState = solverData.push(3, new PlanningDate("2026-09-01T00:00:00"), false);
 assert.deepEqual([
   partialState.curBatch, partialState.q_qty, partialState.q_date.toString(), partialState.requireFull,

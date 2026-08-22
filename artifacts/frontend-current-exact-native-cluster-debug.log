@@ -1,0 +1,15 @@
+file:///E:/enLearn/cpp-typescript/scripts/compare-scheduling.mjs:362
+  throw new Error(details ? `${message}\n${details}` : message);
+        ^
+
+Error: docker exited with status 1
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+AttributeError: 'frepple.demand_default' object has no attribute 'getDeliveryOperation'
+Error: Error during XML parsing: Error executing Python command
+    at fail (file:///E:/enLearn/cpp-typescript/scripts/compare-scheduling.mjs:362:9)
+    at run (file:///E:/enLearn/cpp-typescript/scripts/compare-scheduling.mjs:374:28)
+    at runNative (file:///E:/enLearn/cpp-typescript/scripts/compare-scheduling.mjs:920:21)
+    at async file:///E:/enLearn/cpp-typescript/[eval1]:1:201
+
+Node.js v22.17.0

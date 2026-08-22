@@ -252,6 +252,9 @@ export class Demand extends ModelEntity<Demand> {
   }
 
   getCluster(): number {
+    // Native Demand::getCluster leaves an unresolved automatic delivery at
+    // cluster 0. The delivery operation is materialized later by planning.
+    if (!this.deliveryOperationResolved) return 0;
     const delivery = this.getDeliveryOperation();
     const direct = call(delivery, "getCluster");
     if (direct !== undefined) return Number(direct);

@@ -34,6 +34,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>20</size_maximum>
@@ -47,6 +50,9 @@
       <location name="autofence plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       
@@ -73,12 +79,18 @@
       
       
       
+      
+      
+      
     </operation>
     <operation name="make autofence product" xsi:type="operation_fixed_time">
       
       <location name="autofence plant" />
       
       <duration>P1D</duration>
+      
+      
+      
       
       
       
@@ -95,6 +107,9 @@
       <location name="autofence plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

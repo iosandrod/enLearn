@@ -229,6 +229,13 @@ export const DEFAULT_SYSTEM_SETTINGS: SystemSettings = {
   metadata: {},
 };
 
+export function resolveSystemTimezone(context?: SystemSettingsContext | null) {
+  const configured = context?.settings.value.locale_config?.timezone;
+  return typeof configured === 'string' && configured.trim()
+    ? configured.trim()
+    : String(DEFAULT_SYSTEM_SETTINGS.locale_config.timezone);
+}
+
 const systemSettingsKey: InjectionKey<SystemSettingsContext> = Symbol('systemSettings');
 
 export function provideSystemSettings(context: SystemSettingsContext) {

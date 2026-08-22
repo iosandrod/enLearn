@@ -2,7 +2,7 @@
 import { Date as PlanningDate, Duration } from "../utils/date.js";
 import { DataException, HeaderModelAdapter, LogicException } from "../utils/library.js";
 import { Buffer, BufferInfinite } from "./buffer.js";
-import type { Flow } from "./flow.js";
+import { FlowEnd, FlowStart, type Flow } from "./flow.js";
 import type { Item } from "./item.js";
 import type { Operation } from "./operation.js";
 import type { OperationPlan } from "./operationplan.js";
@@ -552,21 +552,76 @@ export class FlowPlan extends TimeLineEventChangeOnhand {
       this.flow?.getOperation()?.setChanged();
     }
   }
-  setQuantity(value: number, roundDown = false, _update = true, execute = true, _mode = 2): readonly [number, number] {
+  setQuantity(value: number, roundDown = false, _update = true, execute = true, mode = 2): readonly [number, number] {
     const quantity = Number(value);
     if (this.confirmed || this.closed) {
       if (execute) this.setQuantityRaw(quantity);
       return [quantity, this.operationPlan?.getQuantity() ?? 0];
     }
     if (!this.flow || !this.operationPlan) return [0, 0];
+
+    const operationPlanQuantity = (state: unknown): number => {
+      if (state && typeof state === "object") {
+        const result = Reflect.get(state, "quantity");
+        if (result !== undefined) return Number(result);
+      }
+      return this.operationPlan?.getQuantity() ?? 0;
+    };
+    const setParameters = (operationQuantity: number): number => {
+      let state: unknown;
+      if (mode === 2 || (mode === 0 && this.flow instanceof FlowEnd)) {
+        state = this.operationPlan?.setOperationPlanParameters(
+          operationQuantity,
+          PlanningDate.infinitePast,
+          mode === 2 || this.flow instanceof FlowStart
+            ? this.operationPlan.getEnd()
+            : this.computeFlowToOperationDate(this.getDate()),
+          true,
+          execute,
+          roundDown,
+        );
+      } else if (mode === 1 || (mode === 0 && this.flow instanceof FlowStart)) {
+        state = this.operationPlan?.setOperationPlanParameters(
+          operationQuantity,
+          mode === 1 || this.flow instanceof FlowEnd
+            ? this.operationPlan.getStart()
+            : this.computeFlowToOperationDate(this.getDate()),
+          PlanningDate.infinitePast,
+          false,
+          execute,
+          roundDown,
+        );
+      } else {
+        throw new LogicException("Unreachable code reached");
+      }
+      return operationPlanQuantity(state);
+    };
+
+    if (!this.flow.getEffective().within(this.getDate())) {
+      if (execute) setParameters(0);
+      return [0, 0];
+    }
+
     const fixed = this.flow.getQuantityFixed();
     const proportional = this.flow.getQuantity();
-    let operationQuantity = 0;
-    if (Math.abs(proportional) < ROUNDING_ERROR) {
-      operationQuantity = Math.abs(quantity) + ROUNDING_ERROR < Math.abs(fixed) ? 0 : Math.max(this.operationPlan.getQuantity(), 0.001);
-    } else operationQuantity = Math.max(0, (quantity - fixed) / proportional);
-    const actual = this.operationPlan.setQuantity(operationQuantity, roundDown, true, execute);
-    if (execute) this.update();
+    const belowFixed = Math.abs(fixed) > 0
+      && Math.abs(quantity) < Math.abs(fixed) + ROUNDING_ERROR;
+    let actual = this.operationPlan.getQuantity();
+    if (Math.abs(proportional) < ROUNDING_ERROR || belowFixed) {
+      if (belowFixed && actual !== 0) actual = setParameters(0);
+      else if (!belowFixed && actual === 0) actual = setParameters(0.001);
+    } else {
+      actual = setParameters((quantity - fixed) / proportional);
+    }
+
+    if (execute) {
+      const owner = this.operationPlan.getOwner();
+      if (owner) {
+        for (const sibling of owner.getSubOperationPlans()) {
+          if (sibling !== this.operationPlan) invoke(sibling, "update");
+        }
+      }
+    }
     return actual ? [actual * proportional + fixed, actual] : [0, 0];
   }
   setQuantityAPI(value: number): void { this.setQuantity(value, false, true, true); }

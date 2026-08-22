@@ -112,6 +112,7 @@ try {
     .map((label) => label.trim())
     .filter(Boolean);
   assert.ok(pickerLabels.includes('编辑'));
+  assert.ok(pickerLabels.includes('删除'));
   assert.ok(pickerLabels.includes('审核'));
   assert.ok(pickerLabels.includes('打印'));
   assert.equal(pickerLabels.includes('复制'), false);
@@ -237,7 +238,7 @@ try {
   for (const label of ['复制', '新增', '修改', '保存', '审核', '反审', '关闭', '打开', '刷新', '退出']) {
     assert.ok(editPickerLabels.includes(label), `Edit picker must include ${label}.`);
   }
-  for (const label of ['编辑', '打印', '导入', '导出', '更多']) {
+  for (const label of ['编辑', '删除', '打印', '导入', '导出', '更多']) {
     assert.equal(editPickerLabels.includes(label), false, `Edit picker must exclude ${label}.`);
   }
   await editPicker.locator('.lc-global-dialog__footer .vxe-button', {

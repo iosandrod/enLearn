@@ -66,6 +66,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>8</size_maximum>
@@ -82,6 +85,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>8</size_maximum>
@@ -91,6 +97,9 @@
       
     </operation>
     <operation name="select process CTRL-A" xsi:type="operation_alternate" search="PRIORITY">
+      
+      
+      
       
       
       
@@ -131,6 +140,9 @@
       
       
       
+      
+      
+      
       <cost>8</cost>
       
       
@@ -141,6 +153,9 @@
       
       
       <duration>PT9H</duration>
+      
+      
+      
       
       
       
@@ -160,6 +175,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>8</size_maximum>
@@ -169,6 +187,9 @@
       
     </operation>
     <operation name="select process CTRL-B" xsi:type="operation_alternate" search="PRIORITY">
+      
+      
+      
       
       
       
@@ -209,6 +230,9 @@
       
       
       
+      
+      
+      
       <cost>8</cost>
       
       
@@ -219,6 +243,9 @@
       
       
       <duration>PT10H</duration>
+      
+      
+      
       
       
       
@@ -238,6 +265,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>8</size_maximum>
@@ -247,6 +277,9 @@
       
     </operation>
     <operation name="select process SENSOR-C" xsi:type="operation_alternate" search="PRIORITY">
+      
+      
+      
       
       
       
@@ -287,6 +320,9 @@
       
       
       
+      
+      
+      
       <cost>8</cost>
       
       
@@ -297,6 +333,9 @@
       
       
       <duration>PT11H</duration>
+      
+      
+      
       
       
       
@@ -316,6 +355,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>8</size_maximum>
@@ -325,6 +367,9 @@
       
     </operation>
     <operation name="select process SENSOR-D" xsi:type="operation_alternate" search="PRIORITY">
+      
+      
+      
       
       
       
@@ -359,6 +404,9 @@
       
       
       <duration>PT2H</duration>
+      
+      
+      
       
       
       

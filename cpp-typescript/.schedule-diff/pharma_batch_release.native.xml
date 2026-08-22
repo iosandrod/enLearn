@@ -66,6 +66,9 @@
       
       
       
+      
+      
+      
       <size_minimum>2</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>10</size_maximum>
@@ -79,6 +82,9 @@
       
       
       <duration>PT12H</duration>
+      
+      
+      
       
       
       
@@ -98,6 +104,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>10</size_maximum>
@@ -107,6 +116,9 @@
       
     </operation>
     <operation name="batch TAB-A" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -153,6 +165,9 @@
       
       
       
+      
+      
+      
       <cost>25</cost>
       
       
@@ -163,6 +178,9 @@
       
       
       <duration>P1D</duration>
+      
+      
+      
       
       
       
@@ -182,6 +200,9 @@
       
       
       
+      
+      
+      
       <size_minimum>2</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>10</size_maximum>
@@ -198,6 +219,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>10</size_maximum>
@@ -207,6 +231,9 @@
       
     </operation>
     <operation name="batch TAB-B" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -253,6 +280,9 @@
       
       
       
+      
+      
+      
       <cost>25</cost>
       
       
@@ -263,6 +293,9 @@
       
       
       <duration>PT18H</duration>
+      
+      
+      
       
       
       
@@ -282,6 +315,9 @@
       
       
       
+      
+      
+      
       <size_minimum>2</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>10</size_maximum>
@@ -298,6 +334,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>10</size_maximum>
@@ -307,6 +346,9 @@
       
     </operation>
     <operation name="batch CAP-C" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -347,6 +389,9 @@
       
       
       <duration>PT6H</duration>
+      
+      
+      
       
       
       

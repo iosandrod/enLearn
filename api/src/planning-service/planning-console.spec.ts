@@ -447,6 +447,47 @@ async function testRunBoundary() {
   assert.equal(resultRows.at(-1)?.id, 'run-005');
 }
 
+async function testResourcePlanPagination() {
+  const resourcePlanRows = Array.from({ length: 1440 }, (_, index) => ({
+    id: `resource-plan-${String(index).padStart(4, '0')}`,
+    account_id: 'account-1',
+    plan_version_id: 'version-1',
+    resource_id: 'resource-1',
+    startdate: new Date(Date.UTC(2026, 7, 22, 0, index)).toISOString(),
+    available: 8,
+    load: 4,
+    free: 4
+  }));
+  const result = await loadPlanningConsoleDataset(
+    createSummaryClient({
+      planning_plan_version: [{
+        id: 'version-1',
+        account_id: 'account-1',
+        code: 'V1',
+        name: 'Version 1'
+      }],
+      planning_resourceplan: resourcePlanRows,
+      planning_resource: [{
+        id: 'resource-1',
+        account_id: 'account-1',
+        name: 'Resource 1',
+        type: 'default',
+        maximum: 1
+      }]
+    }) as never,
+    'account-1',
+    'resourcePlans',
+    { planVersionId: 'version-1' }
+  );
+  assert.ok(Array.isArray(result));
+  assert.equal(result.length, 1440, 'The resource plan dataset must return every paginated bucket.');
+  const resultRows = result as Record<string, unknown>[];
+  assert.equal(resultRows[0]?.id, 'resource-plan-0000');
+  assert.equal(resultRows.at(-1)?.id, 'resource-plan-1439');
+  assert.equal(resultRows[1000]?.resource_name, 'Resource 1');
+  assert.equal(resultRows[1000]?.utilization_percent, 50);
+}
+
 const normalizedSchema = normalizeLowCodePageSchema(PLANNING_CONSOLE_PAGE_SCHEMA);
 const schemaIssues = assertValidLowCodePageSchema(normalizedSchema);
 assert.equal(schemaIssues.filter((issue) => issue.level === 'error').length, 0);
@@ -534,10 +575,12 @@ for (const script of [preflightActionScript, runActionScript]) {
 }
 assert.match(runActionScript, /scenarioId[\s\S]*engine\.available[\s\S]*trigger\.configured[\s\S]*worker\.online/);
 assert.match(runActionScript, /filter\.runName/);
+assert.match(runActionScript, /\$form\.patch\("planning_console_result_filter"[\s\S]*planVersionId/);
 assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'cancel')?.script), /currentRow[\s\S]*queued[\s\S]*running/);
-assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'publish')?.script), /planning_console_result_filter[\s\S]*summary\.versionId[\s\S]*versionStatus[\s\S]*completed/);
+assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'publish')?.script), /planning_console_result_filter[\s\S]*versionOptions[\s\S]*is_current[\s\S]*versionStatus[\s\S]*completed/);
 assert.deepEqual(normalizedSchema.scriptPolicy?.capabilities, [
   'http.execute',
+  'form.patch',
   'source.refresh',
   'source.set',
   'message.error',
@@ -560,7 +603,7 @@ function firstTabBlock(key: string) {
   return Array.isArray(tab?.blocks) ? tab.blocks[0] as Record<string, unknown> | undefined : undefined;
 }
 assert.equal(firstTabBlock('gantt')?.kind, 'planningGantt');
-assert.deepEqual(firstTabBlock('gantt')?.includedTypes, ['MO', 'WO', 'PO', 'DO']);
+assert.deepEqual(firstTabBlock('gantt')?.includedTypes, ['MO', 'WO', 'PO', 'DO', 'DLVR']);
 assert.equal(firstTabBlock('flow')?.kind, 'planningFlow');
 assert.equal(firstTabBlock('bom')?.kind, 'planningBom');
 const ordersTabs = firstTabBlock('orders');
@@ -621,6 +664,6 @@ for (const [gridId, tableName] of Object.entries(PLANNING_CONSOLE_GRID_TABLES)) 
   assert.equal(linkedSource?.tableName, undefined, `${gridId} must not query its linked table directly.`);
 }
 
-void Promise.all([testLargeSummary(), testRunBoundary()]).then(() => {
+void Promise.all([testLargeSummary(), testRunBoundary(), testResourcePlanPagination()]).then(() => {
   console.log('planning console helpers tests passed');
 });

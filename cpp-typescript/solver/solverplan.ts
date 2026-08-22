@@ -7,12 +7,21 @@ import { Demand, DemandGroup } from "../model/demand.js";
 import { Flow, FlowEnd, FlowStart } from "../model/flow.js";
 import { FlowPlan } from "../model/flowplan.js";
 import { Load } from "../model/load.js";
-import { Operation, OperationAlternate, OperationFixedTime, OperationRouting, OperationSplit } from "../model/operation.js";
+import {
+  Operation,
+  OperationAlternate,
+  OperationFixedTime,
+  OperationRouting,
+  OperationSplit,
+  OperationTimePer,
+} from "../model/operation.js";
+import { OperationItemDistribution } from "../model/itemdistribution.js";
+import { OperationItemSupplier } from "../model/itemsupplier.js";
 import { CommandCreateOperationPlan, CommandMoveOperationPlan } from "../model/actions.js";
 import { OperationDependency, OperationPlanDependency } from "../model/operationdependency.js";
 import { OperationPlan } from "../model/operationplan.js";
 import { Plan } from "../model/plan.js";
-import { Resource } from "../model/resource.js";
+import { Resource, ResourceDefault } from "../model/resource.js";
 import { HasLevel } from "../model/leveled.js";
 import { solveOperationSemantic } from "./solveroperation.js";
 import { solveFlowSemantic } from "./solverflow.js";
@@ -29,6 +38,7 @@ import {
 
 type SolverCallback<T = unknown> = (entity: T, solver: SolverCreate, data: SolverCreateSolverData) => unknown;
 type SolverTarget = Demand | Operation | OperationPlan | Flow | Load | Buffer | Resource | Plan;
+const ROUNDING_ERROR = 0.000001;
 
 function asDuration(value: Duration | number | string): Duration {
   return value instanceof Duration ? new Duration(value) : new Duration(value);
@@ -404,7 +414,14 @@ export class SolverCreate extends HeaderModelAdapter {
     throw new DataException("object argument must be a demand, operation, flow, load, buffer, resource, operationplan or plan");
   }
   private solveAll(): OperationPlan[] {
-    HasLevel.getNumberOfClusters();
+    const numberOfClusters = HasLevel.getNumberOfClusters();
+    if (process.env.FREPPLE_TS_TRACE === "1") {
+      console.error("[ts-clusters]", JSON.stringify({
+        numberOfClusters,
+        demands: Demand.all().map((demand) => ({ name: demand.getName(), cluster: demand.getCluster(), resolvedOperation: demand.getOperation()?.getName() ?? null })),
+        operations: Operation.all().map((operation) => ({ name: operation.getName(), cluster: operation.getCluster(), level: operation.getLevel() })),
+      }));
+    }
     if (this.erasePreviousFirst) {
       for (const operation of Operation.all()) if (this.cluster === -1 || operation.getCluster() === this.cluster) operation.deleteOperationPlans();
     }
@@ -418,9 +435,38 @@ export class SolverCreate extends HeaderModelAdapter {
         && (this.cluster === -1 || demand.getCluster() === this.cluster);
     });
     demands.sort(SolverCreate.compareDemands);
-    const data = new SolverCreateSolverData(this, this.cluster, demands);
-    data.setCommandManager(this.commandManager);
-    const result = data.commit();
+
+    // The native solver creates one SolverData per planning cluster when
+    // constraints and delivery creation are enabled. The previous port sent
+    // every demand through a single cluster=-1 data object, which caused
+    // safety-stock replenishment to be planned repeatedly across unrelated
+    // supply graphs.
+    const demandGroups: Demand[][] = [];
+    const solverClusters: number[] = [];
+    if (this.createDeliveries && this.constraints && this.cluster === -1) {
+      for (let index = 0; index <= numberOfClusters; index += 1) {
+        demandGroups.push([]);
+        solverClusters.push(index);
+      }
+      for (const demand of demands) {
+        const cluster = Math.trunc(demand.getCluster());
+        const group = demandGroups[cluster] ?? demandGroups[0];
+        if (group) group.push(demand);
+      }
+    } else {
+      demandGroups.push(demands);
+      solverClusters.push(this.createDeliveries ? this.cluster : -1);
+    }
+
+    const result: OperationPlan[] = [];
+    // Native cluster workers complete the higher supply clusters before the
+    // cluster-0 demand pass. This ordering lets independent deliveries consume
+    // the safety-stock replenishment created by their upstream cluster.
+    for (let index = demandGroups.length - 1; index >= 0; index -= 1) {
+      const data = new SolverCreateSolverData(this, solverClusters[index] ?? -1, demandGroups[index] ?? []);
+      data.setCommandManager(this.commandManager);
+      result.push(...data.commit());
+    }
     if (this.autocommit) this.commandManager.commit();
     return result;
   }
@@ -453,8 +499,10 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
   private manager: CommandManager | null = null;
   private constraints: unknown = null;
   private readonly dependencyList = new Map<Operation, { occurrences: number; date: PlanningDate }>();
+  private readonly recentBuffers: Buffer[] = [];
   private readonly operatorForward: OperatorForward;
   private readonly maskedShortages: OperationPlan[] = [];
+  private readonly purchaseBuffers = new Set<Buffer>();
   readonly cluster: number;
   readonly demands: Demand[];
   state: SolverCreateState = this.states[0] as SolverCreateState;
@@ -464,6 +512,7 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
   batchGrouping = false;
   logConstraints = true;
   accept_partial_reply = false;
+  coordination_run = false;
   broken_path = false;
   iterationCount = 0;
   shortagesOnly = false;
@@ -485,6 +534,11 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
   }
   runme(): OperationPlan[] { return this.commit(); }
   clearDependencies(): void { this.dependencyList.clear(); }
+  clearRecentBuffers(): void { this.recentBuffers.length = 0; }
+  getRecentBufferDepth(): number { return this.recentBuffers.length; }
+  hasRecentBuffer(buffer: Buffer): boolean { return this.recentBuffers.includes(buffer); }
+  pushRecentBuffer(buffer: Buffer): void { this.recentBuffers.push(buffer); }
+  restoreRecentBufferDepth(depth: number): void { this.recentBuffers.length = Math.max(0, depth); }
   getDependencyList(): Map<Operation, { occurrences: number; date: PlanningDate }> { return this.dependencyList; }
   populateDependencies(operation: Operation, path: readonly Operation[] = []): void {
     if (path.includes(operation)) return;
@@ -534,6 +588,9 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
   }
   setConstraintOwner(value: unknown): void { this.constraints = value; }
   getConstraintOwner(): unknown { return this.constraints; }
+  addPurchaseBuffer(buffer: Buffer | null): void {
+    if (buffer) this.purchaseBuffers.add(buffer);
+  }
   push(quantity = 0, date: PlanningDate = PlanningDate.infiniteFuture, full = false): SolverCreateState {
     if (this.states.length >= SolverCreateSolverData.MAXSTATES) throw new RuntimeException("Maximum recursion depth exceeded");
     const previous = this.state;
@@ -639,8 +696,9 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
         }
         return true;
       })
-      .sort((left, right) => Math.max(left.getLevel(), 0) - Math.max(right.getLevel(), 0)
-        || left.getName().localeCompare(right.getName()));
+      // C++ buckets by level while preserving Buffer::all() order within a
+      // level. A name sort changes which shortages reserve shared capacity.
+      .sort((left, right) => Math.max(left.getLevel(), 0) - Math.max(right.getLevel(), 0));
   }
   private solveSafetyStock(firstPass: boolean): void {
     if (!this.solver) return;
@@ -767,6 +825,140 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
   private unmaskTemporaryShortages(): void {
     while (this.maskedShortages.length) this.maskedShortages.pop()?.dispose();
   }
+  private recreatePurchasePlans(): void {
+    if (!this.solver) return;
+    const manager = this.manager ?? this.solver.getCommandManager();
+    const buffers = [...this.purchaseBuffers].sort((left, right) =>
+      left.getName() < right.getName() ? -1 : left.getName() > right.getName() ? 1 : 0);
+    for (const buffer of buffers) {
+      const operation = buffer.getProducingOperation();
+      if (!operation) continue;
+
+      operation.deleteOperationPlans(false);
+      const previousShortagesOnly = this.bufferSolveShortagesOnly;
+      try {
+        this.safetyStockPlanning = true;
+        this.bufferSolveShortagesOnly = false;
+        this.state.curBuffer = null;
+        this.state.q_qty = -1;
+        this.state.q_date = new PlanningDate(PlanningDate.infinitePast);
+        this.state.a_cost = 0;
+        this.state.a_penalty = 0;
+        this.state.curDemand = null;
+        this.state.curOwnerOpplan = null;
+        this.state.blockedOpplan = null;
+        this.state.dependency = null;
+        this.state.a_qty = 0;
+        this.state.curBatch = buffer.getBatch();
+        this.solver.solve(buffer, this);
+        manager.commit();
+      } catch {
+        manager.rollback();
+      } finally {
+        this.bufferSolveShortagesOnly = previousShortagesOnly;
+      }
+    }
+    this.purchaseBuffers.clear();
+  }
+  private createsBatches(operation: Operation): void {
+    const batchWindow = operation.getBatchWindow();
+    if (batchWindow.seconds <= 0) return;
+    if (operation instanceof OperationTimePer) {
+      if (!operation.getDurationPer().isZero()) return;
+    } else if (!(operation instanceof OperationFixedTime
+      || operation instanceof OperationItemSupplier
+      || operation instanceof OperationItemDistribution)) {
+      return;
+    }
+
+    if (!operation.hasProperty("enforceBatchWindow")
+      && operation.getLoads().some((load) => {
+        const getResource = load instanceof HeaderModelAdapter ? Reflect.get(load, "getResource") : null;
+        const resource = typeof getResource === "function" ? Reflect.apply(getResource, load, []) : null;
+        return typeof resource === "object" && resource !== null
+          && typeof Reflect.get(resource, "getConstrained") === "function"
+          && Boolean(Reflect.apply(Reflect.get(resource, "getConstrained") as (...args: never[]) => unknown,
+            resource, []));
+      })) return;
+
+    let planIndex = 0;
+    while (true) {
+      const plans = [...operation.getOperationPlans()]
+        .filter((candidate): candidate is OperationPlan => candidate instanceof OperationPlan);
+      const opplan = plans[planIndex++];
+      if (!opplan) break;
+      if (!opplan.getProposed()) continue;
+
+      const current = Plan.instance().getCurrent();
+      const limitStart = opplan.getStart().compare(current) > 0 ? opplan.getStart() : current;
+      const limitDate = limitStart.add(batchWindow);
+      const currentIndex = plans.indexOf(opplan);
+      let added = 0;
+      for (const candidate of plans.slice(currentIndex + 1)) {
+        if (candidate.getStart().compare(limitDate) >= 0) break;
+        if (!candidate.getProposed()
+          || candidate.getQuantity() + opplan.getQuantity() + added
+            > operation.getSizeMaximum() - ROUNDING_ERROR
+          || candidate.getBatch() !== opplan.getBatch()) continue;
+
+        let available = true;
+        for (const flowPlan of candidate.getFlowPlans()) {
+          if (!(flowPlan instanceof FlowPlan) || flowPlan.getQuantity() >= -ROUNDING_ERROR) continue;
+          const buffer = flowPlan.getBuffer();
+          if (!buffer || buffer instanceof BufferInfinite) continue;
+          const events = buffer.getFlowPlans();
+          const flowIndex = events.indexOf(flowPlan);
+          for (let index = flowIndex - 1; index >= 0; index -= 1) {
+            const event = events[index];
+            if (!event) continue;
+            if (event instanceof FlowPlan && event.isLastOnDate()
+              && event.getOnhand() < added - flowPlan.getQuantity() - ROUNDING_ERROR) {
+              available = false;
+            }
+            if (event instanceof FlowPlan && event.getOperationPlan() === opplan) break;
+            if (!available) break;
+          }
+          if (!available) break;
+        }
+        if (!available) continue;
+        added += candidate.getQuantity();
+        candidate.dispose();
+      }
+
+      if (added <= 0) continue;
+      opplan.setQuantity(opplan.getQuantity() + added);
+
+      let excess = Number.POSITIVE_INFINITY;
+      for (const flowPlan of opplan.getFlowPlans()) {
+        if (!(flowPlan instanceof FlowPlan) || flowPlan.getQuantity() < ROUNDING_ERROR) continue;
+        const buffer = flowPlan.getBuffer();
+        if (!buffer || buffer instanceof BufferInfinite) continue;
+        const onhand = buffer.getOnHand(
+          opplan.getEnd(), PlanningDate.infiniteFuture, true, true,
+        );
+        if (onhand < excess) excess = Math.max(onhand, 0);
+      }
+
+      if (excess <= 0 || !Number.isFinite(excess)) continue;
+      if (excess > opplan.getQuantity()) excess = opplan.getQuantity();
+      if (opplan.getQuantity() - excess < operation.getSizeMinimum()) {
+        excess = Math.max(operation.getSizeMinimum() - opplan.getQuantity(), 0);
+      }
+      const multiple = operation.getSizeMultiple();
+      if (excess > 0 && multiple > 0) {
+        const oldValue = opplan.getQuantity() - excess;
+        const newValue = Math.ceil(oldValue / multiple) * multiple;
+        excess = Math.max(excess - (newValue - oldValue), 0);
+      }
+      if (excess > 0) opplan.setQuantity(opplan.getQuantity() - excess);
+    }
+  }
+  private createBatchesPostprocessing(): void {
+    if (!this.solver || this.solver.getConstraints() <= 0) return;
+    for (const operation of Operation.all()) {
+      if (this.cluster === -1 || operation.getCluster() === this.cluster) this.createsBatches(operation);
+    }
+  }
   commit(): OperationPlan[] {
     if (!this.solver) throw new LogicException("Missing demands or solver.");
     const result: OperationPlan[] = [];
@@ -835,10 +1027,12 @@ export class SolverCreateSolverData extends HeaderModelAdapter {
             this.state.reset();
           }
         }
+        this.recreatePurchasePlans();
         this.constrainedPlanning = this.solver.getPlanType() === 1;
         this.bufferSolveShortagesOnly = false;
         this.solveSafetyStock(false);
       }
+      this.createBatchesPostprocessing();
       this.scanExcess(this.solver.getPlanType() === 1 && this.solver.getConstraints() > 0);
       this.demands.length = 0;
       return result;

@@ -108,6 +108,8 @@ import {
   type LowCodePageReferenceDialogConfig,
 } from '../runtime/page-reference-dialog';
 import {
+  DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES,
+  compactLowCodeScriptContext,
   executeLowCodeScript,
   invokeRegisteredLowCodeScriptApi,
   preloadLowCodeScriptRuntime,
@@ -2534,7 +2536,7 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
   if (safeAction) eventPayload.action = safeAction;
   else delete eventPayload.action;
 
-  return cloneScriptValue({
+  const context = cloneScriptValue({
     page: {
       id: props.page.id,
       code: props.page.code,
@@ -2606,6 +2608,11 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
     event: {},
     policy: { apiNames: [] },
   });
+  return compactLowCodeScriptContext(
+    context,
+    props.page.schema.scriptPolicy?.limits?.maxPayloadBytes
+      ?? DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES,
+  );
 }
 
 function resolvePageFunction(options: Record<string, unknown>) {
@@ -2661,6 +2668,28 @@ function resolveBuiltinSourceForRows(rows: Record<string, unknown>[]) {
   );
 }
 
+function resolveBuiltinDeleteSourceForRows(rows: Record<string, unknown>[]) {
+  const matchingGridEntry = Object.entries(runtime.state.grids).find(([, grid]) => {
+    if (!grid) return false;
+    return rows.some((row) =>
+      grid.rows.some((candidate) => Object.is(candidate[grid.rowKey], row[grid.rowKey])),
+    );
+  });
+  const matchingGridBlock = matchingGridEntry
+    ? flattenPageBlocks(props.page.schema).find(
+        (block): block is LowCodePageGridBlock =>
+          block.kind === 'grid' && block.id === matchingGridEntry[0],
+      )
+    : undefined;
+  const sourceKey = readString(
+    matchingGridBlock?.deleteSourceKey ??
+      matchingGridBlock?.sourceKey ??
+      matchingGridEntry?.[1]?.sourceKey ??
+      rows[0]?.sourceKey,
+  );
+  return sourceKey ? getDataSource(sourceKey) : undefined;
+}
+
 async function updateBuiltinRecords(
   rows: Record<string, unknown>[],
   values: Record<string, unknown>,
@@ -2696,6 +2725,47 @@ async function updateBuiltinRecords(
       ),
       [rowKey]: id,
       data: values,
+    });
+  }));
+}
+
+async function deleteBuiltinRecords(rows: Record<string, unknown>[]) {
+  const source = resolveBuiltinDeleteSourceForRows(rows);
+  if (!source) throw new Error('当前页面没有可删除的数据源。');
+
+  const request = resolveDataSourceRequest(source.key, source);
+  const serviceName = request.serviceName;
+  const serviceMethod = source.deleteMethod ?? request.serviceMethod;
+  if (
+    !serviceName ||
+    !serviceMethod ||
+    (!source.deleteMethod && isListItemsRequest(serviceName, serviceMethod))
+  ) {
+    throw new Error(`数据源 ${source.key} 未配置删除方法。`);
+  }
+
+  const matchingGrid = Object.values(runtime.state.grids).find((grid) =>
+    rows.some((row) =>
+      grid.rows.some((candidate) => Object.is(candidate[grid.rowKey], row[grid.rowKey])),
+    ),
+  );
+  const rowKey = matchingGrid?.rowKey ?? 'id';
+  const postData = {
+    ...resolveRuntimePostData(source.postData),
+    resource: readString(
+      source.postData?.resource,
+      readString(source.tableName ?? source.table_name),
+    ),
+  };
+
+  return Promise.all(rows.map((row) => {
+    const id = row[rowKey];
+    if (typeof id === 'undefined' || id === null || id === '') {
+      throw new Error('选中数据缺少主键，无法删除。');
+    }
+    return host.getServiceApi().invoke(serviceName, serviceMethod, {
+      ...postData,
+      [rowKey]: id,
     });
   }));
 }
@@ -2807,6 +2877,7 @@ function createBuiltinPageFunctionContext(
       return host.getRouter().push(route);
     },
     updateRecords: updateBuiltinRecords,
+    deleteRecords: deleteBuiltinRecords,
     invokeService: (serviceName, serviceMethod, postData) =>
       host.getServiceApi().invoke(serviceName, serviceMethod, postData),
     prepareForms: async (mode) => {

@@ -66,6 +66,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>20</size_maximum>
@@ -84,6 +87,9 @@
       
       
       
+      
+      
+      
       <size_maximum>20</size_maximum>
       <cost>2</cost>
       
@@ -95,6 +101,9 @@
       
       
       <duration>PT3H</duration>
+      
+      
+      
       
       
       
@@ -116,6 +125,9 @@
       
       
       
+      
+      
+      
       <size_maximum>20</size_maximum>
       <cost>2</cost>
       
@@ -127,6 +139,9 @@
       
       
       <duration>PT4H</duration>
+      
+      
+      
       
       
       
@@ -148,6 +163,9 @@
       
       
       
+      
+      
+      
       <size_maximum>20</size_maximum>
       <cost>2</cost>
       
@@ -159,6 +177,9 @@
       
       
       <duration>PT2H</duration>
+      
+      
+      
       
       
       
@@ -180,6 +201,9 @@
       
       
       
+      
+      
+      
       <size_maximum>20</size_maximum>
       <cost>2</cost>
       
@@ -191,6 +215,9 @@
       
       
       <duration>PT3H</duration>
+      
+      
+      
       
       
       
@@ -212,6 +239,9 @@
       
       
       
+      
+      
+      
       <size_maximum>20</size_maximum>
       <cost>2</cost>
       
@@ -223,6 +253,9 @@
       
       
       <duration>PT4H</duration>
+      
+      
+      
       
       
       
@@ -239,6 +272,9 @@
       
       
       <duration>PT15M</duration>
+      
+      
+      
       
       
       

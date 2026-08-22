@@ -61,6 +61,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>20</size_maximum>
@@ -77,6 +80,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>20</size_maximum>
@@ -90,6 +96,9 @@
       <location name="milestone plant" />
       
       <duration>PT18H</duration>
+      
+      
+      
       
       
       
@@ -116,6 +125,9 @@
       
       
       
+      
+      
+      
     </operation>
     <operation name="ship milestone B" xsi:type="operation_fixed_time">
       
@@ -132,12 +144,18 @@
       
       
       
+      
+      
+      
     </operation>
     <operation name="ship milestone C" xsi:type="operation_fixed_time">
       
       <location name="milestone plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

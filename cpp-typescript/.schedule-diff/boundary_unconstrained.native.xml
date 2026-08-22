@@ -42,6 +42,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>1000</size_maximum>
@@ -60,6 +63,9 @@
       
       
       
+      
+      
+      
       <size_maximum>1000</size_maximum>
       <cost>1</cost>
       
@@ -71,6 +77,9 @@
       
       
       <duration>PT2H</duration>
+      
+      
+      
       
       
       
@@ -92,6 +101,9 @@
       
       
       
+      
+      
+      
       <size_maximum>1000</size_maximum>
       <cost>1</cost>
       
@@ -103,6 +115,9 @@
       
       
       <duration>PT3H</duration>
+      
+      
+      
       
       
       
@@ -119,6 +134,9 @@
       
       
       <duration>PT1S</duration>
+      
+      
+      
       
       
       

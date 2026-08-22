@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
+  compactLowCodeScriptContext,
   clearLowCodeScriptApis,
   getLowCodeScriptApiNames,
   invokeRegisteredLowCodeScriptApi,
@@ -28,6 +29,11 @@ assert.match(
   rendererSource,
   /executeLowCodeScript\([\s\S]*?handleScriptCapability/,
   'Published button scripts must execute through the registered safe script runtime.',
+);
+assert.match(
+  rendererSource,
+  /compactLowCodeScriptContext\([\s\S]*?scriptPolicy\?\.limits\?\.maxPayloadBytes/,
+  'Button script contexts must be compacted before entering the isolated worker payload limit.',
 );
 assert.doesNotMatch(
   rendererSource,
@@ -258,6 +264,40 @@ await assert.rejects(
   ),
   /未注册或当前用户无权调用/,
   'Missing page policy must deny registered APIs by default.',
+);
+
+const bulkyContext = {
+  page: { code: 'planning_console' },
+  route: { path: '/dashboard/advanced/planning-console' },
+  data: {
+    operationPlans: Array.from({ length: 500 }, (_, index) => ({
+      id: `plan-${index}`,
+      reference: `auto-${index}`,
+      payload: 'x'.repeat(1000),
+    })),
+  },
+  forms: {
+    planning_console_filter: { scenarioId: 'scenario-1' },
+  },
+  searches: {},
+  grids: {},
+  event: { name: 'buttonGroup.click', blockId: 'planning_console_actions' },
+  policy: { apiNames: [] },
+};
+const compactedContext = compactLowCodeScriptContext(bulkyContext, 8 * 1024);
+assert.ok(
+  Buffer.byteLength(JSON.stringify(compactedContext), 'utf8') <= 8 * 1024,
+  'Oversized page data must be compacted below the script payload budget.',
+);
+assert.deepEqual(
+  compactedContext.forms.planning_console_filter,
+  { scenarioId: 'scenario-1' },
+  'Small form state should survive context compaction.',
+);
+assert.ok(
+  Array.isArray(compactedContext.data.operationPlans) &&
+    compactedContext.data.operationPlans.length < bulkyContext.data.operationPlans.length,
+  'Large array data sources should be truncated instead of dropping the whole context.',
 );
 const unregisterAuthorized = registerLowCodeScriptApi('record.restricted', {
   authorize: (_payload, context) => context.page.role === 'admin',

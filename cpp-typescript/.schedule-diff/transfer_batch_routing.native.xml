@@ -40,6 +40,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>20</size_maximum>
@@ -53,6 +56,9 @@
       <location name="transfer plant" />
       
       <duration>PT5H</duration>
+      
+      
+      
       
       
       
@@ -72,6 +78,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>20</size_maximum>
@@ -83,6 +92,9 @@
     <operation name="transfer downstream routing" xsi:type="operation_routing">
       
       <location name="transfer plant" />
+      
+      
+      
       
       
       
@@ -115,6 +127,9 @@
       <location name="transfer plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

@@ -31,9 +31,13 @@ function connectionStringTests() {
 }
 
 async function poolErrorHandlingTests() {
+  const previousPlanningDatabaseUrl = process.env.PLANNING_DATABASE_URL;
+  const previousDatabaseUrl = process.env.DATABASE_URL;
   const previousDirectUrl = process.env.DIRECT_URL;
   const warnings: string[] = [];
   const originalWarn = console.warn;
+  delete process.env.PLANNING_DATABASE_URL;
+  delete process.env.DATABASE_URL;
   process.env.DIRECT_URL = 'postgresql://postgres:postgres@127.0.0.1:5432/enlearn';
   console.warn = (...values: unknown[]) => warnings.push(values.map(String).join(' '));
   const pool = createPlanningPool();
@@ -52,6 +56,71 @@ async function poolErrorHandlingTests() {
   } finally {
     await pool.end();
     console.warn = originalWarn;
+    if (previousPlanningDatabaseUrl === undefined) delete process.env.PLANNING_DATABASE_URL;
+    else process.env.PLANNING_DATABASE_URL = previousPlanningDatabaseUrl;
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    if (previousDirectUrl === undefined) delete process.env.DIRECT_URL;
+    else process.env.DIRECT_URL = previousDirectUrl;
+  }
+}
+
+async function pooledDatabasePreferenceTests() {
+  const previousPlanningDatabaseUrl = process.env.PLANNING_DATABASE_URL;
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  const previousDirectUrl = process.env.DIRECT_URL;
+  delete process.env.PLANNING_DATABASE_URL;
+  process.env.DATABASE_URL =
+    'postgresql://postgres.projectref:p%40ss@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres' +
+    '?pgbouncer=true&sslmode=require&uselibpqcompat=true&application_name=planning';
+  process.env.DIRECT_URL = 'postgresql://postgres:postgres@db.projectref.supabase.co:5432/postgres';
+
+  const pool = createPlanningPool();
+  try {
+    const resolved = new URL(String(pool.options.connectionString));
+    assert.equal(resolved.hostname, 'aws-0-ap-southeast-1.pooler.supabase.com');
+    assert.equal(resolved.port, '6543');
+    assert.equal(resolved.username, 'postgres.projectref');
+    assert.equal(resolved.searchParams.has('pgbouncer'), false);
+    assert.equal(resolved.searchParams.has('sslmode'), false);
+    assert.equal(resolved.searchParams.has('uselibpqcompat'), false);
+    assert.equal(resolved.searchParams.get('application_name'), 'planning');
+  } finally {
+    await pool.end();
+    if (previousPlanningDatabaseUrl === undefined) delete process.env.PLANNING_DATABASE_URL;
+    else process.env.PLANNING_DATABASE_URL = previousPlanningDatabaseUrl;
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    if (previousDirectUrl === undefined) delete process.env.DIRECT_URL;
+    else process.env.DIRECT_URL = previousDirectUrl;
+  }
+}
+
+async function sessionPoolPreferenceTests() {
+  const previousPlanningDatabaseUrl = process.env.PLANNING_DATABASE_URL;
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  const previousDirectUrl = process.env.DIRECT_URL;
+  delete process.env.PLANNING_DATABASE_URL;
+  process.env.DATABASE_URL =
+    'postgresql://postgres.projectref:secret@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres';
+  process.env.DIRECT_URL =
+    'postgresql://postgres.projectref:secret@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres' +
+    '?sslmode=require&application_name=planning-session';
+
+  const pool = createPlanningPool();
+  try {
+    const resolved = new URL(String(pool.options.connectionString));
+    assert.equal(resolved.hostname, 'aws-0-ap-southeast-1.pooler.supabase.com');
+    assert.equal(resolved.port, '5432');
+    assert.equal(resolved.username, 'postgres.projectref');
+    assert.equal(resolved.searchParams.has('sslmode'), false);
+    assert.equal(resolved.searchParams.get('application_name'), 'planning-session');
+  } finally {
+    await pool.end();
+    if (previousPlanningDatabaseUrl === undefined) delete process.env.PLANNING_DATABASE_URL;
+    else process.env.PLANNING_DATABASE_URL = previousPlanningDatabaseUrl;
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
     if (previousDirectUrl === undefined) delete process.env.DIRECT_URL;
     else process.env.DIRECT_URL = previousDirectUrl;
   }
@@ -59,6 +128,8 @@ async function poolErrorHandlingTests() {
 
 async function main() {
   connectionStringTests();
+  await pooledDatabasePreferenceTests();
+  await sessionPoolPreferenceTests();
   await poolErrorHandlingTests();
   console.log('planning database connection resolution and error handling tests passed');
 }

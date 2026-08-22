@@ -7,6 +7,7 @@ import type {
 export const BUILTIN_LOW_CODE_ACTION_KEYS = {
   CREATE: 'record.create',
   EDIT: 'record.edit',
+  DELETE: 'record.delete',
   DUPLICATE: 'record.duplicate',
   MODIFY: 'record.modify',
   SAVE: 'record.save',
@@ -47,6 +48,7 @@ export const BUILTIN_LOW_CODE_ACTION_PAGE_TYPE_ORDER = {
   list: [
     BUILTIN_LOW_CODE_ACTION_KEYS.CREATE,
     BUILTIN_LOW_CODE_ACTION_KEYS.EDIT,
+    BUILTIN_LOW_CODE_ACTION_KEYS.DELETE,
     BUILTIN_LOW_CODE_ACTION_KEYS.APPROVE,
     BUILTIN_LOW_CODE_ACTION_KEYS.UNAPPROVE,
     BUILTIN_LOW_CODE_ACTION_KEYS.CLOSE,
@@ -117,6 +119,19 @@ const atomicActionPresetSeeds = {
       type: 'button',
       prefixIcon: 'ri-edit-line',
       eventName: 'buttonGroup.edit',
+    },
+  },
+  [BUILTIN_LOW_CODE_ACTION_KEYS.DELETE]: {
+    selection: 'multiple',
+    pageTypes: ['list'],
+    functionName: 'delete',
+    action: {
+      code: 'delete',
+      label: '删除',
+      status: 'danger',
+      type: 'button',
+      prefixIcon: 'ri-delete-bin-line',
+      eventName: 'buttonGroup.delete',
     },
   },
   [BUILTIN_LOW_CODE_ACTION_KEYS.MODIFY]: {

@@ -24,6 +24,7 @@ import {
   getUserAuthorization,
   hasRequiredPermission
 } from '../common/utils/supabase';
+import { getEnv } from '../common/utils/env';
 import { TriggerCredentialsService } from '../workflow/trigger/trigger-credentials.service';
 import { TriggerDevClient } from '../workflow/trigger/trigger-dev.client';
 import { buildFreppleInput } from './execution/frepple-input.builder';
@@ -32,8 +33,13 @@ import {
   PlanningDataLoader
 } from './execution/planning-data-loader';
 import { getPlanningEngineCapabilities } from './execution/planning-engine';
+import {
+  markPlanningRunFailed,
+  PlanningOrchestrator
+} from './execution/planning-orchestrator';
 import { resolvePlanningParameters } from './execution/planning-parameters';
 import { preflightPlanningData } from './execution/planning-preflight';
+import { normalizePlanningSnapshotForEngine } from './execution/planning-snapshot-normalizer';
 import {
   loadPlanningConsoleDataset,
   parsePlanningConsoleRequest
@@ -143,12 +149,17 @@ export class PlanningService extends BaseService {
       });
       const canManage = hasRequiredPermission(authorization, PLANNING_MANAGE_PERMISSION);
       const engine = canManage ? getPlanningEngineCapabilities() : undefined;
+      const inlinePlanning = canManage ? inlinePlanningRunsEnabled() : false;
       const trigger = canManage
-        ? this.triggerCredentials
+        ? inlinePlanning
+          ? inlinePlanningTriggerStatus()
+          : this.triggerCredentials
           ? await this.triggerCredentials.getStatus()
           : { configured: false, reason: 'Trigger.dev client is unavailable.' }
         : undefined;
-      const worker = canManage && trigger?.configured
+      const worker = canManage && inlinePlanning
+        ? inlinePlanningWorkerStatus()
+        : canManage && trigger?.configured
         ? await this.readPlanningWorkerStatus(context.accountId)
         : undefined;
       return {
@@ -168,6 +179,14 @@ export class PlanningService extends BaseService {
 
     if (method === 'getPlanningCapabilities') {
       await this.authorizeExecution(context);
+      if (inlinePlanningRunsEnabled()) {
+        return {
+          engine: getPlanningEngineCapabilities(),
+          trigger: inlinePlanningTriggerStatus(),
+          supportedJobTypes: ['supply_plan'],
+          worker: inlinePlanningWorkerStatus()
+        };
+      }
       return {
         engine: getPlanningEngineCapabilities(),
         trigger: this.triggerCredentials
@@ -206,12 +225,36 @@ export class PlanningService extends BaseService {
       const { client } = await this.authorizeConsoleRead(context);
       const accountId = this.accountValue(context, 'account_id');
       const optionType = this.readOptionalString(postData.optionType ?? postData.option_type);
+      const scenarioSourceCode = 'planning_console_scenario';
       const optionResources = {
         scenario: { table: 'planning_scenario', labelField: 'name', fallbackField: 'id' },
         item: { table: 'planning_item', labelField: 'display_name', fallbackField: 'name' },
         resource: { table: 'planning_resource', labelField: 'name', fallbackField: 'id' },
         operation: { table: 'planning_operation', labelField: 'name', fallbackField: 'id' }
       } as const;
+      if (optionType === 'scenario') {
+        const { data: sourceRows, error: sourceError } = await client
+          .from('system_option_sources')
+          .select('code')
+          .eq('code', scenarioSourceCode)
+          .eq('status', 'active')
+          .limit(1);
+        if (sourceError) throw new BadRequestException(sourceError.message);
+        if (Array.isArray(sourceRows) && sourceRows.length > 0) {
+          const { data, error } = await client
+            .from('system_option_items')
+            .select('id,label,value,sort_order,created_at')
+            .eq('source_code', scenarioSourceCode)
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: true })
+            .limit(1000);
+          if (error) throw new BadRequestException(error.message);
+          return ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
+            id: String(row.value ?? row.id ?? ''),
+            label: String(row.label ?? row.value ?? row.id ?? '')
+          }));
+        }
+      }
       const option = optionResources[optionType as keyof typeof optionResources];
       if (!option) throw new BadRequestException(`Unsupported planning console option type: ${optionType || '(empty)'}.`);
       const { data, error } = await client
@@ -275,7 +318,10 @@ export class PlanningService extends BaseService {
           `Planning engine is unavailable: ${engine.reason ?? 'unknown configuration error.'}`
         );
       }
-      const trigger = this.triggerCredentials
+      const inlinePlanning = inlinePlanningRunsEnabled();
+      const trigger = inlinePlanning
+        ? inlinePlanningTriggerStatus()
+        : this.triggerCredentials
         ? await this.triggerCredentials.getStatus()
         : { configured: false, reason: 'Trigger.dev client is unavailable.' };
       if (!trigger.configured) {
@@ -309,6 +355,29 @@ export class PlanningService extends BaseService {
       const version = this.requireRecord(created.version, 'Planning run creation omitted the version.');
       const runId = this.readUuid(run.id, 'run.id');
       const planVersionId = this.readUuid(version.id, 'version.id');
+      if (inlinePlanning) {
+        const triggerRunId = `inline-planning-run:${runId}`;
+        const projection = await client.rpc('planning_project_trigger_run', {
+          p_account_id: accountId,
+          p_run_id: runId,
+          p_trigger_run_id: triggerRunId
+        });
+        if (projection.error) throw new BadRequestException(projection.error.message);
+        this.startInlinePlanningRun({
+          accountId,
+          overrides,
+          planVersionId,
+          runId,
+          scenarioId,
+          triggerRunId
+        });
+        return {
+          run: projection.data,
+          version,
+          triggerRunId,
+          executionMode: 'inline'
+        };
+      }
       const triggerClient = this.requireTriggerClient();
       let triggerRunId: string | undefined;
       try {
@@ -663,7 +732,8 @@ export class PlanningService extends BaseService {
     const overrides = this.readJsonObject(postData.overrides, 'overrides');
     const pool = createPlanningPool();
     try {
-      const snapshot = await new PlanningDataLoader(pool).load(accountId);
+      const loadedSnapshot = await new PlanningDataLoader(pool).load(accountId);
+      const { snapshot } = normalizePlanningSnapshotForEngine(loadedSnapshot);
       const report = preflightPlanningData(snapshot);
       let buildError: string | undefined;
       let parameters: ReturnType<typeof resolvePlanningParameters> | undefined;
@@ -725,6 +795,101 @@ export class PlanningService extends BaseService {
     }
     return this.triggerClient;
   }
+
+  private startInlinePlanningRun(options: {
+    accountId: string;
+    overrides: Record<string, unknown>;
+    planVersionId: string;
+    runId: string;
+    scenarioId: string;
+    triggerRunId: string;
+  }) {
+    const pool = createPlanningPool();
+    void (async () => {
+      try {
+        await updateInlineWorkflowRun(pool, options, 'running');
+        const output = await new PlanningOrchestrator(pool).run({
+          accountId: options.accountId,
+          overrides: options.overrides,
+          planVersionId: options.planVersionId,
+          runId: options.runId,
+          scenarioId: options.scenarioId,
+          triggerRunId: options.triggerRunId
+        });
+        await updateInlineWorkflowRun(pool, options, 'succeeded', output);
+      } catch (error) {
+        await markPlanningRunFailed({
+          accountId: options.accountId,
+          error,
+          planVersionId: options.planVersionId,
+          pool,
+          runId: options.runId
+        }).catch(() => undefined);
+        await updateInlineWorkflowRun(pool, options, 'failed', undefined, error)
+          .catch(() => undefined);
+      } finally {
+        await pool.end().catch(() => undefined);
+      }
+    })();
+  }
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function inlinePlanningRunsEnabled() {
+  const value = String(getEnv().PLANNING_RUN_MODE ?? getEnv().PLANNING_RUN_INLINE ?? '')
+    .trim()
+    .toLowerCase();
+  return ['1', 'true', 'yes', 'on', 'inline', 'local'].includes(value);
+}
+
+function inlinePlanningTriggerStatus() {
+  return {
+    configured: true,
+    mode: 'inline',
+    reason: 'Local inline planning run mode is enabled.'
+  };
+}
+
+function inlinePlanningWorkerStatus() {
+  return {
+    checkedAt: new Date().toISOString(),
+    online: true,
+    reason: 'Local inline planning run mode is enabled.'
+  };
+}
+
+async function updateInlineWorkflowRun(
+  pool: ReturnType<typeof createPlanningPool>,
+  input: {
+    accountId: string;
+    runId: string;
+  },
+  status: 'running' | 'succeeded' | 'failed',
+  output?: Record<string, unknown>,
+  error?: unknown
+) {
+  if (status === 'running') {
+    await pool.query(
+      `update public.wf_job_run
+       set status = 'running', started_at = coalesce(started_at, timezone('utc', now())),
+           attempt = greatest(attempt, 1)
+       where account_id = $1 and id = $2 and status in ('queued', 'running')`,
+      [input.accountId, input.runId]
+    );
+    return;
+  }
+  await pool.query(
+    `update public.wf_job_run
+     set status = $3, output = coalesce($4::jsonb, output),
+         error_message = $5, finished_at = timezone('utc', now())
+     where account_id = $1 and id = $2 and status in ('queued', 'running')`,
+    [
+      input.accountId,
+      input.runId,
+      status,
+      output ? JSON.stringify(output) : null,
+      error instanceof Error ? error.message.slice(0, 4_000) : error ? String(error).slice(0, 4_000) : null
+    ]
+  );
+}

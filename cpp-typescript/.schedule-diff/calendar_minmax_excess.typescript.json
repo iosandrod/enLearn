@@ -91,6 +91,36 @@
       "reference": "auto:make calendar maximum product|2026-01-15T17:00:00|2026-01-15T23:00:00||3||MO|#1"
     },
     {
+      "operation": "make calendar maximum product",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-18T18:00:00",
+      "end": "2026-01-19T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-18T18:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "calendar maximum product @ plant",
+          "date": "2026-01-19T00:00:00",
+          "quantity": 3
+        }
+      ],
+      "operationCost": 12,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 12,
+      "setupPenalty": 0,
+      "planKey": "auto:make calendar maximum product|2026-01-18T18:00:00|2026-01-19T00:00:00||3||MO|#1",
+      "reference": "auto:make calendar maximum product|2026-01-18T18:00:00|2026-01-19T00:00:00||3||MO|#1"
+    },
+    {
       "operation": "make calendar minimum product",
       "demand": null,
       "quantity": 3,
@@ -260,6 +290,15 @@
       "orderType": "MO"
     },
     {
+      "buffer": "calendar maximum product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-19T00:00:00",
+      "quantity": 3,
+      "onhand": 6,
+      "operationPlanKey": "auto:make calendar maximum product|2026-01-18T18:00:00|2026-01-19T00:00:00||3||MO|#1",
+      "orderType": "MO"
+    },
+    {
       "buffer": "calendar minimum product @ plant",
       "bufferBatch": "",
       "date": "1971-01-01T00:00:00",
@@ -298,10 +337,10 @@
   ],
   "resourcePlans": [],
   "costSummary": {
-    "operationCost": 36,
+    "operationCost": 48,
     "resourceCost": 0,
     "setupCost": 0,
-    "totalCost": 36,
+    "totalCost": 48,
     "setupPenalty": 0
   }
 }

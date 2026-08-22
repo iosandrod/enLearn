@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import Parser from "tree-sitter";
@@ -137,9 +138,18 @@ function collectDefinitions(source, filename) {
   return definitions;
 }
 
-export async function extractHeaderApi(project) {
-  const includeRoot = resolve(project, "..", "include", "frepple");
-  const forecastHeader = resolve(project, "..", "src", "forecast", "forecast.h");
+export function resolveNativeSourceRoot(project) {
+  if (process.env.FREPPLE_SOURCE_ROOT) return resolve(process.env.FREPPLE_SOURCE_ROOT);
+  return [
+    resolve(project, "..", "src"),
+    resolve(project, "..", "..", "frepple-master", "src"),
+  ].find((candidate) => existsSync(candidate)) ?? resolve(project, "..", "src");
+}
+
+export async function extractHeaderApi(project, sourceRoot = resolveNativeSourceRoot(project)) {
+  const nativeRoot = resolve(sourceRoot, "..");
+  const includeRoot = resolve(nativeRoot, "include", "frepple");
+  const forecastHeader = resolve(sourceRoot, "forecast", "forecast.h");
   const headers = [...(await walk(includeRoot, ".h")), forecastHeader];
   const models = [];
   for (const header of headers) {

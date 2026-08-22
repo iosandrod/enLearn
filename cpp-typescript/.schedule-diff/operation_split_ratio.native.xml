@@ -16,7 +16,67 @@
     </item>
   </items>
   <operations>
+    <operation name="split lane A" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>P2D</duration>
+      
+      
+      
+      
+      
+      
+      <size_minimum>0</size_minimum>
+      <size_multiple>0.5</size_multiple>
+      <size_maximum>100</size_maximum>
+      <cost>12</cost>
+      
+      
+      
+    </operation>
+    <operation name="split lane B" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>P3D</duration>
+      
+      
+      
+      
+      
+      
+      <size_minimum>0</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>100</size_maximum>
+      <cost>8</cost>
+      
+      
+      
+    </operation>
+    <operation name="split lane future" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>P1D</duration>
+      
+      
+      
+      
+      
+      
+      <size_minimum>0</size_minimum>
+      
+      <size_maximum>100</size_maximum>
+      <cost>4</cost>
+      
+      
+      
+    </operation>
     <operation name="split make" xsi:type="operation_split">
+      
+      
+      
       
       
       
@@ -52,59 +112,14 @@
       
       
     </operation>
-    <operation name="split lane A" xsi:type="operation_fixed_time">
-      
-      
-      
-      <duration>P2D</duration>
-      
-      
-      
-      <size_minimum>0</size_minimum>
-      <size_multiple>0.5</size_multiple>
-      <size_maximum>100</size_maximum>
-      <cost>12</cost>
-      
-      
-      
-    </operation>
-    <operation name="split lane B" xsi:type="operation_fixed_time">
-      
-      
-      
-      <duration>P3D</duration>
-      
-      
-      
-      <size_minimum>0</size_minimum>
-      <size_multiple>1</size_multiple>
-      <size_maximum>100</size_maximum>
-      <cost>8</cost>
-      
-      
-      
-    </operation>
-    <operation name="split lane future" xsi:type="operation_fixed_time">
-      
-      
-      
-      <duration>P1D</duration>
-      
-      
-      
-      <size_minimum>0</size_minimum>
-      
-      <size_maximum>100</size_maximum>
-      <cost>4</cost>
-      
-      
-      
-    </operation>
     <operation name="split ship" xsi:type="operation_fixed_time">
       
       
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

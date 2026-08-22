@@ -130,6 +130,173 @@ function serializedByteLength(value: LowCodeScriptSerializable) {
   return new TextEncoder().encode(JSON.stringify(value)).byteLength;
 }
 
+function serializedValueByteLength(value: unknown) {
+  return serializedByteLength(toLowCodeScriptSerializable(value));
+}
+
+function isSerializableRecord(
+  value: LowCodeScriptSerializable,
+): value is { [key: string]: LowCodeScriptSerializable } {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function compactSerializableArray(
+  value: LowCodeScriptSerializable[],
+  fits: (candidate: LowCodeScriptSerializable) => boolean,
+) {
+  if (fits(value)) return value;
+  if (!value.length) return fits([]) ? [] : undefined;
+
+  let low = 0;
+  let high = value.length;
+  let best: LowCodeScriptSerializable[] | undefined = fits([]) ? [] : undefined;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const candidate = value.slice(0, mid);
+    if (fits(candidate)) {
+      best = candidate;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return best;
+}
+
+function compactSerializableRecord(
+  value: { [key: string]: LowCodeScriptSerializable },
+  fits: (candidate: LowCodeScriptSerializable) => boolean,
+) {
+  if (fits(value)) return value;
+
+  if (Array.isArray(value.rows)) {
+    const { rows, ...rest } = value;
+    const compactRows = compactSerializableArray(rows, (candidateRows) =>
+      fits({ ...rest, rows: candidateRows })
+    );
+    if (compactRows) return { ...rest, rows: compactRows };
+    if (fits({ rows: [] })) return { rows: [] };
+  }
+
+  const result: { [key: string]: LowCodeScriptSerializable } = {};
+  if (!fits(result)) return undefined;
+  for (const [key, item] of Object.entries(value)) {
+    const candidate = { ...result, [key]: item };
+    if (fits(candidate)) {
+      result[key] = item;
+      continue;
+    }
+    const compactItem = compactSerializableValue(item, (nextItem) =>
+      fits({ ...result, [key]: nextItem })
+    );
+    if (typeof compactItem !== 'undefined') result[key] = compactItem;
+  }
+  return result;
+}
+
+function compactSerializableValue(
+  value: LowCodeScriptSerializable,
+  fits: (candidate: LowCodeScriptSerializable) => boolean,
+): LowCodeScriptSerializable | undefined {
+  if (fits(value)) return value;
+  if (Array.isArray(value)) return compactSerializableArray(value, fits);
+  if (isSerializableRecord(value)) return compactSerializableRecord(value, fits);
+  if (typeof value === 'string') {
+    let low = 0;
+    let high = value.length;
+    let best = '';
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const candidate = value.slice(0, mid);
+      if (fits(candidate)) {
+        best = candidate;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return fits(best) ? best : undefined;
+  }
+  return undefined;
+}
+
+function readMaxPayloadBytes(value: unknown) {
+  return readPositiveLimit(value, DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES);
+}
+
+export function compactLowCodeScriptContext(
+  context: LowCodeScriptContextSnapshot,
+  maxPayloadBytes = DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES,
+): LowCodeScriptContextSnapshot {
+  const limit = readMaxPayloadBytes(maxPayloadBytes);
+  const snapshot = toLowCodeScriptSerializable(context) as LowCodeScriptContextSnapshot;
+  if (serializedValueByteLength(snapshot) <= limit) return snapshot;
+
+  const compact: LowCodeScriptContextSnapshot = {
+    page: snapshot.page ?? {},
+    route: snapshot.route ?? {},
+    data: {},
+    forms: {},
+    searches: {},
+    grids: {},
+    event: snapshot.event ?? {},
+    policy: snapshot.policy,
+  };
+
+  const fitsContext = (candidate: LowCodeScriptContextSnapshot) =>
+    serializedValueByteLength(candidate) <= limit;
+  const setSection = (
+    section: 'data' | 'forms' | 'searches' | 'grids',
+    value: Record<string, LowCodeScriptSerializable>,
+  ) => {
+    if (section === 'data') compact.data = value;
+    else if (section === 'forms') compact.forms = value as Record<string, Record<string, unknown>>;
+    else if (section === 'searches') compact.searches = value as Record<string, Record<string, unknown>>;
+    else compact.grids = value;
+  };
+  const fitSectionValue = (
+    section: 'data' | 'forms' | 'searches' | 'grids',
+    key: string,
+    value: LowCodeScriptSerializable,
+  ) => {
+    const current = compact[section] as Record<string, LowCodeScriptSerializable>;
+    const fits = (candidateValue: LowCodeScriptSerializable) =>
+      fitsContext({
+        ...compact,
+        [section]: { ...current, [key]: candidateValue },
+      });
+    const nextValue = compactSerializableValue(value, fits);
+    if (typeof nextValue === 'undefined') return;
+    setSection(section, { ...current, [key]: nextValue });
+  };
+
+  for (const section of ['forms', 'searches', 'grids', 'data'] as const) {
+    const source = snapshot[section] as LowCodeScriptSerializable;
+    if (!isSerializableRecord(source)) continue;
+    for (const [key, value] of Object.entries(source)) {
+      fitSectionValue(section, key, value);
+    }
+  }
+
+  if (fitsContext(compact)) return compact;
+
+  return {
+    page: snapshot.page ?? {},
+    route: {},
+    data: {},
+    forms: {},
+    searches: {},
+    grids: {},
+    event: {
+      name: snapshot.event?.name ?? '',
+      blockId: snapshot.event?.blockId ?? '',
+      blockKind: snapshot.event?.blockKind ?? '',
+      timestamp: snapshot.event?.timestamp ?? '',
+    },
+    policy: snapshot.policy,
+  };
+}
+
 function writeLowCodeScriptLog(level: LowCodeScriptLogLevel, args: unknown[]) {
   if (level === 'info') {
     globalThis.console.info(...args);

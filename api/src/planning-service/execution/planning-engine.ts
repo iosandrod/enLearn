@@ -5,6 +5,12 @@ import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, isAbsolute, join, resolve } from 'node:path';
 import { getEnv } from '../../common/utils/env';
+import {
+  CppTypescriptPlanningEngine,
+  getCppTypescriptCapabilities,
+  resolveCppTypescriptRoot,
+  resolveCppTypescriptWorker
+} from './cpp-typescript-planning-engine';
 import { validatePlanningEngineResult } from './planning-engine-result';
 import {
   PlanningCanceledError,
@@ -257,6 +263,21 @@ export function createPlanningEngine(env = getEnv()): PlanningEngine {
       token: env.PLANNING_ENGINE_TOKEN?.trim()
     });
   }
+  if (mode === 'cpp-typescript') {
+    const workingDirectory = resolveCppTypescriptRoot(env.PLANNING_CPP_TYPESCRIPT_ROOT);
+    const workerPath = resolveCppTypescriptWorker(
+      env.PLANNING_CPP_TYPESCRIPT_WORKER,
+      workingDirectory
+    );
+    return new CppTypescriptPlanningEngine({
+      maxLogBytes: positiveInteger(env.PLANNING_ENGINE_MAX_LOG_BYTES, DEFAULT_MAX_LOG_BYTES),
+      maxLogLines: positiveInteger(env.PLANNING_ENGINE_MAX_LOG_LINES, DEFAULT_MAX_LOG_LINES),
+      maxResponseBytes,
+      timeoutMs,
+      workerPath,
+      workingDirectory
+    });
+  }
   const bridgePath = resolveFreppleBridgePath(env.PLANNING_FREPPLE_BRIDGE);
   return new ProcessPlanningEngine({
     bridgePath,
@@ -275,6 +296,12 @@ export function getPlanningEngineCapabilities(env = getEnv()): PlanningEngineCap
     return endpoint
       ? { available: true, endpoint, mode }
       : { available: false, mode, reason: 'PLANNING_ENGINE_ENDPOINT is not configured.' };
+  }
+  if (mode === 'cpp-typescript') {
+    return getCppTypescriptCapabilities(
+      env.PLANNING_CPP_TYPESCRIPT_ROOT,
+      env.PLANNING_CPP_TYPESCRIPT_WORKER
+    );
   }
   const executable = env.PLANNING_FREPPLE_EXECUTABLE?.trim() ||
     env.FREPPLE_EXECUTABLE?.trim() || 'frepple';
@@ -456,10 +483,10 @@ function commandAvailable(command: string) {
   return spawnSync(finder, [command], { stdio: 'ignore', windowsHide: true }).status === 0;
 }
 
-function normalizedMode(value: unknown): 'http' | 'process' {
+function normalizedMode(value: unknown): 'http' | 'process' | 'cpp-typescript' {
   const mode = String(value ?? 'process').trim().toLowerCase();
-  if (mode !== 'http' && mode !== 'process') {
-    throw new Error('PLANNING_ENGINE_MODE must be process or http.');
+  if (mode !== 'http' && mode !== 'process' && mode !== 'cpp-typescript') {
+    throw new Error('PLANNING_ENGINE_MODE must be process, http, or cpp-typescript.');
   }
   return mode;
 }

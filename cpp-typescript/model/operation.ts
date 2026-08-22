@@ -33,6 +33,8 @@ import type { Item } from "./item.js";
 import type { Location } from "./location.js";
 import type { Resource } from "./resource.js";
 import type { SetupEvent, SetupMatrixRule } from "./setupmatrix.js";
+import { FlowStart } from "./flow.js";
+import { OperationDependency } from "./operationdependency.js";
 import { OperationPlan } from "./operationplan.js";
 import { HasLevel } from "./leveled.js";
 import {
@@ -49,6 +51,13 @@ import { updateOperationProblems } from "./problems_operationplan.js";
 type DurationInput = Duration | number | string;
 type DateInput = PlanningDate | number | string;
 type DurationSink = { value?: Duration } | Duration[] | null;
+type OperationPlanStateSetup = {
+  readonly tmline: HeaderModelAdapter | null;
+  readonly setupDate: PlanningDate;
+  readonly setupName: string;
+  readonly setupRule: HeaderModelAdapter | null;
+  readonly setupOverride: Duration;
+};
 
 const ROUNDING_ERROR = 0.000001;
 
@@ -73,6 +82,21 @@ function call(target: unknown, method: string, ...args: readonly unknown[]): unk
   return typeof callback === "function" ? Reflect.apply(callback, target, args) : undefined;
 }
 
+function adapter(value: unknown): HeaderModelAdapter | null {
+  return value instanceof HeaderModelAdapter ? value : null;
+}
+
+function setupPlanState(info: OperationSetupInfo, date: PlanningDate): OperationPlanStateSetup | null {
+  if (!info.resource) return null;
+  return {
+    tmline: info.resource,
+    setupDate: new PlanningDate(date),
+    setupName: info.setup,
+    setupRule: info.rule,
+    setupOverride: new Duration(-1),
+  };
+}
+
 function link(source: HeaderModelAdapter, property: string, previous: HeaderModelAdapter | null, next: HeaderModelAdapter | null): void {
   if (previous === next) return;
   previous?.modelReferenceRemoved(source, property);
@@ -85,8 +109,32 @@ function setDurationSink(sink: DurationSink | undefined, value: Duration): void 
   else sink.value = new Duration(value);
 }
 
-function operationPlanState(operationPlan: unknown, quantity: number, start: PlanningDate, end: PlanningDate): Record<string, unknown> {
-  return { operationPlan, quantity, start: new PlanningDate(start), end: new PlanningDate(end) };
+function captureSetupState(setup: unknown): OperationPlanStateSetup | null {
+  const setupDate = call(setup, "getDate");
+  if (!(setupDate instanceof PlanningDate)) return null;
+  const setupOverride = call(setup, "getSetupOverride");
+  const setupOverrideValue = setupOverride instanceof Duration ? setupOverride.seconds : Number(setupOverride ?? -1);
+  return {
+    tmline: adapter(call(setup, "getTimeLine")),
+    setupDate: new PlanningDate(setupDate),
+    setupName: String(call(setup, "getSetup") ?? ""),
+    setupRule: adapter(call(setup, "getRule")),
+    setupOverride: new Duration(setupOverrideValue),
+  };
+}
+
+function operationPlanState(operationPlan: unknown, quantity: number, start: PlanningDate, end: PlanningDate,
+  setupState: OperationPlanStateSetup | null = null): Record<string, unknown> {
+  const state: Record<string, unknown> = { operationPlan, quantity, start: new PlanningDate(start), end: new PlanningDate(end) };
+  if (setupState) {
+    state.hasSetup = true;
+    state.tmline = setupState.tmline;
+    state.setupDate = new PlanningDate(setupState.setupDate);
+    state.setupName = setupState.setupName;
+    state.setupRule = setupState.setupRule;
+    state.setupOverride = new Duration(setupState.setupOverride);
+  }
+  return state;
 }
 
 /** Ordering used by the native intrusive OperationPlan list. */
@@ -424,33 +472,85 @@ export class Operation extends ModelEntity<Operation> {
       setDurationSink(sink, new Duration(seconds));
       return forward ? new DateRange(begin, other) : new DateRange(other, begin);
     }
-    const limit = forward ? PlanningDate.infiniteFuture : PlanningDate.infinitePast;
-    const boundaries = this.calendarBoundaries(calendars, begin, limit);
-    if (!forward) boundaries.reverse();
+    const iterators = calendars.map((calendar) => calendar.getEvents(begin, forward));
+    let curdate = new PlanningDate(begin);
+    let availablePeriodStart = new PlanningDate(begin);
+    let status = false;
     let remaining = seconds;
-    let first: number | null = null;
-    let last: number | null = null;
-    for (let index = 0; index < boundaries.length - 1; index += 1) {
-      const current = boundaries[index];
-      const next = boundaries[index + 1];
-      if (current === undefined || next === undefined) continue;
-      const sample = forward ? current : Math.max(next, PlanningDate.infinitePast.getTicks());
-      if (!this.calendarsAvailable(calendars, sample)) continue;
-      const span = Math.abs(next - current);
-      first ??= current;
-      if (remaining <= span) {
-        last = forward ? current + remaining : current - remaining;
-        remaining = 0;
-        break;
+    let result = new DateRange();
+    let guard = 0;
+
+    // Follow Operation::calculateOperationTime's event loop. In particular,
+    // backward availability is evaluated at the selected event with the
+    // calendar's backward boundary rules, rather than at an interval sample.
+    while (guard++ < 100_000) {
+      let selected = forward ? PlanningDate.infiniteFuture : PlanningDate.infinitePast;
+      for (const iterator of iterators) {
+        const date = iterator.getDate();
+        if ((forward && date.compare(selected) < 0) || (!forward && date.compare(selected) > 0)) selected = date;
       }
-      remaining -= span;
-      last = next;
+
+      let available: boolean;
+      if (forward) {
+        available = iterators.every((iterator) =>
+          iterator.getDate().equals(selected) ? iterator.getValue() !== 0 : iterator.getPrevValue() !== 0);
+      } else {
+        available = calendars.every((calendar) => calendar.getValue(selected, false) !== 0);
+      }
+
+      if (seconds === 0) {
+        if (available && forward) {
+          result.setStartAndEnd(curdate, curdate);
+          return result;
+        }
+        if (!available && calendars.every((calendar) => calendar.getValue(selected, true) !== 0)) {
+          result.setStartAndEnd(curdate, curdate);
+          return result;
+        }
+      }
+
+      curdate = new PlanningDate(selected);
+      if (available && !status) {
+        availablePeriodStart = new PlanningDate(curdate);
+        status = true;
+        if (forward && result.getStart().equals(PlanningDate.infinitePast)) result.setStart(curdate);
+        else if (!forward && result.getEnd().equals(PlanningDate.infiniteFuture)) result.setEnd(curdate);
+      } else if (!available && status) {
+        status = false;
+        const delta = forward
+          ? curdate.subtract(availablePeriodStart).seconds
+          : availablePeriodStart.subtract(curdate).seconds;
+        if (delta >= remaining) {
+          if (forward) result.setEnd(availablePeriodStart.add(new Duration(remaining)));
+          else result.setStart(availablePeriodStart.subtract(new Duration(remaining)));
+          setDurationSink(sink, new Duration(seconds));
+          return result;
+        }
+        remaining -= delta;
+      } else if ((forward && curdate.equals(PlanningDate.infiniteFuture))
+        || (!forward && curdate.equals(PlanningDate.infinitePast))) {
+        if (available) {
+          const delta = forward
+            ? curdate.subtract(availablePeriodStart).seconds
+            : availablePeriodStart.subtract(curdate).seconds;
+          if (delta >= remaining) {
+            if (forward) result.setEnd(availablePeriodStart.add(new Duration(remaining)));
+            else result.setStart(availablePeriodStart.subtract(new Duration(remaining)));
+            setDurationSink(sink, new Duration(seconds));
+            return result;
+          }
+        }
+        setDurationSink(sink, new Duration(seconds - remaining));
+        return result;
+      }
+
+      for (const iterator of iterators) {
+        if (iterator.getDate().equals(selected)) iterator.next();
+      }
     }
-    const consumed = seconds - remaining;
-    setDurationSink(sink, new Duration(consumed));
-    const anchor = first ?? begin.getTicks();
-    const finish = last ?? anchor;
-    return forward ? new DateRange(new PlanningDate(anchor), new PlanningDate(finish)) : new DateRange(new PlanningDate(finish), new PlanningDate(anchor));
+
+    setDurationSink(sink, new Duration(seconds - remaining));
+    return result;
   }
   calculateSetup(operationPlan: unknown, setupEnd: DateInput, setupEvent: SetupEvent | null = null): OperationSetupInfo {
     const empty: OperationSetupInfo = { resource: null, rule: null, setup: "", previousEvent: null };
@@ -591,7 +691,7 @@ export class Operation extends ModelEntity<Operation> {
     return Number(call(operationPlan, "getQuantity") ?? result);
   }
   setOperationPlanParameters(operationPlan: unknown, quantity: number, start: DateInput, end: DateInput, preferEnd = true,
-    execute = true, roundDown = true): Record<string, unknown> {
+    execute = true, roundDown = true, _later = false): Record<string, unknown> {
     const q = this.setOperationPlanQuantity(operationPlan, quantity, roundDown, false, false, start);
     let s = asDate(start);
     let e = asDate(end);
@@ -636,6 +736,7 @@ export class Operation extends ModelEntity<Operation> {
     call(plan, "update");
     return plan;
   }
+  extraInstantiate(_operationPlan: unknown, _createSubOperationPlans = true, _useStart = false): boolean { return true; }
   deleteOperationPlans(deleteLocked = false, deleteDeliveries = true): void {
     OperationPlan.deleteOperationPlans(this, deleteLocked, deleteDeliveries);
   }
@@ -692,14 +793,14 @@ export class OperationFixedTime extends Operation {
       return operationPlanState(operationPlan, Number(call(operationPlan, "getQuantity") ?? quantity),
         call(operationPlan, "getStart") as PlanningDate, call(operationPlan, "getEnd") as PlanningDate);
     }
-    const q = this.setOperationPlanQuantity(operationPlan, quantity, roundDown, false, false, start);
+    const q = this.setOperationPlanQuantity(operationPlan, quantity, roundDown, false, execute, PlanningDate.infinitePast);
     let s = asDate(start);
     let e = asDate(end);
     const hasStart = s.isInitialized();
     const hasEnd = e.isInitialized();
     const forward = hasStart && (!hasEnd || !preferEnd);
     const efficiency = Number(call(operationPlan, "getEfficiency", hasStart ? s : e) ?? 1);
-    const productionWanted = efficiency > 0 ? new Duration(this.duration.seconds / efficiency) : new Duration(Number.MAX_SAFE_INTEGER);
+    const productionWanted = efficiency > 0 ? new Duration(this.duration.seconds / efficiency) : new Duration(Duration.MAX);
     const productionActual: DurationSink = {};
     const setupActual: DurationSink = {};
     let productionDates: DateRange;
@@ -773,7 +874,18 @@ export class OperationFixedTime extends Operation {
       s = call(operationPlan, "getStart") as PlanningDate;
       e = call(operationPlan, "getEnd") as PlanningDate;
     }
-    return operationPlanState(operationPlan, productionComplete && setupComplete ? q : 0, s, e);
+    const setupState = execute
+      ? captureSetupState(call(operationPlan, "getSetupEvent"))
+      : setupInfo.resource
+        ? {
+            tmline: setupInfo.resource,
+            setupDate: setupDates.getEnd(),
+            setupName: setupInfo.setup,
+            setupRule: setupInfo.rule,
+            setupOverride: new Duration(-1),
+          }
+        : null;
+    return operationPlanState(operationPlan, productionComplete && setupComplete ? q : 0, s, e, setupState);
   }
 }
 
@@ -793,31 +905,379 @@ export class OperationTimePer extends Operation {
     return [total, asDate(date).subtract(total)];
   }
   override setOperationPlanParameters(operationPlan: unknown, quantity: number, start: DateInput, end: DateInput,
-    preferEnd = true, execute = true, roundDown = true): Record<string, unknown> {
+    preferEnd = true, execute = true, roundDown = true, later = false): Record<string, unknown> {
     if (!operationPlan || quantity < 0) throw new LogicException("Incorrect parameters for time-per operationplan");
     if (Boolean(call(operationPlan, "getConfirmed"))
       && !Number(call(operationPlan, "getQuantityCompleted") ?? 0)
       && !Boolean(call(operationPlan, "getForcedUpdate"))) {
       return operationPlanState(operationPlan, Number(call(operationPlan, "getQuantity") ?? quantity),
-        call(operationPlan, "getStart") as PlanningDate, call(operationPlan, "getEnd") as PlanningDate);
+        call(operationPlan, "getStart") as PlanningDate, call(operationPlan, "getEnd") as PlanningDate,
+        captureSetupState(call(operationPlan, "getSetupEvent")));
     }
-    const q = this.setOperationPlanQuantity(operationPlan, quantity, roundDown, false, false, start);
-    const efficiency = Number(call(operationPlan, "getEfficiency", asDate(start).isInitialized() ? asDate(start) : asDate(end)) ?? 1);
-    let wantedSeconds = efficiency > 0
-      ? (this.duration.seconds + this.durationPer.seconds * q) / efficiency
-      : Number.MAX_SAFE_INTEGER;
-    const completed = Number(call(operationPlan, "getQuantityCompleted") ?? 0);
-    const currentQuantity = Number(call(operationPlan, "getQuantity") ?? q);
-    if (completed && currentQuantity) {
-      const remaining = Number(call(operationPlan, "getQuantityRemaining") ?? Math.max(currentQuantity - completed, 0));
-      wantedSeconds *= remaining / currentQuantity;
+    let q = Number(quantity);
+    let s = asDate(start);
+    let e = asDate(end);
+    if (Boolean(call(operationPlan, "getProposed"))) {
+      if (q > 0) {
+        const sizeMinimumCalendar = this.getSizeMinimumCalendar();
+        if (sizeMinimumCalendar) {
+          const tmp1: DurationSink = {};
+          const tmp2 = this.calculateOperationTime(operationPlan, s, e, tmp1);
+          const curmin = Number(call(sizeMinimumCalendar, "getValue", tmp2.getEnd()) ?? 0);
+          if (q < curmin) q = roundDown ? 0.0 : curmin;
+        }
+        if (q < this.getSizeMinimum()) q = roundDown ? 0.0 : this.getSizeMinimum();
+      }
+      if (q > this.getSizeMaximum()) q = this.getSizeMaximum();
     }
-    const wanted = new Duration(wantedSeconds);
-    let s = asDate(start); let e = asDate(end);
-    if (e.isInitialized() && (preferEnd || !s.isInitialized())) s = this.calculateOperationTime(operationPlan, e, wanted, false).getStart();
-    else if (s.isInitialized()) e = this.calculateOperationTime(operationPlan, s, wanted, true).getEnd();
-    if (execute) { call(operationPlan, "setStartEndAndQuantity", s, e, q); call(operationPlan, "setQuantityRaw", q); }
-    return operationPlanState(operationPlan, q, s, e);
+
+    const currentState = (): Record<string, unknown> => operationPlanState(
+      operationPlan,
+      Number(call(operationPlan, "getQuantity") ?? q),
+      call(operationPlan, "getStart") as PlanningDate,
+      call(operationPlan, "getEnd") as PlanningDate,
+      captureSetupState(call(operationPlan, "getSetupEvent")),
+    );
+    const currentEfficiency = Number(call(operationPlan, "getEfficiency", s.isInitialized() ? s : e) ?? 1);
+
+    if (s.isInitialized() && e.isInitialized()) {
+      const setupInfo = this.calculateSetup(operationPlan, s);
+      const setupOverride = call(operationPlan, "getSetupOverride") as Duration | undefined;
+      const hasSetupOverride = setupOverride instanceof Duration && setupOverride.seconds >= 0;
+      let setupDates: DateRange;
+      let setupDuration = new Duration();
+      let productionDates: DateRange;
+      let productionDuration = new Duration();
+
+      if ((Boolean(setupInfo.rule) && currentEfficiency > 0.0) || hasSetupOverride) {
+        const setupWantedDuration = hasSetupOverride
+          ? setupOverride
+          : new Duration(Number(call(operationPlan, "getQuantityCompleted") ?? 0)
+            ? 0.0
+            : (setupInfo.rule?.getDuration().seconds ?? 0) / currentEfficiency);
+        const setupActual: DurationSink = {};
+        setupDates = this.calculateOperationTime(operationPlan, s, setupWantedDuration, true, setupActual);
+        setupDuration = setupActual.value ?? new Duration();
+        if (setupDates.getEnd().compare(e) > 0 || !setupDuration.equals(setupWantedDuration)) {
+          if (!execute) return operationPlanState(operationPlan, 0.0, setupDates.getStart(), setupDates.getEnd());
+          this.setOperationPlanQuantity(operationPlan, 0, true, false, execute);
+          call(operationPlan, "clearSetupEvent");
+          call(operationPlan, "setStartAndEnd", setupDates.getStart(), setupDates.getEnd());
+          return currentState();
+        }
+        const productionActual: DurationSink = {};
+        productionDates = this.calculateOperationTime(operationPlan, setupDates.getEnd(), e, productionActual);
+        productionDuration = productionActual.value ?? new Duration();
+      } else {
+        const productionActual: DurationSink = {};
+        productionDates = this.calculateOperationTime(operationPlan, s, e, productionActual);
+        productionDuration = productionActual.value ?? new Duration();
+        setupDates = new DateRange(productionDates.getStart(), productionDates.getStart());
+      }
+
+      if (currentEfficiency <= 0.0 || productionDuration.compare(new Duration(this.duration.seconds / currentEfficiency)) < 0) {
+        if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+        this.setOperationPlanQuantity(operationPlan, 0, true, false);
+        call(operationPlan, "clearSetupEvent");
+        call(operationPlan, "setStartAndEnd", productionDates.getStart(), productionDates.getEnd());
+        return currentState();
+      }
+
+      if (this.durationPer.seconds) {
+        const fittingQuantity = (productionDuration.seconds - this.duration.seconds / currentEfficiency)
+          / this.durationPer.seconds * currentEfficiency;
+        if (fittingQuantity > q - ROUNDING_ERROR) {
+          q = this.setOperationPlanQuantity(operationPlan, q, roundDown, false, execute);
+        } else {
+          q = this.setOperationPlanQuantity(operationPlan, fittingQuantity > 0 ? fittingQuantity : 0.0,
+            roundDown, false, execute);
+        }
+      } else {
+        q = this.setOperationPlanQuantity(operationPlan, q, roundDown, false, execute);
+      }
+
+      const productionWantedDuration = new Duration((this.duration.seconds + this.durationPer.seconds * q) / currentEfficiency);
+      const productionActual: DurationSink = {};
+      productionDates = this.calculateOperationTime(
+        operationPlan, e, productionWantedDuration, false, productionActual);
+      productionDuration = productionActual.value ?? new Duration();
+      if (productionDates.getStart().compare(setupDates.getEnd()) !== 0) {
+        if (setupDuration.seconds) {
+          setupDates = this.calculateOperationTime(
+            operationPlan, productionDates.getStart(), setupDuration, false);
+        } else {
+          setupDates = new DateRange(productionDates.getStart(), productionDates.getStart());
+        }
+      }
+      if (!execute) {
+        if (Boolean(setupInfo.resource)) {
+          return operationPlanState(operationPlan, q, setupDates.getStart(), productionDates.getEnd(),
+            setupPlanState(setupInfo, setupDates.getEnd()));
+        }
+        return operationPlanState(operationPlan, q, productionDates.getStart(), productionDates.getEnd());
+      }
+      if (Boolean(setupInfo.resource) || hasSetupOverride) {
+        call(operationPlan, "setSetupEvent", setupInfo.resource, setupDates.getEnd(), setupInfo.setup, setupInfo.rule);
+      } else {
+        call(operationPlan, "clearSetupEvent");
+      }
+      call(operationPlan, "setStartAndEnd", setupDates.getStart(), productionDates.getEnd());
+      return currentState();
+    }
+
+    if (e.isInitialized() || !s.isInitialized()) {
+      q = this.setOperationPlanQuantity(operationPlan, q, roundDown, false, execute);
+      if (currentEfficiency > 0.0) {
+        let productionWantedDuration = new Duration(
+          (this.duration.seconds + this.durationPer.seconds * q) / currentEfficiency,
+        );
+        if (Number(call(operationPlan, "getQuantityCompleted") ?? 0) && Number(call(operationPlan, "getQuantity") ?? 0)) {
+          productionWantedDuration = productionWantedDuration.multiply(
+            Number(call(operationPlan, "getQuantityRemaining") ?? 0) / Number(call(operationPlan, "getQuantity") ?? 0),
+          );
+        }
+        let productionActual: DurationSink = {};
+        let productionDates = this.calculateOperationTime(
+          operationPlan, e, productionWantedDuration, false, productionActual);
+        let productionDuration = productionActual.value ?? new Duration();
+        if (later && productionDates.getEnd().compare(e) < 0) {
+          const nextOk = this.calculateOperationTime(operationPlan, e, new Duration(1), true);
+          productionActual = {};
+          productionDates = this.calculateOperationTime(
+            operationPlan, nextOk.getEnd(), productionWantedDuration, false, productionActual);
+          productionDuration = productionActual.value ?? new Duration();
+        }
+        if (productionDuration.equals(productionWantedDuration)) {
+          const setupInfo = this.calculateSetup(operationPlan, productionDates.getStart());
+          const setupOverride = call(operationPlan, "getSetupOverride") as Duration | undefined;
+          const hasSetupOverride = setupOverride instanceof Duration && setupOverride.seconds >= 0;
+          let setupDates: DateRange;
+          let setupDuration = new Duration();
+          if ((Boolean(setupInfo.rule) && currentEfficiency > 0.0) || hasSetupOverride) {
+            const setupWantedDuration = hasSetupOverride
+              ? setupOverride
+              : new Duration(Number(call(operationPlan, "getQuantityCompleted") ?? 0)
+                ? 0.0
+                : (setupInfo.rule?.getDuration().seconds ?? 0) / currentEfficiency);
+            const setupActual: DurationSink = {};
+            setupDates = this.calculateOperationTime(
+              operationPlan, productionDates.getStart(), setupWantedDuration, false, setupActual);
+            setupDuration = setupActual.value ?? new Duration();
+            if (!setupDuration.equals(setupWantedDuration)) {
+              if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+              this.setOperationPlanQuantity(operationPlan, 0, true, false);
+              call(operationPlan, "clearSetupEvent");
+              call(operationPlan, "setStartAndEnd", PlanningDate.infinitePast, e);
+            }
+          } else {
+            setupDates = new DateRange(productionDates.getStart(), productionDates.getStart());
+          }
+          if (!execute) {
+            if (Boolean(setupInfo.resource)) {
+              return operationPlanState(operationPlan, q, setupDates.getStart(), productionDates.getEnd(),
+                setupPlanState(setupInfo, setupDates.getEnd()));
+            }
+            return operationPlanState(operationPlan, q, productionDates.getStart(), productionDates.getEnd());
+          }
+          if (Boolean(setupInfo.resource) || hasSetupOverride) {
+            call(operationPlan, "setSetupEvent", setupInfo.resource, setupDates.getEnd(), setupInfo.setup, setupInfo.rule);
+          } else {
+            call(operationPlan, "clearSetupEvent");
+          }
+          call(operationPlan, "setStartAndEnd", setupDates.getStart(), productionDates.getEnd());
+        } else if (currentEfficiency <= 0.0
+          || (productionDuration.compare(new Duration(this.duration.seconds / currentEfficiency)) < 0
+            && !Number(call(operationPlan, "getQuantityCompleted") ?? 0))) {
+          if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+          this.setOperationPlanQuantity(operationPlan, 0, true, false);
+          call(operationPlan, "clearSetupEvent");
+          call(operationPlan, "setStartAndEnd", PlanningDate.infinitePast, e);
+        } else {
+          const setupInfo = this.calculateSetup(operationPlan, productionDates.getStart());
+          const setupOverride = call(operationPlan, "getSetupOverride") as Duration | undefined;
+          const hasSetupOverride = setupOverride instanceof Duration && setupOverride.seconds >= 0;
+          let setupDates: DateRange;
+          let setupDuration = new Duration();
+          if ((Boolean(setupInfo.rule) && currentEfficiency > 0.0) || hasSetupOverride) {
+            const setupWantedDuration = hasSetupOverride
+              ? setupOverride
+              : new Duration(Number(call(operationPlan, "getQuantityCompleted") ?? 0)
+                ? 0.0
+                : (setupInfo.rule?.getDuration().seconds ?? 0) / currentEfficiency);
+            const setupActual: DurationSink = {};
+            setupDates = this.calculateOperationTime(
+              operationPlan, productionDates.getStart(), setupWantedDuration, false, setupActual);
+            setupDuration = setupActual.value ?? new Duration();
+            if (!setupDuration.equals(setupWantedDuration)) {
+              if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+              this.setOperationPlanQuantity(operationPlan, 0, true, false);
+              call(operationPlan, "clearSetupEvent");
+              call(operationPlan, "setStartAndEnd", PlanningDate.infinitePast, e);
+            }
+          } else {
+            setupDuration = new Duration();
+            setupDates = new DateRange(productionDates.getStart(), productionDates.getStart());
+          }
+
+          let maxQuantity: number;
+          if (Number(call(operationPlan, "getQuantityCompleted") ?? 0) && productionWantedDuration.seconds) {
+            maxQuantity = Number(call(operationPlan, "getQuantityRemaining") ?? 0)
+              * productionDuration.seconds / productionWantedDuration.seconds;
+          } else if (!this.durationPer.seconds || !productionWantedDuration.seconds) {
+            maxQuantity = q;
+          } else {
+            maxQuantity = (productionDuration.seconds - setupDuration.seconds - this.duration.seconds)
+              / this.durationPer.seconds * currentEfficiency;
+          }
+          q = this.setOperationPlanQuantity(operationPlan, q < maxQuantity ? q : maxQuantity, roundDown, false, execute);
+          if (!q) {
+            if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+            this.setOperationPlanQuantity(operationPlan, 0, true, false);
+            call(operationPlan, "clearSetupEvent");
+            call(operationPlan, "setStartAndEnd", PlanningDate.infinitePast, e);
+          } else {
+            productionWantedDuration = new Duration((this.duration.seconds + this.durationPer.seconds * q) / currentEfficiency);
+            productionActual = {};
+            productionDates = this.calculateOperationTime(
+              operationPlan, e, productionWantedDuration, false, productionActual);
+            productionDuration = productionActual.value ?? new Duration();
+            if (!execute) {
+              if (Boolean(setupInfo.resource)) {
+                return operationPlanState(operationPlan, q, setupDates.getStart(), productionDates.getEnd(),
+                  setupPlanState(setupInfo, setupDates.getEnd()));
+              }
+              return operationPlanState(operationPlan, q, productionDates.getStart(), productionDates.getEnd());
+            }
+            if (Boolean(setupInfo.resource) || hasSetupOverride) {
+              call(operationPlan, "setSetupEvent", setupInfo.resource, setupDates.getEnd(), setupInfo.setup, setupInfo.rule);
+            } else {
+              call(operationPlan, "clearSetupEvent");
+            }
+            call(operationPlan, "setStartAndEnd", productionDates.getStart(), productionDates.getEnd());
+          }
+      }
+      return currentState();
+    }
+    }
+
+    let d = s;
+    q = this.setOperationPlanQuantity(operationPlan, q, roundDown, false, execute);
+    let productionWantedDuration = currentEfficiency > 0.0
+      ? new Duration((this.duration.seconds + this.durationPer.seconds * q) / currentEfficiency)
+      : Duration.MAX;
+    if (Number(call(operationPlan, "getQuantityCompleted") ?? 0) && Number(call(operationPlan, "getQuantity") ?? 0)) {
+      productionWantedDuration = productionWantedDuration.multiply(
+        Number(call(operationPlan, "getQuantityRemaining") ?? 0) / Number(call(operationPlan, "getQuantity") ?? 0),
+      );
+    }
+    while (true) {
+      const setupInfo = this.calculateSetup(operationPlan, d, null);
+      const setupOverride = call(operationPlan, "getSetupOverride") as Duration | undefined;
+      const hasSetupOverride = setupOverride instanceof Duration && setupOverride.seconds >= 0;
+      let setupDates: DateRange;
+      let setupDuration = new Duration();
+      if ((currentEfficiency > 0.0 && Boolean(setupInfo.rule)) || hasSetupOverride) {
+        const setupWantedDuration = hasSetupOverride
+          ? setupOverride
+          : new Duration(Number(call(operationPlan, "getQuantityCompleted") ?? 0)
+            ? 0.0
+            : (setupInfo.rule?.getDuration().seconds ?? 0) / currentEfficiency);
+        const setupActual: DurationSink = {};
+        setupDates = this.calculateOperationTime(operationPlan, d, setupWantedDuration, true, setupActual);
+        setupDuration = setupActual.value ?? new Duration();
+        if (!setupDuration.equals(setupWantedDuration)) {
+          if (!execute) return operationPlanState(operationPlan, 0.0, setupDates.getStart(), setupDates.getEnd());
+          this.setOperationPlanQuantity(operationPlan, 0, true, false);
+          call(operationPlan, "clearSetupEvent");
+          call(operationPlan, "setStartAndEnd", setupDates.getStart(), setupDates.getEnd());
+          return currentState();
+        }
+      } else {
+        setupDates = new DateRange(d, d);
+      }
+
+      let productionActual: DurationSink = {};
+      let productionDates = this.calculateOperationTime(
+        operationPlan, setupDates.getEnd(), productionWantedDuration, true, productionActual);
+      let productionDuration = productionActual.value ?? new Duration();
+      if (productionDates.getStart().compare(setupDates.getEnd()) !== 0) {
+        if (setupDates.getStart().compare(setupDates.getEnd()) === 0) {
+          setupDates.setStart(productionDates.getStart());
+        }
+        setupDates.setEnd(productionDates.getStart());
+      }
+      if (productionDuration.equals(productionWantedDuration)) {
+        if (!execute) {
+          if (Boolean(setupInfo.resource)) {
+            return operationPlanState(operationPlan, q, setupDates.getStart(), productionDates.getEnd(),
+              setupPlanState(setupInfo, setupDates.getEnd()));
+          }
+          return operationPlanState(operationPlan, q, productionDates.getStart(), productionDates.getEnd());
+        }
+        if (Boolean(setupInfo.resource) || hasSetupOverride) {
+          call(operationPlan, "setSetupEvent", setupInfo.resource, setupDates.getEnd(), setupInfo.setup, setupInfo.rule);
+        } else {
+          call(operationPlan, "clearSetupEvent");
+        }
+        call(operationPlan, "setStartAndEnd", setupDates.getStart(), productionDates.getEnd());
+      } else if (currentEfficiency <= 0.0
+        || (productionDuration.compare(new Duration(this.duration.seconds / currentEfficiency)) < 0
+          && !Number(call(operationPlan, "getQuantityCompleted") ?? 0))) {
+            if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+        this.setOperationPlanQuantity(operationPlan, 0, true, false);
+        call(operationPlan, "clearSetupEvent");
+        call(operationPlan, "setStartAndEnd", d, PlanningDate.infiniteFuture);
+      } else {
+        let maxQuantity: number;
+        if (Number(call(operationPlan, "getQuantityCompleted") ?? 0) && productionWantedDuration.seconds) {
+          maxQuantity = Number(call(operationPlan, "getQuantityRemaining") ?? 0)
+            * productionDuration.seconds / productionWantedDuration.seconds;
+        } else if (!this.durationPer.seconds || !productionWantedDuration.seconds) {
+          maxQuantity = q;
+        } else {
+          maxQuantity = (productionDuration.seconds - this.duration.seconds) / this.durationPer.seconds * currentEfficiency;
+        }
+        q = this.setOperationPlanQuantity(operationPlan, q < maxQuantity ? q : maxQuantity, roundDown, false, execute);
+        if (!q) {
+            if (!execute) return operationPlanState(operationPlan, 0.0, productionDates.getStart(), productionDates.getEnd());
+          this.setOperationPlanQuantity(operationPlan, 0, true, false);
+          call(operationPlan, "clearSetupEvent");
+          call(operationPlan, "setStartAndEnd", d, PlanningDate.infiniteFuture);
+        } else {
+          productionWantedDuration = new Duration((this.duration.seconds + this.durationPer.seconds * q) / currentEfficiency);
+          productionActual = {};
+          productionDates = this.calculateOperationTime(
+            operationPlan, setupDates.getEnd(), productionWantedDuration, true, productionActual);
+          productionDuration = productionActual.value ?? new Duration();
+          if (!execute) {
+            if (Boolean(setupInfo.resource)) {
+              return operationPlanState(operationPlan, q, setupDates.getStart(), productionDates.getEnd(),
+                setupPlanState(setupInfo, setupDates.getEnd()));
+            }
+            return operationPlanState(operationPlan, q, productionDates.getStart(), productionDates.getEnd());
+          }
+          if (Boolean(setupInfo.resource) || hasSetupOverride) {
+            call(operationPlan, "setSetupEvent", setupInfo.resource, setupDates.getEnd(), setupInfo.setup, setupInfo.rule);
+          } else {
+            call(operationPlan, "clearSetupEvent");
+          }
+          call(operationPlan, "setStartAndEnd", productionDates.getStart(), productionDates.getEnd());
+        }
+      }
+
+      if (preferEnd && call(operationPlan, "getStart") instanceof PlanningDate
+        && (call(operationPlan, "getStart") as PlanningDate).compare(s) < 0
+        && !s.equals(PlanningDate.infiniteFuture) && !d.equals(PlanningDate.infiniteFuture)) {
+        d = d.add(new Duration(3_600));
+      } else if (!preferEnd && call(operationPlan, "getStart") instanceof PlanningDate
+        && (call(operationPlan, "getStart") as PlanningDate).compare(s) > 0
+        && !s.equals(PlanningDate.infinitePast) && !d.equals(PlanningDate.infinitePast)) {
+        d = d.subtract(new Duration(3_600));
+      } else {
+        break;
+      }
+    }
+    return currentState();
   }
 }
 
@@ -856,13 +1316,84 @@ export class OperationRouting extends OperationComposite {
   override getType(): string { return "operation_routing"; }
   getHardPostTime(): boolean { return this.hardPostTime; }
   setHardPostTime(value: boolean): void { this.hardPostTime = Boolean(value); }
-  useDependencies(): boolean { return this.getDependencies().length > 0; }
+  useDependencies(): boolean {
+    for (const association of this.getSubOperations()) {
+      const step = call(association, "getOperation") as Operation | null;
+      if (!(step instanceof Operation)) continue;
+      for (const dependency of step.getDependencies()) {
+        if (!(dependency instanceof OperationDependency)) continue;
+        const operation = dependency.getOperation();
+        const blockedBy = dependency.getBlockedBy();
+        if ((blockedBy === step && call(operation, "getOwner") === this)
+          || (operation === step && call(blockedBy, "getOwner") === this)) return true;
+      }
+    }
+    return false;
+  }
   override addSubOperationPlan(owner: unknown, child: unknown, fast = true): void {
     call(owner, "attachSubOperationPlan", child, fast ? "prepend" : "append");
+    // OperationRouting::addSubOperationPlan updates the owner immediately.
+    // This recomputes the routing dates before the next solver step asks for
+    // the owner's start date.
+    call(owner, "update");
+  }
+  override extraInstantiate(operationPlan: unknown, createSubOperationPlans = true, useStart = false): boolean {
+    if (!createSubOperationPlans) return true;
+    const existing = call(operationPlan, "getSubOperationPlans");
+    if (existing && typeof (existing as Iterable<unknown>)[Symbol.iterator] === "function"
+      && [...existing as Iterable<unknown>].length) return true;
+
+    const ownerPlan = operationPlan as OperationPlan;
+    const steps = this.getSubOperations()
+      .map((association) => call(association, "getOperation"))
+      .filter((candidate): candidate is Operation => candidate instanceof Operation);
+    let plan: unknown = null;
+    if (!useStart) {
+      let date = ownerPlan.getEnd();
+      for (const step of [...steps].reverse()) {
+        if (plan) date = date.subtract(step.getPostTime());
+        plan = step.createOperationPlan(
+          ownerPlan.getQuantity(),
+          PlanningDate.infinitePast,
+          date,
+          ownerPlan.getBatch(),
+          null,
+          ownerPlan,
+          false,
+          true,
+        );
+        date = call(plan, "getStart") as PlanningDate;
+        call(plan, "setStatus", ownerPlan.getStatus());
+      }
+    } else {
+      let date = ownerPlan.getStart();
+      if (!date.isInitialized()) date = PlanningDate.now();
+      for (const step of steps) {
+        plan = step.createOperationPlan(
+          ownerPlan.getQuantity(),
+          date,
+          PlanningDate.infinitePast,
+          ownerPlan.getBatch(),
+          null,
+          null,
+          false,
+          true,
+        );
+        const end = call(plan, "getEnd");
+        date = end instanceof PlanningDate ? end.add(step.getPostTime()) : date;
+        call(plan, "setOwner", ownerPlan);
+        call(plan, "setStatus", ownerPlan.getStatus());
+      }
+    }
+    return true;
   }
   override setOperationPlanParameters(operationPlan: unknown, quantity: number, start: DateInput, end: DateInput,
-    preferEnd = true, execute = true, roundDown = true): Record<string, unknown> {
+    preferEnd = true, execute = true, roundDown = true, later = false): Record<string, unknown> {
     if (!operationPlan || quantity < 0) throw new LogicException("Incorrect parameters for routing operationplan");
+    if (Boolean(call(operationPlan, "getConfirmed"))) {
+      return operationPlanState(operationPlan, Number(call(operationPlan, "getQuantity") ?? quantity),
+        call(operationPlan, "getStart") as PlanningDate, call(operationPlan, "getEnd") as PlanningDate);
+    }
     const children = call(operationPlan, "getSubOperationPlans");
     const childPlans = children && typeof (children as Iterable<unknown>)[Symbol.iterator] === "function"
       ? [...children as Iterable<unknown>] : [];
@@ -875,7 +1406,64 @@ export class OperationRouting extends OperationComposite {
       if (execute) call(operationPlan, "setStartEndAndQuantity", s, e, q);
       return operationPlanState(operationPlan, q, s, e);
     }
-    return super.setOperationPlanParameters(operationPlan, quantity, start, end, preferEnd, execute, roundDown);
+
+    // OperationRouting::setOperationPlanParameters moves every step in the
+    // routing order.  The last step is anchored at the requested end, while
+    // the first step is anchored at the requested start.
+    let firstStart = new PlanningDate(start);
+    let firstEnd = new PlanningDate(end);
+    let lastQuantity = quantity;
+    let firstResult: Record<string, unknown> | null = null;
+    let lastResult: Record<string, unknown> | null = null;
+    let realFirst = true;
+    if (firstEnd.isInitialized()) {
+      for (let index = childPlans.length - 1; index >= 0; index -= 1) {
+        const child = childPlans[index];
+        if (!child) continue;
+        const result = call(child, "setOperationPlanParameters", quantity,
+          PlanningDate.infinitePast, firstEnd, preferEnd, execute, roundDown,
+          realFirst ? later : false) as Record<string, unknown> | undefined;
+        if (!result) continue;
+        lastResult = result;
+        const childStart = result.start;
+        const childEnd = result.end;
+        if (childStart instanceof PlanningDate) firstEnd = new PlanningDate(childStart);
+        if (realFirst) {
+          firstStart = childStart instanceof PlanningDate ? new PlanningDate(childStart) : firstEnd;
+          firstResult = result;
+          realFirst = false;
+        }
+        lastQuantity = Number(result.quantity ?? lastQuantity);
+        if (childEnd instanceof PlanningDate && realFirst) firstStart = new PlanningDate(childEnd);
+      }
+      const parentEnd = firstResult?.end instanceof PlanningDate
+        ? firstResult.end : (lastResult?.end instanceof PlanningDate ? lastResult.end : firstStart);
+      if (execute) call(operationPlan, "setStartEndAndQuantity", firstEnd, parentEnd, lastQuantity);
+      return operationPlanState(operationPlan, lastQuantity, firstEnd, parentEnd);
+    }
+    if (firstStart.isInitialized()) {
+      let currentStart = new PlanningDate(firstStart);
+      for (const child of childPlans) {
+        const result = call(child, "setOperationPlanParameters", quantity,
+          currentStart, PlanningDate.infinitePast, preferEnd, execute, roundDown,
+          realFirst ? later : true) as Record<string, unknown> | undefined;
+        if (!result) continue;
+        lastResult = result;
+        const childStart = result.start;
+        const childEnd = result.end;
+        if (realFirst) {
+          firstStart = childStart instanceof PlanningDate ? new PlanningDate(childStart) : currentStart;
+          realFirst = false;
+        }
+        if (childEnd instanceof PlanningDate) currentStart = new PlanningDate(childEnd);
+        lastQuantity = Number(result.quantity ?? lastQuantity);
+      }
+      const parentEnd = lastResult?.end instanceof PlanningDate ? lastResult.end : currentStart;
+      if (execute) call(operationPlan, "setStartEndAndQuantity", firstStart, parentEnd, lastQuantity);
+      return operationPlanState(operationPlan, lastQuantity, firstStart, parentEnd);
+    }
+    return operationPlanState(operationPlan, Number(call(operationPlan, "getQuantity") ?? quantity),
+      call(operationPlan, "getStart") as PlanningDate, call(operationPlan, "getEnd") as PlanningDate);
   }
   override setOperationPlanQuantity(operationPlan: unknown, quantity: number, roundDown = true, update = true,
     execute = true, end: DateInput = PlanningDate.infinitePast): number {
@@ -922,6 +1510,42 @@ export class OperationSplit extends OperationComposite {
     if (existing.includes(child)) return;
     call(owner, "attachSubOperationPlan", child, "prepend");
   }
+  override extraInstantiate(operationPlan: unknown, createSubOperationPlans = true): boolean {
+    if (!createSubOperationPlans) return true;
+    const existing = call(operationPlan, "getSubOperationPlans");
+    if (existing && typeof (existing as Iterable<unknown>)[Symbol.iterator] === "function"
+      && [...existing as Iterable<unknown>].length) return true;
+
+    const ownerPlan = operationPlan as OperationPlan;
+    const end = ownerPlan.getEnd();
+    const associations = this.getSubOperations().filter((association) => {
+      const effective = call(association, "getEffective") as DateRange | undefined;
+      return Number(call(association, "getPriority") ?? 0) !== 0
+        && (!effective || effective.within(end));
+    });
+    const sumPercent = associations.reduce((sum, association) => sum + Number(call(association, "getPriority") ?? 0), 0);
+    if (!sumPercent) return true;
+    for (const association of associations) {
+      const step = call(association, "getOperation");
+      if (!(step instanceof Operation)) continue;
+      const producingFlow = step.getFlows().find((flow) => {
+        const effective = call(flow, "getEffective") as DateRange | undefined;
+        return Number(call(flow, "getQuantity") ?? 0) > 0 && (!effective || effective.within(end));
+      });
+      const flowQuantity = Number(call(producingFlow, "getQuantity") ?? 1) || 1;
+      step.createOperationPlan(
+        ownerPlan.getQuantity() * Number(call(association, "getPriority") ?? 0) / sumPercent / flowQuantity,
+        ownerPlan.getStart(),
+        end,
+        ownerPlan.getBatch(),
+        null,
+        ownerPlan,
+        false,
+        true,
+      );
+    }
+    return true;
+  }
 }
 
 export class OperationAlternate extends OperationComposite {
@@ -940,6 +1564,34 @@ export class OperationAlternate extends OperationComposite {
       call(previous, "dispose");
     }
     call(owner, "attachSubOperationPlan", child, "single");
+  }
+  override extraInstantiate(operationPlan: unknown, createSubOperationPlans = true): boolean {
+    if (!createSubOperationPlans) return true;
+    const existing = call(operationPlan, "getSubOperationPlans");
+    if (existing && typeof (existing as Iterable<unknown>)[Symbol.iterator] === "function"
+      && [...existing as Iterable<unknown>].length) return true;
+
+    const ownerPlan = operationPlan as OperationPlan;
+    const end = ownerPlan.getEnd();
+    const association = this.getSubOperations().find((candidate) => {
+      const effective = call(candidate, "getEffective") as DateRange | undefined;
+      return Number(call(candidate, "getPriority") ?? 1) !== 0
+        && (!effective || effective.within(end));
+    });
+    const step = call(association, "getOperation");
+    if (step instanceof Operation) {
+      step.createOperationPlan(
+        ownerPlan.getQuantity(),
+        ownerPlan.getStart(),
+        end,
+        ownerPlan.getBatch(),
+        null,
+        ownerPlan,
+        false,
+        true,
+      );
+    }
+    return true;
   }
   override setOperationPlanParameters(operationPlan: unknown, quantity: number, start: DateInput, end: DateInput,
     preferEnd = true, execute = true, roundDown = true, later = false): Record<string, unknown> {
@@ -969,13 +1621,27 @@ export class OperationDelivery extends OperationFixedTime {
   static override readonly cppBases: readonly string[] = ["OperationFixedTime"];
   static override readonly cppQualifiedNames: readonly string[] = ["OperationDelivery"];
   private buffer: Buffer | null = null;
+  constructor() {
+    super();
+    this.setHidden(true);
+    this.setDetectProblems(false);
+    this.setSizeMinimum(0);
+  }
   static override initialize(): number { return 0; }
   override getType(): string { return "operation_delivery"; }
   override getOrderType(): string { return "DLVR"; }
   getBuffer(): Buffer | null { return this.buffer; }
   setBuffer(value: Buffer | null): void {
+    if (value === this.buffer) return;
+    if (value && this.buffer) throw new DataException("Buffer can be set only once on a delivery operation");
     link(this, "Buffer", this.buffer as HeaderModelAdapter | null, value as HeaderModelAdapter | null);
     this.buffer = value;
+    if (!value) return;
+    this.setName(`Ship ${value.getName()}`);
+    this.setLocation(value.getLocation());
+    if (!this.getFlows().some((flow) => flow instanceof FlowStart && flow.getBuffer() === value)) {
+      new FlowStart(this, value, -1);
+    }
   }
   override modelReferenceTargetDisposed(target: HeaderModelAdapter, property: string): void {
     if (property === "Buffer") this.setBuffer(null);

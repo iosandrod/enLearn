@@ -34,6 +34,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>6</size_maximum>
@@ -50,6 +53,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       <size_multiple>1</size_multiple>
       <size_maximum>20</size_maximum>
@@ -61,6 +67,9 @@
     <operation name="choose alternate cost process" xsi:type="operation_alternate" search="MINCOSTPENALTY">
       
       <location name="alternate plant" />
+      
+      
+      
       
       
       
@@ -93,6 +102,9 @@
       <location name="alternate plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

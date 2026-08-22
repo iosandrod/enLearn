@@ -1,0 +1,2979 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-08-22T02:07:36.411Z</current>
+  <calendars>
+    <calendar name="API-E2E-343c58ea56cb468a84caccdd4ea2ce20">
+      <default>0</default>
+      <buckets>
+      </buckets>
+    </calendar>
+    <calendar name="CAL-EM-WORKDAY 电子制造工作日历">
+      <default>0</default>
+      <buckets>
+        <bucket start="2026-01-01T00:00:00.000Z"
+          value="1" priority="20"
+           days="62" starttime="PT13H"
+           endtime="PT17H" />
+        <bucket start="2026-01-01T00:00:00.000Z"
+          value="1" priority="10"
+           days="62" starttime="PT8H"
+           endtime="PT12H" />
+      </buckets>
+    </calendar>
+    <calendar name="day">
+      <default>0</default>
+      <buckets>
+        <bucket start="2026-08-24T00:00:00.000Z" end="2026-08-25T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-29T00:00:00.000Z" end="2026-08-30T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-18T00:00:00.000Z" end="2026-08-19T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-12T00:00:00.000Z" end="2026-09-13T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-20T00:00:00.000Z" end="2026-09-21T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-23T00:00:00.000Z" end="2026-08-24T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-17T00:00:00.000Z" end="2026-08-18T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-10T00:00:00.000Z" end="2026-09-11T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-03T00:00:00.000Z" end="2026-10-04T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-19T00:00:00.000Z" end="2026-09-20T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-30T00:00:00.000Z" end="2026-10-01T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-11T00:00:00.000Z" end="2026-08-12T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-06T00:00:00.000Z" end="2026-09-07T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-21T00:00:00.000Z" end="2026-09-22T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-27T00:00:00.000Z" end="2026-08-28T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-25T00:00:00.000Z" end="2026-08-26T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-13T00:00:00.000Z" end="2026-09-14T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-29T00:00:00.000Z" end="2026-09-30T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-15T00:00:00.000Z" end="2026-09-16T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-05T00:00:00.000Z" end="2026-10-06T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-09T00:00:00.000Z" end="2026-09-10T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-12T00:00:00.000Z" end="2026-08-13T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-14T00:00:00.000Z" end="2026-09-15T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-27T00:00:00.000Z" end="2026-09-28T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-08T00:00:00.000Z" end="2026-09-09T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-18T00:00:00.000Z" end="2026-09-19T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-16T00:00:00.000Z" end="2026-08-17T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-10T00:00:00.000Z" end="2026-08-11T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-20T00:00:00.000Z" end="2026-08-21T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-23T00:00:00.000Z" end="2026-09-24T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-02T00:00:00.000Z" end="2026-09-03T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-02T00:00:00.000Z" end="2026-10-03T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-09T00:00:00.000Z" end="2026-08-10T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-22T00:00:00.000Z" end="2026-08-23T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-31T00:00:00.000Z" end="2026-09-01T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-11T00:00:00.000Z" end="2026-09-12T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-28T00:00:00.000Z" end="2026-09-29T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-21T00:00:00.000Z" end="2026-08-22T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-15T00:00:00.000Z" end="2026-08-16T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-22T00:00:00.000Z" end="2026-09-23T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-01T00:00:00.000Z" end="2026-09-02T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-25T00:00:00.000Z" end="2026-09-26T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-07T00:00:00.000Z" end="2026-09-08T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-26T00:00:00.000Z" end="2026-08-27T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-03T00:00:00.000Z" end="2026-09-04T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-17T00:00:00.000Z" end="2026-09-18T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-28T00:00:00.000Z" end="2026-08-29T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-04T00:00:00.000Z" end="2026-09-05T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-30T00:00:00.000Z" end="2026-08-31T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-05T00:00:00.000Z" end="2026-09-06T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-14T00:00:00.000Z" end="2026-08-15T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-24T00:00:00.000Z" end="2026-09-25T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-16T00:00:00.000Z" end="2026-09-17T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-13T00:00:00.000Z" end="2026-08-14T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-07T00:00:00.000Z" end="2026-10-08T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-06T00:00:00.000Z" end="2026-10-07T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-04T00:00:00.000Z" end="2026-10-05T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-08-19T00:00:00.000Z" end="2026-08-20T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-10-01T00:00:00.000Z" end="2026-10-02T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+        <bucket start="2026-09-26T00:00:00.000Z" end="2026-09-27T00:00:00.000Z"
+          value="0" priority="10"
+           days="127" starttime="PT0S"
+           endtime="P1D" />
+      </buckets>
+    </calendar>
+  </calendars>
+  <locations>
+    <location name="MES Compensation Location e2a2b292">
+      
+      
+    </location>
+    <location name="LOC-EM-RM-WH">
+      
+      
+    </location>
+    <location name="LOC-EM-FG-WH">
+      
+      
+    </location>
+    <location name="LOC-EM-FACTORY">
+      
+      
+    </location>
+    <location name="LOC-EM-ASSY">
+      
+      
+    </location>
+    <location name="LOC-EM-SMT">
+      
+      
+    </location>
+  </locations>
+  <suppliers>
+    <supplier name="SUP-SEMICON-01">
+      
+    </supplier>
+    <supplier name="SUP-MECH-01">
+      
+    </supplier>
+    <supplier name="SUP-PCB-01">
+      
+    </supplier>
+  </suppliers>
+  <items>
+    <item name="RM-CASE-BOTTOM">
+      
+      <cost>35</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>35</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-FLASH-16M">
+      
+      <cost>12</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-SEMICON-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P7D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>12</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="FG-CTRL-100">
+      
+      <cost>980</cost>
+      
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-FACTORY" />
+          <destination name="LOC-EM-FG-WH" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT2H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>1</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-ETH-PHY">
+      
+      <cost>32</cost>
+      
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="SA-PWR-100">
+      
+      <cost>120</cost>
+      
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-FACTORY" />
+          <destination name="LOC-EM-FG-WH" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.025</resource_qty>
+          <leadtime>PT2H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.5</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="PK-BOX-100">
+      
+      <cost>6</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P2D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>6</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="SA-PCBA-100">
+      
+      <cost>420</cost>
+      
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-FACTORY" />
+          <destination name="LOC-EM-FG-WH" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.025</resource_qty>
+          <leadtime>PT2H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.5</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-SCREW-M3">
+      
+      <cost>0.12</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>100</size_multiple>
+          
+          <cost>0.12</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="MES Compensation Output e2a2b292">
+      
+      
+      
+      
+    </item>
+    <item name="MES Compensation Component e2a2b292">
+      
+      
+      
+      
+    </item>
+    <item name="RM-HEATSINK">
+      
+      <cost>18</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>18</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="PK-MANUAL-100">
+      
+      <cost>1.2</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P2D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>1.2</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-CONNECTOR-KIT">
+      
+      <cost>38</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-SEMICON-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>38</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-MCU-STM32">
+      
+      <cost>85</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-SEMICON-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P7D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>85</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-PASSIVE-KIT">
+      
+      <cost>28</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-SEMICON-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>28</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="SA-CASE-100">
+      
+      <cost>95</cost>
+      
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-FACTORY" />
+          <destination name="LOC-EM-FG-WH" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.025</resource_qty>
+          <leadtime>PT2H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.5</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-SOLDER-PASTE">
+      
+      <cost>360</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-PCB-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>360</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="PK-LABEL-100">
+      
+      <cost>0.8</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P2D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>0.8</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-CASE-TOP">
+      
+      <cost>32</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-MECH-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>32</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-PCB-CTRL-100">
+      
+      <cost>48</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-PCB-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P5D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>48</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-PCB-PWR-100">
+      
+      <cost>18</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-PCB-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P5D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>18</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-TRANSFORMER-24V">
+      
+      <cost>42</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-SEMICON-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>42</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+    <item name="RM-PWR-IC">
+      
+      <cost>16</cost>
+      <itemsuppliers>
+        <itemsupplier>
+          <supplier name="SUP-SEMICON-01" />
+          <location name="LOC-EM-RM-WH" />
+          
+          <resource_qty>1</resource_qty>
+          <leadtime>P4D</leadtime>
+          
+          <extra_safety_leadtime>P1D</extra_safety_leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>10</size_multiple>
+          
+          <cost>16</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemsupplier></itemsuppliers>
+      <itemdistributions>
+        <itemdistribution>
+          <origin name="LOC-EM-RM-WH" />
+          <destination name="LOC-EM-FACTORY" />
+          <resource name="RES-LOGISTICS-01" />
+          <resource_qty>0.05</resource_qty>
+          <leadtime>PT4H</leadtime>
+          <size_minimum>1</size_minimum>
+          <size_multiple>1</size_multiple>
+          <cost>0.25</cost>
+          <priority>1</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </itemdistribution></itemdistributions>
+    </item>
+  </items>
+  <operations>
+    <operation name="MES Compensation Step 2 e2a2b292" xsi:type="operation_fixed_time">
+      
+      <location name="MES Compensation Location e2a2b292" />
+      
+      <duration>PT0S</duration>
+      
+      
+      <priority>2</priority>
+      <effective_start>1971-01-01T00:00:00.000Z</effective_start>
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="MES Compensation Step 1 e2a2b292" xsi:type="operation_fixed_time">
+      
+      <location name="MES Compensation Location e2a2b292" />
+      
+      <duration>PT0S</duration>
+      
+      
+      <priority>1</priority>
+      <effective_start>1971-01-01T00:00:00.000Z</effective_start>
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="MES Compensation Route e2a2b292" xsi:type="operation_routing">
+      
+      <location name="MES Compensation Location e2a2b292" />
+      
+      
+      
+      
+      <priority>1</priority>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="MES Compensation Step 2 e2a2b292" />
+          <priority>2</priority>
+          <effective_start>1971-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="MES Compensation Step 1 e2a2b292" />
+          <priority>1</priority>
+          <effective_start>1971-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="OP-FG-010-FINAL-ASSY" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT15M</duration>
+      
+      
+      <priority>10</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <duration_per>PT3M</duration_per>
+    </operation>
+    <operation name="OP-FG-020-AGING" xsi:type="operation_fixed_time">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT8H</duration>
+      
+      
+      <priority>20</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-FG-010-FINAL-ASSY" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      
+    </operation>
+    <operation name="OP-FG-030-FINAL-QC" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT5M</duration>
+      
+      
+      <priority>30</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-FG-020-AGING" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT2M</duration_per>
+    </operation>
+    <operation name="OP-FG-040-PACK" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT5M</duration>
+      
+      
+      <priority>40</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-FG-030-FINAL-QC" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT1M5S</duration_per>
+    </operation>
+    <operation name="RT-FG-CTRL-100" xsi:type="operation_routing">
+      <item name="FG-CTRL-100" />
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      
+      
+      <priority>40</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="OP-FG-020-AGING" />
+          <priority>20</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-FG-040-PACK" />
+          <priority>40</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-FG-010-FINAL-ASSY" />
+          <priority>10</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-FG-030-FINAL-QC" />
+          <priority>30</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="OP-PCBA-010-PRINT" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT10M</duration>
+      
+      
+      <priority>10</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <duration_per>PT12S</duration_per>
+    </operation>
+    <operation name="OP-PCBA-020-MOUNT" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT15M</duration>
+      
+      
+      <priority>20</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PCBA-010-PRINT" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT1M15S</duration_per>
+    </operation>
+    <operation name="OP-PCBA-030-REFLOW" xsi:type="operation_fixed_time">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT45M</duration>
+      
+      
+      <priority>30</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PCBA-020-MOUNT" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      
+    </operation>
+    <operation name="OP-PCBA-040-AOI" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT5M</duration>
+      
+      
+      <priority>40</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PCBA-030-REFLOW" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT35S</duration_per>
+    </operation>
+    <operation name="OP-PCBA-050-DIP" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT10M</duration>
+      
+      
+      <priority>50</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PCBA-040-AOI" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT1M30S</duration_per>
+    </operation>
+    <operation name="OP-PCBA-060-PROGRAM" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT5M</duration>
+      
+      
+      <priority>60</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PCBA-050-DIP" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT25S</duration_per>
+    </operation>
+    <operation name="OP-PWR-010-ASSY" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT10M</duration>
+      
+      
+      <priority>10</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <duration_per>PT1M20S</duration_per>
+    </operation>
+    <operation name="OP-PWR-020-TEST" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT5M</duration>
+      
+      
+      <priority>20</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PWR-010-ASSY" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT1M15S</duration_per>
+    </operation>
+    <operation name="RT-PWR-100" xsi:type="operation_routing">
+      <item name="SA-PWR-100" />
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      
+      
+      <priority>20</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="OP-PWR-010-ASSY" />
+          <priority>10</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PWR-020-TEST" />
+          <priority>20</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="OP-CASE-010-ASSY" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT5M</duration>
+      
+      
+      <priority>10</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <duration_per>PT55S</duration_per>
+    </operation>
+    <operation name="RT-CASE-100" xsi:type="operation_routing">
+      <item name="SA-CASE-100" />
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      
+      
+      <priority>30</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="OP-CASE-010-ASSY" />
+          <priority>10</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="OP-PCBA-070-FCT" xsi:type="operation_time_per">
+      
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      <duration>PT10M</duration>
+      
+      
+      <priority>70</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      
+      <dependencies>
+        <dependency>
+          <blockedby name="OP-PCBA-060-PROGRAM" />
+          <quantity>1</quantity>
+          <safety_leadtime>PT0S</safety_leadtime>
+          <hard_safety_leadtime>PT0S</hard_safety_leadtime>
+        </dependency>
+      </dependencies>
+      <duration_per>PT2M30S</duration_per>
+    </operation>
+    <operation name="RT-PCBA-100" xsi:type="operation_routing">
+      <item name="SA-PCBA-100" />
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      
+      
+      <priority>10</priority>
+      <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+      
+      <batchwindow>P1D</batchwindow>
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>200</size_maximum>
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="OP-PCBA-060-PROGRAM" />
+          <priority>60</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PCBA-020-MOUNT" />
+          <priority>20</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PCBA-050-DIP" />
+          <priority>50</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PCBA-010-PRINT" />
+          <priority>10</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PCBA-070-FCT" />
+          <priority>70</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PCBA-030-REFLOW" />
+          <priority>30</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+        <suboperation>
+          <operation name="OP-PCBA-040-AOI" />
+          <priority>40</priority>
+          <effective_start>2026-01-01T00:00:00.000Z</effective_start>
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="PK-BOX-100 @ LOC-EM-RM-WH">
+      
+      <item name="PK-BOX-100" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>10</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>65</onhand>
+    </buffer>
+    <buffer name="RM-TRANSFORMER-24V @ LOC-EM-FACTORY">
+      
+      <item name="RM-TRANSFORMER-24V" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-CONNECTOR-KIT @ LOC-EM-FACTORY">
+      
+      <item name="RM-CONNECTOR-KIT" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-PASSIVE-KIT @ LOC-EM-FACTORY">
+      
+      <item name="RM-PASSIVE-KIT" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="SA-PCBA-100 @ LOC-EM-FACTORY">
+      
+      <item name="SA-PCBA-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-CASE-TOP @ LOC-EM-FACTORY">
+      
+      <item name="RM-CASE-TOP" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-PWR-IC @ LOC-EM-FACTORY">
+      
+      <item name="RM-PWR-IC" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="PK-MANUAL-100 @ LOC-EM-RM-WH">
+      
+      <item name="PK-MANUAL-100" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>90</onhand>
+    </buffer>
+    <buffer name="RM-SOLDER-PASTE @ LOC-EM-RM-WH">
+      
+      <item name="RM-SOLDER-PASTE" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>2</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>8</onhand>
+    </buffer>
+    <buffer name="RM-CASE-BOTTOM @ LOC-EM-FACTORY">
+      
+      <item name="RM-CASE-BOTTOM" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-CASE-BOTTOM @ LOC-EM-RM-WH">
+      
+      <item name="RM-CASE-BOTTOM" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>75</onhand>
+    </buffer>
+    <buffer name="RM-PCB-CTRL-100 @ LOC-EM-RM-WH">
+      
+      <item name="RM-PCB-CTRL-100" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>10</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>45</onhand>
+    </buffer>
+    <buffer name="PK-MANUAL-100 @ LOC-EM-FACTORY">
+      
+      <item name="PK-MANUAL-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-PCB-CTRL-100 @ LOC-EM-FACTORY">
+      
+      <item name="RM-PCB-CTRL-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-PASSIVE-KIT @ LOC-EM-RM-WH">
+      
+      <item name="RM-PASSIVE-KIT" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>170</onhand>
+    </buffer>
+    <buffer name="RM-TRANSFORMER-24V @ LOC-EM-RM-WH">
+      
+      <item name="RM-TRANSFORMER-24V" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>55</onhand>
+    </buffer>
+    <buffer name="RM-SCREW-M3 @ LOC-EM-RM-WH">
+      
+      <item name="RM-SCREW-M3" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>900</onhand>
+    </buffer>
+    <buffer name="SA-CASE-100 @ LOC-EM-FG-WH">
+      
+      <item name="SA-CASE-100" />
+      <location name="LOC-EM-FG-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-HEATSINK @ LOC-EM-FACTORY">
+      
+      <item name="RM-HEATSINK" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="SA-PWR-100 @ LOC-EM-FACTORY">
+      
+      <item name="SA-PWR-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-CONNECTOR-KIT @ LOC-EM-RM-WH">
+      
+      <item name="RM-CONNECTOR-KIT" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>65</onhand>
+    </buffer>
+    <buffer name="SA-PWR-100 @ LOC-EM-FG-WH">
+      
+      <item name="SA-PWR-100" />
+      <location name="LOC-EM-FG-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="SA-CASE-100 @ LOC-EM-FACTORY">
+      
+      <item name="SA-CASE-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-PCB-PWR-100 @ LOC-EM-FACTORY">
+      
+      <item name="RM-PCB-PWR-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-ETH-PHY @ LOC-EM-FACTORY">
+      
+      <item name="RM-ETH-PHY" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-PWR-IC @ LOC-EM-RM-WH">
+      
+      <item name="RM-PWR-IC" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>220</onhand>
+    </buffer>
+    <buffer name="RM-PCB-PWR-100 @ LOC-EM-RM-WH">
+      
+      <item name="RM-PCB-PWR-100" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>70</onhand>
+    </buffer>
+    <buffer name="RM-MCU-STM32 @ LOC-EM-FACTORY">
+      
+      <item name="RM-MCU-STM32" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-MCU-STM32 @ LOC-EM-RM-WH">
+      
+      <item name="RM-MCU-STM32" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>8</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>35</onhand>
+    </buffer>
+    <buffer name="PK-LABEL-100 @ LOC-EM-FACTORY">
+      
+      <item name="PK-LABEL-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-FLASH-16M @ LOC-EM-RM-WH">
+      
+      <item name="RM-FLASH-16M" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>50</onhand>
+    </buffer>
+    <buffer name="PK-LABEL-100 @ LOC-EM-RM-WH">
+      
+      <item name="PK-LABEL-100" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>85</onhand>
+    </buffer>
+    <buffer name="FG-CTRL-100 @ LOC-EM-FG-WH">
+      
+      <item name="FG-CTRL-100" />
+      <location name="LOC-EM-FG-WH" />
+      
+      <minimum>5</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>8</onhand>
+    </buffer>
+    <buffer name="RM-CASE-TOP @ LOC-EM-RM-WH">
+      
+      <item name="RM-CASE-TOP" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>75</onhand>
+    </buffer>
+    <buffer name="RM-SCREW-M3 @ LOC-EM-FACTORY">
+      
+      <item name="RM-SCREW-M3" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="SA-PCBA-100 @ LOC-EM-FG-WH">
+      
+      <item name="SA-PCBA-100" />
+      <location name="LOC-EM-FG-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="PK-BOX-100 @ LOC-EM-FACTORY">
+      
+      <item name="PK-BOX-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="FG-CTRL-100 @ LOC-EM-FACTORY">
+      
+      <item name="FG-CTRL-100" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>5</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-HEATSINK @ LOC-EM-RM-WH">
+      
+      <item name="RM-HEATSINK" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>75</onhand>
+    </buffer>
+    <buffer name="RM-FLASH-16M @ LOC-EM-FACTORY">
+      
+      <item name="RM-FLASH-16M" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-SOLDER-PASTE @ LOC-EM-FACTORY">
+      
+      <item name="RM-SOLDER-PASTE" />
+      <location name="LOC-EM-FACTORY" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="RM-ETH-PHY @ LOC-EM-RM-WH">
+      
+      <item name="RM-ETH-PHY" />
+      <location name="LOC-EM-RM-WH" />
+      
+      <minimum>5</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>32</onhand>
+    </buffer>
+    <buffer name="MES Compensation Component e2a2b292 @ MES Compensation Location e2a2b292">
+      
+      <item name="MES Compensation Component e2a2b292" />
+      <location name="MES Compensation Location e2a2b292" />
+      
+      <minimum>0</minimum>
+      <maximum>0</maximum>
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="SETUP-DIP-CTRL">
+      <rules>
+        <rule priority="10" fromsetup=".*" tosetup=".*"
+          duration="PT15M" cost="0" />
+      </rules>
+    </setupmatrix>
+    <setupmatrix name="SETUP-ASSY-CTRL">
+      <rules>
+        <rule priority="10" fromsetup=".*" tosetup=".*"
+          duration="PT15M" cost="0" />
+      </rules>
+    </setupmatrix>
+    <setupmatrix name="SETUP-SMT-CTRL">
+      <rules>
+        <rule priority="10" fromsetup=".*" tosetup=".*"
+          duration="PT15M" cost="0" />
+      </rules>
+    </setupmatrix>
+    <setupmatrix name="SETUP-TEST-CTRL">
+      <rules>
+        <rule priority="10" fromsetup=".*" tosetup=".*"
+          duration="PT15M" cost="0" />
+      </rules>
+    </setupmatrix>
+    <setupmatrix name="SETUP-LOGISTICS">
+      <rules>
+        <rule priority="10" fromsetup=".*" tosetup=".*"
+          duration="PT0S" cost="0" />
+      </rules>
+    </setupmatrix>
+    <setupmatrix name="SETUP-PACK-CTRL">
+      <rules>
+        <rule priority="10" fromsetup=".*" tosetup=".*"
+          duration="PT15M" cost="0" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="RES-FINAL-ASSY-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-ASSY-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-FINAL-QC-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-TEST-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-AOI-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-TEST-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-SMT-MF-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-SMT-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-CASE-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-ASSY-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-SMT-HS-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-SMT-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-AGING-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-TEST-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-REFLOW-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-SMT-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-PROGRAM-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-TEST-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-FCT-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-TEST-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-PWR-TEST-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-TEST-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-PRINT-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>160</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-SMT-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-PWR-ASSY-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-ASSY-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-DIP-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-DIP-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+    <resource name="RES-LOGISTICS-01">
+      
+      <maximum>2</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-LOGISTICS" />
+      <setup>LOGISTICS</setup>
+    </resource>
+    <resource name="RES-PACK-01">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <cost>85</cost>
+      <location name="LOC-EM-FACTORY" />
+      <available name="CAL-EM-WORKDAY 电子制造工作日历" />
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="SETUP-PACK-CTRL" />
+      <setup>CTRL-100</setup>
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="OP-PCBA-050-DIP" />
+      <resource name="RES-DIP-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-050-DIP 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-FG-030-FINAL-QC" />
+      <resource name="RES-FINAL-QC-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-FG-030-FINAL-QC 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-FG-010-FINAL-ASSY" />
+      <resource name="RES-FINAL-ASSY-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-FG-010-FINAL-ASSY 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PCBA-060-PROGRAM" />
+      <resource name="RES-PROGRAM-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-060-PROGRAM 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PWR-020-TEST" />
+      <resource name="RES-PWR-TEST-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PWR-020-TEST 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>PWR-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PCBA-020-MOUNT" />
+      <resource name="RES-SMT-HS-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-020-MOUNT 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PWR-010-ASSY" />
+      <resource name="RES-PWR-ASSY-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PWR-010-ASSY 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>PWR-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PCBA-010-PRINT" />
+      <resource name="RES-PRINT-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-010-PRINT 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-CASE-010-ASSY" />
+      <resource name="RES-CASE-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-CASE-010-ASSY 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CASE-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PCBA-030-REFLOW" />
+      <resource name="RES-REFLOW-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-030-REFLOW 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-FG-040-PACK" />
+      <resource name="RES-PACK-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-FG-040-PACK 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PCBA-040-AOI" />
+      <resource name="RES-AOI-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-040-AOI 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-PCBA-070-FCT" />
+      <resource name="RES-FCT-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-PCBA-070-FCT 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+    <load>
+      <operation name="OP-FG-020-AGING" />
+      <resource name="RES-AGING-01" />
+      <quantity>1</quantity>
+      
+      <name>OP-FG-020-AGING 主资源</name>
+      <priority>1</priority>
+      
+      
+      <setup>CTRL-100</setup>
+    </load>
+  </loads>
+  <skills>
+    <skill name="SKILL-SOLDER DIP 与手工焊">
+      <resourceskills>
+        <resourceskill>
+          <resource name="RES-DIP-01" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="SKILL-TEST 烧录与电子测试">
+      <resourceskills>
+        <resourceskill>
+          <resource name="RES-PROGRAM-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-AGING-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-PWR-TEST-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-FCT-01" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="SKILL-ASSEMBLY 结构与总装">
+      <resourceskills>
+        <resourceskill>
+          <resource name="RES-FINAL-ASSY-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-PACK-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-CASE-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-PWR-ASSY-01" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="SKILL-QC 电子产品质量检验">
+      <resourceskills>
+        <resourceskill>
+          <resource name="RES-FINAL-QC-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-AOI-01" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="SKILL-LOGISTICS 厂内物流">
+      <resourceskills>
+        <resourceskill>
+          <resource name="RES-LOGISTICS-01" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="SKILL-SMT SMT 设备操作">
+      <resourceskills>
+        <resourceskill>
+          <resource name="RES-REFLOW-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-SMT-MF-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-SMT-HS-01" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="RES-PRINT-01" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-050-DIP" />
+      <buffer name="RM-CONNECTOR-KIT @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>连接器套料投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-010-FINAL-ASSY" />
+      <buffer name="SA-PWR-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>电源模块投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-010-FINAL-ASSY" />
+      <buffer name="PK-LABEL-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>铭牌标签投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-010-FINAL-ASSY" />
+      <buffer name="SA-PCBA-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>PCBA 投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-010-FINAL-ASSY" />
+      <buffer name="RM-SCREW-M3 @ LOC-EM-FACTORY" />
+      <quantity>-4</quantity>
+      
+      <name>总装螺钉投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-010-FINAL-ASSY" />
+      <buffer name="SA-CASE-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>机壳组件投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="MES Compensation Step 1 e2a2b292" />
+      <buffer name="MES Compensation Component e2a2b292 @ MES Compensation Location e2a2b292" />
+      <quantity>-2</quantity>
+      
+      
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="OP-PWR-020-TEST" />
+      <buffer name="SA-PWR-100 @ LOC-EM-FACTORY" />
+      <quantity>1</quantity>
+      
+      <name>RT-PWR-100 完工产出</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-020-MOUNT" />
+      <buffer name="RM-FLASH-16M @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>Flash 投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-020-MOUNT" />
+      <buffer name="RM-PWR-IC @ LOC-EM-FACTORY" />
+      <quantity>-2</quantity>
+      
+      <name>电源 IC 投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-020-MOUNT" />
+      <buffer name="RM-PASSIVE-KIT @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>无源器件套料投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-020-MOUNT" />
+      <buffer name="RM-ETH-PHY @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>以太网 PHY 投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-020-MOUNT" />
+      <buffer name="RM-MCU-STM32 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>MCU 投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PWR-010-ASSY" />
+      <buffer name="RM-PASSIVE-KIT @ LOC-EM-FACTORY" />
+      <quantity>-0.35</quantity>
+      
+      <name>电源无源套料投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PWR-010-ASSY" />
+      <buffer name="RM-PCB-PWR-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>电源裸板投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PWR-010-ASSY" />
+      <buffer name="RM-TRANSFORMER-24V @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>变压器投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PWR-010-ASSY" />
+      <buffer name="RM-PWR-IC @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>电源 IC 投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-010-PRINT" />
+      <buffer name="RM-SOLDER-PASTE @ LOC-EM-FACTORY" />
+      <quantity>-0.025</quantity>
+      
+      <name>锡膏投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-PCBA-010-PRINT" />
+      <buffer name="RM-PCB-CTRL-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>控制板裸板投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="OP-CASE-010-ASSY" />
+      <buffer name="SA-CASE-100 @ LOC-EM-FACTORY" />
+      <quantity>1</quantity>
+      
+      <name>RT-CASE-100 完工产出</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-CASE-010-ASSY" />
+      <buffer name="RM-CASE-BOTTOM @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>下壳投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-CASE-010-ASSY" />
+      <buffer name="RM-HEATSINK @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>散热片投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-CASE-010-ASSY" />
+      <buffer name="RM-CASE-TOP @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>上壳投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-CASE-010-ASSY" />
+      <buffer name="RM-SCREW-M3 @ LOC-EM-FACTORY" />
+      <quantity>-4</quantity>
+      
+      <name>预装螺钉投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-040-PACK" />
+      <buffer name="PK-MANUAL-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>说明书投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="OP-FG-040-PACK" />
+      <buffer name="FG-CTRL-100 @ LOC-EM-FACTORY" />
+      <quantity>1</quantity>
+      
+      <name>RT-FG-CTRL-100 完工产出</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="OP-FG-040-PACK" />
+      <buffer name="PK-BOX-100 @ LOC-EM-FACTORY" />
+      <quantity>-1</quantity>
+      
+      <name>包装盒投入</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="OP-PCBA-070-FCT" />
+      <buffer name="SA-PCBA-100 @ LOC-EM-FACTORY" />
+      <quantity>1</quantity>
+      
+      <name>RT-PCBA-100 完工产出</name>
+      <priority>1</priority>
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="SO-CODEX-20260821-GROUP" xsi:type="demand_group">
+      
+      <members>
+        <demand name="SO-CODEX-20260821-003-10">
+          <quantity>10</quantity><due>2026-08-27T08:00:00.000Z</due><priority>3</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-002-10">
+          <quantity>8</quantity><due>2026-08-26T08:00:00.000Z</due><priority>2</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-005-10">
+          <quantity>9</quantity><due>2026-08-29T08:00:00.000Z</due><priority>5</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-008-10">
+          <quantity>6</quantity><due>2026-09-01T08:00:00.000Z</due><priority>8</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-007-10">
+          <quantity>12</quantity><due>2026-08-31T08:00:00.000Z</due><priority>7</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-001-10">
+          <quantity>6</quantity><due>2026-08-25T08:00:00.000Z</due><priority>1</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-009-10">
+          <quantity>8</quantity><due>2026-09-02T08:00:00.000Z</due><priority>9</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-010-10">
+          <quantity>10</quantity><due>2026-09-03T08:00:00.000Z</due><priority>10</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-006-10">
+          <quantity>5</quantity><due>2026-08-30T08:00:00.000Z</due><priority>6</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+        <demand name="SO-CODEX-20260821-004-10">
+          <quantity>7</quantity><due>2026-08-28T08:00:00.000Z</due><priority>4</priority>
+          <item name="FG-CTRL-100" />
+          <location name="LOC-EM-FG-WH" />
+          <status>open</status>
+          <maxlateness>P30D</maxlateness>
+          <minshipment>1</minshipment>
+          
+        </demand>
+      </members>
+      <policy>independent</policy>
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+frepple.settings.autofence = 86313600
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":1,"constraints":52,"loglevel":0,"lazydelay":86400,"erasePreviousFirst":True,"minimumdelay":3600,"administrativeleadtime":0,"rotateresources":True,"algorithm":"heuristic","iterationmax":0,"resourceiterationmax":500}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {"OP-PCBA-050-DIP\u0000OP-PCBA-040-AOI":1,"OP-FG-030-FINAL-QC\u0000OP-FG-020-AGING":1,"OP-PCBA-060-PROGRAM\u0000OP-PCBA-050-DIP":1,"OP-PWR-020-TEST\u0000OP-PWR-010-ASSY":1,"OP-PCBA-020-MOUNT\u0000OP-PCBA-010-PRINT":1,"OP-PCBA-030-REFLOW\u0000OP-PCBA-020-MOUNT":1,"OP-FG-040-PACK\u0000OP-FG-030-FINAL-QC":1,"OP-PCBA-040-AOI\u0000OP-PCBA-030-REFLOW":1,"OP-PCBA-070-FCT\u0000OP-PCBA-060-PROGRAM":1,"OP-FG-020-AGING\u0000OP-FG-010-FINAL-ASSY":1}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/frontend-run-88a34ab9-audit.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

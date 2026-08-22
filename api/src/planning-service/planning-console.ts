@@ -587,7 +587,7 @@ async function loadResourcePlans(
     allowedResourceIds = uniqueStrings(assignments.map((row) => row.resource_id));
     if (!allowedResourceIds.length) return [];
   }
-  const rows = await selectRows(
+  const rows = await selectAllRows(
     client,
     accountId,
     'planning_resourceplan',

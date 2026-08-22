@@ -34,6 +34,9 @@
       <posttime>P2D</posttime>
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>8</size_maximum>
@@ -47,6 +50,9 @@
       <location name="hard posttime plant" />
       
       <duration>P1D</duration>
+      
+      
+      
       
       
       
@@ -65,6 +71,9 @@
       
       
       <hard_posttime>true</hard_posttime>
+      
+      
+      
       
       
       
@@ -93,6 +102,9 @@
       <location name="hard posttime plant" />
       
       <duration>PT1H</duration>
+      
+      
+      
       
       
       

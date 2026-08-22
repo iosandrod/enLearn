@@ -68,10 +68,8 @@ const DAY = 24 * HOUR;
 const WEEK = 7 * DAY;
 const MONTH = 2_628_000;
 const YEAR = 365 * DAY;
-// The native constants are constructed as wall-clock values. Keep their
-// rendered value independent of the host timezone used for differential runs.
-const PAST_TICKS = globalThis.Date.parse("1971-01-01T00:00:00") / 1000;
-const FUTURE_TICKS = globalThis.Date.parse("2030-12-31T00:00:00") / 1000;
+const PAST_TICKS = globalThis.Date.UTC(1971, 0, 1, 0, 0, 0) / 1000;
+const FUTURE_TICKS = globalThis.Date.UTC(2030, 11, 31, 0, 0, 0) / 1000;
 
 function truncateLikeCpp(value: number): number {
   return Math.trunc(value);
@@ -217,7 +215,7 @@ export class Date {
   static readonly format2 = "%Y-%m-%d %H:%M:%S";
   static readonly infinitePast = new Date(PAST_TICKS);
   static readonly infiniteFuture = new Date(FUTURE_TICKS);
-  private static utc = false;
+  private static utc = true;
 
   private ticksValue: number;
 

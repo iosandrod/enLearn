@@ -1,5 +1,7 @@
 import type { LowCodeGridColumn, LowCodeGridFormatter } from '../types/lowcode';
 
+const DEFAULT_TIMEZONE = 'Asia/Shanghai';
+
 function toDateValue(value: unknown) {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return new Date(value);
@@ -12,12 +14,41 @@ function toDateValue(value: unknown) {
   return null;
 }
 
+function withTimeZone(
+  options: Intl.DateTimeFormatOptions | undefined,
+  timeZone: string,
+) {
+  if (options?.timeZone || !timeZone) return options;
+  return { ...options, timeZone };
+}
+
+function hasDateTimeFields(options?: Intl.DateTimeFormatOptions) {
+  if (!options) return false;
+  return Object.entries(options).some(([key, value]) => key !== 'timeZone' && value !== undefined);
+}
+
+function resolveDateTimeOptions(
+  options: Intl.DateTimeFormatOptions | undefined,
+  timeZone: string,
+) {
+  if (hasDateTimeFields(options)) return withTimeZone(options, timeZone);
+  return withTimeZone(
+    {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      ...options,
+    },
+    timeZone,
+  );
+}
+
 export function formatLowCodeGridValue(
   value: unknown,
   formatter?:
     | LowCodeGridFormatter
     | string
-    | ((params: { cellValue: unknown }) => string)
+    | ((params: { cellValue: unknown }) => string),
+  timeZone = DEFAULT_TIMEZONE,
 ) {
   if (!formatter) {
     return value ?? '';
@@ -41,17 +72,19 @@ export function formatLowCodeGridValue(
     case 'date': {
       const date = toDateValue(value);
       return date
-        ? new Intl.DateTimeFormat(formatter.locale ?? 'en', formatter.options).format(date)
+        ? new Intl.DateTimeFormat(
+            formatter.locale ?? 'en',
+            withTimeZone(formatter.options, timeZone),
+          ).format(date)
         : formatter.emptyText ?? String(value);
     }
     case 'datetime': {
       const date = toDateValue(value);
       return date
-        ? new Intl.DateTimeFormat(formatter.locale ?? 'en', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-            ...formatter.options
-          }).format(date)
+        ? new Intl.DateTimeFormat(
+            formatter.locale ?? 'en',
+            resolveDateTimeOptions(formatter.options, timeZone),
+          ).format(date)
         : formatter.emptyText ?? String(value);
     }
     case 'currency': {
@@ -83,7 +116,10 @@ export function formatLowCodeGridValue(
   }
 }
 
-export function normalizeLowCodeGridColumns(columns: LowCodeGridColumn[]) {
+export function normalizeLowCodeGridColumns(
+  columns: LowCodeGridColumn[],
+  timeZone = DEFAULT_TIMEZONE,
+) {
   return columns.map((column) => {
     if (
       !column.formatter ||
@@ -96,7 +132,7 @@ export function normalizeLowCodeGridColumns(columns: LowCodeGridColumn[]) {
     return {
       ...column,
       formatter: ({ cellValue }: { cellValue: unknown }) =>
-        formatLowCodeGridValue(cellValue, column.formatter)
+        formatLowCodeGridValue(cellValue, column.formatter, timeZone)
     };
   });
 }

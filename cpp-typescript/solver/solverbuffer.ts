@@ -1,5 +1,8 @@
 import { Buffer, BufferInfinite } from "../model/buffer.js";
 import { Date as PlanningDate } from "../utils/date.js";
+import { Duration } from "../utils/date.js";
+import { Plan } from "../model/plan.js";
+import { HasLevel } from "../model/leveled.js";
 import { RuntimeException } from "../utils/library.js";
 import type { SolverCreate, SolverCreateSolverData } from "./solverplan.js";
 
@@ -17,13 +20,21 @@ interface BufferProfileEvent {
 
 interface BufferShortage {
   readonly date: PlanningDate;
+  readonly hardQuantity: number;
   readonly quantity: number;
+  readonly rawQuantity: number;
   readonly onhand: number;
 }
 
 interface BufferShortageProfile {
   readonly first: BufferShortage | null;
   readonly maximum: BufferShortage | null;
+  readonly baseline: BufferDeficitBaseline;
+}
+
+interface BufferDeficitBaseline {
+  readonly hard: number;
+  readonly target: number;
 }
 
 function traceBuffer(message: string, details: Readonly<Record<string, unknown>>): void {
@@ -37,7 +48,6 @@ function solveSafetyStockSemantic(
   data: SolverCreateSolverData,
 ): unknown {
   const producingOperation = buffer.getProducingOperation();
-  let lastPlan: unknown = null;
   if (!producingOperation) {
     data.state.a_qty = 0;
     data.state.a_date = new PlanningDate(PlanningDate.infiniteFuture);
@@ -51,117 +61,139 @@ function solveSafetyStockSemantic(
   let currentDate = new PlanningDate(PlanningDate.infinitePast);
   let processedDates = 0;
 
-  // The native timeline iterator keeps pointing at the next pre-existing
-  // event while a replenishment inserts new supply. Rebuild the snapshot for
-  // every date, but retain that same boundary: a rejected producer reply is
-  // retried only when it falls strictly before the next event date.
+  // Keep the cursor on the next pre-existing timeline event, as the native
+  // iterator does. New proposed supply changes the on-hand balance, but must
+  // not move the cursor backward and cause the same shortage to be planned a
+  // second time.
   while (processedDates < 4096) {
     const events = buffer.getFlowPlans() as BufferProfileEvent[];
-    const date = events
-      .map((event) => event.getDate?.() ?? new PlanningDate(PlanningDate.infinitePast))
-      .find((candidate) => candidate.compare(currentDate) > 0);
-    if (!date) break;
+    const dates = events.map((event) => event.getDate?.() ?? PlanningDate.infinitePast);
+    const nextEventIndex = dates.findIndex((date) => date.compare(currentDate) > 0);
+    const nextEvent = nextEventIndex >= 0 ? events[nextEventIndex] : undefined;
+    const nextDate = nextEvent?.getDate?.() ?? new PlanningDate(PlanningDate.infiniteFuture);
+    const previous = events.filter((event) =>
+      (event.getDate?.() ?? PlanningDate.infinitePast).compare(currentDate) <= 0).at(-1);
 
-    const dateEvents = events.filter((event) =>
+    if (previous) {
+      let onhand = Number(previous.getOnhand?.() ?? 0);
+      let delta = onhand - currentMinimum;
+      if (currentMaximum > ROUNDING_ERROR && delta < -ROUNDING_ERROR
+        && currentMaximum > currentMinimum) {
+        delta -= currentMaximum - currentMinimum;
+      }
+
+      const maximum = producingOperation.getSizeMaximum();
+      let retryLimit = Math.max(HasLevel.getNumberOfLevels() * 2, 30);
+      if (delta && Number.isFinite(maximum) && maximum > ROUNDING_ERROR) {
+        retryLimit = Math.max(retryLimit, Math.ceil(-delta / maximum) + retryLimit);
+      }
+      let nextAskDate: PlanningDate | null = null;
+      let loop = true;
+
+      while (delta < -ROUNDING_ERROR && loop && --retryLimit > 0) {
+        const askDate: PlanningDate = nextAskDate ? new PlanningDate(nextAskDate) : new PlanningDate(currentDate);
+        const fence = buffer.getAutofence() ? Plan.instance().getAutoFence() :
+          Plan.instance().getAutoFence().seconds > 14 * 86400
+            ? new Duration(14 * 86400) : Plan.instance().getAutoFence();
+        let blockedBySupply = false;
+        if (fence.seconds > 0 && (onhand > -ROUNDING_ERROR || solver.getPlanType() === 2
+          || !(solver.getConstraints() & (16 + 32)))) {
+          for (const event of events) {
+            const eventDate = event.getDate?.() ?? PlanningDate.infinitePast;
+            if ((event.getQuantity?.() ?? 0) <= 0 || eventDate.compare(askDate) < 0) continue;
+            if (eventDate.compare(
+              (askDate.compare(Plan.instance().getCurrent()) > 0 ? askDate : Plan.instance().getCurrent()).add(fence),
+            ) > 0) break;
+            const supplyPlan = Reflect.get(event, "getOperationPlan");
+            const operationPlan = typeof supplyPlan === "function" ? Reflect.apply(supplyPlan, event, []) : null;
+            const getConfirmed = operationPlan ? Reflect.get(operationPlan, "getConfirmed") : null;
+            const getApproved = operationPlan ? Reflect.get(operationPlan, "getApproved") : null;
+            const confirmed = operationPlan && typeof getConfirmed === "function"
+              ? Boolean(Reflect.apply(getConfirmed, operationPlan, [])) : false;
+            const approved = operationPlan && typeof getApproved === "function"
+              ? Boolean(Reflect.apply(getApproved, operationPlan, [])) : false;
+            if (eventDate.compare(askDate) > 0 && operationPlan && (confirmed || approved)) {
+              const getOperation = Reflect.get(operationPlan, "getOperation");
+              const supplyOperation = typeof getOperation === "function" ? Reflect.apply(getOperation, operationPlan, []) : null;
+              const getName = supplyOperation ? Reflect.get(supplyOperation, "getName") : null;
+              const supplyName = supplyOperation && typeof getName === "function"
+                ? String(Reflect.apply(getName, supplyOperation, [])) : "";
+              if (!supplyName.startsWith("Correction for")) {
+                blockedBySupply = true;
+                break;
+              }
+            }
+          }
+        }
+        if (blockedBySupply) break;
+
+        const bookmark = manager.setBookmark();
+        data.state.curBuffer = buffer;
+        data.state.q_qty = -delta;
+        data.state.q_date = new PlanningDate(askDate);
+        data.state.q_qty_min = 1;
+        data.state.curOwnerOpplan = null;
+        data.state.curDemand = null;
+        data.state.curBatch = buffer.getBatch();
+        data.state.blockedOpplan = null;
+        data.state.dependency = null;
+        const previousSafetyStockPlanning = data.safetyStockPlanning;
+        const previousBufferSolveShortagesOnly = data.bufferSolveShortagesOnly;
+        let replyQuantity = 0;
+        let replyDate = new PlanningDate(PlanningDate.infiniteFuture);
+        try {
+          data.safetyStockPlanning = false;
+          data.bufferSolveShortagesOnly = true;
+          solver.solve(producingOperation, data);
+          replyQuantity = Math.max(0, data.state.a_qty);
+          replyDate = new PlanningDate(data.state.a_date);
+        } finally {
+          data.safetyStockPlanning = previousSafetyStockPlanning;
+          data.bufferSolveShortagesOnly = previousBufferSolveShortagesOnly;
+        }
+
+        traceBuffer("safety-stock-replenish", {
+          buffer: buffer.getName(), date: currentDate.toString(), nextDate: nextDate.toString(),
+          requested: -delta, askDate: askDate.toString(), replyQuantity,
+          replyDate: replyDate.toString(),
+        });
+        if (replyQuantity > ROUNDING_ERROR) {
+          delta += replyQuantity;
+          onhand += replyQuantity;
+          continue;
+        }
+
+        manager.rollback(bookmark);
+        const replyBeforeBoundary = replyDate.compare(nextDate) < 0;
+        if (!replyBeforeBoundary || replyDate.compare(askDate) <= 0) {
+          loop = false;
+          continue;
+        }
+        const earliestNext: PlanningDate = askDate.add(solver.getMinimumDelay());
+        nextAskDate = replyDate.compare(earliestNext) > 0 ? replyDate : earliestNext;
+      }
+      if (retryLimit <= 0) {
+        traceBuffer("safety-stock-retry-limit", {
+          buffer: buffer.getName(), date: currentDate.toString(), remaining: Math.max(0, -delta),
+        });
+      }
+    }
+
+    if (!nextEvent) break;
+    const date = nextEvent.getDate?.() ?? new PlanningDate(PlanningDate.infiniteFuture);
+    const sameDate = events.filter((event) =>
       (event.getDate?.() ?? PlanningDate.infinitePast).equals(date));
-    if (!dateEvents.length) break;
-    for (const event of dateEvents) {
+    for (const event of sameDate) {
       const eventType = Number(event.getEventType?.() ?? 1);
       if (eventType === 3 && !shortagesOnly) currentMinimum = Number(event.getMin?.() ?? currentMinimum);
       if (eventType === 4) currentMaximum = Number(event.getMax?.() ?? currentMaximum);
     }
-
-    const nextDate = events
-      .map((event) => event.getDate?.() ?? new PlanningDate(PlanningDate.infinitePast))
-      .find((candidate) => candidate.compare(date) > 0)
-      ?? new PlanningDate(PlanningDate.infiniteFuture);
-    const previous = dateEvents.at(-1) as BufferProfileEvent;
-    let onhand = Number(previous.getOnhand?.() ?? 0);
-    let delta = onhand - currentMinimum;
-    if (currentMaximum > ROUNDING_ERROR && delta < -ROUNDING_ERROR
-      && currentMaximum > currentMinimum) {
-      delta -= currentMaximum - currentMinimum;
-    }
-
-    const maximum = producingOperation.getSizeMaximum();
-    let retryLimit = 30;
-    if (Number.isFinite(maximum) && maximum > ROUNDING_ERROR && delta < -ROUNDING_ERROR) {
-      retryLimit = Math.max(retryLimit, Math.ceil(-delta / maximum) + retryLimit);
-    }
-    let nextAskDate: PlanningDate | null = null;
-    let keepTrying = true;
-    let lastReplyQuantity = 0;
-
-    while (delta < -ROUNDING_ERROR && keepTrying && --retryLimit > 0) {
-      const askDate: PlanningDate = nextAskDate
-        ? new PlanningDate(nextAskDate) : new PlanningDate(date);
-      const bookmark = manager.setBookmark();
-      data.push(-delta, askDate, true);
-      data.state.q_qty_min = 1;
-      data.state.curBuffer = buffer;
-      data.state.curOwnerOpplan = null;
-      data.state.curDemand = null;
-      data.state.curBatch = buffer.getBatch();
-      data.state.blockedOpplan = null;
-      data.state.dependency = null;
-      const previousSafetyStockPlanning = data.safetyStockPlanning;
-      const previousBufferSolveShortagesOnly = data.bufferSolveShortagesOnly;
-      let attemptPlan: unknown = null;
-      let replyQuantity = 0;
-      let replyDate = new PlanningDate(PlanningDate.infiniteFuture);
-      try {
-        data.safetyStockPlanning = false;
-        data.bufferSolveShortagesOnly = true;
-        attemptPlan = solver.solve(producingOperation, data);
-        replyQuantity = Math.max(0, data.state.a_qty);
-        replyDate = new PlanningDate(data.state.a_date);
-      } catch (error) {
-        data.pop(false);
-        manager.rollback(bookmark);
-        throw error;
-      } finally {
-        data.safetyStockPlanning = previousSafetyStockPlanning;
-        data.bufferSolveShortagesOnly = previousBufferSolveShortagesOnly;
-      }
-      data.pop(false);
-      lastReplyQuantity = replyQuantity;
-
-      traceBuffer("safety-stock-replenish", {
-        buffer: buffer.getName(), date: date.toString(), nextDate: nextDate.toString(),
-        requested: -delta, askDate: askDate.toString(), replyQuantity,
-        replyDate: replyDate.toString(),
-      });
-      if (replyQuantity > ROUNDING_ERROR) {
-        lastPlan = attemptPlan;
-        delta += replyQuantity;
-        onhand += replyQuantity;
-        continue;
-      }
-
-      manager.rollback(bookmark);
-      const replyBeforeBoundary = nextDate.equals(PlanningDate.infiniteFuture)
-        ? replyDate.compare(PlanningDate.infiniteFuture) < 0
-        : replyDate.compare(nextDate) < 0;
-      if (!replyBeforeBoundary || replyDate.compare(askDate) <= 0) {
-        keepTrying = false;
-        continue;
-      }
-      const earliestNext: PlanningDate = askDate.add(solver.getMinimumDelay());
-      nextAskDate = replyDate.compare(earliestNext) > 0 ? replyDate : earliestNext;
-    }
-
-    if (retryLimit <= 0) {
-      traceBuffer("safety-stock-retry-limit", {
-        buffer: buffer.getName(), date: date.toString(), remaining: Math.max(0, -delta),
-      });
-    }
-    data.state.a_qty = lastReplyQuantity;
     currentDate = new PlanningDate(date);
     processedDates += 1;
   }
   data.state.a_qty = 0;
   data.state.a_date = new PlanningDate(PlanningDate.infiniteFuture);
-  return lastPlan;
+  return null;
 }
 
 /** Scan persistent inventory levels using the timeline's cached balances. */
@@ -169,6 +201,8 @@ function scanShortages(
   buffer: Buffer,
   requestedDate: PlanningDate,
   data: SolverCreateSolverData,
+  requestedQuantity: number,
+  fixedBaseline?: BufferDeficitBaseline,
 ): BufferShortageProfile {
   const events = buffer.getFlowPlans() as BufferProfileEvent[];
   let minimum = 0;
@@ -176,6 +210,46 @@ function scanShortages(
   let index = 0;
   let firstShortage: BufferShortage | null = null;
   let maximumShortage: BufferShortage | null = null;
+  let priorTargetDeficit = fixedBaseline?.target ?? 0;
+  let priorHardDeficit = fixedBaseline?.hard ?? 0;
+  let terminalMinimum = 0;
+  let terminalMaximum = 0;
+  for (const event of events) {
+    const eventType = Number(event?.getEventType?.() ?? 1);
+    if (eventType === 3
+        && (!data.bufferSolveShortagesOnly || data.safetyStockPlanning)
+        && !data.getShortagesOnly()) {
+      terminalMinimum = Number(event?.getMin?.() ?? terminalMinimum);
+    }
+    if (eventType === 4) terminalMaximum = Number(event?.getMax?.() ?? terminalMaximum);
+  }
+  const terminalOnhand = Number(events.at(-1)?.getOnhand?.() ?? 0);
+  const terminalTarget = terminalMaximum > terminalMinimum + ROUNDING_ERROR
+    ? terminalMaximum : terminalMinimum;
+  const terminalDeficitCoveredBeforeAsk = terminalOnhand + requestedQuantity
+    >= terminalTarget - ROUNDING_ERROR;
+  const questionFlowPlan = data.state.q_flowplan as BufferProfileEvent | null;
+  const questionFlowPlanIndex = questionFlowPlan ? events.indexOf(questionFlowPlan) : -1;
+  if (!fixedBaseline && questionFlowPlanIndex >= 0 && terminalDeficitCoveredBeforeAsk) {
+    let flowMinimum = 0;
+    let flowMaximum = 0;
+    for (let flowIndex = 0; flowIndex <= questionFlowPlanIndex; flowIndex += 1) {
+      const event = events[flowIndex];
+      const eventType = Number(event?.getEventType?.() ?? 1);
+      if (eventType === 3
+          && (!data.bufferSolveShortagesOnly || data.safetyStockPlanning)
+          && !data.getShortagesOnly()) {
+        flowMinimum = Number(event?.getMin?.() ?? flowMinimum);
+      }
+      if (eventType === 4) flowMaximum = Number(event?.getMax?.() ?? flowMaximum);
+    }
+    const flowTarget = flowMaximum > flowMinimum + ROUNDING_ERROR ? flowMaximum : flowMinimum;
+    const previousOnhand = questionFlowPlanIndex > 0
+      ? Number(events[questionFlowPlanIndex - 1]?.getOnhand?.() ?? 0)
+      : terminalOnhand + requestedQuantity;
+    priorTargetDeficit = Math.max(0, flowTarget - previousOnhand);
+    priorHardDeficit = Math.max(0, -previousOnhand);
+  }
 
   while (index < events.length) {
     const first = events[index];
@@ -203,18 +277,38 @@ function scanShortages(
     minimum = dateMinimum;
     maximum = dateMaximum;
     const onhand = Number(lastEvent?.getOnhand?.() ?? 0);
-    if (date.compare(requestedDate) >= 0 && onhand < minimum - ROUNDING_ERROR) {
-      // A maximum only rounds an existing minimum shortage up to the upper
-      // inventory band. It never creates a replenishment by itself.
-      const target = maximum > minimum + ROUNDING_ERROR ? maximum : minimum;
-      const shortage = { date: new PlanningDate(date), quantity: target - onhand, onhand };
+    // A maximum only rounds an existing minimum shortage up to the upper
+    // inventory band. It never creates a replenishment by itself.
+    const target = maximum > minimum + ROUNDING_ERROR ? maximum : minimum;
+    if (date.compare(requestedDate) < 0) {
+      if (!fixedBaseline && questionFlowPlanIndex < 0) {
+        const coveredByExistingPlan = terminalDeficitCoveredBeforeAsk && onhand <= ROUNDING_ERROR;
+        priorTargetDeficit = coveredByExistingPlan ? Math.max(0, target - onhand) : 0;
+        priorHardDeficit = coveredByExistingPlan ? Math.max(0, -onhand) : 0;
+      }
+    } else {
+      const rawTargetDeficit = Math.max(0, target - onhand);
+      const targetDeficit = Math.max(0, rawTargetDeficit - priorTargetDeficit);
+      const hardDeficit = Math.max(0, -onhand - priorHardDeficit);
+      if (rawTargetDeficit <= ROUNDING_ERROR) continue;
+      const shortage = {
+        date: new PlanningDate(date),
+        hardQuantity: hardDeficit,
+        quantity: targetDeficit,
+        rawQuantity: rawTargetDeficit,
+        onhand,
+      };
       firstShortage ??= shortage;
       if (!maximumShortage || shortage.quantity > maximumShortage.quantity + ROUNDING_ERROR) {
         maximumShortage = shortage;
       }
     }
   }
-  return { first: firstShortage, maximum: maximumShortage };
+  return {
+    first: firstShortage,
+    maximum: maximumShortage,
+    baseline: { hard: priorHardDeficit, target: priorTargetDeficit },
+  };
 }
 
 /** Material ask/reply implementation with on-hand use and replenishment. */
@@ -252,8 +346,22 @@ export function solveBufferSemantic(
     return requested;
   }
 
+  // Match SolverCreate::solve(Buffer): a repeated buffer on the current
+  // recursive supply path is a broken loop, not another replenishment ask.
+  if (data.hasRecentBuffer(buffer)) {
+    data.state.a_qty = 0;
+    data.state.a_date = new PlanningDate(PlanningDate.infiniteFuture);
+    data.broken_path = true;
+    data.accept_partial_reply = true;
+    return null;
+  }
+  const recentBufferDepth = data.getRecentBufferDepth();
+  data.pushRecentBuffer(buffer);
+  try {
+
   const producingOperation = buffer.getProducingOperation();
-  let shortageProfile = scanShortages(buffer, requestedDate, data);
+  let shortageProfile = scanShortages(buffer, requestedDate, data, requested);
+  const deficitBaseline = shortageProfile.baseline;
   let shortage = shortageProfile.first;
   let nextDate = new PlanningDate(PlanningDate.infiniteFuture);
   let lastPlan: unknown = null;
@@ -285,7 +393,7 @@ export function solveBufferSemantic(
       nextDate = producerDate;
     }
 
-    shortageProfile = scanShortages(buffer, requestedDate, data);
+    shortageProfile = scanShortages(buffer, requestedDate, data, requested, deficitBaseline);
     const updated = shortageProfile.first;
     const eventCountAfter = buffer.getFlowPlans().length;
     traceBuffer("replenish", {
@@ -309,8 +417,31 @@ export function solveBufferSemantic(
   // The C++ solver keeps the largest cumulative deficit seen over the whole
   // remaining timeline. A later demand can deepen the deficit even when the
   // first shortage is small, and that inventory is already reserved.
-  shortageProfile = scanShortages(buffer, requestedDate, data);
+  shortageProfile = scanShortages(buffer, requestedDate, data, requested, deficitBaseline);
   shortage = shortageProfile.maximum;
+
+  // C++ keeps a separate extraConfirmedDate. An already activated positive
+  // supply between the requested date and a later failed replenishment is a
+  // usable retry boundary, even when the producer itself returned a later
+  // capacity date. Distribution operations convert this boundary back to
+  // their operation date before replying to the caller.
+  if (nextDate.compare(PlanningDate.infiniteFuture) < 0) {
+    for (const event of buffer.getFlowPlans() as BufferProfileEvent[]) {
+      const eventDate = event.getDate?.() ?? PlanningDate.infinitePast;
+      if (eventDate.compare(requestedDate) <= 0 || eventDate.compare(nextDate) >= 0) continue;
+      if (Number(event.getQuantity?.() ?? 0) <= ROUNDING_ERROR
+        || Number(event.getEventType?.() ?? 1) !== 1) continue;
+      const getOperationPlan = Reflect.get(event, "getOperationPlan");
+      const operationPlan = typeof getOperationPlan === "function"
+        ? Reflect.apply(getOperationPlan, event, []) : null;
+      const getActivated = operationPlan ? Reflect.get(operationPlan, "getActivated") : null;
+      if (operationPlan && typeof getActivated === "function"
+        && Boolean(Reflect.apply(getActivated, operationPlan, []))) {
+        nextDate = new PlanningDate(eventDate);
+        break;
+      }
+    }
+  }
 
   if (!shortage || !(data.constrainedPlanning && solver.isConstrained())) {
     data.state.a_qty = requested;
@@ -320,7 +451,7 @@ export function solveBufferSemantic(
       data.broken_path = true;
       data.accept_partial_reply = true;
     }
-    data.state.a_qty = Math.max(0, requested - shortage.quantity);
+    data.state.a_qty = Math.max(0, requested - shortage.hardQuantity);
     if (data.state.requireFull && data.state.a_qty < requested - ROUNDING_ERROR) data.state.a_qty = 0;
     data.state.a_date = nextDate;
   }
@@ -332,6 +463,9 @@ export function solveBufferSemantic(
     plan: lastPlan && typeof lastPlan === "object" ? lastPlan.constructor.name : null,
   });
   return lastPlan;
+  } finally {
+    data.restoreRecentBufferDepth(recentBufferDepth);
+  }
 }
 
 /**

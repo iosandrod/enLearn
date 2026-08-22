@@ -2,7 +2,9 @@ import { CommandCreateOperationPlan } from "../model/actions.js";
 import { Flow, FlowEnd } from "../model/flow.js";
 import { FlowPlan } from "../model/flowplan.js";
 import { LoadPlan } from "../model/loadplan.js";
+import type { Buffer } from "../model/buffer.js";
 import { Operation, OperationAlternate, OperationRouting, OperationSplit } from "../model/operation.js";
+import { OperationItemSupplier } from "../model/itemsupplier.js";
 import { OperationPlan } from "../model/operationplan.js";
 import { OperationDependency, OperationPlanDependency } from "../model/operationdependency.js";
 import { Plan } from "../model/plan.js";
@@ -55,6 +57,25 @@ export function solveOperationSemantic(
   data: SolverCreateSolverData,
 ): OperationPlan | null {
   solver.getUserExitOperation()?.(operation, solver, data);
+  if (operation instanceof OperationItemSupplier && operation.getPriority() && operation.getBuffer()) {
+    let allPurchase = true;
+    const owner = operation.getOwner();
+    if (owner instanceof OperationSplit || owner instanceof OperationAlternate) {
+      for (const association of owner.getSubOperations()) {
+        const getOperation = Reflect.get(association, "getOperation");
+        const candidate = typeof getOperation === "function"
+          ? Reflect.apply(getOperation, association, []) : null;
+        const getPriority = Reflect.get(association, "getPriority");
+        const priority = typeof getPriority === "function"
+          ? Number(Reflect.apply(getPriority, association, [])) : 0;
+        if (priority && !(candidate instanceof OperationItemSupplier)) {
+          allPurchase = false;
+          break;
+        }
+      }
+    }
+    if (allPurchase) data.addPurchaseBuffer(operation.getBuffer());
+  }
   if (operation instanceof OperationRouting) return solveRoutingSemantic(solver, operation, data);
   if (operation instanceof OperationAlternate) return solveAlternateSemantic(solver, operation, data);
   if (operation instanceof OperationSplit) return solveSplitSemantic(solver, operation, data);
@@ -183,6 +204,11 @@ export function solveOperationSemantic(
           start: operationPlan.getStart().toString(), end: operationPlan.getEnd().toString(),
           answerQuantity: 0, answerDate: capacityAnswerDate.toString(),
         });
+        // C++ checkOperationCapacity resizes a rejected opplan immediately.
+        // For a routing child this also resizes the mutable routing owner and
+        // its existing sibling steps, which is required for dependency dates
+        // to be propagated with their zero-quantity (fixed) duration.
+        operationPlan.setQuantity(0);
         manager.rollback(bookmark);
         data.state.q_operationplan = null;
         data.state.a_qty = 0;
@@ -195,23 +221,28 @@ export function solveOperationSemantic(
       }
     }
 
+    // C++ initializes the dependency ask from the newly created operationplan
+    // and solves dependencies before any material flow can resize that plan.
+    operationPlan.setFeasible(true);
+    data.state.q_qty = operationPlan.getQuantity();
+    data.state.q_date = operationPlan.getEnd();
+    const dependenciesAccepted = solver.checkDependencies(operationPlan, data);
+    if (!dependenciesAccepted && constrained) {
+      const dependencyNextDate = new PlanningDate(data.state.a_date);
+      manager.rollback(bookmark);
+      data.state.q_operationplan = null;
+      data.state.a_qty = 0;
+      data.state.a_date = producingFlow && !producingFlow.getOffset().isZero()
+        && dependencyNextDate.compare(PlanningDate.infiniteFuture) < 0
+        ? producingFlow.computeOperationToFlowDate(operationPlan, dependencyNextDate)
+        : dependencyNextDate;
+      return null;
+    }
+
     // SolverData::propagate only controls upstream material propagation in
-    // checkOperation. Capacity remains constrained during the heuristic-2
-    // backward sweep, even though material is solved buffer by buffer later.
+    // checkOperation. Capacity and dependencies remain constrained during the
+    // heuristic-2 backward sweep.
     if (!data.propagate) {
-      operationPlan.setFeasible(true);
-      const dependenciesAccepted = solver.checkDependencies(operationPlan, data);
-      if (!dependenciesAccepted && constrained) {
-        const dependencyNextDate = new PlanningDate(data.state.a_date);
-        manager.rollback(bookmark);
-        data.state.q_operationplan = null;
-        data.state.a_qty = 0;
-        data.state.a_date = producingFlow && !producingFlow.getOffset().isZero()
-          && dependencyNextDate.compare(PlanningDate.infiniteFuture) < 0
-          ? producingFlow.computeOperationToFlowDate(operationPlan, dependencyNextDate)
-          : dependencyNextDate;
-        return null;
-      }
       data.state.a_qty = requestedBuffer
         ? operationPlan.getQuantity() * flowQuantityPer + flowQuantityFixed
         : operationPlan.getQuantity();
@@ -286,19 +317,6 @@ export function solveOperationSemantic(
     // capacity and material ask/reply loop above. OperationPlan::updateFeasible
     // is a reporting API with a wider, final-plan horizon and must not reject
     // a plan that consumed inventory accepted by the buffer solver.
-    operationPlan.setFeasible(true);
-    const dependenciesAccepted = solver.checkDependencies(operationPlan, data);
-    if (!dependenciesAccepted && constrained) {
-      const dependencyNextDate = new PlanningDate(data.state.a_date);
-      manager.rollback(bookmark);
-      data.state.q_operationplan = null;
-      data.state.a_qty = 0;
-      data.state.a_date = producingFlow && !producingFlow.getOffset().isZero()
-        && dependencyNextDate.compare(PlanningDate.infiniteFuture) < 0
-        ? producingFlow.computeOperationToFlowDate(operationPlan, dependencyNextDate)
-        : dependencyNextDate;
-      return null;
-    }
     data.state.a_qty = requestedBuffer
       ? operationPlan.getQuantity() * flowQuantityPer + flowQuantityFixed
       : operationPlan.getQuantity();
@@ -588,7 +606,7 @@ function solveAlternateSemantic(
 
         let childReply = Math.max(0, data.state.a_qty);
         const rawCandidateDate = new PlanningDate(data.state.a_date);
-        const candidateDate = producerFlow && !producerFlow.getOffset().isZero()
+        let candidateDate = producerFlow && !producerFlow.getOffset().isZero()
           && childReply <= 0.000001
           && rawCandidateDate.compare(PlanningDate.infiniteFuture) < 0
           ? producerFlow.computeOperationToFlowDate(null, rawCandidateDate)
@@ -603,9 +621,11 @@ function solveAlternateSemantic(
         const fullReply = childReply + 0.000001 >= childAsk;
         if (childReply > 0.000001 && !fullReply && !candidateAcceptedPartial && !limitedByMaximum) {
           childReply = 0;
+          candidateDate = childRequestDate.add(solver.getLazyDelay());
         }
 
         if (!childPlan || childReply <= 0.000001) {
+          finalAcceptPartial ||= candidateAcceptedPartial;
           if (candidateDate.compare(requestedEnd) > 0 && candidateDate.compare(earliestNextDate) < 0) {
             earliestNextDate = candidateDate;
           }
@@ -636,6 +656,7 @@ function solveAlternateSemantic(
         remainingQuantity = Math.max(0, remainingQuantity - replyQuantity);
         lastAcceptedPlan = alternatePlan;
         acceptedPartialReply ||= candidateAcceptedPartial;
+        finalAcceptPartial ||= candidateAcceptedPartial;
         data.state.q_operationplan = alternatePlan;
         if (candidateDate.compare(requestedEnd) > 0 && candidateDate.compare(earliestNextDate) < 0) {
           earliestNextDate = candidateDate;
@@ -657,12 +678,12 @@ function solveAlternateSemantic(
       : earliestNextDate.compare(requestedEnd) > 0
         ? earliestNextDate : requestedEnd.add(solver.getLazyDelay());
     if (plannedQuantity > 0) data.state.a_cost += operation.getCost() * plannedQuantity;
-    data.accept_partial_reply = acceptedPartialReply;
-    finalAcceptPartial = acceptedPartialReply;
+    data.accept_partial_reply = finalAcceptPartial;
     data.broken_path = false;
     traceOperation("alternate-answer", {
       operation: operation.getName(), quantity: plannedQuantity,
       remainingQuantity, nextDate: data.state.a_date.toString(),
+      acceptPartialReply: data.accept_partial_reply,
     });
     return lastAcceptedPlan;
   } finally {
@@ -679,7 +700,7 @@ function solveAlternateSemantic(
   }
 }
 
-/** Plan routing steps backward and activate their top owner only afterwards. */
+/** Plan routing steps backward and preserve the C++ top-level reply protocol. */
 function solveRoutingSemantic(
   solver: SolverCreate,
   operation: OperationRouting,
@@ -699,6 +720,7 @@ function solveRoutingSemantic(
   const previousBuffer = data.state.curBuffer;
   let flowQuantityPer = previousBuffer ? 0 : 1;
   let flowQuantityFixed = 0;
+  let offsetFlow: Flow | null = null;
 
   const producerRatio = (candidate: Operation): void => {
     if (!previousBuffer) return;
@@ -706,6 +728,10 @@ function solveRoutingSemantic(
     if (!(flow instanceof Flow) || !flow.isProducer()) return;
     flowQuantityPer += flow.getQuantity();
     flowQuantityFixed += flow.getQuantityFixed();
+    if (!flow.getOffset().isZero()
+      && (!offsetFlow || offsetFlow.getOffset().compare(flow.getOffset()) < 0)) {
+      offsetFlow = flow;
+    }
   };
   producerRatio(operation);
   const steps = operation.getSubOperations().map((association) => {
@@ -714,9 +740,20 @@ function solveRoutingSemantic(
   }).filter((candidate): candidate is Operation => candidate instanceof Operation);
   for (const step of steps) producerRatio(step);
 
-  let planQuantity = !flowQuantityPer || requestedQuantity < flowQuantityFixed + 0.000001
+  if (data.batchGrouping && previousBuffer
+    && (!operation.getBatchWindow().isZero() || requestedEnd.compare(Plan.instance().getCurrent()) < 0)) {
+    const windowEnd = requestedEnd.compare(Plan.instance().getCurrent()) > 0
+      ? requestedEnd.add(operation.getBatchWindow()) : Plan.instance().getCurrent().add(operation.getBatchWindow());
+    const requirementInWindow = Math.min(
+      -previousBuffer.getOnHand(requestedEnd, windowEnd, true, true),
+      operation.getSizeMaximum(),
+    );
+    if (requirementInWindow > data.state.q_qty) data.state.q_qty = requirementInWindow;
+  }
+
+  let planQuantity = !flowQuantityPer || data.state.q_qty < flowQuantityFixed + 0.000001
     ? 0.001
-    : (requestedQuantity - flowQuantityFixed) / flowQuantityPer;
+    : (data.state.q_qty - flowQuantityFixed) / flowQuantityPer;
   const command = new CommandCreateOperationPlan(
     operation,
     planQuantity,
@@ -748,6 +785,12 @@ function solveRoutingSemantic(
   routingPlan.setOwner(previousOwner, true);
   planQuantity = routingPlan.getQuantity();
 
+  const selectedOffsetFlow = offsetFlow as Flow | null;
+  if (selectedOffsetFlow) {
+    data.state.q_date = selectedOffsetFlow.computeFlowToOperationDate(routingPlan, requestedEnd);
+    routingPlan.setEnd(data.state.q_date);
+  }
+
   traceOperation("routing-ask", {
     demand: demand?.getName() ?? null,
     operation: operation.getName(),
@@ -760,32 +803,149 @@ function solveRoutingSemantic(
   data.state.curDemand = null;
   data.state.curBuffer = null;
   data.state.curOwnerOpplan = routingPlan;
+  const useDependencies = operation.useDependencies();
+  let maxDate: PlanningDate | null = null;
+  let delay = new Duration();
+  // C++ initializes the routing-level date maximum once, before asking any
+  // child step. Child replies may change q_date, but this boundary belongs to
+  // the complete routing check.
+  data.state.q_date_max = new PlanningDate(data.state.q_date);
+  const topQDate = new PlanningDate(data.state.q_date);
+  const stateEnd = (state: unknown): PlanningDate | null => {
+    if (!state || typeof state !== "object") return null;
+    const end = Reflect.get(state, "end");
+    return end instanceof PlanningDate ? new PlanningDate(end) : null;
+  };
   try {
-    for (const step of [...steps].reverse()) {
-      data.state.q_qty = planQuantity;
-      data.state.q_date = routingPlan.getStart();
-      data.state.q_date_max = routingPlan.getStart();
-      data.state.curOwnerOpplan = routingPlan;
-      solver.solve(step, data);
-      planQuantity = data.state.a_qty;
-      if (planQuantity <= 0) {
-        const nextDate = new PlanningDate(data.state.a_date);
-        manager.rollback(bookmark);
-        data.state.q_operationplan = null;
-        data.state.a_qty = 0;
-        data.state.a_date = nextDate.compare(requestedEnd) > 0
-          ? nextDate : requestedEnd.add(solver.getLazyDelay());
-        return null;
+    if (useDependencies) {
+      if (data.getDependencyList().size === 0) data.populateDependencies(operation);
+      for (const step of steps) {
+        const isBlocked = step.getDependencies().some((dependency) =>
+          dependency instanceof OperationDependency && dependency.getBlockedBy() === step);
+        if (isBlocked) continue;
+
+        data.state.q_date = new PlanningDate(requestedEnd);
+        const occurrence = data.getDependencyList().get(step);
+        if (occurrence) {
+          if (occurrence.occurrences > 1) {
+            occurrence.occurrences -= 1;
+            if (occurrence.date.compare(data.state.q_date) > 0) {
+              occurrence.date = new PlanningDate(data.state.q_date);
+            }
+            continue;
+          }
+          if (occurrence.date.compare(data.state.q_date) < 0) {
+            data.state.q_date = new PlanningDate(occurrence.date);
+          }
+          data.getDependencyList().delete(step);
+        }
+
+        data.state.q_qty = planQuantity;
+        data.state.curOwnerOpplan = routingPlan;
+        const savedBuffer: Buffer | null = data.state.curBuffer;
+        solver.solve(step, data);
+        planQuantity = Math.max(0, data.state.a_qty);
+        data.state.curBuffer = savedBuffer;
+        if (planQuantity <= 0) {
+          const nextDate = new PlanningDate(data.state.a_date);
+          manager.rollback(bookmark);
+          data.state.q_operationplan = null;
+          data.state.a_qty = 0;
+          data.state.a_date = nextDate.compare(requestedEnd) > 0
+            ? nextDate : requestedEnd.add(solver.getLazyDelay());
+          return null;
+        }
       }
-      routingPlan.setQuantity(planQuantity, true);
+      if (data.state.a_qty > 0 && operation.getDependencies().length) {
+        const dependenciesAccepted = solver.checkDependencies(routingPlan, data);
+        planQuantity = Math.max(0, data.state.a_qty);
+        if (!dependenciesAccepted && data.constrainedPlanning && solver.isConstrained()) {
+          const nextDate = new PlanningDate(data.state.a_date);
+          manager.rollback(bookmark);
+          data.state.q_operationplan = null;
+          data.state.a_qty = 0;
+          data.state.a_date = nextDate.compare(requestedEnd) > 0
+            ? nextDate : requestedEnd.add(solver.getLazyDelay());
+          return null;
+        }
+      }
+    } else {
+      for (const step of [...steps].reverse()) {
+        data.state.q_qty = planQuantity;
+        data.state.q_date = routingPlan.getStart();
+        data.state.curOwnerOpplan = routingPlan;
+        const stepDate = new PlanningDate(data.state.q_date);
+        solver.solve(step, data);
+        planQuantity = data.state.a_qty;
+        if (planQuantity <= 0) {
+          const nextDate = new PlanningDate(data.state.a_date);
+          manager.rollback(bookmark);
+          data.state.q_operationplan = null;
+          data.state.a_qty = 0;
+          data.state.a_date = nextDate.compare(requestedEnd) > 0
+            ? nextDate : requestedEnd.add(solver.getLazyDelay());
+          return null;
+        }
+        routingPlan.setQuantity(planQuantity, true);
+
+        if (!data.state.a_date.equals(PlanningDate.infiniteFuture)) {
+          const stepDelay = data.state.a_date.subtract(stepDate) as Duration;
+          if (delay.compare(stepDelay) < 0) delay = stepDelay;
+          let state = routingPlan.setOperationPlanParameters(
+            0.01, data.state.a_date, PlanningDate.infinitePast, false, false,
+          );
+          let end = stateEnd(state);
+          const minimumEnd = topQDate.add(stepDelay);
+          if (end && end.compare(minimumEnd) < 0) {
+            end = minimumEnd;
+            state = { end };
+          }
+          if (end && (!maxDate || end.compare(maxDate) > 0)) maxDate = end;
+        }
+      }
+
+    }
+
+    // C++ performs the top routing flow/load check after both dependency and
+    // sequence planning branches. A routing-level capacity or material reply
+    // must participate in the retry date just like a child reply.
+    routingPlan.createFlowLoads();
+    if (routingPlan.getQuantity() > 0) {
+      data.state.q_qty = planQuantity;
+      data.state.q_date = routingPlan.getEnd();
+      solver.checkOperation(routingPlan, data);
+      planQuantity = Math.max(0, data.state.a_qty);
+      if (planQuantity <= 0 && !data.state.a_date.equals(PlanningDate.infiniteFuture)) {
+        const routingDate = routingPlan.getEnd();
+        const routingDelay = data.state.a_date.subtract(routingDate) as Duration;
+        if (data.state.a_date.compare(routingDate) > 0 && delay.compare(routingDelay) < 0) {
+          delay = routingDelay;
+        }
+        if (!maxDate || data.state.a_date.compare(maxDate) > 0) maxDate = new PlanningDate(data.state.a_date);
+      }
     }
 
     routingPlan.setFeasible(true);
-    solver.checkDependencies(routingPlan, data);
+    if (!useDependencies) {
+      data.state.a_qty = planQuantity;
+      if (operation.getDependencies().length) solver.checkDependencies(routingPlan, data);
+    }
+    data.state.a_date = maxDate ?? new PlanningDate(PlanningDate.infiniteFuture);
+    if (data.state.a_qty > 0) {
+      data.state.a_qty = flowQuantityFixed + routingPlan.getQuantity() * flowQuantityPer;
+    } else {
+      data.state.a_qty = 0;
+    }
     data.state.q_operationplan = routingPlan;
-    data.state.a_qty = flowQuantityFixed + routingPlan.getQuantity() * flowQuantityPer;
-    data.state.a_date = routingPlan.getEnd();
     data.state.a_cost += operation.getCost() * routingPlan.getQuantity();
+
+    if (data.state.a_date.compare(PlanningDate.infiniteFuture) < 0 && !data.state.a_qty && selectedOffsetFlow) {
+      data.state.a_date = selectedOffsetFlow.computeOperationToFlowDate(routingPlan, data.state.a_date);
+    }
+    if (!data.state.a_qty && data.state.a_date.compare(topQDate) <= 0) {
+      delay = solver.getLazyDelay();
+      data.state.a_date = topQDate.add(delay);
+    }
     traceOperation("routing-answer", {
       demand: demand?.getName() ?? null,
       operation: operation.getName(),

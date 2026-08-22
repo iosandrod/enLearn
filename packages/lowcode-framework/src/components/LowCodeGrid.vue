@@ -103,6 +103,7 @@ import LowCodeFormField from './LowCodeFormField.vue';
 import {
   mergeSystemTableOptions,
   resolveSystemTableConfig,
+  resolveSystemTimezone,
   useSystemSettings,
 } from '../core/system-settings';
 import {
@@ -243,6 +244,7 @@ const gridConfig = computed(() => {
         ...resolvedGrid,
         columns: normalizeLowCodeGridColumns(
           columns.map(hydrateRuntimeGridColumn),
+          resolveSystemTimezone(systemSettings),
         ) as unknown[]
       }
     : { ...resolvedGrid };
@@ -317,6 +319,7 @@ function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
       const fallback = formatLowCodeGridValue(
         formatterParams.cellValue,
         configuredFormatter,
+        resolveSystemTimezone(systemSettings),
       );
       return fallback === null || fallback === undefined ? '' : String(fallback);
     };

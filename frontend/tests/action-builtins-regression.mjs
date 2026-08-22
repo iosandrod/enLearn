@@ -43,6 +43,7 @@ assert.deepEqual(
   [
     ['create', 'create'],
     ['edit', 'edit'],
+    ['delete', 'delete'],
     ['approve', 'approve'],
     ['unapprove', 'unapprove'],
     ['close', 'close'],

@@ -35,6 +35,9 @@ export const mainButtonDisabledFunctions = {
   edit(context: LowCodePageRuntimeContext): boolean {
     return isNeverDisabled(context);
   },
+  delete(context: LowCodePageRuntimeContext): boolean {
+    return isNeverDisabled(context);
+  },
   duplicate(context: LowCodePageRuntimeContext): boolean {
     return isNeverDisabled(context);
   },

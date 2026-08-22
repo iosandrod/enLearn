@@ -8,6 +8,8 @@ const [
   appStylesSource,
   flowSource,
   ganttSource,
+  ganttSettingsSource,
+  ganttSettingsDefinitionSource,
   bomSource,
   materialRegistrySource,
   nodeRegistrySource,
@@ -24,6 +26,8 @@ const [
   read('../assets/styles/app.css'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-flow/index.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/index.vue'),
+  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/GanttDisplaySettings.vue'),
+  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/display-settings.ts'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-bom/index.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/index.ts'),
   read('../../packages/lowcode-framework/src/runtime/node-action-registry.ts'),
@@ -100,10 +104,24 @@ assert.match(ganttSource, /<Willow/);
 assert.match(ganttSource, /readonly/);
 assert.match(ganttSource, /ganttTasks/);
 assert.match(ganttSource, /type: 'summary'/);
-assert.match(ganttSource, /length-unit="hour"/);
 assert.match(ganttSource, /duration-unit="hour"/);
-assert.match(ganttSource, /:start="ganttDataRange\.start"/);
-assert.match(ganttSource, /:end="ganttDataRange\.end"/);
+assert.match(ganttSource, /:start="ganttViewRange\.start"/);
+assert.match(ganttSource, /:end="ganttViewRange\.end"/);
+assert.match(ganttSource, /<GanttDisplaySettings/);
+assert.match(ganttSource, /v-model="displaySettings"/);
+assert.match(ganttSource, /DEFAULT_GANTT_DISPLAY_SETTINGS/);
+assert.doesNotMatch(ganttSource, /type="datetime-local"/);
+assert.match(ganttSettingsSource, /v-for="field in GANTT_DISPLAY_FIELDS"/);
+assert.match(ganttSettingsSource, /function updateField/);
+assert.match(ganttSettingsSource, /function resetDisplaySettings/);
+assert.match(ganttSettingsDefinitionSource, /key: 'start'.*control: 'datetime-local'/);
+assert.match(ganttSettingsDefinitionSource, /key: 'end'.*control: 'datetime-local'/);
+assert.match(ganttSettingsDefinitionSource, /key: 'granularity'.*control: 'select'/s);
+assert.match(ganttSettingsDefinitionSource, /value: 'week'/);
+assert.match(ganttSettingsDefinitionSource, /value: 'month'/);
+assert.match(ganttSettingsDefinitionSource, /key: 'cellWidth'.*min: 40.*max: 160/);
+assert.match(ganttSettingsDefinitionSource, /key: 'gridWidth'.*min: 176.*max: 420/);
+assert.match(ganttSource, /:length-unit="ganttLengthUnit"/);
 assert.match(ganttSource, /:auto-scale="false"/);
 assert.match(ganttSource, /:key="ganttInstanceKey"/);
 assert.match(ganttSource, /const ganttInstanceKey = computed/);
@@ -117,9 +135,12 @@ assert.match(ganttSource, /lowcode:tab-activated/);
 assert.match(ganttSource, /planningGantt\.taskSelect/);
 assert.match(ganttSource, /row\.delay_hours/);
 assert.match(ganttSource, /props\.block\.includedTypes/);
-assert.match(ganttSource, /const rowLabel = readString\(row\[props\.block\.rowLabelField \?\? 'resource_name'\]\)/);
-assert.match(ganttSource, /if \(!rowLabel\) return \[\]/);
-assert.doesNotMatch(ganttSource, /UNASSIGNED_RESOURCE_LABEL/);
+assert.match(ganttSource, /const GANTT_MIN_TIMESTAMP = Date\.UTC\(2000, 0, 1\)/);
+assert.match(ganttSource, /start\.getTime\(\) < GANTT_MIN_TIMESTAMP/);
+assert.match(ganttSource, /const rowLabel = ganttRowLabel\(row\)/);
+assert.match(ganttSource, /function ganttRowLabel/);
+assert.match(ganttSource, /readString\(row\.demand_name\)/);
+assert.match(ganttSource, /未分配对象/);
 assert.doesNotMatch(ganttSource, /from 'echarts'/);
 assert.doesNotMatch(ganttSource, /row\.lateness_hours/);
 

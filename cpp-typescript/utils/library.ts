@@ -116,7 +116,20 @@ export class HeaderModelAdapter implements Iterable<AdapterValue> {
       metadata.instances.clear();
       return undefined;
     }
-    if (method === "all" || method === "begin" || method === "createIterator") return [...metadata.instances];
+    if (method === "all" || method === "begin" || method === "createIterator") {
+      const result = [...metadata.instances];
+      // The native object registries are name-indexed. Planning code relies on
+      // this order for cluster discovery, buffer sweeps and deterministic ties.
+      result.sort((left, right) => {
+        const leftGetter = Reflect.get(left, "getName");
+        const rightGetter = Reflect.get(right, "getName");
+        if (typeof leftGetter !== "function" || typeof rightGetter !== "function") return 0;
+        const leftName = String(Reflect.apply(leftGetter, left, []));
+        const rightName = String(Reflect.apply(rightGetter, right, []));
+        return leftName < rightName ? -1 : leftName > rightName ? 1 : 0;
+      });
+      return result;
+    }
     if (method === "end") return [];
     if (method === "find" || method === "findFromName") {
       const name = args[0];

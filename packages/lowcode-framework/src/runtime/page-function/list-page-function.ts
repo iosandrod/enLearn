@@ -4,6 +4,7 @@ import {
   OPEN_TRANSITION_CANDIDATES,
   UNAPPROVE_TRANSITION_CANDIDATES,
   createPageFunctionInsertText,
+  executeListPageDelete,
   executeListPageTransition,
   requireSelectedPageRows,
   type BuiltinLowCodePageFunction,
@@ -36,6 +37,16 @@ export const BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     insertText: createPageFunctionInsertText('edit'),
     execute: (context) =>
       context.navigateToEdit(requireSelectedPageRows(context, '编辑', true)[0]),
+  },
+  {
+    // 按当前列表数据源的 deleteMethod 逐条删除选中行。
+    id: 'list.delete',
+    name: 'delete',
+    label: '删除',
+    description: '删除选中数据；需要为当前列表数据源配置 deleteMethod。',
+    pageType: 'list',
+    insertText: createPageFunctionInsertText('delete'),
+    execute: (context) => executeListPageDelete(context),
   },
   {
     // 审核选中行；默认写入 status=approved，也可由 args 覆盖。

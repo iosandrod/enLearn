@@ -176,6 +176,50 @@ async function testConsoleOptionBoundary() {
   assert.deepEqual(options[0], { id: 'item-0', label: 'Item 0000' });
 }
 
+async function testConsoleScenarioOptionsUseSystemDropdownSource() {
+  const sourceRows = [{ code: 'planning_console_scenario' }];
+  const itemRows = [
+    { id: 'item-1', label: '正式版', value: 'official' },
+    { id: 'item-2', label: '测试版', value: 'test' },
+    { id: 'item-3', label: 'PMC版本', value: 'pmc' }
+  ];
+  const sourceQuery = {
+    select() { return sourceQuery; },
+    eq() { return sourceQuery; },
+    limit() { return Promise.resolve({ data: sourceRows, error: null }); }
+  };
+  const itemQuery = {
+    select() { return itemQuery; },
+    eq() { return itemQuery; },
+    order() { return itemQuery; },
+    limit() { return Promise.resolve({ data: itemRows, error: null }); }
+  };
+  const optionService = new PlanningService() as unknown as {
+    executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
+    authorizeConsoleRead(context: unknown): Promise<{ client: { from(table: string): typeof sourceQuery | typeof itemQuery } }>;
+    accountValue(context: unknown, field: string): string;
+  };
+  optionService.authorizeConsoleRead = async () => ({
+    client: {
+      from(table: string) {
+        return table === 'system_option_sources' ? sourceQuery : itemQuery;
+      }
+    }
+  });
+  optionService.accountValue = () => 'account-1';
+
+  const options = await optionService.executeAction(
+    'getPlanningConsoleOptions',
+    { optionType: 'scenario' },
+    { accountId: 'account-1' }
+  );
+  assert.deepEqual(options, [
+    { id: 'official', label: '正式版' },
+    { id: 'test', label: '测试版' },
+    { id: 'pmc', label: 'PMC版本' }
+  ]);
+}
+
 async function testConsoleReadRequiresTheExactInternalCapability() {
   const capabilityService = new PlanningService() as unknown as {
     authorizeConsoleRead(context: unknown): Promise<unknown>;
@@ -303,6 +347,7 @@ async function testCategoryDeleteRejectsChildren() {
 void Promise.all([
   testPlanningPayloadNormalization(),
   testConsoleOptionBoundary(),
+  testConsoleScenarioOptionsUseSystemDropdownSource(),
   testConsoleReadRequiresTheExactInternalCapability(),
   testCategoryRelationOptions(),
   testCategoryDeleteRejectsChildren()

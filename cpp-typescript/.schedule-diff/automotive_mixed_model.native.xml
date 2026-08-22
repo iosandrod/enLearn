@@ -60,6 +60,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -73,6 +76,9 @@
       
       
       <duration>PT10H</duration>
+      
+      
+      
       
       
       
@@ -92,6 +98,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -101,6 +110,9 @@
       
     </operation>
     <operation name="build SEDAN-BLK" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -147,6 +159,9 @@
       
       
       
+      
+      
+      
       <cost>20</cost>
       
       
@@ -157,6 +172,9 @@
       
       
       <duration>PT14H</duration>
+      
+      
+      
       
       
       
@@ -176,6 +194,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -192,6 +213,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -201,6 +225,9 @@
       
     </operation>
     <operation name="build SEDAN-WHT" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -247,6 +274,9 @@
       
       
       
+      
+      
+      
       <cost>20</cost>
       
       
@@ -257,6 +287,9 @@
       
       
       <duration>PT18H</duration>
+      
+      
+      
       
       
       
@@ -276,6 +309,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -292,6 +328,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -301,6 +340,9 @@
       
     </operation>
     <operation name="build SUV-BLK" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -347,6 +389,9 @@
       
       
       
+      
+      
+      
       <cost>20</cost>
       
       
@@ -357,6 +402,9 @@
       
       
       <duration>PT18H</duration>
+      
+      
+      
       
       
       
@@ -376,6 +424,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -392,6 +443,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>4</size_maximum>
@@ -401,6 +455,9 @@
       
     </operation>
     <operation name="build SUV-RED" xsi:type="operation_routing">
+      
+      
+      
       
       
       
@@ -441,6 +498,9 @@
       
       
       <duration>PT3H</duration>
+      
+      
+      
       
       
       

@@ -34,6 +34,9 @@
       
       
       
+      
+      
+      
       <size_minimum>1</size_minimum>
       
       <size_maximum>20</size_maximum>
@@ -57,12 +60,18 @@
       
       
       
+      
+      
+      
     </operation>
     <operation name="make unrelated excess product" xsi:type="operation_fixed_time">
       
       <location name="command scope plant" />
       
       <duration>PT5H</duration>
+      
+      
+      
       
       
       

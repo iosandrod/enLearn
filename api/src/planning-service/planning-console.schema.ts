@@ -221,6 +221,20 @@ const runScript = `async function main() {
   await this.$source.refresh("summary");
   await this.$source.refresh("runs");
   await this.$source.refresh("versionOptions");
+  const versionId = result && result.version && result.version.id ? String(result.version.id) : "";
+  if (versionId) {
+    await this.$form.patch("planning_console_result_filter", { planVersionId: versionId });
+    await this.$source.refresh("summary");
+    await this.$source.refresh("demands");
+    await this.$source.refresh("operationPlans");
+    await this.$source.refresh("materials");
+    await this.$source.refresh("planResources");
+    await this.$source.refresh("resourcePlans");
+    await this.$source.refresh("problems");
+    await this.$source.refresh("constraints");
+    await this.$source.refresh("flow");
+    await this.$source.refresh("bom");
+  }
   await this.$message.success("排产任务已提交。");
   return result;
 }`;
@@ -252,16 +266,17 @@ const cancelScript = `async function main() {
 
 const publishScript = `async function main() {
   const filter = this.forms.planning_console_result_filter || {};
-  const summary = this.data.summary || {};
-  const versionId = String(filter.planVersionId || summary.versionId || "").trim();
+  const options = Array.isArray(this.data.versionOptions) ? this.data.versionOptions : [];
+  const versionId = String(
+    filter.planVersionId || options.find((option) => option && option.is_current)?.id || ""
+  ).trim();
   if (!versionId) {
     await this.$message.warning("当前没有可发布的计划版本。");
     return false;
   }
 
-  const options = Array.isArray(this.data.versionOptions) ? this.data.versionOptions : [];
   const selected = options.find((option) => option && option.id === versionId);
-  const versionStatus = String((selected && selected.status) || summary.versionStatus || "");
+  const versionStatus = String((selected && selected.status) || "");
   if (versionStatus !== "completed") {
     await this.$message.warning("仅已完成的计划版本可以发布。");
     return false;
@@ -316,13 +331,14 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
     },
     scriptPolicy: {
       context: {
-        dataSourceKeys: ['runtimeCapabilities', 'summary', 'versionOptions'],
+        dataSourceKeys: ['runtimeCapabilities', 'versionOptions'],
         formBlockIds: ['planning_console_filter', 'planning_console_result_filter'],
         searchSourceKeys: [],
         gridBlockIds: ['planning_console_runs_grid']
       },
       capabilities: [
         'http.execute',
+        'form.patch',
         'source.refresh',
         'source.set',
         'message.error',
@@ -575,9 +591,9 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
           {
             key: 'gantt', label: '排产甘特', blocks: [{
               id: 'planning_console_gantt', kind: 'planningGantt', sourceKey: 'operationPlans', height: 520,
-              title: '资源排产甘特图', description: '按资源查看计划单时间占用、状态和延期情况。',
+              title: '排产甘特图', description: '按资源或交付对象查看计划单时间占用、状态和延期情况。',
               rowLabelField: 'resource_name', startField: 'startdate', endField: 'enddate', labelField: 'reference', statusField: 'status',
-              includedTypes: ['MO', 'WO', 'PO', 'DO']
+              includedTypes: ['MO', 'WO', 'PO', 'DO', 'DLVR']
             }]
           },
           {

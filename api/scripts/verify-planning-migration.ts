@@ -30,6 +30,11 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260810100000_planning_console_inner_tabs.sql',
   'supabase/migrations/20260810140000_planning_console_grid_tables.sql',
   'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql',
+  'supabase/migrations/20260810181000_planning_console_script_context_forward_fix.sql',
+  'supabase/migrations/20260821110000_planning_console_runtime_capabilities_forward_fix.sql',
+  'supabase/migrations/20260821113000_planning_console_select_submitted_version.sql',
+  'supabase/migrations/20260821123000_planning_console_gantt_delivery_plans.sql',
+  'supabase/migrations/20260822100000_planning_console_script_context_payload_fix.sql',
   CATEGORY_MIGRATION_FILE,
   'supabase/migrations/20260811120000_planning_structure_pages.sql',
   'supabase/migrations/20260813090000_planning_item_display_name.sql'

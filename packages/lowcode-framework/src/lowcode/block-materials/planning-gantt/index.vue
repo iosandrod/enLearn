@@ -12,6 +12,11 @@
         <span><i class="is-delayed" />延期</span>
       </div>
     </header>
+    <GanttDisplaySettings
+      v-model="displaySettings"
+      :defaults="displaySettingsDefaults"
+      :invalid-range="displayRangeError"
+    />
     <div
       v-if="validRows.length"
       ref="chartElement"
@@ -27,14 +32,14 @@
           :task-types="ganttTaskTypes"
           :scales="ganttScales"
           :selected="selectedTasks"
-          :start="ganttDataRange.start"
-          :end="ganttDataRange.end"
+          :start="ganttViewRange.start"
+          :end="ganttViewRange.end"
           :cell-width="ganttCellWidth"
           :cell-height="34"
           :scale-height="28"
           :grid-width="ganttGridWidth"
           :auto-scale="false"
-          length-unit="hour"
+          :length-unit="ganttLengthUnit"
           duration-unit="hour"
           cell-borders="full"
           readonly
@@ -57,6 +62,12 @@ import '@svar-ui/vue-gantt/style.css';
 import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
 import type { LowCodePagePlanningGanttBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
+import GanttDisplaySettings from './GanttDisplaySettings.vue';
+import {
+  DEFAULT_GANTT_DISPLAY_SETTINGS,
+  type GanttDisplaySettingsModel,
+  type GanttGranularity,
+} from './display-settings';
 
 type GanttRow = Record<string, unknown> & {
   __end: Date;
@@ -74,13 +85,15 @@ type GanttSelectionEvent = {
   id?: TID;
 };
 
+const GANTT_MIN_TIMESTAMP = Date.UTC(2000, 0, 1);
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningGanttBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtime = useLowCodePageRuntime(false);
 const chartElement = ref<HTMLDivElement>();
 const selectedTaskId = ref('');
 const ganttRenderKey = ref(0);
-const ganttGridWidth = ref(260);
+const autoGanttGridWidth = ref(260);
+const displaySettings = ref<GanttDisplaySettingsModel>({ ...DEFAULT_GANTT_DISPLAY_SETTINGS });
 let resizeObserver: ResizeObserver | null = null;
 let tabRenderFrame = 0;
 
@@ -100,8 +113,13 @@ const rows = computed(() => {
 const validRows = computed<GanttRow[]>(() => rows.value.flatMap((row, index) => {
   const start = new Date(readString(row[props.block.startField ?? 'startdate']));
   const end = new Date(readString(row[props.block.endField ?? 'enddate']));
-  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end < start) return [];
-  const rowLabel = readString(row[props.block.rowLabelField ?? 'resource_name']);
+  if (
+    !Number.isFinite(start.getTime())
+    || !Number.isFinite(end.getTime())
+    || start.getTime() < GANTT_MIN_TIMESTAMP
+    || end < start
+  ) return [];
+  const rowLabel = ganttRowLabel(row);
   if (!rowLabel) return [];
   const status = readString(row[props.block.statusField ?? 'status'], 'proposed');
   const delayed = Number(row.delay_hours ?? 0) > 0;
@@ -160,17 +178,49 @@ const ganttTasks = computed<ITask[]>(() => {
 
 const selectedTasks = computed<TID[]>(() => selectedTaskId.value ? [selectedTaskId.value] : []);
 const panelStyle = computed(() => ({ '--lc-gantt-height': toCssSize(props.block.height, '520px') }));
-const ganttCellWidth = computed(() => ganttScaleUnit.value === 'hour' ? 70 : 56);
+const defaultCellWidth = computed(() => ganttScaleUnit.value === 'hour' ? 70 : 56);
+const ganttCellWidth = computed(() => displaySettings.value.cellWidth ?? defaultCellWidth.value);
 const ganttDataRange = computed(() => {
+  if (!validRows.value.length) {
+    const fallback = new Date(GANTT_MIN_TIMESTAMP);
+    return { start: fallback, end: new Date(fallback.getTime() + 86_400_000) };
+  }
   const start = Math.min(...validRows.value.map((row) => row.__start.getTime()));
   const end = Math.max(...validRows.value.map((row) => row.__end.getTime()));
   return { start: new Date(start), end: new Date(end) };
 });
-const ganttScaleUnit = computed<'hour' | 'day'>(() => {
+const displaySettingsDefaults = computed(() => ({
+  start: formatInputDateTime(ganttDataRange.value.start),
+  end: formatInputDateTime(ganttDataRange.value.end),
+  granularity: 'auto' as GanttGranularity,
+  cellWidth: defaultCellWidth.value,
+  gridWidth: autoGanttGridWidth.value,
+}));
+const parsedDisplayStart = computed(() => parseInputDate(displaySettings.value.start));
+const parsedDisplayEnd = computed(() => parseInputDate(displaySettings.value.end));
+const displayRangeError = computed(() => {
+  const start = parsedDisplayStart.value ?? ganttDataRange.value.start;
+  const end = parsedDisplayEnd.value ?? ganttDataRange.value.end;
+  return end <= start;
+});
+const ganttViewRange = computed(() => {
+  const start = parsedDisplayStart.value ?? ganttDataRange.value.start;
+  const end = parsedDisplayEnd.value ?? ganttDataRange.value.end;
+  if (displayRangeError.value || end <= start) return ganttDataRange.value;
+  return { start, end };
+});
+const autoGanttScaleUnit = computed<'hour' | 'day'>(() => {
   if (!validRows.value.length) return 'day';
-  const span = ganttDataRange.value.end.getTime() - ganttDataRange.value.start.getTime();
+  const span = ganttViewRange.value.end.getTime() - ganttViewRange.value.start.getTime();
   return span <= 4 * 86_400_000 ? 'hour' : 'day';
 });
+const ganttScaleUnit = computed<Exclude<GanttGranularity, 'auto'>>(() =>
+  displaySettings.value.granularity === 'auto'
+    ? autoGanttScaleUnit.value
+    : displaySettings.value.granularity
+);
+const ganttLengthUnit = computed(() => ganttScaleUnit.value);
+const ganttGridWidth = computed(() => displaySettings.value.gridWidth ?? autoGanttGridWidth.value);
 const ganttTimelineSignature = computed(() => validRows.value
   .map((row) => [
     row.__taskId,
@@ -182,19 +232,38 @@ const ganttTimelineSignature = computed(() => validRows.value
 const ganttInstanceKey = computed(() => [
   ganttRenderKey.value,
   ganttScaleUnit.value,
+  ganttViewRange.value.start.getTime(),
+  ganttViewRange.value.end.getTime(),
+  ganttCellWidth.value,
+  ganttGridWidth.value,
   ganttTimelineSignature.value,
 ].join(':'));
-const ganttScales = computed(() => ganttScaleUnit.value === 'hour'
-  ? [
+const ganttScales = computed(() => {
+  if (ganttScaleUnit.value === 'hour') {
+    return [
       { unit: 'day', step: 1, format: formatScaleDay },
       { unit: 'hour', step: 2, format: formatScaleHour },
-    ]
-  : [
+    ];
+  }
+  if (ganttScaleUnit.value === 'day') {
+    return [
       { unit: 'month', step: 1, format: formatScaleMonth },
       { unit: 'day', step: 1, format: formatScaleDay },
-    ]);
+    ];
+  }
+  if (ganttScaleUnit.value === 'week') {
+    return [
+      { unit: 'month', step: 1, format: formatScaleMonth },
+      { unit: 'week', step: 1, format: formatScaleWeek },
+    ];
+  }
+  return [
+    { unit: 'year', step: 1, format: formatScaleYear },
+    { unit: 'month', step: 1, format: formatScaleMonth },
+  ];
+});
 const ganttColumns = [
-  { id: 'text', header: '资源 / 计划单', width: 188, flexgrow: 1, sort: false },
+  { id: 'text', header: '对象 / 计划单', width: 188, flexgrow: 1, sort: false },
   { id: 'start', header: '开始', width: 112, align: 'center', sort: false },
 ];
 const ganttTaskTypes = [
@@ -217,6 +286,31 @@ function readString(value: unknown, fallback = '') {
 
 function toCssSize(value: unknown, fallback: string) {
   return typeof value === 'number' ? `${value}px` : readString(value, fallback);
+}
+
+function parseInputDate(value: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function formatInputDateTime(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function ganttRowLabel(row: Record<string, unknown>) {
+  const configuredLabel = readString(row[props.block.rowLabelField ?? 'resource_name']);
+  if (configuredLabel) return configuredLabel;
+  const demandLabel = readString(row.demand_name);
+  if (demandLabel) return `需求：${demandLabel}`;
+  const itemLabel = readString(row.item_name);
+  const locationLabel = readString(row.location_name);
+  if (itemLabel && locationLabel) return `${itemLabel} @ ${locationLabel}`;
+  if (itemLabel) return itemLabel;
+  const operationLabel = readString(row.operation_name);
+  if (operationLabel) return operationLabel;
+  return readString(row.type, '未分配对象');
 }
 
 function taskType(status: string, delayed: boolean): GanttTaskType {
@@ -258,6 +352,19 @@ function formatScaleHour(date: Date) {
   return new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
 }
 
+function formatScaleWeek(date: Date) {
+  return `第${getWeekNumber(date)}周`;
+}
+
+function formatScaleYear(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric' }).format(date);
+}
+
+function getWeekNumber(date: Date) {
+  const start = new Date(date.getFullYear(), 0, 1);
+  return Math.ceil((((date.getTime() - start.getTime()) / 86_400_000) + start.getDay() + 1) / 7);
+}
+
 function handleTaskSelect(event: GanttSelectionEvent) {
   const id = event.id == null ? '' : String(event.id);
   const row = rowByTaskId.value.get(id);
@@ -274,7 +381,7 @@ function handleTaskSelect(event: GanttSelectionEvent) {
 
 function updateGanttWidth() {
   const width = chartElement.value?.getBoundingClientRect().width ?? 0;
-  if (width > 0) ganttGridWidth.value = Math.max(176, Math.min(320, Math.round(width * 0.3)));
+  if (width > 0) autoGanttGridWidth.value = Math.max(176, Math.min(320, Math.round(width * 0.3)));
 }
 
 async function refreshVisibleGantt() {

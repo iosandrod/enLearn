@@ -114,6 +114,7 @@
     "db:apply-planning-structure-pages": "tsx scripts/apply-planning-structure-pages.ts",
     "db:verify-planning-migration": "tsx scripts/verify-planning-migration.ts",
     "db:apply-planning-service": "tsx scripts/apply-planning-service.ts",
+    "db:apply-database-timezone": "tsx scripts/apply-database-timezone.ts",
     "db:apply-mes-core": "tsx scripts/apply-mes-core.ts",
     "db:apply-mes-compensation": "tsx scripts/apply-mes-compensation.ts",
     "db:apply-mes-runtime-action-guards": "tsx scripts/apply-mes-runtime-action-guards.ts",

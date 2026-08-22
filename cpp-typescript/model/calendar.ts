@@ -365,8 +365,12 @@ export class CalendarEventIterator implements IterableIterator<readonly [Plannin
     this.currentDate = new PlanningDate(start);
     this.currentValue = calendar?.getValue(start, forward) ?? 0;
     this.previousValue = this.currentValue;
-    const candidate = this.events.findIndex(([date]) => date.compare(start) > 0);
-    this.index = forward ? (candidate < 0 ? this.events.length : candidate) : (candidate < 0 ? this.events.length - 1 : candidate - 1);
+    const candidate = this.events.findIndex(([date]) => date.compare(start) >= 0);
+    if (forward) this.index = candidate < 0 ? this.events.length : candidate;
+    else {
+      const atStart = candidate >= 0 && this.events[candidate]?.[0].equals(start);
+      this.index = candidate < 0 ? this.events.length - 1 : atStart ? candidate : candidate - 1;
+    }
   }
   static initialize(): number { return 0; }
   getCalendar(): Calendar | null { return this.calendar; }
@@ -388,6 +392,20 @@ export class CalendarEventIterator implements IterableIterator<readonly [Plannin
   }
   private advance(): void {
     this.previousValue = this.currentValue;
+    if (!this.forward) {
+      // C++ operator-- keeps the event date that was just crossed, while the
+      // value changes to the interval immediately before that event.
+      const event = this.events[this.index];
+      if (event) {
+        this.currentDate = new PlanningDate(event[0]);
+        this.currentValue = this.events[this.index - 1]?.[1] ?? this.calendar?.getDefault() ?? 0;
+        this.index -= 1;
+        return;
+      }
+      this.currentDate = new PlanningDate(PlanningDate.infinitePast);
+      this.currentValue = this.calendar?.getDefault() ?? 0;
+      return;
+    }
     const event = this.events[this.index];
     if (!event) {
       this.currentDate = new PlanningDate(this.forward ? PlanningDate.infiniteFuture : PlanningDate.infinitePast);
