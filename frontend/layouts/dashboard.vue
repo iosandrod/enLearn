@@ -959,7 +959,7 @@ async function openSystemSettingsDialog() {
       cancelLabel: '关闭',
       submitOnConfirm: true,
       onRuntimeEvent: async (event) => {
-        if (event.name === 'form.saved') {
+        if (event.name === 'form.saved') {//
           await loadSystemSettings(true);
         }
       },

@@ -154,7 +154,7 @@ insert into public.lowcode_pages (
                 "field": "locale_config.timezone",
                 "title": "时区",
                 "minWidth": 150,
-                "formatter": { "type": "text", "emptyText": "Asia/Shanghai" }
+                "formatter": { "type": "text", "emptyText": "UTC" }
               },
               {
                 "field": "table_config.pageSize",
@@ -229,7 +229,7 @@ insert into public.lowcode_pages (
                     "radius": 6
                   },
                   "locale_config": {
-                    "timezone": "Asia/Shanghai",
+                    "timezone": "UTC",
                     "dateFormat": "YYYY-MM-DD",
                     "timeFormat": "HH:mm:ss"
                   }

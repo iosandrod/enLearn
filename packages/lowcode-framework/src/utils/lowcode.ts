@@ -1,6 +1,6 @@
 import type { LowCodeGridColumn, LowCodeGridFormatter } from '../types/lowcode';
 
-const DEFAULT_TIMEZONE = 'Asia/Shanghai';
+const DEFAULT_TIMEZONE = 'UTC';
 
 function toDateValue(value: unknown) {
   if (typeof value === 'number' && Number.isFinite(value)) {

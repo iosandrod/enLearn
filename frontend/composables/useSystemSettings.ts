@@ -77,7 +77,15 @@ export async function loadSystemSettings(force = false) {
     resetSystemSettings();
     return runtime.settings.value;
   }
-  if (loadPromise && loadPromiseUserId === userId) return loadPromise;
+  if (loadPromise && loadPromiseUserId === userId) {
+    if (!force) return loadPromise;
+
+    // A forced reload must not reuse a startup request that may have captured
+    // the pre-save configuration. Invalidate its result and read again.
+    loadSequence += 1;
+    loadPromise = null;
+    loadPromiseUserId = '';
+  }
   if (!force && runtime.loaded.value && loadedUserId === userId) {
     return runtime.settings.value;
   }
@@ -91,9 +99,9 @@ export async function loadSystemSettings(force = false) {
     try {
       const row = await useServiceApi().firstItem<Record<string, unknown>>('admin', {
         resource: SYSTEM_CONFIG_RESOURCE,
-        tableName: SYSTEM_CONFIG_RESOURCE,
-        limit: 1,
-      });
+        tableName: SYSTEM_CONFIG_RESOURCE,//
+        limit: 1,//
+      });//
       if (
         requestSequence !== loadSequence ||
         useAuth().user.value?.id !== userId

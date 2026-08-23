@@ -1875,6 +1875,7 @@ function readSavedRecordId(
 }
 
 async function submitForms(options: { reload?: boolean } = {}) {
+  await commitPendingFormValues();
   const groups = collectFormSubmissionGroups();
   if (!groups.size) return true;
 
@@ -1913,6 +1914,15 @@ async function submitForms(options: { reload?: boolean } = {}) {
   } finally {
     loadingBlockId.value = '';
   }
+}
+
+async function commitPendingFormValues() {
+  const pendingCommits = flattenPageBlocks(props.page.schema)
+    .filter((block): block is LowCodePageFormBlock => block.kind === 'form')
+    .map((block) => runtime.getFormController(block.id)?.commitPendingValues?.())
+    .filter((value): value is Promise<void> | void => typeof value !== 'undefined');
+
+  await Promise.all(pendingCommits);
 }
 
 function collectSharedFormDefaults(blocks: LowCodePageBlock[]) {

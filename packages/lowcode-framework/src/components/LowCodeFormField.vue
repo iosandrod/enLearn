@@ -3,6 +3,7 @@
     <label v-if="showLabel" :for="field.field">{{ field.label }}</label>
     <component
       :is="materialComponent"
+      ref="materialRef"
       :field="renderField"
       :model-value="modelValue"
       :options="options"
@@ -19,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { getLowCodeFormMaterial } from '../lowcode/form-materials';
 import type { LowCodeField } from '../types/lowcode';
 import type { LowCodeResolvedOption } from '../lowcode/form-materials';
@@ -81,6 +82,13 @@ const renderField = computed<LowCodeField>(() => {
 const materialComponent = computed(() =>
   getLowCodeFormMaterial(renderField.value.component).component
 );
+const materialRef = ref<{ commitPendingValue?: () => void } | null>(null);
+
+function commitPendingValue() {
+  materialRef.value?.commitPendingValue?.();
+}
+
+defineExpose({ commitPendingValue });
 
 function handleUpdate(value: any) {
   const previousValue = cloneValue(valueBeforeChange);

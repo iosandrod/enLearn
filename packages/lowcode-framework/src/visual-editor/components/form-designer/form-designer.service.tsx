@@ -309,6 +309,73 @@ function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undefined {
   };
 }
 
+function readSchemaLayout(schema?: LowCodeFormSchema | null) {
+  return Array.isArray(schema?.layout) && schema.layout.length
+    ? cloneDeep(schema.layout)
+    : undefined;
+}
+
+function readSchemaColumns(schema?: LowCodeFormSchema | null) {
+  const columns = Number(schema?.columns);
+  return Number.isFinite(columns) && columns > 0 ? columns : undefined;
+}
+
+function normalizeLayoutForCompare(nodes: LowCodeFormLayoutNode[] = []): unknown[] {
+  return nodes.map((node) => {
+    if (node.kind === 'field') {
+      return {
+        kind: 'field',
+        field: readString(node.field),
+      };
+    }
+
+    if (node.kind === 'stack') {
+      return {
+        kind: 'stack',
+        blocks: normalizeLayoutForCompare(node.blocks),
+      };
+    }
+
+    if (node.kind === 'tabs') {
+      return {
+        kind: 'tabs',
+        defaultKey: readString(node.defaultKey, node.tabs[0]?.key),
+        tabs: node.tabs.map((tab) => ({
+          key: readString(tab.key),
+          blocks: normalizeLayoutForCompare(tab.blocks),
+        })),
+      };
+    }
+
+    return {
+      kind: 'row',
+      columns: node.columns.map((column) => ({
+        blocks: normalizeLayoutForCompare(column.blocks),
+      })),
+    };
+  });
+}
+
+function resolveInitialLayout(
+  fields: FormDesignerField[],
+  layout?: LowCodeFormLayoutNode[],
+  columns?: number,
+) {
+  if (Array.isArray(layout) && layout.length) return layout;
+  return Number(columns) > 1 ? createColumnLayout(fields, Number(columns)) : [];
+}
+
+function canReuseDesignerLayout(
+  model: VisualEditorModelValue,
+  layout?: LowCodeFormLayoutNode[],
+) {
+  if (!Array.isArray(layout) || !layout.length) return true;
+  const designedLayout = readFormDesignerLayout(model);
+  if (!designedLayout?.length) return false;
+  return JSON.stringify(normalizeLayoutForCompare(designedLayout)) ===
+    JSON.stringify(normalizeLayoutForCompare(layout));
+}
+
 function createLowCodeFormSchema(
   fields: unknown,
   designerModel?: unknown,
@@ -427,15 +494,24 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     const schema = readLowCodeFormSchema(fieldProps.schema);
     const subFields = normalizeFields(schema?.fields);
     const subFormDesignerModel = fieldProps.formDesignerModel;
+    const designerFields = subFields.length ? subFields : createDefaultSubFormFields();
+    const schemaLayout = readSchemaLayout(schema);
+    const schemaColumns = readSchemaColumns(schema);
+    const initialLayout = resolveInitialLayout(designerFields, schemaLayout, schemaColumns);
 
     block.props.__lowcodeComponent = 'lc-sub-form';
     if (schema) block.props.schema = schema;
     else delete block.props.schema;
-    block.props.subFormDesignerModel = isVisualEditorModel(subFormDesignerModel)
+    block.props.subFormDesignerModel =
+      isVisualEditorModel(subFormDesignerModel) &&
+      isDesignerModelCompatible(subFormDesignerModel, designerFields) &&
+      canReuseDesignerLayout(subFormDesignerModel, initialLayout)
       ? cloneDeep(subFormDesignerModel)
       : createFormModel(
-          subFields.length ? subFields : createDefaultSubFormFields(),
+          designerFields,
           `${block.props.label || '子表单'}设计`,
+          schemaLayout,
+          schemaColumns,
         );
   }
 
@@ -642,11 +718,7 @@ function createFormModel(
   const fieldBlockMap = new Map(
     fieldBlocks.map((block) => [readString(block.props?.name), block]),
   );
-  const initialLayout = Array.isArray(layout) && layout.length
-    ? layout
-    : Number(columns) > 1
-      ? createColumnLayout(normalizedFields, Number(columns))
-      : [];
+  const initialLayout = resolveInitialLayout(normalizedFields, layout, columns);
   const laidOutBlocks = initialLayout.length
     ? layoutNodesToBlocks(cloneDeep(initialLayout), fieldBlockMap)
     : [];
@@ -672,10 +744,12 @@ function createFormModel(
 
 function resolveInitialModel(option: FormDesignerServiceOption) {
   const normalizedFields = normalizeFields(cloneDeep(option.fields));
+  const initialLayout = resolveInitialLayout(normalizedFields, option.layout, option.columns);
 
   if (
     isVisualEditorModel(option.designerModel) &&
-    isDesignerModelCompatible(option.designerModel, normalizedFields)
+    isDesignerModelCompatible(option.designerModel, normalizedFields) &&
+    canReuseDesignerLayout(option.designerModel, initialLayout)
   ) {
     return cloneDeep(option.designerModel);
   }

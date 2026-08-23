@@ -81,6 +81,7 @@ export type LowCodePageRuntimeResetOptions = {
 export type LowCodePageRuntimeFormController = {
   validate(): Promise<boolean>;
   clearValidation(): Promise<void> | void;
+  commitPendingValues?(): Promise<void> | void;
   setValues?(values: LowCodeRuntimeRecord): Promise<void> | void;
 };
 

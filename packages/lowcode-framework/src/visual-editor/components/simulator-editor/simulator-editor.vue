@@ -718,6 +718,7 @@
   };
 
   const openSubFormDesigner = async (block: VisualEditorBlockData) => {
+    debugger//
     selectComp(block);
     const schema = isRecord(block.props?.schema) ? block.props.schema : null;
     const schemaFields = Array.isArray(schema?.fields) ? schema.fields : [];

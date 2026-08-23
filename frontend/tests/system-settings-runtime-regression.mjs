@@ -35,6 +35,11 @@ const themeRuntime = await import(
 );
 const settingsComposablePath = new URL('../composables/useSystemSettings.ts', import.meta.url);
 const settingsComposableSource = await readFile(settingsComposablePath, 'utf8');
+assert.match(
+  settingsComposableSource,
+  /if \(loadPromise && loadPromiseUserId === userId\) \{[\s\S]*if \(!force\) return loadPromise;[\s\S]*loadSequence \+= 1;/,
+  'A forced system-settings reload must invalidate an in-flight stale request.',
+);
 
 const systemTableConfig = {
   rowHeight: 40,
@@ -78,6 +83,26 @@ const normalizedMissingValues = runtime.normalizeSystemSettings({
 assert.equal(normalizedMissingValues.primary_color, '#2563eb');
 assert.equal(normalizedMissingValues.language, 'zh-CN');
 assert.equal(normalizedMissingValues.table_config.rowHeight, 40);
+
+const normalizedNestedPrimary = runtime.normalizeSystemSettings({
+  primary_color: '#2563eb',
+  theme_config: {
+    colors: {
+      primary: '#307e4e',
+    },
+  },
+});
+assert.equal(normalizedNestedPrimary.primary_color, '#307e4e');
+
+const normalizedTopLevelPrimary = runtime.normalizeSystemSettings({
+  primary_color: '#d946ef',
+  theme_config: {
+    colors: {
+      primary: '#307e4e',
+    },
+  },
+});
+assert.equal(normalizedTopLevelPrimary.primary_color, '#d946ef');
 
 const explicit = runtime.mergeSystemTableOptions(
   {

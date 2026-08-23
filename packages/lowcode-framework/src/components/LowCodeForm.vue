@@ -24,6 +24,7 @@
         >
           <LowCodeFormField
             :field="field"
+            :ref="(instance) => setFieldRef(field.field, instance)"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
             :option-sources="optionSources"
@@ -53,6 +54,7 @@
         >
           <LowCodeFormField
             :field="field"
+            :ref="(instance) => setFieldRef(field.field, instance)"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
             :option-sources="optionSources"
@@ -224,6 +226,7 @@ const emit = defineEmits<{
 const attrs = useAttrs();
 const host = useLowCodeHost();
 const vxeFormRef = ref<VxeFormInstance<LowCodeFormModel>>();
+const fieldRefs = new Map<string, { commitPendingValue?: () => void }>();
 const formGridRef = ref<HTMLElement>();
 const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
@@ -654,6 +657,18 @@ function readFieldValue(field: LowCodeField) {
   return formData[field.field];
 }
 
+function setFieldRef(fieldName: string, instance: unknown) {
+  if (instance && typeof instance === 'object') {
+    fieldRefs.set(fieldName, instance as { commitPendingValue?: () => void });
+  } else {
+    fieldRefs.delete(fieldName);
+  }
+}
+
+function commitPendingValues() {
+  fieldRefs.forEach((field) => field.commitPendingValue?.());
+}
+
 function formValuesEqual(left: unknown, right: unknown): boolean {
   if (Object.is(left, right)) return true;
   if (Array.isArray(left) && Array.isArray(right)) {
@@ -827,6 +842,7 @@ function snapshot() {
 
 async function handleSubmit() {
   if (isFormInteractionBlocked.value) return false;
+  commitPendingValues();
   if (!(await validate())) return false;
   emit('submit', snapshot());
   return true;
@@ -882,6 +898,7 @@ async function handleAction(action: LowCodeAction) {
 
 defineExpose({
   submit: handleSubmit,
+  commitPendingValues,
   validate,
   snapshot,
   setValues,

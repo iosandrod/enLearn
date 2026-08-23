@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { Client } from 'pg';
 import { getEnv, normalizePostgresConnectionString } from '../src/common/utils/env';
 
-const MIGRATION_FILE = 'supabase/migrations/20260822120000_set_database_timezone_asia_shanghai.sql';
+const MIGRATION_FILE = 'supabase/migrations/20260823090000_set_database_timezone_utc.sql';
 
 function directProjectConnectionString(value: string) {
   const url = new URL(normalizePostgresConnectionString(value));
@@ -64,20 +64,20 @@ async function main() {
       postgres_timezone: string | null;
       authenticator_timezone: string | null;
       sample_utc: string | null;
-      sample_shanghai: string | null;
+      sample_database: string | null;
     }>(`
       select
         current_setting('TimeZone') as timezone,
-        (select rolconfig[array_position(rolconfig, 'TimeZone=Asia/Shanghai')]
+        (select rolconfig[array_position(rolconfig, 'TimeZone=UTC')]
            from pg_roles where rolname = 'postgres') as postgres_timezone,
-        (select rolconfig[array_position(rolconfig, 'TimeZone=Asia/Shanghai')]
+        (select rolconfig[array_position(rolconfig, 'TimeZone=UTC')]
            from pg_roles where rolname = 'authenticator') as authenticator_timezone,
         (select to_char(startdate at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SSOF')
            from public.planning_operationplan
           where id = '83986705-e24a-4e90-b240-0b0da99005f2') as sample_utc,
         (select to_char(startdate, 'YYYY-MM-DD HH24:MI:SSOF')
            from public.planning_operationplan
-          where id = '83986705-e24a-4e90-b240-0b0da99005f2') as sample_shanghai
+          where id = '83986705-e24a-4e90-b240-0b0da99005f2') as sample_database
     `);
     console.log(JSON.stringify({ applied: true, ...result.rows[0] }));
   } finally {

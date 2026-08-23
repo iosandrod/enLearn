@@ -2,6 +2,7 @@
   <section class="lc-sub-form">
     <LowCodeForm
       v-if="configuredSchema"
+      ref="lowCodeFormRef"
       v-bind="lowCodeFormProps"
       @update:model-value="handleUpdate"
       @submit="handleSubmit"
@@ -15,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
 import { isLowCodeFormSchema } from '../../form-schema';
 import type {
@@ -32,6 +33,7 @@ const unconfiguredSchema: LowCodeFormSchema = {
 };
 
 const props = defineProps<LowCodeFormMaterialProps>();
+const lowCodeFormRef = ref<InstanceType<typeof LowCodeForm> | null>(null);
 const emit = defineEmits<{
   'update:modelValue': [value: Record<string, unknown>];
   submit: [value: Record<string, unknown>];
@@ -103,6 +105,12 @@ function handleFieldChange(payload: SubFormFieldChangePayload) {
     handler(payload);
   }
 }
+
+function commitPendingValue() {
+  lowCodeFormRef.value?.commitPendingValues();
+}
+
+defineExpose({ commitPendingValue });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

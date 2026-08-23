@@ -221,7 +221,7 @@ export const DEFAULT_SYSTEM_SETTINGS: SystemSettings = {
   },
   language: 'zh-CN',
   locale_config: {
-    timezone: 'Asia/Shanghai',
+    timezone: 'UTC',
     dateFormat: 'YYYY-MM-DD',
     timeFormat: 'HH:mm:ss',
   },
@@ -256,10 +256,29 @@ export function cloneDefaultSystemSettings() {
 }
 
 export function normalizeSystemSettings(value: unknown): SystemSettings {
-  return mergeRecords(
+  const normalized = mergeRecords(
     cloneDefaultSystemSettings() as Record<string, unknown>,
     isRecord(value) ? value : {},
   ) as SystemSettings;
+
+  // Older settings pages could persist the editable primary color inside the
+  // nested theme config while leaving the top-level compatibility field at
+  // its default value. Prefer that nested value during hydration so the saved
+  // color is applied instead of being hidden by the default.
+  const nestedColors = isRecord(normalized.theme_config?.colors)
+    ? normalized.theme_config.colors
+    : undefined;
+  const nestedPrimary = readNonEmptyString(nestedColors?.primary);
+  const topLevelPrimary = readNonEmptyString(normalized.primary_color);
+  if (
+    nestedPrimary &&
+    (!topLevelPrimary || topLevelPrimary === DEFAULT_SYSTEM_SETTINGS.primary_color) &&
+    nestedPrimary !== DEFAULT_SYSTEM_SETTINGS.primary_color
+  ) {
+    normalized.primary_color = nestedPrimary;
+  }
+
+  return normalized;
 }
 
 export function resolveSystemTableConfig(context?: SystemSettingsContext | null) {
@@ -448,4 +467,8 @@ function cloneValue<T>(value: T): T {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readNonEmptyString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
 }

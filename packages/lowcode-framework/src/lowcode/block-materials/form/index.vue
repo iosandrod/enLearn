@@ -72,6 +72,7 @@ onMounted(() => {
   unregisterFormController = pageRuntime.registerFormController(props.block.id, {
     validate: () => formRef.value?.validate() ?? Promise.resolve(false),
     clearValidation: () => formRef.value?.clearValidation(),
+    commitPendingValues: () => formRef.value?.commitPendingValues(),
     setValues: (values) => formRef.value?.setValues(values),
   });
 });

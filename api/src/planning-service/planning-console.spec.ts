@@ -12,6 +12,7 @@ import {
   PLANNING_CONSOLE_PAGE_CODE,
   PLANNING_CONSOLE_PAGE_SCHEMA,
   PLANNING_CONSOLE_GRID_TABLES,
+  PLANNING_CONSOLE_GRID_SOURCE_TABLES,
   PLANNING_CONSOLE_ROUTE,
   PLANNING_CONSOLE_SOURCE_KEYS
 } from './planning-console.schema';
@@ -497,6 +498,16 @@ assert.equal(normalizedSchema.pageType, 'custom');
 assert.ok(PLANNING_CONSOLE_SOURCE_KEYS.every((key) => normalizedSchema.dataSources?.[key]));
 assert.equal(normalizedSchema.dataSources?.summary?.sourceType, 'custom');
 assert.equal(normalizedSchema.dataSources?.summary?.serviceMethod, 'getPlanningConsoleData');
+for (const [sourceKey, tableName] of Object.entries(PLANNING_CONSOLE_GRID_SOURCE_TABLES)) {
+  const source = normalizedSchema.dataSources?.[sourceKey] as Record<string, unknown> | undefined;
+  assert.equal(source?.sourceType, 'custom');
+  assert.equal(source?.serviceName, 'planning');
+  assert.equal(source?.serviceMethod, 'listItems');
+  assert.equal(source?.tableName, undefined);
+  const postData = source?.postData as Record<string, unknown> | undefined;
+  assert.equal(postData?.resource, tableName);
+  assert.equal(postData?.tableName, tableName);
+}
 assert.equal(normalizedSchema.dataSources?.scenarioOptions?.serviceMethod, 'getPlanningConsoleOptions');
 
 const blocks = normalizedSchema.blocks as Array<Record<string, unknown>>;
@@ -543,7 +554,11 @@ assert.ok(scenarioChange.some((directive) =>
 const resultFilter = blocks.find((block) => block.id === 'planning_console_result_filter');
 assert.equal(resultFilter?.kind, 'searchForm');
 assert.equal(resultFilter?.title, '结果筛选');
-assert.deepEqual(resultFilter?.targetSourceKeys, PLANNING_CONSOLE_SOURCE_KEYS);
+assert.ok(Array.isArray(resultFilter?.targetSourceKeys));
+assert.ok((resultFilter?.targetSourceKeys as unknown[]).includes('operationPlanTimeline'));
+assert.ok(PLANNING_CONSOLE_SOURCE_KEYS.every((key) =>
+  (resultFilter?.targetSourceKeys as unknown[]).includes(key)
+));
 const resultFilterSchema = resultFilter?.schema as Record<string, unknown> | undefined;
 const resultFilterFields = Array.isArray(resultFilterSchema?.fields)
   ? resultFilterSchema.fields as Array<Record<string, unknown>>
@@ -603,6 +618,7 @@ function firstTabBlock(key: string) {
   return Array.isArray(tab?.blocks) ? tab.blocks[0] as Record<string, unknown> | undefined : undefined;
 }
 assert.equal(firstTabBlock('gantt')?.kind, 'planningGantt');
+assert.equal(firstTabBlock('gantt')?.sourceKey, 'operationPlanTimeline');
 assert.deepEqual(firstTabBlock('gantt')?.includedTypes, ['MO', 'WO', 'PO', 'DO', 'DLVR']);
 assert.equal(firstTabBlock('flow')?.kind, 'planningFlow');
 assert.equal(firstTabBlock('bom')?.kind, 'planningBom');
@@ -653,15 +669,14 @@ for (const block of allBlocks.filter((candidate) => candidate.kind === 'grid')) 
 }
 for (const [gridId, tableName] of Object.entries(PLANNING_CONSOLE_GRID_TABLES)) {
   const block = allBlocks.find((candidate) => candidate.id === gridId);
-  assert.equal(block?.sourceType, 'custom', `${gridId} must retain its aggregate data source.`);
   assert.equal(block?.tableName, tableName, `${gridId} must link to ${tableName}.`);
 
   const sourceKey = String(block?.sourceKey ?? '');
   const linkedSource = normalizedSchema.dataSources?.[sourceKey] as Record<string, unknown> | undefined;
   assert.equal(linkedSource?.sourceType, 'custom');
   assert.equal(linkedSource?.serviceName, 'planning');
-  assert.equal(linkedSource?.serviceMethod, 'getPlanningConsoleData');
-  assert.equal(linkedSource?.tableName, undefined, `${gridId} must not query its linked table directly.`);
+  assert.equal(linkedSource?.serviceMethod, 'listItems');
+  assert.equal((linkedSource?.postData as Record<string, unknown> | undefined)?.tableName, tableName);
 }
 
 void Promise.all([testLargeSummary(), testRunBoundary(), testResourcePlanPagination()]).then(() => {

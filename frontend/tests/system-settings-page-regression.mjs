@@ -82,6 +82,24 @@ const arrayTableSource = await readFile(
   ),
   'utf8'
 );
+const lowCodeFormSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/components/LowCodeForm.vue', import.meta.url),
+  'utf8'
+);
+const colorPickerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-color-picker/index.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
+const subFormSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 assert.match(
   migrationSource,
@@ -121,7 +139,7 @@ assert.match(
 assert.match(
   rendererSource,
   /function collectSharedFormDefaults\([\s\S]*defaultsBySource\[sourceKey\] = mergeFormModelValues/,
-  'Forms split across settings tabs must share one complete source model.'
+  'Multiple forms sharing a source must still contribute one complete source model.'
 );
 assert.match(
   editMigrationSource,
@@ -130,8 +148,13 @@ assert.match(
 );
 assert.match(
   editMigrationSource,
-  /"id": "system-settings-edit-tabs"[\s\S]*"key": "appearance"[\s\S]*"key": "table"[\s\S]*"key": "locale"[\s\S]*"key": "advanced"/,
-  'The edit page must separate appearance, table, locale, and advanced settings.'
+  /"id": "system-settings-edit-form"[\s\S]*"kind": "form"[\s\S]*"sourceKey": "systemSettings"[\s\S]*"layout": \[[\s\S]*"kind": "tabs"[\s\S]*"key": "appearance"[\s\S]*"key": "table"[\s\S]*"key": "locale"[\s\S]*"key": "advanced"/,
+  'The edit page must use one form and place appearance, table, locale, and advanced settings in the form layout tabs.'
+);
+assert.doesNotMatch(
+  editMigrationSource,
+  /"id": "system-settings-edit-tabs"|"id": "system-settings-appearance-form"|"id": "system-settings-locale-form"|"id": "system-settings-advanced-form"/,
+  'The edit page must not use page-level tabs or split the settings into multiple page forms.'
 );
 assert.match(
   editMigrationSource,
@@ -140,13 +163,18 @@ assert.match(
 );
 assert.match(
   editMigrationSource,
-  /"id": "system-settings-table-form"[\s\S]*"field": "table_config"[\s\S]*"component": "vxe-switch"/,
-  'Table preferences must be editable with purpose-built controls.'
+  /"field": "table_config"[\s\S]*"component": "lc-sub-form"[\s\S]*"component": "vxe-switch"/,
+  'Table preferences must remain editable with purpose-built controls inside the single form.'
 );
 assert.match(
   tablePreferencesMigrationSource,
-  /"id": "system-settings-table-tabs"[\s\S]*"key": "table-basic"[\s\S]*"key": "table-row"[\s\S]*"key": "table-column"[\s\S]*"key": "table-pager"[\s\S]*"key": "table-format"/,
-  'Detailed table preferences must be organized into focused tabs.'
+  /'\{blocks,2,schema,fields,3\}'[\s\S]*"field": "table_config"[\s\S]*"layout": \[[\s\S]*"kind": "tabs"[\s\S]*"key": "table-basic"[\s\S]*"key": "table-row"[\s\S]*"key": "table-column"[\s\S]*"key": "table-pager"[\s\S]*"key": "table-format"/,
+  'Detailed table preferences must be organized into focused tabs inside the table_config sub-form.'
+);
+assert.doesNotMatch(
+  tablePreferencesMigrationSource,
+  /"id": "system-settings-table-tabs"|"id": "system-settings-table-form"|"id": "system-settings-table-row-form"|"id": "system-settings-table-column-form"|"id": "system-settings-table-pager-form"|"id": "system-settings-table-format-form"/,
+  'Detailed table preferences must not reintroduce page-level tabs or split table settings into multiple page forms.'
 );
 assert.match(
   tablePreferencesMigrationSource,
@@ -190,8 +218,28 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /defineExpose\(\{[\s\S]*submitForms[\s\S]*async function submitForms\(\)[\s\S]*saveFormSource/,
+  /defineExpose\(\{[\s\S]*submitForms[\s\S]*async function submitForms\([\s\S]*saveFormSource/,
   'The page renderer must expose an awaited form submission operation to dialog hosts.'
+);
+assert.match(
+  rendererSource,
+  /async function submitForms\([\s\S]*await commitPendingFormValues\(\)[\s\S]*function commitPendingFormValues\(/,
+  'Outer dialog submission must commit pending field values before building the save payload.'
+);
+assert.match(
+  lowCodeFormSource,
+  /function commitPendingValues\([\s\S]*fieldRefs\.forEach[\s\S]*defineExpose\(\{[\s\S]*commitPendingValues/,
+  'Forms must expose pending-field synchronization to page submission.'
+);
+assert.match(
+  colorPickerSource,
+  /reactData[\s\S]*defineExpose\(\{ commitPendingValue \}\)/,
+  'Color pickers must expose their pending internal value to the outer form submit.'
+);
+assert.match(
+  subFormSource,
+  /lowCodeFormRef[\s\S]*commitPendingValue\(\)[\s\S]*commitPendingValues\(\)[\s\S]*defineExpose\(\{ commitPendingValue \}\)/,
+  'Nested sub-forms must recursively commit pending field values.'
 );
 assert.match(
   pageDialogSource,
@@ -245,8 +293,8 @@ assert.match(
 );
 assert.match(
   systemSettingsRuntimeSource,
-  /if \(loadPromise && loadPromiseUserId === userId\) return loadPromise;/,
-  'Concurrent startup and authentication listeners must share one settings request.'
+  /if \(loadPromise && loadPromiseUserId === userId\) \{[\s\S]*if \(!force\) return loadPromise;[\s\S]*loadSequence \+= 1;/,
+  'Concurrent settings loads must share normal requests while forced reloads invalidate stale requests.'
 );
 assert.match(
   systemSettingsRuntimeSource,

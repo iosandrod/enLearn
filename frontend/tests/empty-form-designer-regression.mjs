@@ -35,5 +35,31 @@ assert.match(
   /isDesignerModelCompatible\(option\.designerModel, normalizedFields\)/,
   'A stale designer model must not override the current empty field list.',
 );
+assert.match(
+  resolveInitialModelSource,
+  /const initialLayout = resolveInitialLayout\(normalizedFields, option\.layout, option\.columns\);[\s\S]*?canReuseDesignerLayout\(option\.designerModel, initialLayout\)/,
+  'A field-compatible designer model without layout must not override schema layout.',
+);
+
+const subFormBlockSource = designerSource.match(
+  /if \(runtimeComponent === 'lc-sub-form'\) \{[\s\S]*?\r?\n  \}\r?\n\r?\n  if \(runtimeComponent === 'lc-array-table'\)/,
+)?.[0];
+
+assert.ok(subFormBlockSource, 'The sub-form field block initializer must remain discoverable.');
+assert.match(
+  subFormBlockSource,
+  /const schemaLayout = readSchemaLayout\(schema\);[\s\S]*?const schemaColumns = readSchemaColumns\(schema\);/,
+  'Sub-form field blocks must read layout metadata from the canonical schema.',
+);
+assert.match(
+  subFormBlockSource,
+  /const initialLayout = resolveInitialLayout\(designerFields, schemaLayout, schemaColumns\);[\s\S]*?canReuseDesignerLayout\(subFormDesignerModel, initialLayout\)/,
+  'Sub-form field blocks must reject stale designer models when schema layout exists.',
+);
+assert.match(
+  subFormBlockSource,
+  /createFormModel\([\s\S]*?designerFields,[\s\S]*?schemaLayout,[\s\S]*?schemaColumns,/,
+  'Sub-form field blocks must build their designer model from schema layout and columns.',
+);
 
 console.log('Empty form designer regression test passed.');

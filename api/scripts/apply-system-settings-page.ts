@@ -34,6 +34,13 @@ const tablePreferencesMigrationPath = resolve(
   'migrations',
   '20260805103000_system_settings_table_preferences.sql'
 );
+const timezoneUtcMigrationPath = resolve(
+  process.cwd(),
+  process.cwd().toLowerCase().endsWith('api') ? '..' : '.',
+  'supabase',
+  'migrations',
+  '20260823110000_system_config_timezone_utc.sql'
+);
 const env = getEnv();
 const rawConnectionString = process.env.DIRECT_URL ?? env.DIRECT_URL ?? env.DATABASE_URL;
 
@@ -43,12 +50,18 @@ if (!rawConnectionString) {
 
 async function main() {
   const connectionString = normalizePostgresConnectionString(rawConnectionString);
-  const createClient = () => new Client({
-    connectionString,
-    connectionTimeoutMillis: 30_000,
-    keepAlive: true,
-    ssl: { rejectUnauthorized: false }
-  });
+  const createClient = () => {
+    const nextClient = new Client({
+      connectionString,
+      connectionTimeoutMillis: 30_000,
+      keepAlive: true,
+      ssl: { rejectUnauthorized: false }
+    });
+    nextClient.on('error', () => {
+      // Query-level retries below handle transient connection resets.
+    });
+    return nextClient;
+  };
   let client = createClient();
 
   await client.connect();
@@ -62,7 +75,8 @@ async function main() {
         : [await readFile(systemConfigMigrationPath, 'utf8')]),
       await readFile(migrationPath, 'utf8'),
       await readFile(editPageMigrationPath, 'utf8'),
-      await readFile(tablePreferencesMigrationPath, 'utf8')
+      await readFile(tablePreferencesMigrationPath, 'utf8'),
+      await readFile(timezoneUtcMigrationPath, 'utf8')
     ];
 
     for (const sql of migrationSql) {
@@ -103,7 +117,13 @@ async function main() {
         route.code as menu_code,
         route.title as menu_title,
         parent.code as parent_code,
-        route.visible
+        route.visible,
+        (
+          select config.locale_config ->> 'timezone'
+          from public.system_config as config
+          order by config.updated_at desc
+          limit 1
+        ) as system_timezone
       from public.lowcode_pages as page
       left join public.lowcode_pages as edit_page on edit_page.id = page.edit_page_id
       left join public.admin_routes as route on route.page_code = page.code
