@@ -1,9 +1,6 @@
 <template>
-  <section
-    class="visual-designer-page"
-    :class="[designerThemeClass, { 'visual-designer-page--embedded': embedded }]"
-    :style="designerThemeStyle"
-  >
+  <section class="visual-designer-page" :class="[designerThemeClass, { 'visual-designer-page--embedded': embedded }]"
+    :style="designerThemeStyle">
     <div class="visual-designer-frame">
       <div v-if="loading && !ready && !errorMessage" class="content-panel visual-designer-placeholder">
         <p class="page-description">正在加载低代码设计器...</p>
@@ -11,38 +8,21 @@
 
       <ClientOnly v-else>
         <div class="visual-designer-layout">
-          <aside
-            v-if="showMenuDrawer"
-            class="visual-designer-drawer"
-            :class="{ 'is-collapsed': menuDrawerCollapsed }"
-          >
+          <aside v-if="showMenuDrawer" class="visual-designer-drawer" :class="{ 'is-collapsed': menuDrawerCollapsed }">
             <div class="visual-designer-drawer__panel" :aria-hidden="menuDrawerCollapsed">
               <header class="visual-designer-drawer__header">
                 <div class="visual-designer-drawer__heading">
                   <strong>页面菜单</strong>
                   <span>{{ menuTreeStatusLabel }}</span>
                 </div>
-                <button
-                  class="visual-designer-drawer__refresh"
-                  type="button"
-                  :disabled="menuTreeLoading"
-                  title="刷新菜单"
-                  @click="reloadMenuTree"
-                >
-                  <i
-                    :class="menuTreeLoading ? 'ri-loader-4-line admin-spin' : 'ri-refresh-line'"
-                    aria-hidden="true"
-                  />
+                <button class="visual-designer-drawer__refresh" type="button" :disabled="menuTreeLoading" title="刷新菜单"
+                  @click="reloadMenuTree">
+                  <i :class="menuTreeLoading ? 'ri-loader-4-line admin-spin' : 'ri-refresh-line'" aria-hidden="true" />
                 </button>
               </header>
 
               <div class="admin-filter">
-                <input
-                  v-model="menuFilter"
-                  aria-label="菜单过滤"
-                  placeholder="菜单过滤"
-                  type="search"
-                />
+                <input v-model="menuFilter" aria-label="菜单过滤" placeholder="菜单过滤" type="search" />
               </div>
 
               <nav class="admin-menu visual-designer-drawer__menu">
@@ -58,57 +38,34 @@
                   </p>
                   <template v-for="group in filteredMenuTree" :key="group.code">
                     <section class="admin-menu-section">
-                      <SystemMenuTreeNode
-                        :item="group"
-                        :expanded-groups="expandedGroups"
-                        :filtering="Boolean(normalizedMenuFilter)"
-                        :level="0"
-                        mode="action"
-                        :active-code="currentPageCode"
-                        :show-actions="true"
-                        :action-loading-code="menuActionLoadingCode"
-                        @toggle="toggleGroup"
-                        @select="handleMenuSelect"
-                        @edit-page="handleEditMenuPage"
-                        @add-child="handleAddChildMenu"
-                        @toggle-visible="handleToggleMenuVisible"
-                      />
+                      <SystemMenuTreeNode :item="group" :expanded-groups="expandedGroups"
+                        :filtering="Boolean(normalizedMenuFilter)" :level="0" mode="action"
+                        :active-code="currentPageCode" :show-actions="true" :action-loading-code="menuActionLoadingCode"
+                        @toggle="toggleGroup" @select="handleMenuSelect" @edit-page="handleEditMenuPage"
+                        @add-child="handleAddChildMenu" @toggle-visible="handleToggleMenuVisible" />
                     </section>
                   </template>
                 </template>
               </nav>
             </div>
 
-            <button
-              class="visual-designer-drawer__toggle"
-              type="button"
-              :aria-expanded="!menuDrawerCollapsed"
-              :aria-label="menuDrawerCollapsed ? '展开页面菜单' : '收起页面菜单'"
-              :title="menuDrawerCollapsed ? '展开页面菜单' : '收起页面菜单'"
-              @click="toggleMenuDrawer"
-            >
-              <i
-                :class="menuDrawerCollapsed ? 'ri-arrow-right-s-line' : 'ri-arrow-left-s-line'"
-                aria-hidden="true"
-              />
+            <button class="visual-designer-drawer__toggle" type="button" :aria-expanded="!menuDrawerCollapsed"
+              :aria-label="menuDrawerCollapsed ? '展开页面菜单' : '收起页面菜单'" :title="menuDrawerCollapsed ? '展开页面菜单' : '收起页面菜单'"
+              @click="toggleMenuDrawer">
+              <i :class="menuDrawerCollapsed ? 'ri-arrow-right-s-line' : 'ri-arrow-left-s-line'" aria-hidden="true" />
             </button>
           </aside>
 
           <main class="visual-designer-workbench">
-            <div v-if="errorMessage" class="content-panel visual-designer-placeholder visual-designer-placeholder--error">
+            <div v-if="errorMessage"
+              class="content-panel visual-designer-placeholder visual-designer-placeholder--error">
               <h2 class="page-title">设计器不可用</h2>
               <p class="page-description">{{ errorMessage }}</p>
             </div>
 
-            <VisualEditorProvider
-              v-else-if="ready"
-              ref="providerRef"
-              :initial-data="visualModel"
-              :page-record="designerPageRecord"
-              :show-header="!embedded"
-              :show-global-dialog-host="!embedded"
-              @save="saveVisualProject"
-            >
+            <VisualEditorProvider v-else-if="ready" ref="providerRef" :initial-data="visualModel"
+              :page-record="designerPageRecord" :show-header="!embedded" :show-global-dialog-host="!embedded"
+              @save="saveVisualProject">
               <template #meta>
                 <div class="visual-designer-summary">
                   <strong>{{ form.title || '未命名页面' }}</strong>
@@ -152,7 +109,6 @@ import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from './VisualEditorProvider.vue';
 import SystemMenuTreeNode from './SystemMenuTreeNode.vue';
 import type {
-  LowCodeFormSchema,
   LowCodePageApi,
   LowCodePageBlock,
   LowCodePageFormBlock,
@@ -169,7 +125,6 @@ import { convertVisualEditorToLowCode } from '../utils/visual-to-lowcode';
 import {
   confirmLowCodePage,
   findGlobalDialog,
-  openGlobalDialog,
 } from '../runtime/global-dialog';
 import {
   provideLowCodeHost,
@@ -179,7 +134,11 @@ import {
   type LowCodeMessages,
   type LowCodeTheme,
 } from '../core/host';
-import { ensureLowCodeEditPage, getLowCodePage } from '../runtime/lowcode-pages';
+import {
+  ensureLowCodeEditPage,
+  ensureLowCodePageForRoute,
+  getLowCodePage,
+} from '../runtime/lowcode-pages';
 import {
   buildAdminRouteTree,
   buildSidebarMenu,
@@ -209,7 +168,7 @@ provideLowCodeHost({
 });
 
 type DesignerPageStatus = 'draft' | 'published' | 'archived';
-type MenuRouteType = 'group' | 'page';
+type MenuRouteType = 'group' | 'page' | 'link';
 type DesignerPageForm = {
   code: string;
   route: string;
@@ -288,6 +247,8 @@ const expandedGroups = reactive<Record<string, boolean>>({});
 let menuTreeLoadPromise: Promise<void> | null = null;
 let pageLoadRequestSeq = 0;
 const MENU_CHILD_EDITOR_DIALOG_ID = 'visual-designer-menu-child-editor';
+const DYNAMIC_ROUTE_EDIT_PAGE_CODE = 'admin-system-routes-edit';
+const DYNAMIC_ROUTE_EDIT_FORM_ID = 'edit-form-955036';
 
 const designerThemeClass = computed(() => host.getTheme().className);
 const designerThemeStyle = computed(() =>
@@ -352,50 +313,6 @@ const designerPageRecord = computed<LowCodePageRecord>(() => {
     updated_at: current?.updated_at ?? '',
   };
 });
-const menuChildSchema: LowCodeFormSchema = {
-  fields: [
-    {
-      field: 'title',
-      label: '菜单名称',
-      component: 'vxe-input',
-      props: { clearable: true },
-      rules: [{ required: true, message: '菜单名称不能为空。' }],
-    },
-    {
-      field: 'code',
-      label: '菜单编码',
-      component: 'vxe-input',
-      props: { clearable: true },
-      rules: [{ required: true, message: '菜单编码不能为空。' }],
-    },
-    {
-      field: 'path',
-      label: '菜单路径',
-      component: 'vxe-input',
-      props: { clearable: true },
-      help: '建议沿用父级路径前缀，保存后仍可继续调整。',
-      rules: [{ required: true, message: '菜单路径不能为空。' }],
-    },
-    {
-      field: 'route_type',
-      label: '类型',
-      component: 'vxe-select',
-      options: [
-        { label: '页面', value: 'page' },
-        { label: '分组', value: 'group' },
-      ],
-    },
-    {
-      field: 'page_code',
-      label: '关联页面编码',
-      component: 'vxe-input',
-      props: { clearable: true },
-      help: '留空则仅作为菜单项，后续也可以再补关联页面。',
-    },
-  ],
-  actions: [],
-};
-
 const fallbackVisualModel = computed<VisualEditorModelValue>(() => ({
   pages: {
     '/': {
@@ -448,9 +365,9 @@ function preserveDataSourceRuntimeSettings(
       const previousSource = isPlainRecord(previous[key]) ? previous[key] : {};
       const loadAfterSourceKeys = Array.isArray(previousSource.loadAfterSourceKeys)
         ? previousSource.loadAfterSourceKeys.filter(
-            (dependency): dependency is string =>
-              typeof dependency === 'string' && dependency.trim().length > 0,
-          )
+          (dependency): dependency is string =>
+            typeof dependency === 'string' && dependency.trim().length > 0,
+        )
         : undefined;
 
       return [
@@ -505,8 +422,8 @@ function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
           ...runtimeBlock.props,
           formDesignerModel: isVisualEditorModel(block.props?.formDesignerModel) &&
             block.componentKey === runtimeBlock.componentKey
-              ? block.props.formDesignerModel
-              : runtimeBlock.props?.formDesignerModel,
+            ? block.props.formDesignerModel
+            : runtimeBlock.props?.formDesignerModel,
         },
       };
     }
@@ -659,7 +576,10 @@ function createMenuChildModel(parent: AdminRouteNode): MenuChildForm {
 }
 
 function normalizeMenuChildForm(value: Record<string, unknown>, parent: AdminRouteNode): MenuChildForm {
-  const routeType = String(value.route_type ?? 'page') === 'group' ? 'group' : 'page';
+  const rawRouteType = String(value.route_type ?? 'page');
+  const routeType: MenuRouteType = ['group', 'page', 'link'].includes(rawRouteType)
+    ? (rawRouteType as MenuRouteType)
+    : 'page';
   const code = String(value.code ?? '').trim() || createMenuCode();
   const title = String(value.title ?? '').trim() || `${parent.title} 子菜单`;
   const path = String(value.path ?? '').trim() || joinMenuPath(parent.path, code);
@@ -671,6 +591,56 @@ function normalizeMenuChildForm(value: Record<string, unknown>, parent: AdminRou
     path,
     route_type: routeType,
     page_code: pageCode,
+  };
+}
+
+function findPageForm(
+  blocks: LowCodePageBlock[],
+  predicate?: (block: LowCodePageFormBlock) => boolean,
+): LowCodePageFormBlock | undefined {
+  for (const block of blocks) {
+    if (block.kind === 'form' && (!predicate || predicate(block))) return block;
+    const nestedForm = findPageForm(getChildPageBlocks(block), predicate);
+    if (nestedForm) return nestedForm;
+  }
+  return undefined;
+}
+
+function createMenuChildEditPage(
+  editorPage: LowCodePageRecord,
+  initialValues: Record<string, unknown>,
+): { page: LowCodePageRecord; formId: string } {
+  const schema = cloneDeep(editorPage.schema);
+  const blocks = [
+    ...(schema.blocks ?? []),
+    ...(schema.overlays ?? []),
+  ];
+  const formBlock =
+    findPageForm(
+      blocks,
+      (block) => block.id === DYNAMIC_ROUTE_EDIT_FORM_ID || block.sourceKey === 'record',
+    ) ?? findPageForm(blocks);
+
+  if (!formBlock) {
+    throw new Error('动态路由编辑页中没有可用的表单。');
+  }
+
+  formBlock.initialValues = {
+    ...(formBlock.initialValues ?? {}),
+    ...cloneDeep(initialValues),
+  };
+  formBlock.sourceKey = undefined;
+  formBlock.submitSourceKey = undefined;
+  formBlock.schema.actions = [];
+
+  if (schema.dataSources && 'record' in schema.dataSources) {
+    const { record: _record, ...dataSources } = schema.dataSources;
+    schema.dataSources = dataSources;
+  }
+
+  return {
+    page: { ...editorPage, schema },
+    formId: formBlock.id,
   };
 }
 
@@ -826,10 +796,20 @@ function reloadMenuTree() {
   void loadMenuTree(true);
 }
 
-function handleMenuSelect(item: AdminRouteNode) {
-  const pageCode = item.page_code?.trim() ?? '';
-  if (!pageCode) return;
-  void loadPageByCode(pageCode);
+async function handleMenuSelect(item: AdminRouteNode) {
+  if (item.children?.length || item.route_type === 'link' || item.route_type === 'group') return;
+  try {
+    const page = item.page_code?.trim()
+      ? await getLowCodePage(host.getServiceApi(), {
+          code: item.page_code.trim(),
+          includeData: false,
+        })
+      : await ensureLowCodePageForRoute(host.getServiceApi(), item);
+    await loadPageByCode(page.code);
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '低代码页面打开失败。';
+    messageType.value = 'error';
+  }
 }
 
 async function saveMenuItem(item: AdminRouteNode, overrides: Parameters<typeof buildMenuSavePayload>[1]) {
@@ -885,7 +865,7 @@ async function handleEditMenuPage(item: AdminRouteNode) {
   }
 }
 
-function handleAddChildMenu(parent: AdminRouteNode) {
+async function handleAddChildMenu(parent: AdminRouteNode) {
   if (findGlobalDialog(MENU_CHILD_EDITOR_DIALOG_ID)) return;
   if (!parent.id) {
     message.value = '当前菜单缺少数据库 ID，无法新增子菜单。';
@@ -893,74 +873,89 @@ function handleAddChildMenu(parent: AdminRouteNode) {
     return;
   }
 
-  const model = createMenuChildModel(parent);
+  const model = {
+    id: '',
+    ...createMenuChildModel(parent),
+    parent_id: parent.id,
+    icon: null,
+    permission_code: null,
+    visible: true,
+    keep_alive: true,
+    layout: parent.layout ?? 'dashboard',
+    status: 'active',
+    sort_order: getNextMenuSortOrder(parent),
+    metadata_json: buildMenuChildMetadataJson(parent),
+  };
 
-  void openGlobalDialog<MenuChildForm>({
-    id: MENU_CHILD_EDITOR_DIALOG_ID,
-    title: `新增子菜单 - ${parent.title}`,
-    width: 'min(760px, calc(100vw - 48px))',
-    showFooter: true,
-    model,
-    form: {
-      schema: menuChildSchema,
-      props: {
-        className: 'visual-designer-menu-child-form',
-        vertical: true,
+  try {
+    const editorPage = await getLowCodePage(host.getServiceApi(), {
+      code: DYNAMIC_ROUTE_EDIT_PAGE_CODE,
+      includeData: true,
+    });
+    const runtimePage = createMenuChildEditPage(editorPage, model);
+    const result = await confirmLowCodePage({
+      page: runtimePage.page,
+      includeData: true,
+      serviceApi: host.getServiceApi(),
+      router: host.getRouter(),
+      route: host.getRoute(),
+      locale: props.locale,
+      messages: props.messages,
+      theme: props.theme,
+      title: `新增子菜单 - ${parent.title}`,
+      width: 'min(1120px, calc(100vw - 48px))',
+      confirmLabel: '保存',
+      cancelLabel: '取消',
+      submitOnConfirm: true,
+      dialog: {
+        id: MENU_CHILD_EDITOR_DIALOG_ID,
       },
-    },
-    actions: [
-      {
-        code: 'cancel',
-        label: '取消',
-        role: 'cancel',
-      },
-      {
-        code: 'confirm',
-        label: '保存',
-        role: 'confirm',
-        status: 'primary',
-      },
-    ],
-    onConfirm: async ({ model: nextModel }) => {
-      const values = normalizeMenuChildForm(nextModel, parent);
-      if (!values.title.trim()) {
-        throw new Error('菜单名称不能为空。');
-      }
-      if (!values.code.trim()) {
-        throw new Error('菜单编码不能为空。');
-      }
-      if (!values.path.trim()) {
-        throw new Error('菜单路径不能为空。');
-      }
+    });
+    if (result.action !== 'confirm' || !result.payload) return;
 
-      await runMenuAction('add-child', parent.code, async () => {
-        const nextSortOrder = getNextMenuSortOrder(parent);
-        const metadata_json = buildMenuChildMetadataJson(parent);
-        await host.getServiceApi().invoke('admin', 'saveItem', {
-          resource: 'admin_routes',
-          code: values.code,
-          title: values.title,
-          path: values.path,
-          parent_id: parent.id,
-          route_type: values.route_type,
-          icon: null,
-          page_code: values.route_type === 'page' ? (values.page_code.trim() || null) : null,
-          permission_code: null,
-          visible: true,
-          keep_alive: true,
-          layout: parent.layout ?? 'dashboard',
-          status: 'active',
-          sort_order: nextSortOrder,
-          metadata_json,
-        });
-        expandedGroups[parent.code] = true;
-        await refreshMenuTreeAfterMutation();
+    const formValues = result.payload.formModels[runtimePage.formId];
+    const values = normalizeMenuChildForm(
+      isPlainRecord(formValues) ? formValues : {},
+      parent,
+    );
+    if (!values.title.trim()) {
+      throw new Error('菜单名称不能为空。');
+    }
+    if (!values.code.trim()) {
+      throw new Error('菜单编码不能为空。');
+    }
+    if (!values.path.trim()) {
+      throw new Error('菜单路径不能为空。');
+    }
+
+    await runMenuAction('add-child', parent.code, async () => {
+      await host.getServiceApi().invoke('admin', 'saveItem', {
+        resource: 'admin_routes',
+        code: values.code,
+        title: values.title,
+        path: values.path,
+        parent_id: parent.id,
+        route_type: values.route_type,
+        icon: null,
+        page_code: values.route_type === 'page' ? (values.page_code.trim() || null) : null,
+        permission_code: null,
+        visible: true,
+        keep_alive: true,
+        layout: parent.layout ?? 'dashboard',
+        status: 'active',
+        sort_order: getNextMenuSortOrder(parent),
+        metadata_json: buildMenuChildMetadataJson(parent),
       });
+      expandedGroups[parent.code] = true;
+      await refreshMenuTreeAfterMutation();
+    });
 
-      message.value = `已新增 ${values.title}。`;
-      messageType.value = 'success';
-    },
-  });
+    message.value = `已新增 ${values.title}。`;
+    messageType.value = 'success';
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '子菜单保存失败。';
+    messageType.value = 'error';
+  }
 }
 
 function toggleGroup(code: string) {
@@ -1017,9 +1012,9 @@ function buildSchema(payload: {
     visualEditor: payload.model,
     dataSources: hasRuntimeContent
       ? preserveDataSourceRuntimeSettings(
-          previousSchema.dataSources,
-          converted.dataSources,
-        )
+        previousSchema.dataSources,
+        converted.dataSources,
+      )
       : isPlainRecord(previousSchema.dataSources)
         ? previousSchema.dataSources
         : {},
@@ -1240,12 +1235,7 @@ function getChildPageBlocks(block: LowCodePageBlock): LowCodePageBlock[] {
 }
 
 function findPageInfoForm(blocks: LowCodePageBlock[]): LowCodePageFormBlock | undefined {
-  for (const block of blocks) {
-    if (block.kind === 'form') return block;
-    const nestedForm = findPageInfoForm(getChildPageBlocks(block));
-    if (nestedForm) return nestedForm;
-  }
-  return undefined;
+  return findPageForm(blocks);
 }
 
 function createPageInfoEditorPage(
@@ -1332,24 +1322,24 @@ async function openPageInfo() {
         : [];
       page.value.schema.apis = Array.isArray(values.apis)
         ? values.apis.filter(isPlainRecord).reduce<NonNullable<LowCodePageSchema['apis']>>(
-            (apis, api) => {
-              const name = String(api.name ?? '').trim();
-              if (!name) return apis;
-              const serviceName = String(api.serviceName ?? '').trim();
-              const serviceMethod = String(api.serviceMethod ?? '').trim();
-              if (!serviceName || !serviceMethod) return apis;
-              const definition: LowCodePageApi = {
-                serviceName,
-                serviceMethod,
-                ...(typeof api.method === 'string' ? { method: api.method as LowCodePageApi['method'] } : {}),
-                ...(isPlainRecord(api.postData) ? { postData: cloneDeep(api.postData) } : {}),
-                ...(typeof api.resultPath === 'string' ? { resultPath: api.resultPath } : {}),
-              };
-              apis[name] = definition;
-              return apis;
-            },
-            {},
-          )
+          (apis, api) => {
+            const name = String(api.name ?? '').trim();
+            if (!name) return apis;
+            const serviceName = String(api.serviceName ?? '').trim();
+            const serviceMethod = String(api.serviceMethod ?? '').trim();
+            if (!serviceName || !serviceMethod) return apis;
+            const definition: LowCodePageApi = {
+              serviceName,
+              serviceMethod,
+              ...(typeof api.method === 'string' ? { method: api.method as LowCodePageApi['method'] } : {}),
+              ...(isPlainRecord(api.postData) ? { postData: cloneDeep(api.postData) } : {}),
+              ...(typeof api.resultPath === 'string' ? { resultPath: api.resultPath } : {}),
+            };
+            apis[name] = definition;
+            return apis;
+          },
+          {},
+        )
         : {};
       page.value.schema.pageType = page.value.page_type;
       page.value.schema.layout = page.value.layout;

@@ -513,6 +513,19 @@ export type LowCodeMaterialVersionedBlock = {
   layout?: {
     fillRemaining?: boolean;
   };
+  /** Scripts that run around this node's executeAction calls. */
+  hooks?: LowCodeExecuteActionHook[];
+};
+
+export type LowCodeExecuteActionHook = {
+  name?: string;
+  phase?: 'before' | 'after';
+  /** Empty means that the hook applies to every executeAction method on the node. */
+  method?: string;
+  enabled?: boolean;
+  /** Stop the action when this hook throws or returns a rejected promise. */
+  critical?: boolean;
+  script: string;
 };
 
 export type LowCodePageTextBlock = LowCodeMaterialVersionedBlock & {

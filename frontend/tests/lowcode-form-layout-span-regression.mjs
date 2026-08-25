@@ -73,8 +73,28 @@ assert.match(
 );
 assert.match(
   arrayTableSource,
+  /:height="tableHeight"/,
+  'Array tables must preserve auto-height rendering unless a height is explicitly configured.'
+);
+assert.doesNotMatch(
+  arrayTableSource,
+  /:height="'100%'"/,
+  'Array tables must not force VXE height to 100% in auto-sized property forms.'
+);
+assert.match(
+  arrayTableSource,
+  /function isFillHeight\(value: unknown\) \{[\s\S]*?value\.trim\(\) === '100%'/,
+  'Only explicit 100% height should enable fill mode; auto height must remain content-sized.'
+);
+assert.match(
+  arrayTableSource,
   /\.lc-array-table--fill \{[\s\S]*?grid-template-rows: auto minmax\(0, 1fr\);/,
   'Fill-height array tables must reserve only the remaining row for the VXE viewport.'
+);
+assert.match(
+  arrayTableSource,
+  /\.lc-array-table__viewport \{(?![\s\S]*?height: 100%;[\s\S]*?\})[\s\S]*?display: flex;/,
+  'The default array-table viewport must not claim 100% height outside fill mode.'
 );
 assert.match(
   legacyWidgetsSource,

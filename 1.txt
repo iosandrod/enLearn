@@ -1,0 +1,244 @@
+// if (isFillHeight(config.height)) {
+  //   if (typeof explicitConfig.minHeight === 'undefined') {
+  //     config.minHeight = 0;
+  //   }
+  //   if (typeof explicitConfig.maxHeight === 'undefined') {
+  //     delete config.maxHeight;
+  //   }
+  // }
+
+
+
+
+
+
+  // const sources = nextPage.schema.dataSources ?? {};
+  // const entries = Object.entries(sources);
+  // const pageBlocks = flattenPageBlocks(nextPage.schema);
+  // const sharedFormDefaults = collectSharedFormDefaults(pageBlocks);
+  // const preserveGrids = runtimePageId === nextPage.id;
+  // const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
+
+  // if (!preserveGrids) {
+  //   builtinPageFunctionMode.value = resolveLowCodeEditPageMode(
+  //     host.getRoute().query?.id,
+  //   );
+  // }
+
+  // invalidateSourceRequests();
+  // runtime.resetData({ preserveGrids, preserveLocalGridRows: preserveGrids });
+  // runtimePageId = nextPage.id;
+  // initializePageGridStates(pageBlocks);
+
+  // for (const block of pageBlocks) {
+  //   if (block.kind === 'grid') {
+  //     await resolveGridDynamicDefaults(block);
+  //   } else if (block.kind === 'form') {
+  //     const sourceKey = block.sourceKey ?? block.submitSourceKey;
+  //     runtime.replaceForm(block.id, await deriveFormModel(
+  //       block,
+  //       sourceKey ? sharedFormDefaults[sourceKey] : undefined
+  //     ));
+  //   } else if (block.kind === 'searchForm') {
+  //     runtime.replaceForm(block.id, await deriveFormModel(block));
+  //   }
+  // }
+
+  // if (!entries.length) {
+  //   syncPageGridStates(nextPage.schema);
+  //   restoreGridInteractionState(gridInteractionState);
+  //   captureFormBaselines();
+  //   return [];
+  // }
+
+  // const errors = await loadDataSourceWaves(entries, pageBlocks, sources);
+
+  // syncPageGridStates(nextPage.schema);
+  // restoreGridInteractionState(gridInteractionState);
+  // captureFormBaselines();
+
+  // return errors;
+
+
+
+  // const sharedFormDefaults = collectSharedFormDefaults(pageBlocks);
+  // const preserveGrids = runtimePageId === nextPage.id;
+  // const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
+
+  // if (!preserveGrids) {
+  //   builtinPageFunctionMode.value = resolveLowCodeEditPageMode(
+  //     host.getRoute().query?.id,
+  //   );
+  // }
+
+  // invalidateSourceRequests();
+  // runtime.resetData({ preserveGrids, preserveLocalGridRows: preserveGrids });
+  // runtimePageId = nextPage.id;
+  // initializePageGridStates(pageBlocks);
+
+  // for (const block of pageBlocks) {
+  //   if (block.kind === 'grid') {
+  //     await resolveGridDynamicDefaults(block);
+  //   } else if (block.kind === 'form') {
+  //     const sourceKey = block.sourceKey ?? block.submitSourceKey;
+  //     runtime.replaceForm(block.id, await deriveFormModel(
+  //       block,
+  //       sourceKey ? sharedFormDefaults[sourceKey] : undefined
+  //     ));
+  //   } else if (block.kind === 'searchForm') {
+  //     runtime.replaceForm(block.id, await deriveFormModel(block));
+  //   }
+  // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const action = resolveLowCodeNodeAction(block.kind, 'loadData', block);
+    if (!action?.dataSourceLoader) continue;
+
+    const sourceKey = block.kind === 'grid'
+      ? readString(block.sourceKey)
+      : block.kind === 'form'
+        ? readString(block.sourceKey, readString(block.submitSourceKey))
+        : '';
+    const source = getDataSource(sourceKey);
+    if (!source || source.autoLoad === false) continue;
+
+    try {
+      await executeScriptNodeAction({
+        node: block.id,
+        method: 'loadData',
+      });
+    } catch (error) {
+      errors.push(
+        `${sourceKey}/${block.id}: ${error instanceof Error
+          ? error.message
+          : host.t('runtime.errors.loadDataSource')}`,
+      );
+    }
+
+
+
+
+
+
+
+
+
+
+    syncPageGridStates(nextPage.schema);
+  restoreGridInteractionState(gridInteractionState);
+  captureFormBaselines();
+
+
+
+
+
+
+
+   const pending = new Map(entries);
+  const errors: string[] = [];
+
+  while (pending.size) {
+    const ready = [...pending.entries()].filter(([, source]) =>
+      (source.loadAfterSourceKeys ?? []).every((dependencyKey) => !pending.has(dependencyKey))
+    );
+    if (!ready.length) {
+      errors.push(`Data source dependency cycle: ${[...pending.keys()].join(', ')}`);
+      break;
+    }
+
+    ready.forEach(([key]) => pending.delete(key));
+    errors.push(...(await Promise.all(
+      ready.map(([key, source]) => loadDataSourceEntry(key, source, pageBlocks))
+    )).filter(Boolean));
+    hydrateSourceBoundForms(pageBlocks, sources, new Set(ready.map(([key]) => key)));
+  }
+
+  return errors;
+
+
+
+  async function loadDataSourceWaves(
+  entries: Array<[string, LowCodePageDataSource]>,
+  pageBlocks: LowCodePageBlock[],
+  sources: Record<string, LowCodePageDataSource>
+) {
+ 
+}
+
+
+
+
+
+
+async function loadDataSourceEntry(
+  key: string,
+  source: LowCodePageDataSource,
+  pageBlocks: LowCodePageBlock[]
+) {
+  // A data source can be shared by more than one node. Let every node own its
+  // loadData request so node action hooks and node-specific relation rules run.
+  const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
+  const loaderBlocks = pageBlocks.filter((block) => (
+    (block.kind === 'form'
+      ? block.sourceKey ?? block.submitSourceKey
+      : 'sourceKey' in block
+        ? block.sourceKey
+        : undefined) === key &&
+    resolveLowCodeNodeAction(block.kind, 'loadData', block)?.dataSourceLoader === true
+  ));
+  if (nodeAction && !loaderBlocks.some((block) => block.id === nodeAction.block.id)) {
+    loaderBlocks.unshift(nodeAction.block);
+  }
+
+  if (loaderBlocks.length) {
+    if (source.autoLoad === false) return '';
+    const errors = await Promise.all(loaderBlocks.map(async (block) => {
+      try {
+        await executeScriptNodeAction({
+          node: block.id,
+          method: 'loadData',
+        });
+        return '';
+      } catch (error) {
+        return `${key}/${block.id}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`;
+      }
+    }));
+    return errors.filter(Boolean).join('; ');
+  }
+
+  const version = beginSourceRequest(key);
+  return invokeDataSource(key, source)
+    .then(([resolvedKey, value]) => {
+      if (!isCurrentSourceRequest(key, version)) return '';
+      if (typeof value !== 'undefined') {
+        runtime.setSource(resolvedKey, value, { resetGridBaseline: true });
+      }
+      return '';
+    })
+    .catch((error: unknown) => {
+      if (!isCurrentSourceRequest(key, version)) return '';
+      return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`;
+    })
+    .finally(() => finishSourceRequest(key, version));
+}

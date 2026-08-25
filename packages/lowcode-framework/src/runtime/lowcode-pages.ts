@@ -8,6 +8,25 @@ export type LowCodePageLookup = {
   includeData?: boolean;
 };
 
+export type LowCodeRoutePageTarget = {
+  id?: string;
+  code: string;
+  path: string;
+  title: string;
+  route_type?: 'group' | 'page' | 'link';
+  page_code?: string | null;
+  layout?: 'default' | 'dashboard' | 'blank' | null;
+  keep_alive?: boolean | null;
+  status?: string | null;
+  visible?: boolean;
+  sort_order?: number | null;
+  parent_id?: string | null;
+  icon?: string | null;
+  permission_code?: string | null;
+  metadata?: Record<string, unknown>;
+  metadata_json?: string;
+};
+
 function readString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : '';
 }
@@ -96,6 +115,137 @@ function buildEditPageSaveData(page: LowCodePageRecord, schema: LowCodePageSchem
       },
     ],
   };
+}
+
+function buildRoutePageCode(target: LowCodeRoutePageTarget) {
+  const source = readString(target.code) || readString(target.id) || 'menu-page';
+  const normalized = source
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+  return normalized || 'menu-page';
+}
+
+function buildRoutePageSchema(target: LowCodeRoutePageTarget, code: string): LowCodePageSchema {
+  const route = readString(target.path) || `/dashboard/${code}`;
+  const title = readString(target.title) || code;
+  return {
+    schemaVersion: 1,
+    code,
+    route,
+    title,
+    description: '',
+    pageType: 'custom',
+    layout: target.layout || 'dashboard',
+    status: 'published',
+    keepAlive: target.keep_alive !== false,
+    dataSources: {},
+    blocks: [],
+  };
+}
+
+function buildRoutePageSaveData(target: LowCodeRoutePageTarget, schema: LowCodePageSchema) {
+  const publishedAt = new Date().toISOString();
+  return {
+    code: schema.code,
+    route: schema.route,
+    title: schema.title,
+    description: schema.description ?? null,
+    layout: schema.layout ?? 'dashboard',
+    status: 'published',
+    keep_alive: schema.keepAlive ?? true,
+    page_type: 'custom',
+    edit_page_id: null,
+    table_name: null,
+    relate_config: {},
+    schema,
+    version: 1,
+    published_at: publishedAt,
+    __details: [
+      {
+        resource: 'lowcode_page_versions',
+        mode: 'replace',
+        foreignKey: 'page_id',
+        parentKey: 'id',
+        rows: [{ version: 1, schema, published_at: publishedAt }],
+      },
+    ],
+  };
+}
+
+function buildRouteSaveData(target: LowCodeRoutePageTarget, pageCode: string) {
+  return {
+    id: target.id,
+    code: target.code,
+    title: target.title,
+    path: target.path,
+    parent_id: target.parent_id ?? null,
+    route_type: target.route_type ?? 'page',
+    icon: target.icon ?? null,
+    page_code: pageCode,
+    permission_code: target.permission_code ?? null,
+    visible: target.visible !== false,
+    keep_alive: target.keep_alive !== false,
+    layout: target.layout ?? 'dashboard',
+    status: target.status ?? 'active',
+    sort_order: target.sort_order ?? 0,
+    metadata_json: target.metadata_json ?? JSON.stringify(target.metadata ?? {}),
+  };
+}
+
+/** Creates and links a published blank page for an unbound database menu route. */
+export async function ensureLowCodePageForRoute(
+  serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
+  target: LowCodeRoutePageTarget,
+) {
+  const existingByRoute = await findLowCodePage(serviceApi, {
+    route: target.path,
+    includeData: false,
+  });
+  if (existingByRoute) {
+    if (target.id && existingByRoute.code !== readString(target.page_code)) {
+      await serviceApi.invoke('admin', 'saveItem', {
+        resource: 'admin_routes',
+        ...buildRouteSaveData(target, existingByRoute.code),
+      });
+    }
+    return existingByRoute;
+  }
+
+  const baseCode = buildRoutePageCode(target);
+  let pageCode = baseCode;
+  let existingByCode = await findLowCodePage(serviceApi, { code: pageCode, includeData: false });
+  if (existingByCode && existingByCode.route !== target.path) {
+    pageCode = `${baseCode}-page`;
+    while (await findLowCodePage(serviceApi, { code: pageCode, includeData: false })) {
+      pageCode = `${pageCode}-page`;
+    }
+    existingByCode = undefined;
+  }
+
+  const schema = buildRoutePageSchema(target, pageCode);
+  let page = existingByCode;
+  if (!page) {
+    try {
+      page = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+        resource: 'lowcode_pages',
+        data: buildRoutePageSaveData(target, schema),
+      });
+    } catch (error) {
+      if (!isUniqueConflictError(error)) throw error;
+      page = await findLowCodePage(serviceApi, { route: target.path, includeData: false });
+      if (!page) throw error;
+    }
+  }
+
+  if (target.id && target.page_code !== page.code) {
+    await serviceApi.invoke('admin', 'saveItem', {
+      resource: 'admin_routes',
+      ...buildRouteSaveData(target, page.code),
+    });
+  }
+
+  return page;
 }
 
 export async function listLowCodePages(

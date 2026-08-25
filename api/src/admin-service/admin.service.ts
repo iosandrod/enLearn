@@ -470,12 +470,12 @@ export class AdminService extends BaseService {
         defaults: { route_type: 'page', status: 'active', visible: true, keep_alive: false, sort_order: 0 },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }, { field: 'created_at', direction: 'asc' }] },
         create: {
-          allowedFields: ['parent_id', 'code', 'path', 'title', 'icon', 'component', 'redirect', 'permission_code', 'route_type', 'status', 'visible', 'keep_alive', 'sort_order', 'metadata'],
+          allowedFields: ['parent_id', 'code', 'path', 'title', 'icon', 'component', 'redirect', 'permission_code', 'page_code', 'route_type', 'layout', 'status', 'visible', 'keep_alive', 'sort_order', 'metadata'],
           requiredFields: ['code', 'path', 'title'],
           userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
         },
         update: {
-          allowedFields: ['parent_id', 'code', 'path', 'title', 'icon', 'component', 'redirect', 'permission_code', 'route_type', 'status', 'visible', 'keep_alive', 'sort_order', 'metadata'],
+          allowedFields: ['parent_id', 'code', 'path', 'title', 'icon', 'component', 'redirect', 'permission_code', 'page_code', 'route_type', 'layout', 'status', 'visible', 'keep_alive', 'sort_order', 'metadata'],
           requiredFields: ['code', 'path', 'title'],
           userFields: { updatedBy: 'updated_by' }
         }
@@ -699,7 +699,7 @@ export class AdminService extends BaseService {
     const clearAuthorizationCaches = () => {
       clearAllUserAuthorizationCaches();
     };
-    return {
+    return {//
       admin_roles: {
         beforeDelete: [this.resolveCodeDeleteId],
         afterCreate: [clearAuthorizationCaches],
@@ -719,7 +719,7 @@ export class AdminService extends BaseService {
         beforeDelete: [this.resolveCodeDeleteId]
       },
       system_option_sources: {
-        afterList: [this.attachOptionSourceConfigJson],
+        afterList: [],
         beforeDelete: [this.resolveOptionSourceDeleteId, this.preventDeleteSystemOptionSource],
         afterCreate: [this.attachOptionSourceConfigJson],
         afterUpdate: [this.attachOptionSourceConfigJson]

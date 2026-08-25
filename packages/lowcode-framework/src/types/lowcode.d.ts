@@ -410,6 +410,15 @@ export type LowCodeMaterialVersionedBlock = {
     layout?: {
         fillRemaining?: boolean;
     };
+    hooks?: LowCodeExecuteActionHook[];
+};
+export type LowCodeExecuteActionHook = {
+    name?: string;
+    phase?: 'before' | 'after';
+    method?: string;
+    enabled?: boolean;
+    critical?: boolean;
+    script: string;
 };
 export type LowCodePageTextBlock = LowCodeMaterialVersionedBlock & {
     id: string;

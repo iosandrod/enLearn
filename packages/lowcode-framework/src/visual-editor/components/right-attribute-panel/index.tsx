@@ -12,7 +12,7 @@ import { defineComponent, reactive, watch } from 'vue';
 import { ElTabPane, ElTabs } from '../common/designer-ui';
 import { DArrowLeft, DArrowRight } from '../common/remix-icons';
 import styles from './index.module.scss';
-import { AttrEditor, Animate, PageSetting, EventAction, FormRule } from './components';
+import { AttrEditor, Animate, PageSetting, EventAction, FormRule, HooksEditor } from './components';
 import { useVisualData } from '../../hooks/useVisualData';
 
 export default defineComponent({
@@ -73,6 +73,11 @@ export default defineComponent({
               <ElTabPane label="事件" name="events">
                 <div class={styles.panelBody}>
                   <EventAction />
+                </div>
+              </ElTabPane>
+              <ElTabPane label="钩子" name="hooks" lazy>
+                <div class={styles.panelBody}>
+                  <HooksEditor />
                 </div>
               </ElTabPane>
               {isFormBlock() ? (

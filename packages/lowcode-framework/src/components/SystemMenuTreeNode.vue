@@ -20,6 +20,7 @@
         :class="[`level-${level}`, { 'router-link-active': isCurrentPageActive, 'is-inactive': isInactive }]"
         :to="item.path"
         role="menuitem"
+        @click="handleLinkClick"
         @contextmenu="handleContextMenu"
       >
         <span class="admin-menu-title">{{ item.title }}</span>
@@ -28,10 +29,10 @@
       <button
         v-else
         class="admin-menu-link admin-menu-main"
-        :class="[`level-${level}`, { 'router-link-active': isActive, 'is-disabled': !hasPageCode, 'is-inactive': isInactive }]"
+        :class="[`level-${level}`, { 'router-link-active': isActive, 'is-disabled': mode !== 'action' && !hasPageCode, 'is-inactive': isInactive }]"
         type="button"
-        :disabled="!hasPageCode"
-        :title="hasPageCode ? item.title : '未关联低代码页面'"
+        :disabled="mode !== 'action' && !hasPageCode"
+        :title="hasPageCode ? item.title : (mode === 'action' ? '点击创建低代码页面' : '未关联低代码页面')"
         @click="handleSelect"
         @contextmenu="handleContextMenu"
       >
@@ -183,7 +184,14 @@ function handleContextMenu(event: MouseEvent) {
 }
 
 function handleSelect() {
-  if (props.mode !== 'action' || !hasPageCode.value) return;
+  if (props.mode !== 'action' || props.item.route_type === 'link' || props.item.route_type === 'group') return;
+  emit('select', props.item);
+}
+
+function handleLinkClick(event: MouseEvent) {
+  if (hasPageCode.value || props.item.route_type === 'link' || props.item.route_type === 'group') return;
+  event.preventDefault();
+  event.stopPropagation();
   emit('select', props.item);
 }
 

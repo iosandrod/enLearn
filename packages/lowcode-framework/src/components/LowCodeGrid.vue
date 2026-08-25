@@ -23,6 +23,9 @@
         v-bind="gridConfig"
         :data="rows"
         :loading="loading"
+        :height="'100%'"
+        :min-height="'200px'"
+        :max-height="'100%'"
         @current-row-change="handleCurrentChange"
         @cell-click="(payload) => handleGenericGridEvent('cellClick', payload)"
         @edit-closed="(payload) => handleGenericGridEvent('editClosed', payload)"
@@ -219,7 +222,9 @@ function isRowActionDisabled(
 
 const tableScrollStyle = computed(() => {
   if (props.fill) return undefined;
-
+  if(1==1){//
+    return {}
+  }
   const height = props.schema.grid.height;
   if (typeof height === 'number') {
     return { minHeight: `${height}px` };
@@ -636,6 +641,7 @@ defineExpose({
   min-width: 0;
   min-height: 0;
   max-width: 100%;
+  max-height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
 }

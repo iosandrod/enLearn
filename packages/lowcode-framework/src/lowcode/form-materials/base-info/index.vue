@@ -104,8 +104,8 @@ type ResolvedSource = {
   entityMetadata?: RelateInfoRow;
 };
 
-const DEFAULT_POPUP_WIDTH = 880;
-const DEFAULT_GRID_HEIGHT = 320;
+const DEFAULT_POPUP_WIDTH = 300;
+const DEFAULT_GRID_HEIGHT = 200;
 
 const props = defineProps<LowCodeFormMaterialProps>();
 const emit = defineEmits<{

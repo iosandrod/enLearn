@@ -99,13 +99,30 @@ export function getLowCodeNodeTypeDefinition(kind: string) {
   return lowCodeNodeActionRegistry[kind as LowCodeNodeKind];
 }
 
-export function getLowCodeNodeActionMethods(kind: string) {
+export function getLowCodeNodeActionMethods(
+  kind: string,
+  block?: LowCodePageBlock,
+) {
   const definition = getLowCodeNodeTypeDefinition(kind);
-  return definition ? Object.values(definition.methods) : [];
+  const methods = definition ? Object.values(definition.methods) : [];
+  return methods.filter((method) => (
+    method.executor !== 'form.loadData' ||
+    (block?.kind === 'form' && block.formType === 'edit')
+  ));
 }
 
-export function resolveLowCodeNodeAction(kind: string, method: string) {
-  return getLowCodeNodeTypeDefinition(kind)?.methods[method];
+export function resolveLowCodeNodeAction(
+  kind: string,
+  method: string,
+  block?: LowCodePageBlock,
+) {
+  const action = getLowCodeNodeTypeDefinition(kind)?.methods[method];
+  if (!action) return undefined;
+  if (
+    action.executor === 'form.loadData' &&
+    !(block?.kind === 'form' && block.formType === 'edit')
+  ) return undefined;
+  return action;
 }
 
 export function resolveLowCodeDataSourceNodeAction(
@@ -113,8 +130,13 @@ export function resolveLowCodeDataSourceNodeAction(
   sourceKey: string,
 ) {
   for (const block of blocks) {
-    if (!('sourceKey' in block) || block.sourceKey !== sourceKey) continue;
-    const action = getLowCodeNodeActionMethods(block.kind).find(
+    const blockSourceKey = block.kind === 'form'
+      ? block.sourceKey ?? block.submitSourceKey
+      : 'sourceKey' in block
+        ? block.sourceKey
+        : undefined;
+    if (blockSourceKey !== sourceKey) continue;
+    const action = getLowCodeNodeActionMethods(block.kind, block).find(
       (candidate) => candidate.dataSourceLoader,
     );
     if (action) return { block, action };

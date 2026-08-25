@@ -71,6 +71,8 @@
     "db:apply-dynamic-grid-association-options": "tsx scripts/apply-dynamic-grid-association-options.ts",
     "db:apply-bare-grid-table-options": "tsx scripts/apply-bare-grid-table-options.ts",
     "db:apply-grid-column-edit-type-options": "tsx scripts/apply-grid-column-edit-type-options.ts",
+    "db:apply-form-input-component-type-options": "tsx scripts/apply-form-input-component-type-options.ts",
+    "db:apply-picker-option-source-code-property": "tsx scripts/apply-picker-option-source-code-property.ts",
     "db:apply-planning-operation-type-options": "tsx scripts/apply-planning-operation-type-options.ts",
     "db:apply-runtime-form-field-editor-option-source-select": "tsx scripts/apply-runtime-form-field-editor-option-source-select.ts",
     "db:apply-runtime-form-field-mode-disabled": "tsx scripts/apply-runtime-form-field-mode-disabled.ts",

@@ -13,8 +13,11 @@ const [
   panelStyles,
   materialsApi,
   migration,
+  formInputTypeMigration,
+  pickerOptionSourceMigration,
   designerPage,
   emptyDesignerPage,
+  designerUi,
 ] = await Promise.all([
   source('packages/lowcode-framework/src/visual-editor/material-prop-forms/database.ts'),
   source('packages/lowcode-framework/src/visual-editor/material-prop-forms/registry.ts'),
@@ -24,8 +27,11 @@ const [
   source('packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/index.module.scss'),
   source('packages/lowcode-framework/src/materials/index.ts'),
   source('supabase/migrations/20260819100000_database_only_material_property_forms.sql'),
+  source('supabase/migrations/20260823120000_form_input_component_type_options.sql'),
+  source('supabase/migrations/20260823130000_picker_option_source_code_property.sql'),
   source('frontend/pages/dashboard/low-code/designer/[code].vue'),
   source('frontend/pages/dashboard/low-code/designer/index.vue'),
+  source('packages/lowcode-framework/src/visual-editor/components/common/designer-ui/index.tsx'),
 ]);
 
 assert.match(database, /MATERIAL_PROP_FORM_CODE_PREFIX = 'material-prop\.'/);
@@ -45,14 +51,69 @@ assert.doesNotMatch(visualProps, /VisualEditorProps|promoteArrayTableFieldsToTab
 assert.doesNotMatch(provider, /loadDatabaseMaterialPropForm/);
 assert.match(attrEditor, /loadDatabaseMaterialPropForm\(host\.getServiceApi\(\), componentKey\)/);
 assert.match(attrEditor, /watch\(\s*\(\) => currentBlock\.value\?\.componentKey/);
+assert.match(attrEditor, /formInputComponentTypeOptionCode = 'form_input_component_type'/);
+assert.match(attrEditor, /lowCodeOptionSourceRegistry\.refresh\(\s*\[\s*formInputComponentTypeOptionCode\s*\]/);
+assert.match(attrEditor, /componentTypeFormSchema/);
+assert.match(attrEditor, /optionsSourceKey: componentTypeOptionsSourceKey/);
+assert.match(attrEditor, /<LowCodeForm/);
+assert.match(attrEditor, /className=\{styles\.componentTypeForm\}/);
+assert.match(attrEditor, /onFieldChange=\{handleComponentTypeFormChange\}/);
+assert.doesNotMatch(attrEditor, /<ElSelect/);
+assert.match(attrEditor, /changeComponentType/);
+assert.match(attrEditor, /visualConfig\.componentMap\[nextComponentKey\]/);
+assert.match(attrEditor, /block\.componentKey = component\.key/);
 assert.match(designerPage, /<LowCodeVisualDesigner[^>]*:service-api="serviceApi"/);
 assert.match(designerPage, /const serviceApi = useServiceApi\(\)/);
 assert.match(emptyDesignerPage, /<LowCodeVisualDesigner[^>]*:service-api="serviceApi"/);
 assert.match(emptyDesignerPage, /const serviceApi = useServiceApi\(\)/);
+assert.match(designerUi, /import VxeUITable, \{ VxeColumn, VxeGrid, VxeTable \} from 'vxe-table'/);
+assert.match(designerUi, /app\.use\(installVxeUI\);[\s\S]*?app\.use\(VxeUITable\);/);
 
+assert.match(panelStyles, /\.component-type-editor/);
+assert.match(panelStyles, /\.component-type-form/);
 assert.match(panelStyles, /\.material-prop-form \.lc-form-tabs/);
 assert.match(panelStyles, /min-height: 36px/);
 assert.match(panelStyles, /border-radius: 6px/);
+assert.match(panelStyles, /display: block !important;/);
+assert.match(panelStyles, /\.material-prop-form \.lc-array-table:not\(\.lc-array-table--fill\)/);
+assert.match(panelStyles, /overflow-y: visible;/);
+
+assert.match(formInputTypeMigration, /'form_input_component_type'/);
+for (const componentKey of [
+  'input',
+  'picker',
+  'datetimePicker',
+  'switch',
+  'checkbox',
+  'radio',
+  'stepper',
+  'rate',
+  'slider',
+  'array-table',
+  'sub-form',
+]) {
+  assert.match(
+    formInputTypeMigration,
+    new RegExp(`'form_input_component_type'[^\\n]+ '${componentKey.replace('-', '\\-')}'`),
+    `missing form input component type option for ${componentKey}`,
+  );
+}
+assert.match(formInputTypeMigration, /v_option_count <> 11/);
+
+assert.match(pickerOptionSourceMigration, /definitions\.code = 'material-prop\.picker'/);
+assert.match(pickerOptionSourceMigration, /'field', '__lowcodeOptionsCode'/);
+assert.match(pickerOptionSourceMigration, /'path', '__lowcodeOptionsCode'/);
+assert.match(pickerOptionSourceMigration, /'component', 'vxe-select'/);
+assert.match(pickerOptionSourceMigration, /'optionsCode', 'option_source_code'/);
+assert.match(pickerOptionSourceMigration, /'allowCreate', true/);
+assert.match(pickerOptionSourceMigration, /'field', 'columns'/);
+assert.match(pickerOptionSourceMigration, /U&'\\4E0B\\62C9\\9009\\9879\\8868'/);
+assert.match(pickerOptionSourceMigration, /'height', 180/);
+assert.match(pickerOptionSourceMigration, /'minHeight', 0/);
+assert.match(
+  pickerOptionSourceMigration,
+  /v_option_blocks <> array\['__lowcodeOptionsCode', 'columns'\]::text\[\]/,
+);
 
 const rowPattern = /\(\s*'material-prop\.([^']+)'[^$]*\$schema\$(\{.*?\})\$schema\$::jsonb,\s*true\s*\)/g;
 const definitions = new Map();
@@ -88,6 +149,18 @@ for (const [componentKey, definition] of definitions) {
 for (const componentKey of ['form', 'lowcode-edit-form', 'lowcode-search-form', 'lowcode-grid', 'array-table', 'input', 'picker', 'datetimePicker', 'stepper', 'switch', 'radio', 'checkbox', 'rate', 'slider', 'sub-form']) {
   assert.ok(definitions.has(componentKey), `missing database material property definition for ${componentKey}`);
 }
+
+const pickerDefinition = definitions.get('picker');
+assert.ok(
+  pickerDefinition.fields.some((field) => field.field === 'columns' && field.target === 'props'),
+  'picker material properties must expose static option columns',
+);
+assert.ok(
+  pickerDefinition.layout[0].tabs.some(
+    (tab) => tab.key === 'options' && tab.blocks.some((block) => block.field === 'columns'),
+  ),
+  'picker material properties must keep the static option table on the options tab',
+);
 
 assert.ok(definitions.has('planning-flow'), 'missing database material property definition for planning-flow');
 for (const componentKey of chartComponentKeys) {

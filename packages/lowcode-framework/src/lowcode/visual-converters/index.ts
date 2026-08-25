@@ -1,4 +1,5 @@
 import type {
+  LowCodeExecuteActionHook,
   LowCodeButtonGroupAction,
   LowCodeField,
   LowCodeFormLayoutNode,
@@ -97,16 +98,27 @@ export function convertVisualBlock(
     isPlainRecord(block.layout) && readBoolean(block.layout.fillRemaining, false);
 
   if (!runtimeBlock || !fillRemaining) {
-    return runtimeBlock;
+    return runtimeBlock
+      ? withVisualExecuteActionHooks(runtimeBlock, block.hooks)
+      : runtimeBlock;
   }
 
-  return {
+  return withVisualExecuteActionHooks({
     ...runtimeBlock,
     layout: {
       ...(runtimeBlock.layout ?? {}),
       fillRemaining: true,
     },
-  } as LowCodePageBlock;
+  } as LowCodePageBlock, block.hooks);
+}
+
+function withVisualExecuteActionHooks(
+  runtimeBlock: LowCodePageBlock,
+  hooks: LowCodeExecuteActionHook[] | undefined,
+) {
+  return hooks?.length
+    ? { ...runtimeBlock, hooks: cloneJson(hooks) }
+    : runtimeBlock;
 }
 
 export function convertVisualBlocks(
@@ -192,6 +204,7 @@ function createVisualBlock(options: {
     focus: false,
     styles: { ...defaultVisualStyles },
     layout: cloneJson(options.block.layout ?? {}),
+    hooks: cloneJson(options.block.hooks ?? []),
     hasResize: false,
     props: options.props ?? {},
     draggable: true,
@@ -997,7 +1010,8 @@ export function convertLowCodePageSchemaToVisualEditor(
     },
   };
 }
-
+//
+// Object.defineProperty({}, 'visualToLowCodeConverterMap', { value: converterMap ,enumerable:false});
 export { converterMap as visualToLowCodeConverterMap };
 export type {
   VisualBlockProps,

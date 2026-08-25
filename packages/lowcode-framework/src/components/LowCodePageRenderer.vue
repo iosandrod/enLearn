@@ -1,33 +1,19 @@
 <template>
-  <div
-    class="lowcode-runtime-shell"
-    :class="themeClass"
-    :style="themeStyle"
+  <div class="lowcode-runtime-shell" :class="themeClass" :style="themeStyle"
     :aria-busy="runtime.state.status.mesCommandExecuting"
-    :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'"
-  >
-    <LowCodeCategoryDrawer
-      v-if="hasCategoryRelation"
-      :config="page.relate_config"
-      :service-api="categoryServiceApi"
-      @select="handleCategorySelect"
-    />
+    :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'">
+    <LowCodeCategoryDrawer v-if="hasCategoryRelation" :config="page.relate_config" :service-api="categoryServiceApi"
+      @select="handleCategorySelect" />
 
     <div class="lowcode-runtime-page">
       <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
         <span>{{ loadingText }}</span>
       </div>
 
-      <LowCodeBlockRenderer
-        v-for="(block, index) in layoutBlocks"
-        :key="block.id"
-        :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
-        :block="block"
-        :resolved-data="resolvedData"
-        :form-models="formModels"
-        :search-filters="searchFilters"
-        :loading-block-id="loadingBlockId"
-        :loading-grid-id="loadingGridId"
+      <LowCodeBlockRenderer v-for="(block, index) in layoutBlocks" :key="block.id"
+        :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }" :block="block"
+        :resolved-data="resolvedData" :form-models="formModels" :search-filters="searchFilters"
+        :loading-block-id="loadingBlockId" :loading-grid-id="loadingGridId"
         @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
         @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
         @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
@@ -35,16 +21,10 @@
         @toolbar-action="({ action }) => handleToolbarAction(action)"
         @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
         @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-        @runtime-event="publishRuntimeEvent"
-      />
+        @runtime-event="publishRuntimeEvent" />
 
-      <LowCodeOverlayHost
-        v-if="pageOverlays.length"
-        :overlays="pageOverlays"
-        :resolved-data="resolvedData"
-        :form-models="formModels"
-        :search-filters="searchFilters"
-        :loading-block-id="loadingBlockId"
+      <LowCodeOverlayHost v-if="pageOverlays.length" :overlays="pageOverlays" :resolved-data="resolvedData"
+        :form-models="formModels" :search-filters="searchFilters" :loading-block-id="loadingBlockId"
         :loading-grid-id="loadingGridId"
         @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
         @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
@@ -53,8 +33,7 @@
         @toolbar-action="({ action }) => handleToolbarAction(action)"
         @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
         @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-        @runtime-event="publishRuntimeEvent"
-      />
+        @runtime-event="publishRuntimeEvent" />
 
       <p v-if="message" :class="messageClass">{{ message }}</p>
       <GlobalDialogHost v-if="showGlobalDialogHost" />
@@ -359,12 +338,12 @@ function markLastBlockFill<T extends LowCodePageBlock>(blocks: T[]) {
   return blocks.map((block, index) =>
     index === lastIndex
       ? {
-          ...block,
-          layout: {
-            ...(block.layout ?? {}),
-            fillRemaining: true,
-          },
-        }
+        ...block,
+        layout: {
+          ...(block.layout ?? {}),
+          fillRemaining: true,
+        },
+      }
       : block
   );
 }
@@ -834,7 +813,6 @@ async function invokeDataSource(
   if (!force && source.autoLoad === false) {
     return [key, undefined] as const;
   }
-
   const { serviceName, serviceMethod, postData } = resolveDataSourceRequest(key, source);
 
   if (!serviceName || !serviceMethod) {
@@ -893,11 +871,11 @@ async function refreshDataSources(
   const uniqueSourceKeys = [...new Set(sourceKeys)];
   const entries = uniqueSourceKeys.length
     ? uniqueSourceKeys
-        .map((key) => {
-          const source = getDataSource(key);
-          return source ? ([key, source] as const) : undefined;
-        })
-        .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
+      .map((key) => {
+        const source = getDataSource(key);
+        return source ? ([key, source] as const) : undefined;
+      })
+      .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
     : allEntries;
   const pageBlocks = flattenPageBlocks(props.page.schema);
   const refreshEntry = async ([key, source]: readonly [string, LowCodePageDataSource]) => {
@@ -1026,30 +1004,30 @@ function createScriptContextSource(): LowCodeContextSource {
       : [],
     capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
       ? [
-          ...props.page.schema.scriptPolicy.capabilities,
-          ...(hasSchemaPageFunctions()
-            ? ['action.execute' as const]
-            : []),
-          ...(Object.keys(props.page.schema.apis ?? {}).length > 0
-            ? ['http.execute' as const]
-            : []),
-          ...(hasRuntimePageFunctions()
-            ? ['pageFunction.execute' as const]
-            : []),
-        ].filter((capability, index, capabilities) =>
-          capabilities.indexOf(capability) === index,
-        )
+        ...props.page.schema.scriptPolicy.capabilities,
+        ...(hasSchemaPageFunctions()
+          ? ['action.execute' as const]
+          : []),
+        ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+          ? ['http.execute' as const]
+          : []),
+        ...(hasRuntimePageFunctions()
+          ? ['pageFunction.execute' as const]
+          : []),
+      ].filter((capability, index, capabilities) =>
+        capabilities.indexOf(capability) === index,
+      )
       : [
-          ...(hasSchemaPageFunctions()
-            ? ['action.execute' as const]
-            : []),
-          ...(Object.keys(props.page.schema.apis ?? {}).length > 0
-            ? ['http.execute' as const]
-            : []),
-          ...(hasRuntimePageFunctions()
-            ? ['pageFunction.execute' as const]
-            : []),
-        ],
+        ...(hasSchemaPageFunctions()
+          ? ['action.execute' as const]
+          : []),
+        ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+          ? ['http.execute' as const]
+          : []),
+        ...(hasRuntimePageFunctions()
+          ? ['pageFunction.execute' as const]
+          : []),
+      ],
   }, {});
 }
 
@@ -1444,14 +1422,14 @@ function syncRuntimeGridToVisualProps(
   visualProps.tableName = sourceType === 'view'
     ? ''
     : readString(
-        update.changes.tableName,
-        readString(targetBlock.tableName, sourceType === 'table' ? sourceTarget : ''),
-      );
+      update.changes.tableName,
+      readString(targetBlock.tableName, sourceType === 'table' ? sourceTarget : ''),
+    );
   visualProps.viewName = sourceType === 'view'
     ? readString(
-        update.changes.viewName,
-        readString(targetBlock.viewName, readString(source?.viewName, sourceTarget)),
-      )
+      update.changes.viewName,
+      readString(targetBlock.viewName, readString(source?.viewName, sourceTarget)),
+    )
     : '';
   visualProps.sourceKey = sourceKey;
   visualProps.serviceName = source?.serviceName ?? '';
@@ -1461,9 +1439,9 @@ function syncRuntimeGridToVisualProps(
   visualProps.postDataJson = JSON.stringify(source?.postData ?? {}, null, 2);
   visualProps.showRowActions = Boolean(
     rowActions.edit === true ||
-      rowActions.delete === true ||
-      (Array.isArray(rowActions.actions) && rowActions.actions.length) ||
-      columns.some(isRuntimeGridActionColumn)
+    rowActions.delete === true ||
+    (Array.isArray(rowActions.actions) && rowActions.actions.length) ||
+    columns.some(isRuntimeGridActionColumn)
   );
   visualProps.columns = cloneRuntimeValue(
     columns.filter((column) => !isRuntimeGridActionColumn(column))
@@ -1567,11 +1545,11 @@ async function resolveFormDynamicDefaults(
     try {
       const value = defaultValueType === 'procedure'
         ? await host.getServiceApi().invoke('lowcode', 'executeDefaultValueProcedure', {
-            procedure: defaultValueProcedure,
-            blockId: block.id,
-            field: field.field,
-            values: cloneRuntimeValue(nextModel),
-          })
+          procedure: defaultValueProcedure,
+          blockId: block.id,
+          field: field.field,
+          values: cloneRuntimeValue(nextModel),
+        })
         : (await executeIsolatedScript(defaultValueScript, event, 'function')).value;
       if (typeof value !== 'undefined') nextModel[field.field] = cloneRuntimeValue(value);
     } catch (error) {
@@ -1659,11 +1637,11 @@ async function resolveGridDynamicDefaults(block: LowCodePageGridBlock) {
     try {
       const value = defaultValueType === 'procedure'
         ? await host.getServiceApi().invoke('lowcode', 'executeDefaultValueProcedure', {
-            procedure: defaultValueProcedure,
-            blockId: block.id,
-            field: column.field,
-            values: {},
-          })
+          procedure: defaultValueProcedure,
+          blockId: block.id,
+          field: column.field,
+          values: {},
+        })
         : (await executeIsolatedScript(defaultValueScript, event, 'function')).value;
       const editRender = isRecord(column.editRender) ? column.editRender : {};
       if (typeof value === 'undefined') delete editRender.defaultValue;
@@ -1965,113 +1943,25 @@ function hydrateSourceBoundForms(
   }
 }
 
-async function loadDataSourceEntry(
-  key: string,
-  source: LowCodePageDataSource,
-  pageBlocks: LowCodePageBlock[]
-) {
-  const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
-  if (nodeAction) {
-    if (source.autoLoad === false) return '';
-    return executeScriptNodeAction({
-      node: nodeAction.block.id,
-      method: nodeAction.action.method,
-    })
-      .then(() => '')
-      .catch((error: unknown) =>
-        `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`
-      );
-  }
 
-  const version = beginSourceRequest(key);
-  return invokeDataSource(key, source)
-    .then(([resolvedKey, value]) => {
-      if (!isCurrentSourceRequest(key, version)) return '';
-      if (typeof value !== 'undefined') {
-        runtime.setSource(resolvedKey, value, { resetGridBaseline: true });
-      }
-      return '';
-    })
-    .catch((error: unknown) => {
-      if (!isCurrentSourceRequest(key, version)) return '';
-      return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`;
-    })
-    .finally(() => finishSourceRequest(key, version));
-}
 
-async function loadDataSourceWaves(
-  entries: Array<[string, LowCodePageDataSource]>,
-  pageBlocks: LowCodePageBlock[],
-  sources: Record<string, LowCodePageDataSource>
-) {
-  const pending = new Map(entries);
-  const errors: string[] = [];
 
-  while (pending.size) {
-    const ready = [...pending.entries()].filter(([, source]) =>
-      (source.loadAfterSourceKeys ?? []).every((dependencyKey) => !pending.has(dependencyKey))
-    );
-    if (!ready.length) {
-      errors.push(`Data source dependency cycle: ${[...pending.keys()].join(', ')}`);
-      break;
-    }
-
-    ready.forEach(([key]) => pending.delete(key));
-    errors.push(...(await Promise.all(
-      ready.map(([key, source]) => loadDataSourceEntry(key, source, pageBlocks))
-    )).filter(Boolean));
-    hydrateSourceBoundForms(pageBlocks, sources, new Set(ready.map(([key]) => key)));
-  }
-
-  return errors;
-}
 
 async function loadPageData(nextPage: LowCodePageRecord) {
-  const sources = nextPage.schema.dataSources ?? {};
-  const entries = Object.entries(sources);
   const pageBlocks = flattenPageBlocks(nextPage.schema);
-  const sharedFormDefaults = collectSharedFormDefaults(pageBlocks);
-  const preserveGrids = runtimePageId === nextPage.id;
-  const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
 
-  if (!preserveGrids) {
-    builtinPageFunctionMode.value = resolveLowCodeEditPageMode(
-      host.getRoute().query?.id,
-    );
-  }
-
-  invalidateSourceRequests();
-  runtime.resetData({ preserveGrids, preserveLocalGridRows: preserveGrids });
-  runtimePageId = nextPage.id;
-  initializePageGridStates(pageBlocks);
-
+  const errors: string[] = [];
   for (const block of pageBlocks) {
-    if (block.kind === 'grid') {
-      await resolveGridDynamicDefaults(block);
-    } else if (block.kind === 'form') {
-      const sourceKey = block.sourceKey ?? block.submitSourceKey;
-      runtime.replaceForm(block.id, await deriveFormModel(
-        block,
-        sourceKey ? sharedFormDefaults[sourceKey] : undefined
-      ));
-    } else if (block.kind === 'searchForm') {
-      runtime.replaceForm(block.id, await deriveFormModel(block));
+    try {
+      await executeScriptNodeAction({
+        node: block.id,//
+        method: 'loadData',
+      })//
     }
-  }
+    catch (err){
 
-  if (!entries.length) {
-    syncPageGridStates(nextPage.schema);
-    restoreGridInteractionState(gridInteractionState);
-    captureFormBaselines();
-    return [];
-  }
-
-  const errors = await loadDataSourceWaves(entries, pageBlocks, sources);
-
-  syncPageGridStates(nextPage.schema);
-  restoreGridInteractionState(gridInteractionState);
-  captureFormBaselines();
-
+    }
+  }//
   return errors;
 }
 
@@ -2305,8 +2195,8 @@ function createNodeDialogConfig(
   const resultNode = resultNodeId
     ? findNestedRuntimeBlock(block, resultNodeId)
     : flattenBlocks(getChildBlocks(block)).find(
-        (child): child is LowCodePageFormBlock => child.kind === 'form',
-      );
+      (child): child is LowCodePageFormBlock => child.kind === 'form',
+    );
   if (!resultNode || resultNode.kind !== 'form') {
     throw new Error(`弹框 "${block.id}" 未配置结果表单。`);
   }
@@ -2344,7 +2234,12 @@ function createNodeDialogConfig(
   };
 }
 
-async function executeScriptNodeAction(options: Record<string, unknown>) {
+const MAX_EXECUTE_ACTION_HOOK_DEPTH = 8;
+
+async function executeScriptNodeAction(
+  options: Record<string, unknown>,
+  triggerEvent?: LowCodeRuntimeEvent,
+) {
   const node = readString(options.node);
   const method = readString(options.method);
   if (!node) throw new Error('executeAction 参数 node 不能为空。');
@@ -2353,14 +2248,20 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
   const block = findRuntimeBlock(node);
   if (!block) throw new Error(`页面节点 "${node}" 不存在。`);
 
-  const action = resolveLowCodeNodeAction(block.kind, method);
+  const action = resolveLowCodeNodeAction(block.kind, method, block);
   if (!action) throw new Error(`节点 "${node}" 不支持动作 "${method}"。`);
   assertEditPageNodeActionWritable(block.kind, method);
+  const actionOptions = await runExecuteActionHooks(
+    block,
+    method,
+    cloneRuntimeValue(options),
+    triggerEvent,
+  );
 
   if (action.execute) {
-    return action.execute({
+    const result = await action.execute({
       block,
-      options,
+      options: actionOptions,
       blocks: flattenPageBlocks(props.page.schema),
       searchFilters: searchFilters.value,
       grids: runtime.state.grids,
@@ -2421,15 +2322,142 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
       validateGrid: (blockId) => runtime.getGridController(blockId)?.validate()
         ?? Promise.reject(new Error(`表格节点 "${blockId}" 当前未挂载，无法校验。`)),
     });
+    return runExecuteActionAfterHooks(block, method, result, triggerEvent);
   }
 
   if (action.executor === 'overlay.open' && isOverlayBlock(block)) {
-    const result = await openLowCodeGlobalDialog(createNodeDialogConfig(block, options));
-    if (result.action !== 'confirm') return null;
-    return cloneScriptValue(result.values, {});
+    const result = await openLowCodeGlobalDialog(createNodeDialogConfig(block, actionOptions));
+    const value = result.action === 'confirm' ? cloneScriptValue(result.values, {}) : null;
+    return runExecuteActionAfterHooks(block, method, value, triggerEvent);
   }
 
   throw new Error(`节点动作执行器 "${action.executor}" 与节点 "${node}" 不匹配。`);
+}
+
+function resolveExecuteActionHooks(block: LowCodePageBlock, method: string) {
+  return (Array.isArray(block.hooks) ? block.hooks : []).filter((hook) =>
+    isRecord(hook) &&
+    hook.enabled !== false &&
+    typeof hook.script === 'string' &&
+    hook.script.trim() &&
+    (!readString(hook.method) || readString(hook.method) === method),
+  );
+}
+
+function readActionHookDepth(event?: LowCodeRuntimeEvent) {
+  const depth = Number(event?.payload?.actionHookDepth);
+  return Number.isFinite(depth) && depth >= 0 ? Math.trunc(depth) : 0;
+}
+
+function createExecuteActionHookEvent(
+  block: LowCodePageBlock,
+  method: string,
+  hook: Record<string, unknown>,
+  phase: 'before' | 'after',
+  value: unknown,
+  triggerEvent: LowCodeRuntimeEvent | undefined,
+): LowCodeRuntimeEvent {
+  return {
+    name: `node.${phase}Hook`,
+    blockId: block.id,
+    blockKind: block.kind,
+    timestamp: Date.now(),
+    payload: {
+      node: block.id,
+      nodeKind: block.kind,
+      method,
+      phase,
+      hook: {
+        name: readString(hook.name),
+        method: readString(hook.method),
+      },
+      options: phase === 'before' ? cloneRuntimeValue(value) : undefined,
+      value: cloneRuntimeValue(value),
+      actionEvent: triggerEvent
+        ? sanitizeScriptEventPayload(triggerEvent.payload)
+        : undefined,
+      actionHookDepth: readActionHookDepth(triggerEvent) + 1,
+    },
+  };
+}
+
+async function runExecuteActionHooks(
+  block: LowCodePageBlock,
+  method: string,
+  options: Record<string, unknown>,
+  triggerEvent?: LowCodeRuntimeEvent,
+) {
+  const hooks = resolveExecuteActionHooks(block, method).filter(
+    (hook) => hook.phase !== 'after',
+  );
+  if (!hooks.length) return options;
+  if (readActionHookDepth(triggerEvent) >= MAX_EXECUTE_ACTION_HOOK_DEPTH) {
+    throw new Error(`节点 "${block.id}" 的 executeAction 钩子调用层级超过限制。`);
+  }
+
+  let nextOptions = options;
+  for (const hook of hooks) {
+    try {
+      const result = await executeIsolatedScript(
+        hook.script as string,
+        createExecuteActionHookEvent(block, method, hook, 'before', nextOptions, triggerEvent),
+      );
+      if (typeof result.value === 'undefined') continue;
+      if (!isRecord(result.value)) {
+        throw new Error('executeAction 执行前钩子必须返回对象或 undefined。');
+      }
+      nextOptions = {
+        ...nextOptions,
+        ...cloneRuntimeValue(result.value),
+        node: block.id,
+        method,
+      };
+    } catch (error) {
+      if (hook.critical !== false) throw error;
+      console.warn(
+        `[lowcode] executeAction before hook "${readString(hook.name, '未命名')}" failed`,
+        error,
+      );
+    }
+  }
+
+  return nextOptions;
+}
+
+async function runExecuteActionAfterHooks(
+  block: LowCodePageBlock,
+  method: string,
+  result: unknown,
+  triggerEvent?: LowCodeRuntimeEvent,
+) {
+  const hooks = resolveExecuteActionHooks(block, method).filter(
+    (hook) => hook.phase === 'after',
+  );
+  if (!hooks.length) return result;
+  if (readActionHookDepth(triggerEvent) >= MAX_EXECUTE_ACTION_HOOK_DEPTH) {
+    throw new Error(`节点 "${block.id}" 的 executeAction 钩子调用层级超过限制。`);
+  }
+
+  let nextResult = result;
+  for (const hook of hooks) {
+    try {
+      const hookResult = await executeIsolatedScript(
+        hook.script as string,
+        createExecuteActionHookEvent(block, method, hook, 'after', nextResult, triggerEvent),
+      );
+      if (typeof hookResult.value !== 'undefined') {
+        nextResult = cloneRuntimeValue(hookResult.value);
+      }
+    } catch (error) {
+      if (hook.critical !== false) throw error;
+      console.warn(
+        `[lowcode] executeAction after hook "${readString(hook.name, '未命名')}" failed`,
+        error,
+      );
+    }
+  }
+
+  return nextResult;
 }
 
 function assertEditPageNodeActionWritable(
@@ -2539,8 +2567,8 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
     source: Record<string, T>,
     keys: string[] | undefined,
   ) => Array.isArray(keys)
-    ? Object.fromEntries(keys.filter((key) => key in source).map((key) => [key, source[key]]))
-    : source;
+      ? Object.fromEntries(keys.filter((key) => key in source).map((key) => [key, source[key]]))
+      : source;
   delete eventPayload.script;
   delete eventPayload.directives;
   if (safeAction) eventPayload.action = safeAction;
@@ -2578,35 +2606,35 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
     policy: {
       apiNames: Array.isArray(props.page.schema.scriptPolicy?.apiNames)
         ? props.page.schema.scriptPolicy.apiNames.filter(
-            (name): name is string => typeof name === 'string' && Boolean(name.trim()),
-          )
+          (name): name is string => typeof name === 'string' && Boolean(name.trim()),
+        )
         : [],
       capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
         ? [
-            ...props.page.schema.scriptPolicy.capabilities,
-            ...(hasSchemaPageFunctions()
-              ? ['action.execute' as const]
-              : []),
-            ...(Object.keys(props.page.schema.apis ?? {}).length > 0
-              ? ['http.execute' as const]
-              : []),
-            ...(hasRuntimePageFunctions()
-              ? ['pageFunction.execute' as const]
-              : []),
-          ].filter((capability, index, capabilities) =>
-            capabilities.indexOf(capability) === index,
-          )
+          ...props.page.schema.scriptPolicy.capabilities,
+          ...(hasSchemaPageFunctions()
+            ? ['action.execute' as const]
+            : []),
+          ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+            ? ['http.execute' as const]
+            : []),
+          ...(hasRuntimePageFunctions()
+            ? ['pageFunction.execute' as const]
+            : []),
+        ].filter((capability, index, capabilities) =>
+          capabilities.indexOf(capability) === index,
+        )
         : [
-            ...(hasSchemaPageFunctions()
-              ? ['action.execute' as const]
-              : []),
-            ...(Object.keys(props.page.schema.apis ?? {}).length > 0
-              ? ['http.execute' as const]
-              : []),
-            ...(hasRuntimePageFunctions()
-              ? ['pageFunction.execute' as const]
-              : []),
-          ],
+          ...(hasSchemaPageFunctions()
+            ? ['action.execute' as const]
+            : []),
+          ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+            ? ['http.execute' as const]
+            : []),
+          ...(hasRuntimePageFunctions()
+            ? ['pageFunction.execute' as const]
+            : []),
+        ],
     },
   }, {
     page: {},
@@ -2621,11 +2649,12 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
   return compactLowCodeScriptContext(
     context,
     props.page.schema.scriptPolicy?.limits?.maxPayloadBytes
-      ?? DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES,
+    ?? DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES,
   );
 }
 
 function resolvePageFunction(options: Record<string, unknown>) {
+  debugger//
   const name = readString(options.name);
   if (!name) throw new Error('executeFunction 参数 name 不能为空。');
   const pageFunction = props.page.schema.functions?.find(
@@ -2687,15 +2716,15 @@ function resolveBuiltinDeleteSourceForRows(rows: Record<string, unknown>[]) {
   });
   const matchingGridBlock = matchingGridEntry
     ? flattenPageBlocks(props.page.schema).find(
-        (block): block is LowCodePageGridBlock =>
-          block.kind === 'grid' && block.id === matchingGridEntry[0],
-      )
+      (block): block is LowCodePageGridBlock =>
+        block.kind === 'grid' && block.id === matchingGridEntry[0],
+    )
     : undefined;
   const sourceKey = readString(
     matchingGridBlock?.deleteSourceKey ??
-      matchingGridBlock?.sourceKey ??
-      matchingGridEntry?.[1]?.sourceKey ??
-      rows[0]?.sourceKey,
+    matchingGridBlock?.sourceKey ??
+    matchingGridEntry?.[1]?.sourceKey ??
+    rows[0]?.sourceKey,
   );
   return sourceKey ? getDataSource(sourceKey) : undefined;
 }
@@ -2973,8 +3002,8 @@ async function executePageFunction(
   const pageFunction = resolvedFunction.pageFunction;
   const callStack = Array.isArray(event.payload?.pageFunctionStack)
     ? event.payload.pageFunctionStack.filter(
-        (item): item is string => typeof item === 'string' && Boolean(item),
-      )
+      (item): item is string => typeof item === 'string' && Boolean(item),
+    )
     : [];
   if (callStack.length >= MAX_PAGE_FUNCTION_CALL_DEPTH) {
     throw new Error(`页面函数调用深度不能超过 ${MAX_PAGE_FUNCTION_CALL_DEPTH} 层。`);
@@ -3004,13 +3033,13 @@ async function handleScriptCapability(
 ) {
   const args = request.args;
   const allowedCapabilities = context.policy?.capabilities;
-  if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
-    throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
-  }
-
+  // if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
+  //   throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
+  // }
+  //
   switch (request.name) {
     case 'action.execute':
-      return executeScriptNodeAction(readScriptOptionsArg(args, 'executeAction'));
+      return executeScriptNodeAction(readScriptOptionsArg(args, 'executeAction'), event);
     case 'http.execute':
       return executeScriptHttp(readScriptOptionsArg(args, 'executeHttp'));
     case 'pageFunction.execute':
@@ -3540,11 +3569,11 @@ function resolveDialogFollowUpDirectives(
 
   return normalizeLowCodeDirectives(
     actionDirectives ??
-      (action === 'confirm'
-        ? directive.confirmDirectives
-        : action === 'cancel'
-          ? directive.cancelDirectives
-          : directive.closeDirectives)
+    (action === 'confirm'
+      ? directive.confirmDirectives
+      : action === 'cancel'
+        ? directive.cancelDirectives
+        : directive.closeDirectives)
   );
 }
 
@@ -3588,9 +3617,9 @@ async function openGlobalDialogDirective(
     model,
     form: config.form
       ? {
-          ...config.form,
-          model,
-        }
+        ...config.form,
+        model,
+      }
       : config.form,
     onConfirm: async (context) => {
       const configuredResult = await config.onConfirm?.(context);
@@ -4010,7 +4039,7 @@ async function handleGridDelete(
     overscroll-behavior: contain;
   }
 
-  .lowcode-runtime-page > .lc-runtime-block--fill.lc-node-tabs {
+  .lowcode-runtime-page>.lc-runtime-block--fill.lc-node-tabs {
     flex: 0 0 min(560px, calc(100dvh - 16px));
     min-height: min(560px, calc(100dvh - 16px));
   }

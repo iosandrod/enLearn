@@ -7,9 +7,10 @@
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\components\right-attribute-panel\components\attr-editor\index.tsx
  */
 import { computed, defineComponent, inject, ref, watch } from 'vue';
-import { ElAlert, ElEmpty } from '../../../common/designer-ui';
+import { ElAlert, ElEmpty, ElMessage } from '../../../common/designer-ui';
 import LowCodeForm from '../../../../../components/LowCodeForm.vue';
 import { useLowCodeHost } from '../../../../../core/host';
+import { lowCodeOptionSourceRegistry } from '../../../../../runtime/option-source-registry';
 import { useVisualData } from '../../../../hooks/useVisualData';
 import {
   applyMaterialPropFieldValue,
@@ -20,23 +21,69 @@ import {
   type MaterialPropFormField,
   type MaterialPropFormDefinition,
 } from '../../../../material-prop-forms';
-import type { LowCodeField } from '../../../../../types/lowcode';
+import type { LowCodeField, LowCodeFormSchema } from '../../../../../types/lowcode';
 import {
   formDesignerPageDataKey,
   formDesignerTableFieldOptionsKey,
 } from '../../../../form-designer-context';
+import styles from '../../index.module.scss';
+
+const formInputComponentTypeOptionCode = 'form_input_component_type';
+const componentTypeOptionsSourceKey = '__formInputComponentTypes';
+
+type ComponentTypeOption = {
+  label: string;
+  value: string;
+  disabled: boolean;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function cloneValue<T>(value: T): T {
+  try {
+    return JSON.parse(JSON.stringify(value)) as T;
+  } catch {
+    return value;
+  }
+}
+
+function createDefaultChoiceOptions() {
+  return [
+    { label: '选项一', value: 'option1' },
+    { label: '选项二', value: 'option2' },
+  ];
+}
 
 export const AttrEditor = defineComponent({
   setup() {
-    const { currentBlock, jsonData, historyState } = useVisualData();
+    const { currentBlock, jsonData, historyState, visualConfig } = useVisualData();
     const host = useLowCodeHost();
     const designerPageData = inject(formDesignerPageDataKey, null);
     const injectedTableFieldOptions = inject(formDesignerTableFieldOptionsKey, null);
     const definition = ref<MaterialPropFormDefinition | null>(null);
     const loading = ref(false);
     const loadError = ref('');
+    const systemComponentTypeOptions = ref<ComponentTypeOption[]>([]);
     let loadSequence = 0;
     const tableFieldPageData = computed(() => designerPageData?.value ?? jsonData);
+    const currentComponentMeta = computed(() => {
+      const componentKey = currentBlock.value?.componentKey;
+      return componentKey ? visualConfig.componentMap[componentKey] : undefined;
+    });
+    const isFormInputComponentBlock = computed(() => {
+      const block = currentBlock.value;
+      return Boolean(
+        block?._vid &&
+        (block.moduleName === 'formComponents' ||
+          currentComponentMeta.value?.moduleName === 'formComponents'),
+      );
+    });
     const optionSources = computed(() => {
       const sources = createMaterialPropOptionSources(
         jsonData.models,
@@ -47,6 +94,97 @@ export const AttrEditor = defineComponent({
       }
       return sources;
     });
+
+    const registeredComponentTypeOptions = computed<ComponentTypeOption[]>(() => {
+      const seen = new Set<string>();
+      return visualConfig.componentModules.formComponents
+        .filter((component) => {
+          if (seen.has(component.key)) return false;
+          seen.add(component.key);
+          return true;
+        })
+        .map((component) => ({
+          label: component.label || component.key,
+          value: component.key,
+          disabled: false,
+        }));
+    });
+
+    const componentTypeOptions = computed(() => (
+      systemComponentTypeOptions.value.length
+        ? systemComponentTypeOptions.value
+        : registeredComponentTypeOptions.value
+    ));
+
+    const componentTypeFormSchema = computed<LowCodeFormSchema>(() => ({
+      fields: [
+        {
+          field: 'componentKey',
+          label: '组件类型',
+          component: 'vxe-select',
+          optionsSourceKey: componentTypeOptionsSourceKey,
+          props: {
+            clearable: false,
+            filterable: true,
+            placeholder: '请选择组件类型',
+          },
+        },
+      ],
+      layout: [],
+      actions: [],
+    }));
+
+    const componentTypeFormModel = computed(() => ({
+      componentKey: currentBlock.value?.componentKey ?? '',
+    }));
+
+    const componentTypeFormOptionSources = computed(() => ({
+      [componentTypeOptionsSourceKey]: componentTypeOptions.value,
+    }));
+
+    const normalizeComponentTypeOptions = (value: unknown): ComponentTypeOption[] => {
+      if (!Array.isArray(value)) return [];
+
+      const seen = new Set<string>();
+      return value
+        .map((option) => {
+          const optionRecord = isRecord(option) ? option : {};
+          const nextValue = readString(optionRecord.value ?? option);
+          const component = nextValue ? visualConfig.componentMap[nextValue] : undefined;
+          if (
+            !nextValue ||
+            seen.has(nextValue) ||
+            !component ||
+            component.moduleName !== 'formComponents'
+          ) {
+            return null;
+          }
+
+          seen.add(nextValue);
+          return {
+            label: readString(optionRecord.label) || component.label || nextValue,
+            value: nextValue,
+            disabled: optionRecord.disabled === true,
+          };
+        })
+        .filter((option): option is ComponentTypeOption => Boolean(option));
+    };
+
+    const loadComponentTypeOptions = async () => {
+      try {
+        const sources = await lowCodeOptionSourceRegistry.refresh(
+          [formInputComponentTypeOptionCode],
+          () => host.getServiceApi(),
+        );
+        systemComponentTypeOptions.value = normalizeComponentTypeOptions(
+          sources[formInputComponentTypeOptionCode],
+        );
+      } catch (error) {
+        systemComponentTypeOptions.value = [];
+      }
+    };
+
+    void loadComponentTypeOptions();
 
     watch(
       () => currentBlock.value?.componentKey,
@@ -73,6 +211,113 @@ export const AttrEditor = defineComponent({
       },
       { immediate: true },
     );
+
+    const applyComponentTypeDefaults = (
+      previousComponentKey: string,
+      nextComponentKey: string,
+    ) => {
+      const block = currentBlock.value;
+      if (!block?._vid) return;
+
+      const props = block.props ?? {};
+      block.props = props;
+      const previousComponent = visualConfig.componentMap[previousComponentKey];
+      const existingLabel = readString(block.label);
+      const hasCustomLabel = Boolean(
+        readString(props.label) ||
+        (existingLabel && existingLabel !== previousComponent?.label),
+      );
+
+      if (hasCustomLabel && !readString(props.label)) {
+        props.label = existingLabel;
+      }
+
+      delete props.__lowcodeComponent;
+
+      if (nextComponentKey === 'picker' && !Array.isArray(props.columns)) {
+        props.columns = Array.isArray(props.options)
+          ? cloneValue(props.options)
+          : Array.isArray(props.__lowcodeOptions)
+            ? cloneValue(props.__lowcodeOptions)
+            : createDefaultChoiceOptions();
+      }
+
+      if (
+        (nextComponentKey === 'radio' || nextComponentKey === 'checkbox') &&
+        !Array.isArray(props.options)
+      ) {
+        props.options = Array.isArray(props.columns)
+          ? cloneValue(props.columns)
+          : Array.isArray(props.__lowcodeOptions)
+            ? cloneValue(props.__lowcodeOptions)
+            : createDefaultChoiceOptions();
+      }
+
+      if (nextComponentKey === 'checkbox' && !Array.isArray(props.modelValue)) {
+        props.modelValue = [];
+      }
+      if (nextComponentKey === 'switch' && props.modelValue === undefined) {
+        props.modelValue = false;
+      }
+    };
+
+    const changeComponentType = (value: unknown) => {
+      const block = currentBlock.value;
+      if (!block?._vid) return;
+
+      const nextComponentKey = readString(value);
+      const previousComponentKey = block.componentKey ?? '';
+      if (!nextComponentKey || nextComponentKey === previousComponentKey) return;
+
+      const component = visualConfig.componentMap[nextComponentKey];
+      const isAllowedOption = componentTypeOptions.value.some(
+        (option) => option.value === nextComponentKey && !option.disabled,
+      );
+      if (!component || component.moduleName !== 'formComponents' || !isAllowedOption) {
+        ElMessage.warning(`组件类型“${nextComponentKey}”未注册`);
+        return;
+      }
+
+      applyComponentTypeDefaults(previousComponentKey, component.key);
+      block.componentKey = component.key;
+      block.moduleName = component.moduleName;
+      if (!readString(block.props?.label)) {
+        block.label = component.label;
+      }
+      block.draggable = component.draggable ?? true;
+      block.showStyleConfig = component.showStyleConfig ?? true;
+      block.events = component.events || [];
+    };
+
+    const handleComponentTypeFormChange = (payload: {
+      field: LowCodeField;
+      value: unknown;
+    }) => {
+      if (payload.field.field === 'componentKey') {
+        changeComponentType(payload.value);
+      }
+    };
+
+    const renderComponentTypeEditor = () => {
+      if (!isFormInputComponentBlock.value) return null;
+
+      return (
+        <div class={styles.componentTypeEditor}>
+          <LowCodeForm
+            key={`${currentBlock.value._vid}-component-type-${historyState.restoreVersion}`}
+            className={styles.componentTypeForm}
+            schema={componentTypeFormSchema.value}
+            modelValue={componentTypeFormModel.value}
+            optionSources={componentTypeFormOptionSources.value}
+            titleWidth={64}
+            titleAsterisk={false}
+            span={24}
+            padding={false}
+            onFieldChange={handleComponentTypeFormChange}
+          />
+        </div>
+      );
+    };
 
     const formState = computed(() => {
       const block = currentBlock.value;
@@ -102,23 +347,28 @@ export const AttrEditor = defineComponent({
       <>
         {!currentBlock.value?._vid ? (
           <ElEmpty description="请选择画布节点" imageSize={96} />
-        ) : loading.value ? (
-          <ElEmpty description="正在加载属性表单…" imageSize={72} />
-        ) : loadError.value ? (
-          <ElAlert type="error" title="属性表单加载失败" description={loadError.value} showIcon={true} />
-        ) : !formState.value ? (
-          <ElEmpty description="该物料尚未配置属性表单" imageSize={96} />
         ) : (
-          <div class="material-prop-form">
-            <LowCodeForm
-              key={`${currentBlock.value._vid}-${currentBlock.value.componentKey}-${historyState.restoreVersion}`}
-              schema={formState.value!.schema}
-              modelValue={formState.value!.model}
-              optionSources={formState.value!.optionSources}
-              vertical={true}
-              onFieldChange={handleFieldChange}
-            />
-          </div>
+          <>
+            {renderComponentTypeEditor()}
+            {loading.value ? (
+              <ElEmpty description="正在加载属性表单…" imageSize={72} />
+            ) : loadError.value ? (
+              <ElAlert type="error" title="属性表单加载失败" description={loadError.value} showIcon={true} />
+            ) : !formState.value ? (
+              <ElEmpty description="该物料尚未配置属性表单" imageSize={96} />
+            ) : (
+              <div class="material-prop-form flex-1 h-full" style="height: 100%; overflow: auto;">
+                <LowCodeForm
+                  key={`${currentBlock.value._vid}-${currentBlock.value.componentKey}-${historyState.restoreVersion}`}
+                  schema={formState.value!.schema}
+                  modelValue={formState.value!.model}
+                  optionSources={formState.value!.optionSources}
+                  vertical={true}
+                  onFieldChange={handleFieldChange}
+                />
+              </div>
+            )}
+          </>
         )}
       </>
     );

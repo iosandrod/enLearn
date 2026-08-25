@@ -2,6 +2,7 @@ import { inject, provide } from 'vue';
 import type { CSSProperties } from 'vue';
 import type { RequestEnum, ContentTypeEnum } from '../enums/httpEnum';
 import { generateNanoid } from './utils';
+import type { LowCodeExecuteActionHook } from '../types/lowcode';
 
 /**
  * @description 组件属性
@@ -37,6 +38,8 @@ export type VisualEditorBlockData = {
   animations?: Animation[];
   /** 组件动作集合 */
   actions: Action[];
+  /** executeAction 前后钩子 */
+  hooks?: LowCodeExecuteActionHook[];
   /** 组件事件集合 */
   events: { label: string; value: string }[];
   [prop: string]: any;
@@ -326,6 +329,7 @@ export function createNewBlock(component: VisualEditorComponent): VisualEditorBl
     showStyleConfig: component.showStyleConfig ?? true, // 是否显示组件样式配置
     animations: [], // 动画集
     actions: [], // 动作集合
+    hooks: [], // executeAction 钩子
     events: component.events || [], // 事件集合
     model: {},
   };

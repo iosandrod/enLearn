@@ -124,7 +124,7 @@ $primary: #1d73d8;
     .lc-form > .vxe-form--wrapper,
     .lc-form-grid,
     .lc-form-layout {
-      display: grid;
+      display: flex !important;
       width: 100%;
       min-width: 0;
       gap: 14px;
@@ -295,7 +295,7 @@ $primary: #1d73d8;
     }
 
     .material-prop-form .lc-form-tabs {
-      display: block;
+      display: flex !important;
       width: 100%;
       min-width: 0;
       border: 1px solid #dfe7f0;
@@ -341,7 +341,101 @@ $primary: #1d73d8;
     }
 
     .material-prop-form .lc-form-tab-pane > .lc-form-layout {
+      flex: none;
+      height: auto;
+      min-height: 0;
       gap: 3px;
+      overflow: visible;
     }
+
+    .material-prop-form > .lc-form,
+    .material-prop-form .lc-form-tab-pane {
+      flex: none;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .material-prop-form .lc-array-table:not(.lc-array-table--fill),
+    .material-prop-form .lc-array-table:not(.lc-array-table--fill) > .lc-array-table__viewport {
+      flex: none;
+      height: auto;
+      min-height: 0;
+      overflow-y: visible;
+    }
+
+    .material-prop-form .lc-array-table:not(.lc-array-table--fill) > .lc-array-table__viewport {
+      overflow-x: auto;
+    }
+  }
+}
+
+.component-type-editor {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: block;
+  width: auto;
+  min-width: 0;
+  min-height: 50px;
+  margin: -16px -16px 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid $panelBorder;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  box-sizing: border-box;
+}
+
+.component-type-form {
+  width: 100%;
+  min-width: 0;
+
+  :global(.vxe-form--wrapper),
+  :global(.lc-form-grid) {
+    width: 100%;
+  }
+
+  :global(.lc-form-grid) {
+    gap: 0;
+  }
+
+  :global(.lc-form-grid-cell),
+  :global(.vxe-form--item),
+  :global(.lc-form-item) {
+    margin: 0;
+    padding: 0;
+  }
+
+  :global(.vxe-form--item-title) {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  :global(.vxe-form--item-content),
+  :global(.lc-form-item__content),
+  :global(.lc-field) {
+    min-width: 0;
+  }
+
+  :global(.vxe-select) {
+    width: 100%;
+  }
+}
+
+.hooksEditor {
+  width: 100%;
+  min-width: 0;
+
+  :global(.lc-form),
+  :global(.lc-form-grid),
+  :global(.lc-form-grid-cell),
+  :global(.lc-array-table) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  :global(.lc-array-table) {
+    min-height: 240px;
   }
 }

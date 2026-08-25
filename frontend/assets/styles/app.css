@@ -2365,7 +2365,7 @@ a {
 }
 
 .lc-form-tabs{
-  display: flex;
+  display: flex !important;
   flex-direction: column;
 }
 
@@ -2396,5 +2396,76 @@ a {
 
 .lc-node-container>:last-child{
   flex: 1;
+  overflow: hidden;
+}
+
+
+/* .material-prop-form{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.material-prop-form >:last-child{
+  flex: 1;
+  overflow: hidden;
+} */
+/* .lc-form-tab-pane{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+}
+.lc-form-tab-pane >:last-child{
+  flex: 1;
+  overflow: hidden;
+}
+.lc-form-tabs{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.lc-form-tabs >:last-child{
+  flex: 1;
+  overflow: hidden;
+} */
+/* .vxe-tabs{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.vxe-tabs >:last-child{
+  flex: 1;
+  overflow: hidden;
+} */
+
+.lc-form-item__content{
+  height: 100%;
+}
+.lc-form-tabs{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.lc-form-tabs >:last-child{
+  flex: 1;
+  overflow: hidden;
+}
+.lc-form-tab-pane{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.lc-form-tab-pane >:last-child{
+  flex: 1 !important;
+  overflow: hidden;
+}
+
+.lc-array-table{
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+}
+.lc-array-table >:last-child{
+  flex: 1 !important;
   overflow: hidden;
 }

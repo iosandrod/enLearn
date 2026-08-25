@@ -11,6 +11,7 @@ export type LowCodeNodeActionExecutor =
   | 'grid.validate'
   | 'grid.addRow'
   | 'grid.deleteCurrentRow'
+  | 'form.loadData'
   | 'form.setData'
   | 'form.validate'
   | 'form.getData'

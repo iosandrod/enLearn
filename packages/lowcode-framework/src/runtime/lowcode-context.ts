@@ -885,7 +885,7 @@ function blockNode(block: LowCodePageBlock, path: string): LowCodeContextNode {
     icon: typeDefinition?.icon ?? 'ri-box-3-line',
     description: readString('description' in block ? block.description : undefined, block.id),
     insertText: jsString(block.id),
-    methods: getLowCodeNodeActionMethods(block.kind).map((method) => ({
+    methods: getLowCodeNodeActionMethods(block.kind, block).map((method) => ({
       id: `${path}/method:${method.method}`,
       method: method.method,
       label: method.label,

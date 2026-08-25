@@ -1,4 +1,5 @@
 import type { LowCodeNodeActionRuntimeContext } from '../node-action-runtime';
+import type { LowCodePageFormBlock } from '../../types/lowcode';
 import type {
   LowCodeNodeActionMethodDefinition,
   LowCodeNodeTypeDefinition,
@@ -23,6 +24,10 @@ function createSetDataInsertText(nodeId: string) {
   return `await this.executeAction({\n  node: ${JSON.stringify(nodeId)},\n  method: "setData",\n  data: {},\n  mode: "merge",\n});`;
 }
 
+function createLoadDataInsertText(nodeId: string) {
+  return `const data = await this.executeAction({\n  node: ${JSON.stringify(nodeId)},\n  method: "loadData",\n});`;
+}
+
 function assertFormBlock(context: LowCodeNodeActionRuntimeContext) {
   const block = context.block;
   if (block.kind !== 'form' && block.kind !== 'searchForm') {
@@ -31,10 +36,56 @@ function assertFormBlock(context: LowCodeNodeActionRuntimeContext) {
   return block;
 }
 
+function assertEditableFormBlock(context: LowCodeNodeActionRuntimeContext) {
+  const block = context.block;
+  if (block.kind !== 'form' || block.formType !== 'edit') {
+    throw new Error(`节点 "${block.id}" 不是编辑表单，无法获取远程数据。`);
+  }
+  return block;
+}
+
+function readFirstFormRecord(value: unknown): RuntimeRecord | undefined {
+  if (Array.isArray(value)) {
+    return value.find(isRecord);
+  }
+  if (!isRecord(value)) return undefined;
+
+  for (const key of ['rows', 'items', 'records', 'data', 'result']) {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+    return readFirstFormRecord(value[key]);
+  }
+
+  return value;
+}
+
+function createFormLoadDataPostData(
+  sourcePostData: unknown,
+  options: RuntimeRecord,
+) {
+  const configuredPostData = isRecord(sourcePostData) ? sourcePostData : {};
+  const optionPostData = isRecord(options.postData) ? options.postData : {};
+  const filters = {
+    ...(isRecord(configuredPostData.filters) ? configuredPostData.filters : {}),
+    ...(isRecord(optionPostData.filters) ? optionPostData.filters : {}),
+    ...(isRecord(options.filters) ? options.filters : {}),
+  };
+
+  return {
+    ...configuredPostData,
+    ...optionPostData,
+    ...(Object.keys(filters).length ? { filters } : {}),
+    limit: 1,
+  };
+}
+
 function assertFormWritable(context: LowCodeNodeActionRuntimeContext) {
   if (context.block.kind === 'searchForm') return;
   if (!isLowCodeEditPageReadonly(context.editPageMode)) return;
   throw new Error('当前页面为只读状态，请先点击修改。');
+}
+
+function readString(value: unknown, fallback = '') {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
 function readStringList(value: unknown) {
@@ -70,6 +121,54 @@ export function executeFormSetDataNodeAction(
   }
 
   return cloneValue(context.getFormValues(block.id));
+}
+
+export async function executeFormLoadDataNodeAction(
+  context: LowCodeNodeActionRuntimeContext,
+) {
+  const block: LowCodePageFormBlock = assertEditableFormBlock(context);
+  const sourceKey = readString(block.sourceKey, readString(block.submitSourceKey));
+  if (!sourceKey) {
+    throw new Error(`编辑表单 "${block.id}" 没有配置数据源。`);
+  }
+
+  const source = context.getDataSource(sourceKey);
+  if (!source) {
+    throw new Error(`编辑表单 "${block.id}" 的数据源 "${sourceKey}" 不可用。`);
+  }
+
+  const postData = context.resolveRuntimePostData(
+    createFormLoadDataPostData(source.postData, context.options),
+  );
+  const request = context.resolveDataSourceRequest(
+    sourceKey,
+    source,
+    postData,
+  );
+  if (!request.serviceName || !request.serviceMethod) {
+    throw new Error(`数据源 "${sourceKey}" 未配置 serviceName 或 serviceMethod。`);
+  }
+
+  const requestVersion = context.beginSourceRequest(sourceKey);
+  try {
+    const value = await context.invokeDataSourceRequest(request, source);
+    if (!context.isCurrentSourceRequest(sourceKey, requestVersion)) return null;
+
+    context.setSource(sourceKey, value, { resetGridBaseline: true });
+    context.syncGridStates();
+
+    const record = readFirstFormRecord(value);
+    if (record) {
+      context.replaceFormValues(block.id, {
+        ...context.getFormValues(block.id),
+        ...cloneValue(record),
+      });
+    }
+
+    return cloneValue(record ?? null);
+  } finally {
+    context.finishSourceRequest(sourceKey, requestVersion);
+  }
 }
 
 export async function executeFormValidateNodeAction(
@@ -149,6 +248,29 @@ export const formSetDataNodeAction: LowCodeNodeActionMethodDefinition = {
   execute: executeFormSetDataNodeAction,
 };
 
+export const formLoadDataNodeAction: LowCodeNodeActionMethodDefinition = {
+  method: 'loadData',
+  label: '获取编辑数据',
+  description: '编辑表单从绑定数据源获取一条远程记录并绑定到表单。',
+  executor: 'form.loadData',
+  dataSourceLoader: true,
+  parameters: [
+    {
+      name: 'filters',
+      type: 'object',
+      description: '附加过滤条件，会覆盖数据源中的同名过滤条件。',
+    },
+    {
+      name: 'postData',
+      type: 'object',
+      description: '附加请求参数；请求 limit 固定为 1。',
+    },
+  ],
+  returns: '返回远程数据的第一条记录；没有匹配记录时返回 null。',
+  createInsertText: createLoadDataInsertText,
+  execute: executeFormLoadDataNodeAction,
+};
+
 export const formValidateNodeAction: LowCodeNodeActionMethodDefinition = {
   method: 'validate',
   label: '校验表单数据',
@@ -205,6 +327,7 @@ export const formResetDataNodeAction: LowCodeNodeActionMethodDefinition = {
 };
 
 const formNodeActionMethods = {
+  loadData: formLoadDataNodeAction,
   setData: formSetDataNodeAction,
   validate: formValidateNodeAction,
   getData: formGetDataNodeAction,

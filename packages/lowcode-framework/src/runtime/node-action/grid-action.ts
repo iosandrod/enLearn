@@ -187,6 +187,9 @@ function createDetailPostData(context: GridLoadDataActionContext, postData: Runt
   const missingRequiredFilter = nextRequiredFilters.some(
     (field) => !hasFilterValue(filters[field]) || isRelationPlaceholder(filters[field]),
   );
+  const hasQueryFilters = Object.values(filters).some((value) =>
+    hasFilterValue(value) && !isRelationPlaceholder(value),
+  );
 
   return {
     postData: {
@@ -195,7 +198,7 @@ function createDetailPostData(context: GridLoadDataActionContext, postData: Runt
       ...(nextRequiredFilters.length ? { requiredFilters: nextRequiredFilters } : {}),
     },
     // A detail grid must never fall back to an unguarded full-table request.
-    skip: !nextRequiredFilters.length || missingRequiredFilter,
+    skip: !hasQueryFilters || missingRequiredFilter,
   };
 }
 
@@ -342,8 +345,7 @@ export async function executeGridLoadDataNodeAction(
   const block = runtimeContext.block;
   if (block.kind !== 'grid') {
     throw new Error(`节点 "${block.id}" 不是表格，无法获取数据。`);
-  }
-
+  }//
   const source = runtimeContext.getDataSource(block.sourceKey);
   if (!source) throw new Error(`表格 "${block.id}" 没有可用的数据源。`);
 

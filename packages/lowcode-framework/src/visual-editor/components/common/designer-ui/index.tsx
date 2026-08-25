@@ -38,7 +38,7 @@ import {
   VxeTooltip,
   VxeUpload
 } from 'vxe-pc-ui';
-import { VxeColumn, VxeGrid, VxeTable } from 'vxe-table';
+import VxeUITable, { VxeColumn, VxeGrid, VxeTable } from 'vxe-table';
 
 type MessageType = 'success' | 'error' | 'warning' | 'info';
 type MessageOptions = Record<string, unknown> & {
@@ -671,5 +671,6 @@ export const ElGrid = VxeGrid as any;
 export default {
   install(app: { use: (plugin: unknown) => void }) {
     app.use(installVxeUI);
+    app.use(VxeUITable);
   }
 };

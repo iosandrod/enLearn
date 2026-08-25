@@ -152,6 +152,34 @@ const unsafeDetailRequest = createGridLoadDataPostData({
 });
 assert.equal(unsafeDetailRequest.skip, true);
 
+const emptyFilterDetailRequest = createGridLoadDataPostData({
+  ...baseContext,
+  block: detailBlock,
+  gridBlocks: [detailBlock],
+  source: {
+    key: 'lines',
+    postData: {
+      tableName: 'sales_order_lines',
+      filters: { order_id: '' },
+    },
+  },
+});
+assert.equal(emptyFilterDetailRequest.skip, true);
+
+const staticFilterDetailRequest = createGridLoadDataPostData({
+  ...baseContext,
+  block: detailBlock,
+  gridBlocks: [detailBlock],
+  source: {
+    key: 'lines',
+    postData: {
+      tableName: 'sales_order_lines',
+      filters: { status: 'open' },
+    },
+  },
+});
+assert.equal(staticFilterDetailRequest.skip, false);
+
 const unsafeDetailRequestWithMainRow = createGridLoadDataPostData({
   ...baseContext,
   block: detailBlock,

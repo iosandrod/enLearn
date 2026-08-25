@@ -27,7 +27,7 @@
       @row-dragend="handleRowDragend"
       @checkbox-change="commitRows"
       @checkbox-all="commitRows"
-      :height="fillAvailableHeight ? '100%' : undefined"
+      :height="tableHeight"
     >
       <vxe-column v-if="showSeq" type="seq" width="42" />
       <vxe-column
@@ -351,7 +351,6 @@ const valueMode = computed<ArrayTableValueMode>(() =>
 const valueField = computed(() => readString(fieldProps.value.valueField, 'value'));
 const columns = computed(() => {
   const normalizedColumns = normalizeColumns(fieldProps.value.columns);
-
   if (valueMode.value === 'primitive' && !normalizedColumns.length) {
     return [
       {
@@ -499,7 +498,8 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
   )
 );
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
-const tableHeight = computed(() => readSize(tableConfig.value.height));
+// const tableHeight = computed(() => readSize(tableConfig.value.height));
+const tableHeight = computed(() => '100%');//
 const showSeq = computed(() => fieldProps.value.showSeq !== false);
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
 const showActions = computed(() => fieldProps.value.showActions !== false);
@@ -1250,7 +1250,7 @@ function readSize(value: unknown) {
 }
 
 function isFillHeight(value: unknown) {
-  return typeof value === 'string' && ['100%', 'auto'].includes(value.trim());
+  return typeof value === 'string' && value.trim() === '100%';
 }
 
 function readToolbarAlign(value: unknown) {
@@ -1377,12 +1377,12 @@ function cloneValue(value: unknown) {
 
 <style scoped>
 .lc-array-table {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   gap: 8px;
+  grid-auto-rows: max-content;
   overflow: hidden;
 }
 
@@ -1396,6 +1396,10 @@ function cloneValue(value: unknown) {
 .lc-array-table--fill .lc-array-table__grid {
   height: 100%;
   min-height: 0;
+}
+
+.lc-array-table--fill .lc-array-table__viewport {
+  grid-row: 2;
 }
 /* 
 描述

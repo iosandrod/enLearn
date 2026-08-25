@@ -39,10 +39,10 @@
 }
 
 .lc-global-dialog__page-reference {
-  height: min(760px, calc(100vh - 154px));
+  height: 100%;
+  overflow: hidden;
   min-height: 520px;
   min-width: 0;
-  overflow: auto;
   border: 1px solid #d8e0ea;
   border-radius: 8px;
   background: #f1f5f9;

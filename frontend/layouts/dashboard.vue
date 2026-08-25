@@ -131,7 +131,7 @@
             :class="{ 'is-active': isTopToolActive(tool) }"
             :to="tool.path"
             role="menuitem"
-            @click="openTopToolCode = ''"
+            @click="handleTopToolClick($event, tool)"
           >
             <i v-if="tool.icon" :class="tool.icon" aria-hidden="true" />
             <span>{{ tool.title }}</span>
@@ -293,6 +293,7 @@
                 mode="link"
                 @context="openMenuContext"
                 @toggle="toggleGroup"
+                @select="handleMenuSelect"
               />
             </section>
           </template>
@@ -336,6 +337,7 @@ import SystemMenuTreeNode from '../../packages/lowcode-framework/src/components/
 import {
   confirmLowCodePage,
   ensureLowCodeEditPage,
+  ensureLowCodePageForRoute,
   findGlobalDialog,
   GlobalDialogHost,
   openGlobalDialog,
@@ -1020,6 +1022,33 @@ async function renameMenuItem(item: AdminRouteNode) {
 
 function resolveLowCodePageCode(item: AdminRouteNode) {
   return item.page_code ?? '';
+}
+
+async function handleMenuSelect(item: AdminRouteNode) {
+  if (item.children?.length || item.route_type === 'link' || item.route_type === 'group' || item.page_code?.trim()) return;
+
+  routeError.value = '';
+  try {
+    await ensureLowCodePageForRoute(serviceApi, item);
+    await router.push(item.path);
+    await reloadRoutes();
+  } catch (error) {
+    routeError.value = error instanceof Error ? error.message : '低代码页面创建失败。';
+  }
+}
+
+async function handleTopToolClick(event: MouseEvent, item: AdminRouteNode) {
+  openTopToolCode.value = '';
+  if (item.children?.length || item.route_type === 'link' || item.route_type === 'group' || item.page_code?.trim()) return;
+
+  event.preventDefault();
+  try {
+    await ensureLowCodePageForRoute(serviceApi, item);
+    await router.push(item.path);
+    await reloadRoutes();
+  } catch (error) {
+    routeError.value = error instanceof Error ? error.message : '低代码页面创建失败。';
+  }
 }
 
 async function openLowCodeDesigner(item: AdminRouteNode) {
