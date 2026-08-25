@@ -82,17 +82,16 @@ try {
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded' });
 
   const result = await page.evaluate(async () => {
-    const rendererUrl = [...document.scripts]
+    const entryUrl = [...document.scripts]
       .map((script) => script.src)
       .find((src) => src.includes('/assets/index-'));
-    if (!rendererUrl) throw new Error('Production entry chunk was not found.');
+    if (!entryUrl) throw new Error('Production entry chunk was not found.');
 
-    const entrySource = await fetch(rendererUrl).then((response) => response.text());
+    const entrySource = await fetch(entryUrl).then((response) => response.text());
     const rendererMatch = entrySource.match(/\.\/LowCodePageRenderer-[^"']+\.js/);
     if (!rendererMatch) throw new Error('Page renderer chunk was not found.');
-    const rendererSource = await fetch(
-      new URL(rendererMatch[0], rendererUrl),
-    ).then((response) => response.text());
+    const rendererUrl = new URL(rendererMatch[0], entryUrl);
+    const rendererSource = await fetch(rendererUrl).then((response) => response.text());
     const rendererImports = [
       ...rendererSource.matchAll(/(?:from|import)\s*["'](\.\/[^"']+\.js)["']/g),
     ].map((match) => new URL(match[1], rendererUrl));
@@ -100,33 +99,19 @@ try {
     for (const candidateUrl of rendererImports) {
       candidateSources.push(await fetch(candidateUrl).then((response) => response.text()));
     }
-    const workerMatch = candidateSources
-      .map((source) => source.match(/\/assets\/script-runtime\.worker-[^"'`]+\.js/))
-      .find(Boolean);
-    if (!workerMatch) throw new Error('Script worker asset was not found.');
+    const runtimeSource = candidateSources.find((source) =>
+      source.includes('lowcode-script-runtime') && source.includes('new Blob('),
+    );
+    if (!runtimeSource) throw new Error('Inline script worker entry was not found.');
 
-    const worker = new Worker(workerMatch[0], { type: 'module' });
-    return new Promise((resolve) => {
-      const timer = setTimeout(() => {
-        worker.terminate();
-        resolve({ ok: false, error: 'Production worker startup timed out.' });
-      }, 20_000);
-      worker.addEventListener('message', (event) => {
-        if (event.data.type !== 'module-ready' && event.data.type !== 'module-error') return;
-        clearTimeout(timer);
-        worker.terminate();
-        resolve({
-          ok: event.data.type === 'module-ready',
-          error: event.data.error,
-          workerUrl: workerMatch[0],
-        });
-      });
-      worker.addEventListener('error', (event) => {
-        clearTimeout(timer);
-        worker.terminate();
-        resolve({ ok: false, error: event.message });
-      });
-    });
+    const wasmMatch = runtimeSource.match(/\/assets\/emscripten-module-[^"'`]+\.wasm/);
+    if (!wasmMatch) throw new Error('QuickJS WASM asset was not found.');
+    const wasmResponse = await fetch(new URL(wasmMatch[0], entryUrl));
+    if (!wasmResponse.ok) {
+      throw new Error(`QuickJS WASM asset returned HTTP ${wasmResponse.status}.`);
+    }
+
+    return { ok: true, worker: 'inline', wasmUrl: wasmMatch[0] };
   });
 
   assert.equal(

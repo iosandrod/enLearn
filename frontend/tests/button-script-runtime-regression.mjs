@@ -82,8 +82,8 @@ assert.match(
 );
 assert.match(
   scriptsSource,
-  /new Worker\([\s\S]*?new URL\('\.\/script-runtime\.worker\.ts', import\.meta\.url\)[\s\S]*?worker\.terminate\(\)/,
-  'Each untrusted execution must run in a disposable worker.',
+  /import ScriptRuntimeWorker from '\.\/script-runtime\.worker\.ts\?worker&inline'[\s\S]*?new ScriptRuntimeWorker\([\s\S]*?worker\.terminate\(\)/,
+  'Each untrusted execution must run in a disposable inline worker.',
 );
 assert.match(
   scriptsSource,

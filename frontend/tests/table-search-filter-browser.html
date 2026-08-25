@@ -35,6 +35,18 @@
         letter-spacing: 0;
       }
 
+      .search-smoke-host {
+        position: relative;
+      }
+
+      .search-smoke-host__tab {
+        height: 32px;
+        padding: 0 8px;
+        border-bottom: 1px solid #e8eaec;
+        background: #fff;
+        line-height: 32px;
+      }
+
       #result {
         position: fixed;
         z-index: -1;
@@ -93,21 +105,27 @@
           };
           return () => h('main', { class: 'smoke-shell' }, [
             h('h1', { class: 'smoke-title' }, '表格快查过滤'),
-            h(VxeGrid, {
-              ref: gridRef,
-              class: 'search-smoke-grid search-smoke-grid--local',
-              id: 'table-search-grid',
-              border: true,
-              stripe: true,
-              height: 360,
-              data: rows,
-              columns,
-              toolbarConfig: {
-                buttons: [{ code: 'design', name: '设计表单' }],
-              },
-              showOverflow: 'tooltip',
-              rowConfig: { keyField: 'id' },
-            }),
+            h('section', {
+              class: 'search-smoke-host',
+              'data-table-search-panel-host': '',
+            }, [
+              h('div', { class: 'search-smoke-host__tab' }, '系统表单'),
+              h(VxeGrid, {
+                ref: gridRef,
+                class: 'search-smoke-grid search-smoke-grid--local',
+                id: 'table-search-grid',
+                border: true,
+                stripe: true,
+                height: 360,
+                data: rows,
+                columns,
+                toolbarConfig: {
+                  buttons: [{ code: 'design', name: '设计表单' }],
+                },
+                showOverflow: 'tooltip',
+                rowConfig: { keyField: 'id' },
+              }),
+            ]),
             h('h2', { class: 'smoke-title', style: { marginTop: '24px' } }, '远程筛选配置兼容'),
             h(VxeGrid, {
               ref: remoteGridRef,

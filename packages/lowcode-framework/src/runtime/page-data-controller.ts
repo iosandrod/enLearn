@@ -169,6 +169,7 @@ export class PageDataController {
       if (this.dependencies.shouldReturnEmptyForUnavailableList(error, source.serviceMethod ?? serviceMethod)) {
         data = [];
       } else {
+        console.error(`[LowCode Runtime] 数据源 ${key} 加载失败`, error);
         throw error;
       }
     }
@@ -221,6 +222,7 @@ export class PageDataController {
           });
           return '';
         } catch (error) {
+          console.error(`[LowCode Runtime] 数据源 ${key} 刷新失败`, error);
           return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.refreshDataSource')}`;
         }
       }
@@ -237,6 +239,7 @@ export class PageDataController {
         return '';
       } catch (error) {
         if (!this.isCurrentSourceRequest(key, version)) return '';
+        console.error(`[LowCode Runtime] 数据源 ${key} 刷新失败`, error);
         return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.refreshDataSource')}`;
       } finally {
         this.finishSourceRequest(key, version);
@@ -779,6 +782,7 @@ export class PageDataController {
       this.dependencies.messageClass.value = 'lc-help';
       return true;
     } catch (error) {
+      console.error('[LowCode Runtime] 表单保存失败', error);
       this.dependencies.message.value =
         error instanceof Error ? error.message : this.dependencies.host.t('runtime.form.submitFailed');
       this.dependencies.messageClass.value = 'lc-error';
@@ -850,9 +854,10 @@ export class PageDataController {
         method: nodeAction.action.method,
       })
         .then(() => '')
-        .catch((error: unknown) =>
-          `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.loadDataSource')}`
-        );
+        .catch((error: unknown) => {
+          console.error(`[LowCode Runtime] 数据源 ${key} 加载失败`, error);
+          return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.loadDataSource')}`;
+        });
     }
 
     const version = this.beginSourceRequest(key);
@@ -866,6 +871,7 @@ export class PageDataController {
       })
       .catch((error: unknown) => {
         if (!this.isCurrentSourceRequest(key, version)) return '';
+        console.error(`[LowCode Runtime] 数据源 ${key} 加载失败`, error);
         return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.loadDataSource')}`;
       })
       .finally(() => this.finishSourceRequest(key, version));

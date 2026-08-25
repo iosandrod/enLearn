@@ -29,11 +29,65 @@ import {
 import styles from '../../index.module.scss';
 
 const formInputComponentTypeOptionCode = 'form_input_component_type';
+const formFieldComponentTypeOptionCode = 'form_field_component_type';
+const componentTypeOptionCodes = [
+  formFieldComponentTypeOptionCode,
+  formInputComponentTypeOptionCode,
+] as const;
 const componentTypeOptionsSourceKey = '__formInputComponentTypes';
+
+// Runtime field materials reuse a visual editor shell; the original runtime key is preserved on the block.
+const componentTypeVisualMap: Record<string, string> = {
+  'vxe-input': 'input',
+  'vxe-textarea': 'input',
+  'vxe-password-input': 'input',
+  'vxe-select': 'picker',
+  'vxe-tree-select': 'picker',
+  'vxe-switch': 'switch',
+  'vxe-radio-group': 'radio',
+  'vxe-checkbox-group': 'checkbox',
+  'lc-cascader': 'picker',
+  'lc-number-input': 'input',
+  'lc-color-picker': 'input',
+  'lc-option-select': 'picker',
+  'lc-json-editor': 'input',
+  'lc-monaco-editor': 'input',
+  'base-info': 'input',
+  'lc-array-table': 'array-table',
+  'lc-sub-form': 'sub-form',
+};
+
+const editorDefaultRuntimeMap: Record<string, string | undefined> = {
+  input: 'vxe-input',
+  picker: 'vxe-select',
+  switch: 'vxe-switch',
+  radio: 'vxe-radio-group',
+  checkbox: 'vxe-checkbox-group',
+  'array-table': 'lc-array-table',
+  'sub-form': 'lc-sub-form',
+};
+
+const defaultCodeEditorProps = {
+  dialog: true,
+  dialogTitle: '编辑表单代码',
+  language: 'javascript',
+  theme: 'vs',
+  scriptThisType: 'LowCodeButtonScriptThis',
+  contextDrawer: true,
+  contextDrawerTitle: '当前页面上下文',
+  editorHeight: 'min(500px, calc(100vh - 250px))',
+  editorOptions: {
+    wordWrap: 'on',
+    formatOnPaste: true,
+    formatOnType: true,
+  },
+};
 
 type ComponentTypeOption = {
   label: string;
   value: string;
+  componentKey: string;
+  runtimeComponent?: string;
   disabled: boolean;
 };
 
@@ -97,7 +151,7 @@ export const AttrEditor = defineComponent({
 
     const registeredComponentTypeOptions = computed<ComponentTypeOption[]>(() => {
       const seen = new Set<string>();
-      return visualConfig.componentModules.formComponents
+      const registered = visualConfig.componentModules.formComponents
         .filter((component) => {
           if (seen.has(component.key)) return false;
           seen.add(component.key);
@@ -106,15 +160,38 @@ export const AttrEditor = defineComponent({
         .map((component) => ({
           label: component.label || component.key,
           value: component.key,
+          componentKey: component.key,
+          runtimeComponent: editorDefaultRuntimeMap[component.key],
           disabled: false,
         }));
+      if (!seen.has('lc-monaco-editor')) {
+        registered.push({
+          label: '代码输入框',
+          value: 'lc-monaco-editor',
+          componentKey: 'input',
+          runtimeComponent: 'lc-monaco-editor',
+          disabled: false,
+        });
+      }
+      return registered;
     });
 
-    const componentTypeOptions = computed(() => (
-      systemComponentTypeOptions.value.length
+    const componentTypeOptions = computed(() => {
+      const options = systemComponentTypeOptions.value.length
         ? systemComponentTypeOptions.value
-        : registeredComponentTypeOptions.value
-    ));
+        : registeredComponentTypeOptions.value;
+      const hasCodeEditorOption = options.some(
+        (option) =>
+          option.value === 'lc-monaco-editor' ||
+          option.runtimeComponent === 'lc-monaco-editor',
+      );
+      if (hasCodeEditorOption) return options;
+
+      const fallbackCodeEditor = registeredComponentTypeOptions.value.find(
+        (option) => option.runtimeComponent === 'lc-monaco-editor',
+      );
+      return fallbackCodeEditor ? [...options, fallbackCodeEditor] : options;
+    });
 
     const componentTypeFormSchema = computed<LowCodeFormSchema>(() => ({
       fields: [
@@ -134,9 +211,27 @@ export const AttrEditor = defineComponent({
       actions: [],
     }));
 
-    const componentTypeFormModel = computed(() => ({
-      componentKey: currentBlock.value?.componentKey ?? '',
-    }));
+    const componentTypeFormModel = computed(() => {
+      const block = currentBlock.value;
+      if (!block) return { componentKey: '' };
+
+      const runtimeComponent =
+        readString(block.props?.__lowcodeComponent) ||
+        (block.componentKey === 'input' && block.props?.type === 'textarea'
+          ? 'vxe-textarea'
+          : block.componentKey === 'input' && block.props?.type === 'password'
+            ? 'vxe-password-input'
+            : editorDefaultRuntimeMap[block.componentKey]);
+      const selected = componentTypeOptions.value.find(
+        (option) =>
+          !option.disabled &&
+          (runtimeComponent
+            ? option.runtimeComponent === runtimeComponent
+            : option.componentKey === block.componentKey),
+      );
+
+      return { componentKey: selected?.value ?? block.componentKey ?? '' };
+    });
 
     const componentTypeFormOptionSources = computed(() => ({
       [componentTypeOptionsSourceKey]: componentTypeOptions.value,
@@ -147,23 +242,31 @@ export const AttrEditor = defineComponent({
 
       const seen = new Set<string>();
       return value
-        .map((option) => {
+        .map((option): ComponentTypeOption | null => {
           const optionRecord = isRecord(option) ? option : {};
           const nextValue = readString(optionRecord.value ?? option);
-          const component = nextValue ? visualConfig.componentMap[nextValue] : undefined;
+          const componentKey = componentTypeVisualMap[nextValue] ?? nextValue;
+          const component = componentKey ? visualConfig.componentMap[componentKey] : undefined;
+          const runtimeComponent =
+            componentTypeVisualMap[nextValue]
+              ? nextValue
+              : editorDefaultRuntimeMap[componentKey];
+          const dedupeKey = runtimeComponent || `editor:${componentKey}`;
           if (
             !nextValue ||
-            seen.has(nextValue) ||
+            seen.has(dedupeKey) ||
             !component ||
             component.moduleName !== 'formComponents'
           ) {
             return null;
           }
 
-          seen.add(nextValue);
+          seen.add(dedupeKey);
           return {
             label: readString(optionRecord.label) || component.label || nextValue,
             value: nextValue,
+            componentKey,
+            runtimeComponent,
             disabled: optionRecord.disabled === true,
           };
         })
@@ -173,11 +276,11 @@ export const AttrEditor = defineComponent({
     const loadComponentTypeOptions = async () => {
       try {
         const sources = await lowCodeOptionSourceRegistry.refresh(
-          [formInputComponentTypeOptionCode],
+          [...componentTypeOptionCodes],
           () => host.getServiceApi(),
         );
         systemComponentTypeOptions.value = normalizeComponentTypeOptions(
-          sources[formInputComponentTypeOptionCode],
+          componentTypeOptionCodes.flatMap((code) => sources[code] ?? []),
         );
       } catch (error) {
         systemComponentTypeOptions.value = [];
@@ -265,20 +368,61 @@ export const AttrEditor = defineComponent({
       const block = currentBlock.value;
       if (!block?._vid) return;
 
-      const nextComponentKey = readString(value);
+      const selectedOption = componentTypeOptions.value.find(
+        (option) => option.value === readString(value),
+      );
+      const requestedValue = readString(value);
+      const nextComponentKey =
+        selectedOption?.componentKey ??
+        componentTypeVisualMap[requestedValue] ??
+        requestedValue;
+      const nextRuntimeComponent = selectedOption?.runtimeComponent;
       const previousComponentKey = block.componentKey ?? '';
-      if (!nextComponentKey || nextComponentKey === previousComponentKey) return;
+      if (
+        !nextComponentKey ||
+        (nextComponentKey === previousComponentKey &&
+          nextRuntimeComponent === readString(block.props?.__lowcodeComponent))
+      ) return;
 
       const component = visualConfig.componentMap[nextComponentKey];
-      const isAllowedOption = componentTypeOptions.value.some(
-        (option) => option.value === nextComponentKey && !option.disabled,
-      );
+      const isAllowedOption = Boolean(selectedOption && !selectedOption.disabled);
       if (!component || component.moduleName !== 'formComponents' || !isAllowedOption) {
-        ElMessage.warning(`组件类型“${nextComponentKey}”未注册`);
+        ElMessage.warning(`组件类型“${requestedValue || nextComponentKey}”未注册`);
         return;
       }
 
       applyComponentTypeDefaults(previousComponentKey, component.key);
+      if (nextRuntimeComponent === 'lc-monaco-editor') {
+        const editorOptions = isRecord(block.props.editorOptions)
+          ? block.props.editorOptions
+          : {};
+        Object.assign(block.props, {
+          ...defaultCodeEditorProps,
+          dialog: block.props.dialog !== false,
+          dialogTitle: readString(block.props.dialogTitle) || defaultCodeEditorProps.dialogTitle,
+          language: readString(block.props.language) || defaultCodeEditorProps.language,
+          theme: readString(block.props.theme) || defaultCodeEditorProps.theme,
+          editorOptions: {
+            ...defaultCodeEditorProps.editorOptions,
+            ...editorOptions,
+          },
+        });
+      }
+      if (
+        nextRuntimeComponent &&
+        nextRuntimeComponent !== editorDefaultRuntimeMap[nextComponentKey]
+      ) {
+        block.props.__lowcodeComponent = nextRuntimeComponent;
+      } else {
+        delete block.props.__lowcodeComponent;
+      }
+      if (nextRuntimeComponent === 'vxe-textarea') {
+        block.props.type = 'textarea';
+      } else if (nextRuntimeComponent === 'vxe-password-input') {
+        block.props.type = 'password';
+      } else {
+        delete block.props.type;
+      }
       block.componentKey = component.key;
       block.moduleName = component.moduleName;
       if (!readString(block.props?.label)) {

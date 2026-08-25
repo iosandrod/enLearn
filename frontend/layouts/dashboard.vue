@@ -300,7 +300,7 @@
         </nav>
       </aside>
 
-      <main class="admin-main">
+      <main class="admin-main" data-table-search-panel-host>
         <div class="admin-tabs">
           <RouterLink
             v-for="tab in visitedTabs"

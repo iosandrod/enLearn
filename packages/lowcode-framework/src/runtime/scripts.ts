@@ -1,3 +1,5 @@
+import ScriptRuntimeWorker from './script-runtime.worker.ts?worker&inline';
+
 export const DEFAULT_LOW_CODE_SCRIPT_TIMEOUT_MS = 2_000;
 export const DEFAULT_LOW_CODE_SCRIPT_STARTUP_TIMEOUT_MS = 15_000;
 export const DEFAULT_LOW_CODE_SCRIPT_MEMORY_LIMIT_BYTES = 32 * 1024 * 1024;
@@ -394,10 +396,7 @@ export function getLowCodeScriptExecutor() {
 }
 
 function createLowCodeScriptWorker(): Worker {
-  return new Worker(
-    new URL('./script-runtime.worker.ts', import.meta.url),
-    { type: 'module', name: 'lowcode-script-runtime' },
-  );
+  return new ScriptRuntimeWorker({ name: 'lowcode-script-runtime' });
 }
 
 export function preloadLowCodeScriptRuntime() {
@@ -442,7 +441,6 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
     }
 
     void preloadLowCodeScriptRuntime().catch(() => undefined);
-    const worker = createLowCodeScriptWorker();
     const requestId = `script_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const timeoutMs = readPositiveLimit(
       request.limits?.timeoutMs,
@@ -455,6 +453,7 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
       100,
     );
 
+    const worker = createLowCodeScriptWorker();
     return new Promise<LowCodeScriptExecutionResult>((resolve, reject) => {
       let settled = false;
       let executionStarted = false;

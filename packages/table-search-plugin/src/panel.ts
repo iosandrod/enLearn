@@ -118,7 +118,9 @@ function getRootElement($table: any): HTMLElement | null {
 }
 
 function getPanelHost(root: HTMLElement): HTMLElement {
-  return root.closest<HTMLElement>('.vxe-grid') ?? root
+  return root.closest<HTMLElement>('[data-table-search-panel-host]') ??
+    root.closest<HTMLElement>('.vxe-grid') ??
+    root
 }
 
 function resolveText(options: TableSearchPanelOptions): TableSearchPanelText {

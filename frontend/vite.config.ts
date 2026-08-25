@@ -187,11 +187,11 @@ export default defineConfig({
       },
       {
         find: /^vxe-table-plugin-search-panel\/style\.css$/,
-        replacement: resolve(tableSearchPluginRoot, 'dist', 'style.css'),
+        replacement: resolve(tableSearchPluginRoot, 'src', 'style', 'index.css'),
       },
       {
         find: /^vxe-table-plugin-search-panel$/,
-        replacement: resolve(tableSearchPluginRoot, 'dist', 'index.js'),
+        replacement: resolve(tableSearchPluginRoot, 'src', 'index.ts'),
       },
       { find: 'tldraw-vue-phase-one/style.css', replacement: tldrawVueStyle },
       { find: 'tldraw-vue-phase-one', replacement: tldrawVueEntry },

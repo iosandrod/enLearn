@@ -1,5 +1,9 @@
 /// <reference lib="webworker" />
 
+// Vite replaces the `?worker&inline` import with a Worker factory. The export
+// keeps direct Node-side source inspection from failing before Vite transforms it.
+export default undefined;
+
 import {
   newQuickJSWASMModuleFromVariant,
   type QuickJSContext,
@@ -18,7 +22,7 @@ import {
   type LowCodeScriptExecutionRequest,
   type LowCodeScriptExecutionResult,
   type LowCodeScriptLogLevel,
-} from './scripts';
+} from './scripts.ts';
 
 type ExecuteMessage = {
   type: 'execute';
@@ -44,6 +48,7 @@ type ActiveExecution = {
   vm: QuickJSContext;
 };
 
+if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
 const workerScope = self as unknown as DedicatedWorkerGlobalScope;
 const activeExecutions = new Map<string, ActiveExecution>();
 const quickJsModulePromise = newQuickJSWASMModuleFromVariant(RELEASE_SYNC);
@@ -444,3 +449,4 @@ workerScope.addEventListener('message', (event: MessageEvent<ExecuteMessage | Ca
     });
   });
 });
+}

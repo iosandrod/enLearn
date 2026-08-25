@@ -64,18 +64,18 @@ try {
   const panel = page.locator('.vxe-table-search-panel:visible');
   await panel.waitFor({ state: 'visible' });
   const position = await panel.evaluate((element) => {
-    const grid = element.closest('.vxe-grid');
-    const toolbar = grid?.querySelector('.vxe-grid--toolbar-wrapper');
+    const host = element.closest('[data-table-search-panel-host]');
+    const toolbar = host?.querySelector('.vxe-grid--toolbar-wrapper');
     const panelRect = element.getBoundingClientRect();
-    const gridRect = grid?.getBoundingClientRect();
+    const hostRect = host?.getBoundingClientRect();
     return {
-      parentIsGrid: element.parentElement === grid,
+      parentIsHost: element.parentElement === host,
       hasToolbar: Boolean(toolbar),
-      topOffset: gridRect ? panelRect.top - gridRect.top : Number.NaN,
-      rightOffset: gridRect ? gridRect.right - panelRect.right : Number.NaN,
+      topOffset: hostRect ? panelRect.top - hostRect.top : Number.NaN,
+      rightOffset: hostRect ? hostRect.right - panelRect.right : Number.NaN,
     };
   });
-  assert.equal(position.parentIsGrid, true);
+  assert.equal(position.parentIsHost, true);
   assert.equal(position.hasToolbar, true);
   assert.ok(Math.abs(position.topOffset - 8) < 1);
   assert.ok(Math.abs(position.rightOffset - 10) < 1);

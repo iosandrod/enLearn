@@ -218,7 +218,8 @@ export class LowCodePageScriptRuntime {
 
     const block = findRuntimeBlock(node);
     if (!block) throw new Error(`页面节点 "${node}" 不存在。`);
-
+    if (block.kind == 'form') {
+    }
     const action = resolveLowCodeNodeAction(block.kind, method);
     if (!action) throw new Error(`节点 "${node}${block.kind}" 不支持动作 "${method}"。`);
     this.assertEditPageNodeActionWritable(block.kind, method);

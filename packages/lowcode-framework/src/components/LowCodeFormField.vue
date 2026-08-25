@@ -65,6 +65,14 @@ const renderField = computed<LowCodeField>(() => {
   };
   delete fieldProps.visibleWhen;
 
+  if (props.field.component === 'lc-monaco-editor') {
+    fieldProps.dialog = fieldProps.dialog !== false;
+    fieldProps.dialogTitle ||= `编辑${props.field.label || '代码'}`;
+    fieldProps.language ||= 'javascript';
+    fieldProps.theme ||= 'vs';
+    fieldProps.scriptThisType ||= 'LowCodeButtonScriptThis';
+  }
+
   if (props.disabled) {
     fieldProps.disabled = true;
   }

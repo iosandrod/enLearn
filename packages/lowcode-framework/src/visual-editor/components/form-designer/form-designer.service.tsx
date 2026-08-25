@@ -121,6 +121,22 @@ const editorToRuntimeComponent: Record<string, string> = {
   'sub-form': 'lc-sub-form',
 };
 
+const defaultCodeEditorProps = {
+  dialog: true,
+  dialogTitle: '编辑表单代码',
+  language: 'javascript',
+  theme: 'vs',
+  scriptThisType: 'LowCodeButtonScriptThis',
+  contextDrawer: true,
+  contextDrawerTitle: '当前页面上下文',
+  editorHeight: 'min(500px, calc(100vh - 250px))',
+  editorOptions: {
+    wordWrap: 'on',
+    formatOnPaste: true,
+    formatOnType: true,
+  },
+};
+
 const optionComponents = new Set([
   'vxe-select',
   'vxe-tree-select',
@@ -297,6 +313,41 @@ function readFieldProps(row: Record<string, unknown>) {
   return Object.keys(props).length ? props : undefined;
 }
 
+function normalizeCodeEditorProps(value: unknown) {
+  const source = isRecord(value) ? cloneDeep(value) : {};
+  const editorOptions = isRecord(source.editorOptions)
+    ? source.editorOptions
+    : {};
+
+  [
+    'name',
+    'label',
+    'required',
+    'type',
+    'columns',
+    'options',
+    'modelValue',
+    '__formSpan',
+    '__formHelp',
+    '__lowcodeComponent',
+    '__lowcodeOptions',
+    '__lowcodeOptionsCode',
+  ].forEach((key) => delete source[key]);
+
+  return {
+    ...defaultCodeEditorProps,
+    ...source,
+    dialog: source.dialog !== false,
+    dialogTitle: readString(source.dialogTitle, defaultCodeEditorProps.dialogTitle),
+    language: readString(source.language, defaultCodeEditorProps.language),
+    theme: readString(source.theme, defaultCodeEditorProps.theme),
+    editorOptions: {
+      ...defaultCodeEditorProps.editorOptions,
+      ...editorOptions,
+    },
+  };
+}
+
 function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undefined {
   if (!isRecord(value) || !Array.isArray(value.fields)) return undefined;
 
@@ -427,7 +478,9 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     ...(placeholder ? { placeholder } : {}),
   };
   const normalizedProps =
-    component === 'lc-sub-form'
+    component === 'lc-monaco-editor'
+      ? normalizeCodeEditorProps(fieldProps)
+      : component === 'lc-sub-form'
       ? normalizeSubFormProps(fieldProps)
       : fieldProps;
   const options = parseJsonArray(field.optionsJson);
@@ -480,6 +533,11 @@ function createFieldBlock(field: FormDesignerField, index: number) {
 
   if (runtimeComponent === 'vxe-password-input') {
     block.props.type = 'password';
+  }
+
+  if (runtimeComponent === 'lc-monaco-editor') {
+    Object.assign(block.props, normalizeCodeEditorProps(field.props));
+    block.props.__lowcodeComponent = 'lc-monaco-editor';
   }
 
   if (
@@ -860,6 +918,11 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
       rowConfig: readArrayTableRowConfig(props),
       ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
     };
+    result.propsJson = stringifyFieldProps(result.props);
+  }
+
+  if (runtimeComponent === 'lc-monaco-editor') {
+    result.props = normalizeCodeEditorProps(block.props);
     result.propsJson = stringifyFieldProps(result.props);
   }
 

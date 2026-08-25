@@ -733,3 +733,8 @@ async function loadDataSourceEntry(
     // }
 
     // return errors;
+
+    if (
+    action.executor === 'form.loadData' &&
+    !(block?.kind === 'form' && block.formType === 'edit')
+  ) return undefined;

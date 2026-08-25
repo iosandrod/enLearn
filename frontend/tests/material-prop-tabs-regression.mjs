@@ -52,7 +52,39 @@ assert.doesNotMatch(provider, /loadDatabaseMaterialPropForm/);
 assert.match(attrEditor, /loadDatabaseMaterialPropForm\(host\.getServiceApi\(\), componentKey\)/);
 assert.match(attrEditor, /watch\(\s*\(\) => currentBlock\.value\?\.componentKey/);
 assert.match(attrEditor, /formInputComponentTypeOptionCode = 'form_input_component_type'/);
-assert.match(attrEditor, /lowCodeOptionSourceRegistry\.refresh\(\s*\[\s*formInputComponentTypeOptionCode\s*\]/);
+assert.match(
+  attrEditor,
+  /lowCodeOptionSourceRegistry\.refresh\([\s\S]*?componentTypeOptionCodes/,
+  'The component selector must load both the visual and runtime input option sources.',
+);
+assert.match(attrEditor, /formFieldComponentTypeOptionCode/);
+assert.match(attrEditor, /componentTypeVisualMap[\s\S]*?'vxe-textarea'[\s\S]*?'lc-monaco-editor'/);
+assert.match(attrEditor, /nextRuntimeComponent[\s\S]*?__lowcodeComponent/);
+for (const runtimeComponent of [
+  'vxe-input',
+  'vxe-textarea',
+  'vxe-select',
+  'vxe-switch',
+  'vxe-password-input',
+  'vxe-checkbox-group',
+  'vxe-radio-group',
+  'vxe-tree-select',
+  'lc-cascader',
+  'lc-number-input',
+  'lc-color-picker',
+  'lc-option-select',
+  'lc-json-editor',
+  'lc-monaco-editor',
+  'base-info',
+  'lc-array-table',
+  'lc-sub-form',
+]) {
+  assert.match(
+    attrEditor,
+    new RegExp(`['"]${runtimeComponent.replaceAll('-', '\\-')}['"]`),
+    `missing visual mapping for ${runtimeComponent}`,
+  );
+}
 assert.match(attrEditor, /componentTypeFormSchema/);
 assert.match(attrEditor, /optionsSourceKey: componentTypeOptionsSourceKey/);
 assert.match(attrEditor, /<LowCodeForm/);

@@ -116,12 +116,8 @@ export function resolveLowCodeNodeAction(
   method: string,
   block?: LowCodePageBlock,
 ) {
-  const action = getLowCodeNodeTypeDefinition(kind)?.methods[method];
-  if (!action) return undefined;
-  if (
-    action.executor === 'form.loadData' &&
-    !(block?.kind === 'form' && block.formType === 'edit')
-  ) return undefined;
+  const action = getLowCodeNodeTypeDefinition(kind)?.methods[method];//
+  if (!action) return undefined;//
   return action;
 }
 

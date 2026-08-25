@@ -510,6 +510,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
 
       return renderedBlock ?? targetBlock;
     } catch (error) {
+      reportRuntimeError('页面区块配置保存失败', error);
       message.value = error instanceof Error ? error.message : '页面配置保存失败。';
       messageClass.value = 'lc-error';
       throw error;
@@ -561,9 +562,9 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
 
         if (currentLoad !== loadSequence) {
           return;
-        }
-
-        if (errors.length) {
+        }//
+        if (errors?.length) {
+          reportRuntimeError('页面数据源加载返回错误', errors);
           message.value = errors[0];
           messageClass.value = 'lc-error';
         }
@@ -572,6 +573,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
           return;
         }
 
+        reportRuntimeError('页面数据加载失败', error);
         message.value =
           error instanceof Error ? error.message : host.t('runtime.errors.loadPage');
         messageClass.value = 'lc-error';
@@ -734,9 +736,18 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   }
 
   function reportRuntimeDirectiveError(error: unknown) {
+    reportRuntimeError('运行时指令执行失败', error);
     message.value =
       error instanceof Error ? error.message : host.t('runtime.errors.directive');
     messageClass.value = 'lc-error';
+  }
+
+  function reportRuntimeError(scope: string, error: unknown) {
+    console.error(`[LowCode Runtime] ${scope}`, error, {
+      pageId: props.page.id,
+      pageCode: props.page.code,
+      route: readString(props.route?.fullPath),
+    });
   }
 
   async function handleFormSubmit(
@@ -775,6 +786,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
         },
       });
     } catch (error) {
+      reportRuntimeError('表单提交失败', error);
       message.value =
         error instanceof Error ? error.message : host.t('runtime.form.submitFailed');
       messageClass.value = 'lc-error';
@@ -918,6 +930,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       messageClass.value = 'lc-help';
       await loadPageData(props.page);
     } catch (error) {
+      reportRuntimeError('表格删除失败', error);
       message.value =
         error instanceof Error ? error.message : host.t('runtime.grid.deleteFailed');
       messageClass.value = 'lc-error';
