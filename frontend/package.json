@@ -67,6 +67,7 @@
     "test:sales-order-document-type": "node tests/sales-order-document-type-options-regression.mjs",
     "test:sales-order-print-designer": "node tests/sales-order-print-designer-regression.mjs",
     "test:sales-order-print-designer-browser": "node tests/sales-order-print-designer-browser-launcher.mjs",
+    "test:system-form-designer": "node tests/system-form-designer-regression.mjs",
     "test:form-label-menu": "node tests/form-label-runtime-context-menu-regression.mjs && node tests/runtime-form-field-scripts-regression.mjs && node tests/lowcode-form-validation-rules-regression.mjs",
     "test:base-info": "node --experimental-strip-types tests/base-info-relate-info-runtime.mjs && node tests/base-info-form-material-regression.mjs",
     "test:base-info-browser": "node tests/base-info-browser-launcher.mjs",

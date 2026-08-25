@@ -63,6 +63,22 @@ try {
   await page.evaluate(() => window.__tableSearchSmoke.gridRef.value.openTableSearchPanel());
   const panel = page.locator('.vxe-table-search-panel:visible');
   await panel.waitFor({ state: 'visible' });
+  const position = await panel.evaluate((element) => {
+    const grid = element.closest('.vxe-grid');
+    const toolbar = grid?.querySelector('.vxe-grid--toolbar-wrapper');
+    const panelRect = element.getBoundingClientRect();
+    const gridRect = grid?.getBoundingClientRect();
+    return {
+      parentIsGrid: element.parentElement === grid,
+      hasToolbar: Boolean(toolbar),
+      topOffset: gridRect ? panelRect.top - gridRect.top : Number.NaN,
+      rightOffset: gridRect ? gridRect.right - panelRect.right : Number.NaN,
+    };
+  });
+  assert.equal(position.parentIsGrid, true);
+  assert.equal(position.hasToolbar, true);
+  assert.ok(Math.abs(position.topOffset - 8) < 1);
+  assert.ok(Math.abs(position.rightOffset - 10) < 1);
   const input = panel.locator('[data-role="find-input"]');
   await input.fill('工序');
   await page.waitForFunction(() => (

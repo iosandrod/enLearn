@@ -4,12 +4,27 @@ import {
   openGlobalDialog,
 } from '../../packages/lowcode-framework/src/runtime/global-dialog';
 import { registerLowCodeScriptApi } from '../../packages/lowcode-framework/src/runtime/scripts';
+import { isLowCodeFormSchema } from '../../packages/lowcode-framework/src/lowcode/form-schema';
+import type { LowCodeFormSchema } from '../../packages/lowcode-framework/src/types/lowcode';
 import { useServiceApi } from '../composables/useServiceApi';
 
 let installed = false;
 let printDesignerComponent: Component | null = null;
+let activeFormDefinitionDesigner: Promise<FormDefinitionDesignerResult> | null = null;
 
 const SALES_ORDER_PRINT_DESIGNER_DIALOG_ID = 'sales-order-print-designer-dialog';
+
+type LowCodeFormDefinition = {
+  id: string;
+  code: string;
+  name: string;
+  schema: LowCodeFormSchema;
+};
+
+type FormDefinitionDesignerResult = {
+  id: string;
+  saved: boolean;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -53,6 +68,78 @@ async function openSalesOrderPrintDesigner(payload: Record<string, unknown>) {
     active: false,
     dialogId: SALES_ORDER_PRINT_DESIGNER_DIALOG_ID,
   };
+}
+
+async function loadFormDefinition(id: string) {
+  const rows = await useServiceApi().invoke<LowCodeFormDefinition[]>(
+    'lowcode',
+    'listItems',
+    {
+      resource: 'lowcode_form_definitions',
+      filters: { id },
+      limit: 1,
+    },
+  );
+  const definition = Array.isArray(rows) ? rows[0] : undefined;
+  if (!definition || !isLowCodeFormSchema(definition.schema)) {
+    throw new Error('当前表单定义不存在或 schema 格式不正确。');
+  }
+  return definition;
+}
+
+async function startFormDefinitionDesigner(id: string): Promise<FormDefinitionDesignerResult> {
+  const definition = await loadFormDefinition(id);
+  const serviceApi = useServiceApi();
+  const [formDesigner, runtimeFormDesigner] = await Promise.all([
+    import(
+      '../../packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service'
+    ),
+    import('../../packages/lowcode-framework/src/lowcode/block-materials/runtime-form-designer'),
+  ]);
+
+  return new Promise<FormDefinitionDesignerResult>((resolve, reject) => {
+    try {
+      void formDesigner.$$formDesigner({
+        title: `表单设计 - ${definition.name || definition.code}`,
+        mode: 'edit',
+        fields: runtimeFormDesigner.createFormDesignerFieldsFromSchema(definition.schema),
+        layout: definition.schema.layout,
+        columns: definition.schema.columns,
+        serviceApi,
+        onCancel: () => resolve({ id, saved: false }),
+        onConfirm: async (result) => {
+          const designedSchema = formDesigner.createLowCodeFormSchemaFromDesignerResult(result);
+          const schema = runtimeFormDesigner.mergeRuntimeFormSchema(
+            definition.schema,
+            designedSchema,
+            result.fields,
+          );
+          await serviceApi.invoke('lowcode', 'saveItem', {
+            resource: 'lowcode_form_definitions',
+            id,
+            data: { schema },
+          });
+          resolve({ id, saved: true });
+        },
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function openFormDefinitionDesigner(payload: Record<string, unknown>) {
+  const id = typeof payload.id === 'string' ? payload.id.trim() : '';
+  if (!id) throw new Error('请先选择要设计的表单。');
+  if (activeFormDefinitionDesigner) return activeFormDefinitionDesigner;
+
+  const request = startFormDefinitionDesigner(id);
+  const clearActiveRequest = () => {
+    if (activeFormDefinitionDesigner === request) activeFormDefinitionDesigner = null;
+  };
+  activeFormDefinitionDesigner = request;
+  void request.then(clearActiveRequest, clearActiveRequest);
+  return request;
 }
 
 export function installLowCodeScriptApis() {
@@ -100,5 +187,15 @@ export function installLowCodeScriptApis() {
       context.page.code === 'sales-orders' &&
       context.policy?.apiNames?.includes('print.designer.open') === true,
     handler: (payload) => openSalesOrderPrintDesigner(payload),
+  });
+
+  registerLowCodeScriptApi('form.definition.designer.open', {
+    description: '在弹框中设计并保存当前低代码表单定义',
+    signature: 'this.$api.invoke("form.definition.designer.open", { id })',
+    insertText: 'await this.$api.invoke("form.definition.designer.open", { id });',
+    authorize: (_payload, context) =>
+      context.page.code === 'form-definetion' &&
+      context.policy?.apiNames?.includes('form.definition.designer.open') === true,
+    handler: (payload) => openFormDefinitionDesigner(payload),
   });
 }

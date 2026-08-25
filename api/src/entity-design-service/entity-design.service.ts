@@ -36,6 +36,7 @@ const SUPPORTED_DATA_TYPES = new Set([
 
 const RPC_NAMES = {
   listDesign: 'entity_design_list',
+  syncAdminEntities: 'entity_design_sync_admin_entities',
   listPhysicalTables: 'entity_design_list_physical_tables',
   listViews: 'entity_design_list_views',
   listViewColumns: 'entity_design_list_view_columns',
@@ -418,6 +419,7 @@ export class EntityDesignService extends BaseService {
 
   private async listDesign(context: ServiceContext) {
     const { client } = await this.assertAccess(context);
+    await this.callRpc(client, RPC_NAMES.syncAdminEntities);
     return this.callRpc(client, RPC_NAMES.listDesign);
   }
 

@@ -76,6 +76,7 @@ interface DocumentRegistry {
 interface TableSearchPanelBinding {
   $table: any
   root: HTMLElement
+  host: HTMLElement
   options: TableSearchPanelOptions
   text: TableSearchPanelText
   elements: PanelElements | null
@@ -114,6 +115,10 @@ function isTableObject(value: unknown): value is object {
 function getRootElement($table: any): HTMLElement | null {
   const root = $table?.getRefMaps?.().refElem?.value
   return root && root.nodeType === 1 ? root as HTMLElement : null
+}
+
+function getPanelHost(root: HTMLElement): HTMLElement {
+  return root.closest<HTMLElement>('.vxe-grid') ?? root
 }
 
 function resolveText(options: TableSearchPanelOptions): TableSearchPanelText {
@@ -174,7 +179,7 @@ function createInputShell(
 }
 
 function createPanel(binding: TableSearchPanelBinding): PanelElements {
-  const { root, text } = binding
+  const { host, root, text } = binding
   const document = root.ownerDocument
   const panel = document.createElement('section')
   panel.className = [
@@ -311,7 +316,7 @@ function createPanel(binding: TableSearchPanelBinding): PanelElements {
   replaceRow.append(replaceSpacer, replaceShell, replaceActions)
 
   panel.append(findRow, replaceRow)
-  root.append(panel)
+  host.append(panel)
 
   const elements: PanelElements = {
     panel,
@@ -380,25 +385,10 @@ function updatePanelPosition(binding: TableSearchPanelBinding) {
   const panel = binding.elements?.panel
   if (!panel || panel.hidden) return
 
-  const { root } = binding
+  const { host } = binding
   const offset = Math.max(0, binding.options.offset ?? 8)
-  const rootRect = root.getBoundingClientRect()
-  const header = root.querySelector<HTMLElement>('.vxe-table--header-wrapper')
-  const headerRect = header?.getBoundingClientRect()
-  const headerBottom = headerRect
-    ? Math.max(offset, headerRect.bottom - rootRect.top + offset)
-    : offset
-  let top = offset
-  const availableHeight = root.clientHeight
-
-  if (availableHeight > panel.offsetHeight + headerBottom + offset) {
-    top = headerBottom
-  } else if (availableHeight > panel.offsetHeight + offset * 2) {
-    top = Math.min(headerBottom, availableHeight - panel.offsetHeight - offset)
-  }
-
-  panel.style.setProperty('--vxe-table-search-panel-top', `${Math.max(offset, top)}px`)
-  panel.classList.toggle('is--narrow', root.clientWidth < 440)
+  panel.style.setProperty('--vxe-table-search-panel-top', `${offset}px`)
+  panel.classList.toggle('is--narrow', host.clientWidth < 440)
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -879,8 +869,8 @@ function findBindingForTarget(
 
   let match: TableSearchPanelBinding | null = null
   registry.bindings.forEach((binding) => {
-    if (!binding.root.contains(target)) return
-    if (!match || match.root.contains(binding.root)) {
+    if (!binding.host.contains(target)) return
+    if (!match || match.host.contains(binding.host)) {
       match = binding
     }
   })
@@ -955,9 +945,11 @@ export function bindTableSearchPanel($table: any, options: TableSearchPanelOptio
   }
 
   const registry = getDocumentRegistry(root.ownerDocument)
+  const host = getPanelHost(root)
   const binding: TableSearchPanelBinding = {
     $table,
     root,
+    host,
     options,
     text: resolveText(options),
     elements: null,
@@ -991,7 +983,7 @@ export function bindTableSearchPanel($table: any, options: TableSearchPanelOptio
   const ResizeObserverConstructor = root.ownerDocument.defaultView?.ResizeObserver
   if (ResizeObserverConstructor) {
     binding.resizeObserver = new ResizeObserverConstructor(binding.onWindowResize)
-    binding.resizeObserver.observe(root)
+    binding.resizeObserver.observe(host)
   } else {
     root.ownerDocument.defaultView?.addEventListener('resize', binding.onWindowResize)
   }

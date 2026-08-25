@@ -242,3 +242,494 @@ async function loadDataSourceEntry(
     })
     .finally(() => finishSourceRequest(key, version));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ const args = request.args;
+  const allowedCapabilities = context.policy?.capabilities;
+  // if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
+  //   throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
+  // }
+  //
+  switch (request.name) {
+    case 'action.execute':
+      return executeScriptNodeAction(readScriptOptionsArg(args, 'executeAction'), event);
+    case 'http.execute':
+      return executeScriptHttp(readScriptOptionsArg(args, 'executeHttp'));
+    case 'pageFunction.execute':
+      return executePageFunction(
+        readScriptOptionsArg(args, 'executeFunction'),
+        event,
+      );
+    case 'api.invoke': {
+      const apiName = readScriptStringArg(args, 0, 'name');
+      return invokeRegisteredLowCodeScriptApi(
+        apiName,
+        readScriptRecordArg(args, 1),
+        context,
+      );
+    }
+    case 'source.refresh': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      const errors = await refreshDataSources([sourceKey]);
+      if (errors.length) throw new Error(errors[0]);
+      return cloneScriptValue(resolvedData.value[sourceKey], null);
+    }
+    case 'source.refreshAll': {
+      const errors = await refreshDataSources();
+      if (errors.length) throw new Error(errors[0]);
+      return cloneScriptValue(resolvedData.value, {});
+    }
+    case 'source.set': {
+      assertEditPageCapabilityWritable('source.set');
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      runtime.setSource(sourceKey, cloneRuntimeValue(args[1]));
+      syncPageGridStates();
+      return true;
+    }
+    case 'form.patch': {
+      const blockId = readScriptStringArg(args, 0, 'blockId');
+      const block = findRuntimeBlock(blockId);
+      if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
+        throw new Error(`表单 "${blockId}" 不存在。`);
+      }
+      if (block.kind === 'form') assertEditPageCapabilityWritable('form.patch');
+      runtime.patchForm(blockId, readScriptRecordArg(args, 1));
+      await runtime.getFormController(blockId)?.setValues?.(
+        runtime.state.forms[blockId] ?? {},
+      );
+      return cloneScriptValue(runtime.state.forms[blockId], {});
+    }
+    case 'form.replace': {
+      const blockId = readScriptStringArg(args, 0, 'blockId');
+      const block = findRuntimeBlock(blockId);
+      if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
+        throw new Error(`表单 "${blockId}" 不存在。`);
+      }
+      if (block.kind === 'form') assertEditPageCapabilityWritable('form.replace');
+      runtime.replaceForm(blockId, readScriptRecordArg(args, 1));
+      await runtime.getFormController(blockId)?.setValues?.(
+        runtime.state.forms[blockId] ?? {},
+      );
+      return cloneScriptValue(runtime.state.forms[blockId], {});
+    }
+    case 'grid.setRows': {
+      const blockId = readScriptStringArg(args, 0, 'blockId');
+      const block = findRuntimeBlock(blockId);
+      if (!block || block.kind !== 'grid') throw new Error(`表格 "${blockId}" 不存在。`);
+      const rows = readScriptRowsArg(args, 1);
+      if (block.sourceKey) runtime.setSource(block.sourceKey, rows);
+      else runtime.setGridRows(blockId, rows, { rowKey: getGridRowKey(block) });
+      syncPageGridStates();
+      return rows;
+    }
+    case 'search.patch': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      runtime.patchSearch(sourceKey, readScriptRecordArg(args, 1));
+      return cloneScriptValue(runtime.state.searches[sourceKey], {});
+    }
+    case 'search.replace': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      runtime.replaceSearch(sourceKey, readScriptRecordArg(args, 1));
+      return cloneScriptValue(runtime.state.searches[sourceKey], {});
+    }
+    case 'page.refresh': {
+      const errors = await loadPageData(props.page);
+      if (errors.length) throw new Error(errors[0]);
+      return true;
+    }
+    case 'router.push': {
+      const target = args[0];
+      if (typeof target !== 'string' && !isRecord(target)) {
+        throw new Error('路由参数必须是字符串或对象。');
+      }
+      await host.getRouter().push(cloneRuntimeValue(target));
+      return true;
+    }
+    case 'message.success':
+    case 'message.info':
+    case 'message.warning':
+    case 'message.error': {
+      const nextMessage = readScriptStringArg(args, 0, 'message');
+      message.value = nextMessage;
+      messageClass.value = request.name === 'message.error' ? 'lc-error' : 'lc-help';
+      return true;
+    }
+    case 'dialog.open': {
+      if (!isRecord(args[0])) throw new Error('弹框配置必须是对象。');
+      const config = sanitizeScriptDialogConfig(args[0]);
+      if (!readString(config.title)) throw new Error('弹框标题不能为空。');
+      const result = await openLowCodeGlobalDialog(config);
+      return cloneScriptValue<Record<string, unknown>>(
+        result as unknown as Record<string, unknown>,
+        { action: 'close', values: {} },
+      );
+    }
+    case 'event.emit': {
+      const name = readScriptStringArg(args, 0, 'eventName');
+      await publishRuntimeEvent({
+        name,
+        blockId: event.blockId,
+        blockKind: event.blockKind,
+        timestamp: Date.now(),
+        payload: sanitizeScriptEventPayload(args[1]),
+      });
+      return true;
+    }
+    default:
+      throw new Error(`脚本能力 "${request.name}" 未注册。`);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const mode = directive.mode ?? 'replace';
+
+  if (mode === 'merge') {
+    return isRecord(currentValue) && isRecord(nextValue)
+      ? { ...currentValue, ...nextValue }
+      : nextValue;
+  }
+
+  if (mode === 'append' || mode === 'prepend') {
+    const currentRows = Array.isArray(currentValue) ? currentValue : [];
+    const nextRows = normalizeRows(nextValue);
+    return mode === 'append'
+      ? [...currentRows, ...nextRows]
+      : [...nextRows, ...currentRows];
+  }
+
+  if (mode === 'patch') {
+    if (isRecord(currentValue) && isRecord(nextValue)) {
+      return { ...currentValue, ...nextValue };
+    }
+
+    const rowKey = resolveRowKey(directive, event);
+    const rows = Array.isArray(currentValue) ? [...currentValue] : [];
+    normalizeRows(nextValue).forEach((nextRow) => {
+      const index = rows.findIndex((row) => isRecord(row) && row[rowKey] === nextRow[rowKey]);
+      if (index >= 0 && isRecord(rows[index])) {
+        rows[index] = { ...rows[index], ...nextRow };
+      } else {
+        rows.push(nextRow);
+      }
+    });
+    return rows;
+  }
+
+  if (mode === 'remove') {
+    const rowKey = resolveRowKey(directive, event);
+    const rows = Array.isArray(currentValue) ? currentValue : [];
+    const removeKeys = new Set(normalizeRows(nextValue).map((row) => row[rowKey]));
+    return rows.filter((row) => !isRecord(row) || !removeKeys.has(row[rowKey]));
+  }
+
+  return nextValue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const [sourceKey] = resolveDirectiveSourceKeys(directive, event);
+  if (!sourceKey) return;
+
+  runtime.setSource(sourceKey, mergeDataSourceValue(
+    resolvedData.value[sourceKey],
+    resolveDirectiveData(directive, event),
+    directive,
+    event
+  ));
+  syncPageGridStates();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const blockId = resolveDirectiveString(directive.blockId, event, event.blockId ?? '');
+  if (!blockId) return;
+
+  const target = findRuntimeBlock(blockId);
+  if (!target || target.kind !== 'grid') return;
+
+  const nextValue = resolveDirectiveData(directive, event);
+
+  if (target.sourceKey) {
+    runtime.setSource(target.sourceKey, mergeDataSourceValue(
+      resolvedData.value[target.sourceKey],
+      nextValue,
+      directive,
+      event
+    ));
+    syncPageGridStates();
+    return;
+  }
+
+  target.rows = mergeDataSourceValue(
+    target.rows ?? [],
+    nextValue,
+    directive,
+    event
+  ) as Record<string, unknown>[];
+  syncPageGridStates();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const blockId = resolveDirectiveString(directive.blockId, event, event.blockId ?? '');
+  if (!blockId) return;
+
+  const nextValues = resolveDirectiveRecord(
+    directive.values ?? directive.value ?? event.payload?.values ?? event.payload?.row,
+    event
+  );
+
+  if (directive.mode === 'replace') {
+    runtime.replaceForm(blockId, nextValues);
+    return;
+  }
+
+  runtime.patchForm(blockId, nextValues);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const [sourceKey] = resolveDirectiveSourceKeys(directive, event);
+  if (!sourceKey) return;
+
+  const values = resolveDirectiveRecord(
+    directive.values ?? directive.value ?? event.payload?.values,
+    event
+  );
+  if (directive.mode === 'replace') runtime.replaceSearch(sourceKey, values);
+  else runtime.patchSearch(sourceKey, values);
+
+  await refreshDataSources([sourceKey]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const sourceKey = resolveDirectiveString(directive.sourceKey, event);
+  const source = getDataSource(sourceKey);
+  const directivePostData = resolveRuntimeValue(
+    directive.postData ?? source?.postData ?? {},
+    directiveScope(event)
+  ) as Record<string, unknown>;
+  const request = source
+    ? resolveDataSourceRequest(sourceKey, source, directivePostData)
+    : { serviceName: '', serviceMethod: '', postData: directivePostData };
+  const serviceName = resolveDirectiveString(directive.serviceName, event, request.serviceName);
+  const serviceMethod = resolveDirectiveString(
+    directive.serviceMethod,
+    event,
+    request.serviceMethod
+  );
+
+  if (!serviceName || !serviceMethod) return;
+
+  const normalizedRequest = normalizeLegacyAdminListRequest(
+    serviceName,
+    serviceMethod,
+    request.postData
+  );
+
+  const mesCommand = isDesktopMesCommand(
+    normalizedRequest.serviceName,
+    normalizedRequest.serviceMethod,
+  );
+  let result: unknown;
+  if (mesCommand) {
+    if (runtime.state.status.mesCommandExecuting) {
+      throw new Error('当前操作仍在处理中，请稍候。');
+    }
+    executionContext.mesCommandStarted = true;
+    runtime.state.status.mesCommandExecuting = true;
+    runtime.state.status.mesCommandActionKey = [
+      event.blockId ?? '',
+      readString(event.payload?.actionCode, normalizedRequest.serviceMethod),
+    ].join(':');
+    const commandRequest = await prepareDesktopMesCommandRequest(normalizedRequest.postData);
+    result = await invokeDesktopMesCommand(() => host
+      .getServiceApi()
+      .invoke(
+        normalizedRequest.serviceName,
+        normalizedRequest.serviceMethod,
+        commandRequest.postData,
+        { requestId: commandRequest.requestId },
+      ));
+    executionContext.mesCommandCompleted = true;
+  } else {
+    result = await host
+      .getServiceApi()
+      .invoke(
+        normalizedRequest.serviceName,
+        normalizedRequest.serviceMethod,
+        normalizedRequest.postData
+      );
+  }
+  const assignTo = resolveDirectiveString(directive.assignTo, event);
+
+  if (assignTo) {
+    runtime.setSource(assignTo, mergeDataSourceValue(
+      resolvedData.value[assignTo],
+      result,
+      directive,
+      event
+    ));
+    syncPageGridStates();
+  }
+
+  if (directive.refreshSourceKeys?.length) {
+    const sourceKeys = directive.refreshSourceKeys
+      .map((key) => resolveDirectiveString(key, event))
+      .filter(Boolean);
+    try {
+      await refreshDataSources(sourceKeys, {
+        ordered: mesCommand,
+        strict: mesCommand,
+      });
+      if (mesCommand) executionContext.mesCommandRefreshCompleted = true;
+    } catch (error) {
+      if (mesCommand) executionContext.mesCommandRefreshFailed = true;
+      throw error;
+    }
+  }
+
+
+   // const pending = new Map(entries);
+    // const errors: string[] = [];
+
+    // while (pending.size) {
+    //   const ready = [...pending.entries()].filter(([, source]) =>
+    //     (source.loadAfterSourceKeys ?? []).every((dependencyKey) => !pending.has(dependencyKey))
+    //   );
+    //   if (!ready.length) {
+    //     errors.push(`Data source dependency cycle: ${[...pending.keys()].join(', ')}`);
+    //     break;
+    //   }
+
+    //   ready.forEach(([key]) => pending.delete(key));
+    //   errors.push(...(await Promise.all(
+    //     ready.map(([key, source]) => this.loadDataSourceEntry(key, source, pageBlocks))
+    //   )).filter(Boolean));
+    //   this.hydrateSourceBoundForms(pageBlocks, sources, new Set(ready.map(([key]) => key)));
+    // }
+
+    // return errors;

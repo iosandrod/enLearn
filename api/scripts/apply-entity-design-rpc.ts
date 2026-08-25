@@ -13,13 +13,14 @@ if (!rawConnectionString) {
   throw new Error('DIRECT_URL or DATABASE_URL is required.');
 }
 
-const migrationPath = resolve(
+const repoRoot = resolve(
   process.cwd(),
-  process.cwd().toLowerCase().endsWith('api') ? '..' : '.',
-  'supabase',
-  'migrations',
-  '20260806110000_entity_design_rpc.sql'
+  process.cwd().toLowerCase().endsWith('api') ? '..' : '.'
 );
+const migrationPaths = [
+  '20260806110000_entity_design_rpc.sql',
+  '20260825193000_sync_entity_design_admin_entities.sql'
+].map((fileName) => resolve(repoRoot, 'supabase', 'migrations', fileName));
 
 function directProjectConnectionString(value: string) {
   try {
@@ -50,9 +51,11 @@ async function main() {
   await client.connect();
   try {
     await client.query('begin');
-    await client.query(await readFile(migrationPath, 'utf8'));
+    for (const migrationPath of migrationPaths) {
+      await client.query(await readFile(migrationPath, 'utf8'));
+    }
     await client.query('commit');
-    console.log('Entity design RPC migration applied.');
+    console.log('Entity design RPC migrations applied.');
   } catch (error) {
     await client.query('rollback').catch(() => undefined);
     throw error;

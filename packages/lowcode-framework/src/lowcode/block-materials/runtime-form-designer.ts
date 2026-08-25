@@ -62,6 +62,12 @@ function runtimeFieldToDesignerField(field: LowCodeField): FormDesignerField {
   };
 }
 
+export function createFormDesignerFieldsFromSchema(
+  schema: LowCodeFormSchema,
+): FormDesignerField[] {
+  return schema.fields.map(runtimeFieldToDesignerField);
+}
+
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }

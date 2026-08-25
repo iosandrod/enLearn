@@ -58,7 +58,12 @@ async function assertRpc(
 }
 
 async function main() {
-  await assertRpc('listDesign', {}, 'entity_design_list');
+  const listDesign = createHarness();
+  assert.deepEqual(await listDesign.service.execute('listDesign', {}, {}), { ok: true });
+  assert.deepEqual(listDesign.calls, [
+    { name: 'entity_design_sync_admin_entities', args: undefined },
+    { name: 'entity_design_list', args: undefined }
+  ]);
   await assertRpc(
     'listPhysicalTables',
     {},

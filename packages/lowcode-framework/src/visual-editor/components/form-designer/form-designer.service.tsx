@@ -925,6 +925,7 @@ const ServiceComponent = defineComponent({
       collectPageTableFieldOptions(props.option.pageData),
     );
     let tableFieldLoadSequence = 0;
+    let closeCommitted = false;
 
     const state = reactive({
       option: props.option,
@@ -966,6 +967,7 @@ const ServiceComponent = defineComponent({
 
     const methods = {
       service: async (option: FormDesignerServiceOption) => {
+        closeCommitted = false;
         state.option = option;
         void loadTableFieldOptions();
         state.initialData = resolveInitialModel(option);
@@ -1003,9 +1005,12 @@ const ServiceComponent = defineComponent({
           ElMessage.error(error instanceof Error ? error.message : '表单配置保存失败');
           return;
         }
+        closeCommitted = true;
         methods.hide();
       },
       onCancel: () => {
+        if (closeCommitted) return;
+        closeCommitted = true;
         state.option.onCancel?.();
         methods.hide();
       },
@@ -1021,6 +1026,9 @@ const ServiceComponent = defineComponent({
         top="4vh"
         class="form-designer-dialog form-workbench-dialog"
         destroyOnClose={true}
+        onClosed={() => {
+          if (!closeCommitted) handler.onCancel();
+        }}
       >
         {{
           default: () => (
@@ -1105,7 +1113,10 @@ export const $$formDesigner = (
 
   ins.service({
     ...option,
-    onCancel: cleanup,
+    onCancel: () => {
+      option.onCancel?.();
+      cleanup();
+    },
     onConfirm: async (value) => {
       await option.onConfirm?.(value);
       dfd.resolve(value);
