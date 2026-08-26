@@ -12,7 +12,30 @@
         <span><i class="is-delayed" />延期</span>
       </div>
     </header>
+    <div v-if="displaySettingsSchema" class="lc-planning-gantt__settings">
+      <span class="lc-planning-gantt__settings-title">
+        <i class="ri-equalizer-3-line" aria-hidden="true" />显示设置
+      </span>
+      <LowCodeForm
+        :model-value="displaySettingsFormModel"
+        :schema="displaySettingsSchema"
+        @update:model-value="handleDisplaySettingsUpdate"
+      />
+      <button
+        class="lc-planning-gantt__settings-reset"
+        type="button"
+        title="恢复默认显示设置"
+        aria-label="恢复默认显示设置"
+        @click="resetDisplaySettings"
+      >
+        <i class="ri-refresh-line" aria-hidden="true" />
+      </button>
+      <span v-if="displayRangeError" class="lc-planning-gantt__settings-error">
+        结束时间必须晚于开始时间
+      </span>
+    </div>
     <GanttDisplaySettings
+      v-else
       v-model="displaySettings"
       :defaults="displaySettingsDefaults"
       :invalid-range="displayRangeError"
@@ -55,16 +78,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { Gantt, Willow } from '@svar-ui/vue-gantt';
 import type { ITask, TID } from '@svar-ui/vue-gantt';
 import '@svar-ui/vue-gantt/style.css';
+import { useLowCodeHost } from '../../../core/host';
 import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
-import type { LowCodePagePlanningGanttBlock } from '../../../types/lowcode';
+import LowCodeForm from '../../../components/LowCodeForm.vue';
+import { loadLowCodeFormDefinition } from '../../form-definition-loader';
+import type { LowCodeFormSchema, LowCodePagePlanningGanttBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 import GanttDisplaySettings from './GanttDisplaySettings.vue';
 import {
   DEFAULT_GANTT_DISPLAY_SETTINGS,
+  DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA,
   type GanttDisplaySettingsModel,
   type GanttGranularity,
 } from './display-settings';
@@ -88,14 +115,28 @@ type GanttSelectionEvent = {
 const GANTT_MIN_TIMESTAMP = Date.UTC(2000, 0, 1);
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningGanttBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const host = useLowCodeHost();
 const runtime = useLowCodePageRuntime(false);
 const chartElement = ref<HTMLDivElement>();
 const selectedTaskId = ref('');
 const ganttRenderKey = ref(0);
 const autoGanttGridWidth = ref(260);
 const displaySettings = ref<GanttDisplaySettingsModel>({ ...DEFAULT_GANTT_DISPLAY_SETTINGS });
+const displaySettingsSchema = shallowRef<LowCodeFormSchema | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 let tabRenderFrame = 0;
+
+async function loadDisplaySettingsSchema() {
+  const code = readString(props.block.settingsFormCode);
+  if (!code) return;
+  displaySettingsSchema.value = DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA;
+  try {
+    const definition = await loadLowCodeFormDefinition(host.getServiceApi(), code);
+    displaySettingsSchema.value = definition.schema;
+  } catch {
+    // Keep the bundled schema as a usable fallback when the definition is unavailable.
+  }
+}
 
 const rows = computed(() => {
   const value = (runtime?.state.sources ?? props.resolvedData)[props.block.sourceKey ?? ''];
@@ -196,6 +237,13 @@ const displaySettingsDefaults = computed(() => ({
   cellWidth: defaultCellWidth.value,
   gridWidth: autoGanttGridWidth.value,
 }));
+const displaySettingsFormModel = computed(() => ({
+  start: displaySettings.value.start || displaySettingsDefaults.value.start,
+  end: displaySettings.value.end || displaySettingsDefaults.value.end,
+  granularity: displaySettings.value.granularity || displaySettingsDefaults.value.granularity,
+  cellWidth: displaySettings.value.cellWidth ?? displaySettingsDefaults.value.cellWidth,
+  gridWidth: displaySettings.value.gridWidth ?? displaySettingsDefaults.value.gridWidth,
+}));
 const parsedDisplayStart = computed(() => parseInputDate(displaySettings.value.start));
 const parsedDisplayEnd = computed(() => parseInputDate(displaySettings.value.end));
 const displayRangeError = computed(() => {
@@ -292,6 +340,30 @@ function parseInputDate(value: string) {
   if (!value) return null;
   const date = new Date(value);
   return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function isGanttGranularity(value: unknown): value is GanttGranularity {
+  return value === 'auto' || value === 'hour' || value === 'day' || value === 'week' || value === 'month';
+}
+
+function normalizeNumberOrNull(value: unknown) {
+  if (value === '' || value === null || typeof value === 'undefined') return null;
+  const numberValue = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function handleDisplaySettingsUpdate(values: Record<string, unknown>) {
+  displaySettings.value = {
+    start: typeof values.start === 'string' ? values.start : '',
+    end: typeof values.end === 'string' ? values.end : '',
+    granularity: isGanttGranularity(values.granularity) ? values.granularity : 'auto',
+    cellWidth: normalizeNumberOrNull(values.cellWidth),
+    gridWidth: normalizeNumberOrNull(values.gridWidth),
+  };
+}
+
+function resetDisplaySettings() {
+  displaySettings.value = { ...DEFAULT_GANTT_DISPLAY_SETTINGS };
 }
 
 function formatInputDateTime(date: Date) {
@@ -395,6 +467,7 @@ async function refreshVisibleGantt() {
 }
 
 onMounted(() => {
+  void loadDisplaySettingsSchema();
   void refreshVisibleGantt();
   window.addEventListener('lowcode:tab-activated', refreshVisibleGantt);
   if (typeof ResizeObserver !== 'undefined' && chartElement.value) {
@@ -424,6 +497,12 @@ onBeforeUnmount(() => {
 .lc-planning-gantt__legend .is-approved { background: #2563a6; }
 .lc-planning-gantt__legend .is-confirmed { background: #0f766e; }
 .lc-planning-gantt__legend .is-delayed { background: #c2413b; }
+.lc-planning-gantt__settings { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 6px 10px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; padding: 6px 12px; }
+.lc-planning-gantt__settings-title { display: inline-flex; height: 28px; align-items: center; gap: 4px; color: #334155; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.lc-planning-gantt__settings :deep(.lc-form) { padding: 0; }
+.lc-planning-gantt__settings-reset { display: inline-grid; width: 28px; height: 28px; place-items: center; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #475569; cursor: pointer; }
+.lc-planning-gantt__settings-reset:hover { border-color: #0f766e; color: #0f766e; }
+.lc-planning-gantt__settings-error { grid-column: 1 / -1; display: block; color: #b42318; font-size: 10px; margin-top: 2px; }
 .lc-planning-gantt__chart, .lc-planning-gantt__empty { min-height: 340px; height: var(--lc-gantt-height); }
 .lc-planning-gantt__chart { overflow: hidden; background: #fff; }
 .lc-planning-gantt__chart :deep(.wx-willow-theme) {

@@ -22,6 +22,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260821123000_planning_console_gantt_delivery_plans.sql',
   'supabase/migrations/20260822100000_planning_console_script_context_payload_fix.sql',
   'supabase/migrations/20260822110000_planning_console_scenario_options.sql',
+  'supabase/migrations/20260826120000_planning_gantt_display_settings_form.sql',
+  'supabase/migrations/20260826121000_planning_console_gantt_form_binding.sql',
   'supabase/migrations/20260810210000_planning_master_categories.sql',
   'supabase/migrations/20260811120000_planning_structure_pages.sql',
   'supabase/migrations/20260813090000_planning_item_display_name.sql'

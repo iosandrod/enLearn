@@ -75,6 +75,9 @@ const converter: VisualToLowCodeConverter = {
         labelField: readString(props.labelField, 'reference'),
         statusField: readString(props.statusField, 'status'),
         colorField: readString(props.colorField, 'gantt_color'),
+        ...(readString(props.settingsFormCode)
+          ? { settingsFormCode: readString(props.settingsFormCode) }
+          : {}),
       } as LowCodePageBlock;
     }
 
@@ -91,4 +94,3 @@ const converter: VisualToLowCodeConverter = {
 };
 
 export default converter;
-

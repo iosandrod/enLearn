@@ -619,6 +619,7 @@ function firstTabBlock(key: string) {
 }
 assert.equal(firstTabBlock('gantt')?.kind, 'planningGantt');
 assert.equal(firstTabBlock('gantt')?.sourceKey, 'operationPlanTimeline');
+assert.equal(firstTabBlock('gantt')?.settingsFormCode, 'planning-gantt-display-settings');
 assert.deepEqual(firstTabBlock('gantt')?.includedTypes, ['MO', 'WO', 'PO', 'DO', 'DLVR']);
 assert.equal(firstTabBlock('flow')?.kind, 'planningFlow');
 assert.equal(firstTabBlock('bom')?.kind, 'planningBom');

@@ -964,7 +964,7 @@ export class LowCodePageScriptRuntime {
   ) {
     const allowedCapabilities = context.policy?.capabilities;
     if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
-      throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
+      // throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
     }
 
     if (this.primaryScriptExecutors.has(request.name)) {

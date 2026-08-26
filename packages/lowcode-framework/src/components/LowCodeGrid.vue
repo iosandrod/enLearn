@@ -60,39 +60,9 @@
             @patch-model="(payload) => patchBaseInfoRow(row, column, payload)"
           />
         </template>
-        <template #actions="{ row }">
-          <template v-if="hasCustomRowActions">
-            <vxe-button
-              v-for="action in visibleRowActions(row)"
-              :key="action.code"
-              size="mini"
-              :status="action.status"
-              :disabled="readonly || executing || isRowActionDisabled(action, row)"
-              @click="emitRowAction(action, row)"
-            >
-              <i v-if="action.icon" :class="action.icon" aria-hidden="true" />
-              {{ action.label }}
-            </vxe-button>
-          </template>
-          <vxe-button
-            v-if="!hasCustomRowActions && schema.rowActions?.edit !== false"
-            size="mini"
-            status="primary"
-            :disabled="readonly || executing"
-            @click="$emit('edit', row)"
-          >
-            {{ schema.rowActions?.editLabel ?? 'Edit' }}
-          </vxe-button>
-          <vxe-button
-            v-if="!hasCustomRowActions && schema.rowActions?.delete !== false"
-            size="mini"
-            status="danger"
-            :disabled="readonly || executing"
-            @click="$emit('delete', row)"
-          >
-            {{ schema.rowActions?.deleteLabel ?? 'Delete' }}
-          </vxe-button>
-        </template>
+        <!-- <template #actions="{ row }">
+         
+        </template> -->
       </vxe-grid>
     </div>
   </section>

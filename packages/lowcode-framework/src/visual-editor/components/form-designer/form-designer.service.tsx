@@ -52,6 +52,7 @@ export type FormDesignerField = {
   help?: string;
   optionsCode?: string;
   optionsJson?: string;
+  updateScript?: string;
   propsJson?: string;
   props?: Record<string, unknown>;
 };
@@ -477,6 +478,8 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     ...rawProps,
     ...(placeholder ? { placeholder } : {}),
   };
+  const updateScript = readString(field.updateScript, readString(fieldProps.onChange));
+  delete fieldProps.onChange;
   const normalizedProps =
     component === 'lc-monaco-editor'
       ? normalizeCodeEditorProps(fieldProps)
@@ -495,6 +498,7 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     ...(Object.keys(normalizedProps).length ? { props: normalizedProps } : {}),
     ...(options?.length ? { options: cloneDeep(options) as LowCodeField['options'] } : {}),
     ...(optionsCode ? { optionsCode } : {}),
+    ...(updateScript ? { updateScript } : {}),
     ...(readString(field.help) ? { help: readString(field.help) } : {}),
     ...(span ? { span } : {}),
     ...(required
@@ -514,6 +518,9 @@ function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesigner
   block.props.__formSpan = normalizeSpan(field.span) || 1;
   block.props.__formHelp = readString(field.help);
   block.props.__lowcodeOptionsCode = readString(field.optionsCode);
+  const updateScript = readString(field.updateScript, readString(field.props?.onChange));
+  if (updateScript) block.props.onChange = updateScript;
+  else delete block.props.onChange;
 }
 
 function createFieldBlock(field: FormDesignerField, index: number) {
@@ -629,6 +636,7 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
       span: normalizeSpan(row.span) || 1,
       help: readString(row.help, readString(props?.help)),
       optionsCode: readString(row.optionsCode),
+      updateScript: readString(row.updateScript, readString(props?.onChange)),
       optionsJson:
         stringifyOptions(row.optionsJson) ||
         stringifyOptions(row.options) ||
@@ -877,6 +885,7 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     help: readString(block.props?.__formHelp || block.props?.help),
     optionsCode: readString(block.props?.__lowcodeOptionsCode),
     optionsJson: getOptionsJson(block, runtimeComponent),
+    updateScript: readString(block.props?.onChange),
   };
 
   if (runtimeComponent === 'base-info') {
@@ -890,6 +899,7 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
       label: _label,
       required: _required,
       type: _type,
+      onChange: _onChange,
       ...props
     } = block.props ?? {};
     result.props = cloneDeep(props);

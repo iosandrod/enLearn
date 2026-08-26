@@ -10,7 +10,14 @@ const [
   formDesignerSource,
   attrEditorSource,
   formFieldSource,
-  migrationSource,
+  formSource,
+  searchFormSource,
+  converterHelpersSource,
+  runtimeFormDesignerSource,
+  runtimeFormFieldEditorSource,
+  pageRendererRuntimeSource,
+  componentTypeMigrationSource,
+  onChangeMigrationSource,
 ] = await Promise.all([
   readFile(
     new URL('lowcode/form-materials/lc-monaco-editor/index.vue', frameworkRoot),
@@ -46,8 +53,18 @@ const [
     'utf8',
   ),
   readFile(new URL('components/LowCodeFormField.vue', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/block-materials/form/index.vue', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/block-materials/search-form/index.vue', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/visual-converters/helpers.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/block-materials/runtime-form-designer.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/block-materials/runtime-form-field-editor.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('runtime/useLowCodePageRenderer.ts', frameworkRoot), 'utf8'),
   readFile(
     new URL('../../../supabase/migrations/20260826090000_form_input_monaco_component_type.sql', frameworkRoot),
+    'utf8',
+  ),
+  readFile(
+    new URL('../../../supabase/migrations/20260826110000_form_input_on_change_property.sql', frameworkRoot),
     'utf8',
   ),
 ]);
@@ -113,9 +130,59 @@ assert.match(
   'Runtime form fields must default Monaco code inputs to the dialog editor mode.',
 );
 assert.match(
-  migrationSource,
+  formFieldSource,
+  /delete fieldProps\.onChange/,
+  'Code stored in props.onChange must remain a low-code script instead of being passed as a component callback prop.',
+);
+assert.match(
+  formSource,
+  /onChangeScript[\s\S]*?const script = onChangeScript \|\| payload\.field\.updateScript \|\| ''[\s\S]*?script,/,
+  'Form field changes must publish a configured props.onChange script.',
+);
+assert.match(
+  searchFormSource,
+  /onChangeScript[\s\S]*?const script = onChangeScript \|\| payload\.field\.updateScript \|\| ''[\s\S]*?script,/,
+  'Search-form field changes must publish a configured props.onChange script.',
+);
+assert.match(
+  converterHelpersSource,
+  /const onChange = readString\(rawProps\.onChange\)[\s\S]*?delete rawProps\.onChange[\s\S]*?const updateScript = readString\(row\.updateScript, onChange\)/,
+  'Legacy props.onChange values must normalize to the runtime updateScript field.',
+);
+assert.match(
+  runtimeFormDesignerSource,
+  /const updateScript = readString\(field\.updateScript\) \|\| readString\(props\.onChange\)[\s\S]*?delete props\.onChange/,
+  'Runtime form designer conversion must preserve legacy onChange code without passing it as a component prop.',
+);
+assert.match(
+  runtimeFormDesignerSource,
+  /const props = \{[\s\S]*?if \(designerField\) delete props\.onChange[\s\S]*?key === 'updateScript'/,
+  'Clearing a designed onChange value must remove the legacy props.onChange copy before saving.',
+);
+assert.match(
+  runtimeFormFieldEditorSource,
+  /const updateScript = readString\(field\.updateScript\) \|\| readString\(field\.props\?\.onChange\)/,
+  'Runtime form field editing must load legacy onChange code into the script editor.',
+);
+assert.match(
+  pageRendererRuntimeSource,
+  /const actionScript = readString\(event\.payload\?\.script \?\? eventAction\?\.script\)[\s\S]*?executeButtonScript\(actionScript, event\)/,
+  'Published form field scripts must execute through the existing isolated page script runtime.',
+);
+assert.match(
+  componentTypeMigrationSource,
   /'form_input_component_type'[\s\S]*?'lc-monaco-editor'[\s\S]*?v_option_count <> 12/,
   'Existing databases must expose the Monaco code input in the form component selector.',
+);
+assert.match(
+  onChangeMigrationSource,
+  /'array-table'[\s\S]*?'checkbox'[\s\S]*?'datetimePicker'[\s\S]*?'input'[\s\S]*?'picker'[\s\S]*?'radio'[\s\S]*?'rate'[\s\S]*?'slider'[\s\S]*?'stepper'[\s\S]*?'sub-form'[\s\S]*?'switch'/,
+  'Every database-backed form input definition must be included in the onChange property migration.',
+);
+assert.match(
+  onChangeMigrationSource,
+  /'field', 'onChange'[\s\S]*?'target', 'props'[\s\S]*?'path', 'onChange'[\s\S]*?'component', 'lc-monaco-editor'/,
+  'The migrated onChange property must use the dialog-based Monaco editor.',
 );
 
 console.log('Low-code Monaco editor dialog regression test passed.');

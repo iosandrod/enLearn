@@ -64,6 +64,7 @@ const renderField = computed<LowCodeField>(() => {
     ...(props.field.props ?? {}),
   };
   delete fieldProps.visibleWhen;
+  delete fieldProps.onChange;
 
   if (props.field.component === 'lc-monaco-editor') {
     fieldProps.dialog = fieldProps.dialog !== false;

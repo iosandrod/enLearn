@@ -135,6 +135,7 @@ function createEditorModel(block: RuntimeFormBlock, field: LowCodeField): FieldE
     : hasLiteralDefault
       ? 'literal'
       : 'none';
+  const updateScript = readString(field.updateScript) || readString(field.props?.onChange);
 
   return {
     field: field.field,
@@ -152,7 +153,7 @@ function createEditorModel(block: RuntimeFormBlock, field: LowCodeField): FieldE
     defaultValueScript: field.defaultValueScript ?? '',
     defaultValueProcedure: field.defaultValueProcedure ?? '',
     optionsCode: field.optionsCode ?? '',
-    updateScript: field.updateScript ?? '',
+    updateScript,
     validationScript: field.validationScript ?? '',
     validationMessage: field.validationMessage ?? `${field.label}校验不通过`,
   };
@@ -214,6 +215,11 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
     ...(rules.length ? { rules } : {}),
   };
   const props = cloneValue(updated.props ?? {});
+  const legacyOnChange = readString(props.onChange);
+  delete props.onChange;
+  if (!readString(updated.updateScript) && legacyOnChange) {
+    updated.updateScript = legacyOnChange;
+  }
   const configuredRelateInfo = normalizeRelateInfoConfig(values.relateInfoConfig);
   const relateInfoConfig = component === 'base-info' && !Object.keys(configuredRelateInfo).length
     ? createDefaultRelateInfoConfig(field.field)

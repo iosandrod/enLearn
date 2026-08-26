@@ -47,6 +47,8 @@ function mergeRules(originalRules: LowCodeRule[] = [], designedRules: LowCodeRul
 function runtimeFieldToDesignerField(field: LowCodeField): FormDesignerField {
   const props = cloneValue(field.props ?? {});
   const placeholder = typeof props.placeholder === 'string' ? props.placeholder : '';
+  const updateScript = readString(field.updateScript) || readString(props.onChange);
+  delete props.onChange;
 
   return {
     field: field.field,
@@ -56,6 +58,7 @@ function runtimeFieldToDesignerField(field: LowCodeField): FormDesignerField {
     required: field.rules?.some((rule) => rule.required === true) ?? false,
     span: field.span,
     help: field.help,
+    ...(updateScript ? { updateScript } : {}),
     optionsJson: field.options?.length ? JSON.stringify(field.options) : '',
     propsJson: Object.keys(props).length ? JSON.stringify(props) : '',
     props,
@@ -152,6 +155,7 @@ function mergeField(
     ...originalProps,
     ...cloneValue(designed.props ?? {}),
   };
+  if (designerField) delete props.onChange;
   const rules = mergeRules(original.rules, designed.rules);
   const merged: LowCodeField = {
     ...cloneValue(original),
@@ -168,6 +172,14 @@ function mergeField(
     'validationScript',
     'validationMessage',
   ] as const) {
+    if (key === 'updateScript' && designerField) {
+      const updateScript =
+        readString(designerField.updateScript) ||
+        readString(designerField.props?.onChange);
+      if (updateScript) merged.updateScript = updateScript;
+      else delete merged.updateScript;
+      continue;
+    }
     if (typeof original[key] !== 'undefined') {
       Object.assign(merged, { [key]: original[key] });
     }

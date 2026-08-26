@@ -32,19 +32,39 @@ declare
   );
   v_tabs jsonb;
   v_has_events_tab boolean;
+  v_fields jsonb;
 begin
   if value is null or value->>'componentKey' is null then
     return value;
   end if;
 
+  select coalesce(
+    jsonb_agg(
+      case
+        when field_item.value->>'field' = 'onChange' then
+          (v_field || field_item.value || jsonb_build_object(
+            'target', 'props',
+            'path', 'onChange',
+            'component', 'lc-monaco-editor',
+            'valueKind', 'string'
+          )) || jsonb_build_object(
+            'props', v_field->'props' || coalesce(field_item.value->'props', '{}'::jsonb)
+          )
+        else field_item.value
+      end
+      order by field_item.ordinality
+    ),
+    '[]'::jsonb
+  )
+  into v_fields
+  from jsonb_array_elements(coalesce(v_schema->'fields', '[]'::jsonb))
+    with ordinality field_item(value, ordinality);
+
   if not coalesce(v_schema->'fields', '[]'::jsonb) @> '[{"field":"onChange"}]'::jsonb then
-    v_schema := jsonb_set(
-      v_schema,
-      '{fields}',
-      coalesce(v_schema->'fields', '[]'::jsonb) || jsonb_build_array(v_field),
-      true
-    );
+    v_fields := v_fields || jsonb_build_array(v_field);
   end if;
+
+  v_schema := jsonb_set(v_schema, '{fields}', v_fields, true);
 
   select exists (
     select 1

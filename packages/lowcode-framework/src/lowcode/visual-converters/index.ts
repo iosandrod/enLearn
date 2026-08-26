@@ -282,6 +282,7 @@ function createFormDesignerFieldBlock(
   };
   const componentKey = componentMap[field.component ?? ''] ?? 'input';
   const props = isPlainRecord(field.props) ? field.props : {};
+  const onChange = readString(field.updateScript, readString(props.onChange));
   const block = {
     _vid: toVisualId(field.field, `form_field_${index}`),
     moduleName: 'formComponents',
@@ -301,6 +302,7 @@ function createFormDesignerFieldBlock(
       __formSpan: field.span ?? 1,
       __formHelp: readString(field.help),
       __lowcodeOptionsCode: readString(field.optionsCode),
+      ...(onChange ? { onChange } : {}),
     },
     draggable: true,
     showStyleConfig: true,
@@ -489,6 +491,7 @@ function createFormDesignerModelFromSchema(
 
 function runtimeFieldToVisualField(field: LowCodeField) {
   const props = isPlainRecord(field.props) ? field.props : {};
+  const onChange = readString(field.updateScript, readString(props.onChange));
   const required = Array.isArray(field.rules)
     ? field.rules.some((rule) => rule?.required)
     : false;
@@ -512,7 +515,7 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     ...(field.defaultValueProcedure
       ? { defaultValueProcedure: field.defaultValueProcedure }
       : {}),
-    ...(field.updateScript ? { updateScript: field.updateScript } : {}),
+    ...(onChange ? { updateScript: onChange } : {}),
     ...(field.validationScript ? { validationScript: field.validationScript } : {}),
     ...(field.validationMessage ? { validationMessage: field.validationMessage } : {}),
     ...(field.span ? { span: field.span } : {}),
@@ -943,6 +946,7 @@ function convertRuntimeBlockToVisual(
               labelField: readString(block.labelField, 'reference'),
               statusField: readString(block.statusField, 'status'),
               colorField: readString(block.colorField, 'gantt_color'),
+              settingsFormCode: readString(block.settingsFormCode),
             }
           : {
               ...commonProps,

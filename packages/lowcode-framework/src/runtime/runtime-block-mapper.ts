@@ -180,7 +180,7 @@ export class RuntimeBlockMapper {
       defaultValueType: readString(field.defaultValueType),
       defaultValueScript: readString(field.defaultValueScript),
       defaultValueProcedure: readString(field.defaultValueProcedure),
-      updateScript: readString(field.updateScript),
+      updateScript: readString(field.updateScript, readString(props.onChange)),
       validationScript: readString(field.validationScript),
       validationMessage: readString(field.validationMessage),
       span: field.span ?? '',

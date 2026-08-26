@@ -339,8 +339,10 @@ function readString(value: unknown) {
 }
 
 .lowcode-category-drawer.is-collapsed {
-  flex-basis: 36px;
-  width: 36px;
+  flex-basis: 20px;
+  width: 20px;
+  border-right: 0;
+  background: transparent;
 }
 
 .lc-category-drawer__header {
@@ -358,6 +360,11 @@ function readString(value: unknown) {
   justify-content: center;
   padding: 0;
   border-bottom-color: transparent;
+}
+
+.is-collapsed .lc-category-drawer__collapse {
+  flex-basis: 20px;
+  width: 20px;
 }
 
 .lc-category-drawer__title {
@@ -452,7 +459,7 @@ function readString(value: unknown) {
   }
 
   .lowcode-category-drawer.is-collapsed {
-    width: 36px;
+    width: 20px;
     box-shadow: none;
   }
 }

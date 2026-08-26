@@ -22,5 +22,6 @@ export default createPlanningVisualDesigner({
     labelField: props.labelField || 'reference',
     statusField: props.statusField || 'status',
     colorField: props.colorField || 'gantt_color',
+    settingsFormCode: props.settingsFormCode || undefined,
   }),
 });

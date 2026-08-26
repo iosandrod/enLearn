@@ -738,6 +738,8 @@ export type LowCodePagePlanningGanttBlock = LowCodeMaterialVersionedBlock & {
   colorField?: string;
   statusField?: string;
   includedTypes?: string[];
+  /** Database-backed low-code form definition code for timeline display conditions. */
+  settingsFormCode?: string;
 };
 
 export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {

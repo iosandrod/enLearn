@@ -127,12 +127,16 @@ function handleFieldChange(payload: {
   previousValue: unknown;
   values: Record<string, unknown>;
 }) {
+  const onChangeScript = typeof payload.field.props?.onChange === 'string'
+    ? payload.field.props.onChange.trim()
+    : '';
+  const script = onChangeScript || payload.field.updateScript || '';
   emitRuntimeEvent('searchForm.fieldChange', {
     ...payload,
     field: payload.field.field,
     fieldConfig: payload.field,
     directives: payload.field.events?.change ?? payload.field.events?.onChange ?? [],
-    script: payload.field.updateScript ?? '',
+    script,
   });
 }
 

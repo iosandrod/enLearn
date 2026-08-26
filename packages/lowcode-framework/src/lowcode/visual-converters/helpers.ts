@@ -244,7 +244,6 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   const defaultValueType = readString(row.defaultValueType);
   const defaultValueScript = readString(row.defaultValueScript);
   const defaultValueProcedure = readString(row.defaultValueProcedure);
-  const updateScript = readString(row.updateScript);
   const validationScript = readString(row.validationScript);
   const validationMessage = readString(row.validationMessage);
   const placeholder = readString(row.placeholder);
@@ -254,6 +253,9 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     ...(isPlainRecord(row.props) ? cloneJson(row.props) : {}),
     ...readJsonObject(row.propsJson, {}),
   };
+  const onChange = readString(rawProps.onChange);
+  delete rawProps.onChange;
+  const updateScript = readString(row.updateScript, onChange);
   const props: Record<string, unknown> = {
     ...rawProps,
     ...(placeholder ? { placeholder, clearable: true } : {}),
