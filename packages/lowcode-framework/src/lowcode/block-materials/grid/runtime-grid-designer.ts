@@ -205,6 +205,11 @@ function createRuntimeGridSchema(
   else delete schema.events;
   if (Object.keys(eventNames).length) schema.eventNames = eventNames;
   else delete schema.eventNames;
+  if (result.detailConfig.enabled) {
+    schema.detailConfig = cloneValue(result.detailConfig);
+  } else {
+    delete schema.detailConfig;
+  }
 
   return schema;
 }
@@ -301,6 +306,7 @@ export async function openRuntimeGridDesigner(
       postDataJson: stringifyJson(createDesignerPostData(source)),
       showRowActions: hasRuntimeRowActions(block),
     },
+    detailConfig: cloneValue(block.schema.detailConfig ?? {}),
     columns: cloneValue(columns),
     gridOptions: cloneValue(gridOptions),
     gridEvents: createDesignerEvents(block),

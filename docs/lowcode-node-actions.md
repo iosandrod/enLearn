@@ -1,6 +1,6 @@
 # 低代码 Node 可执行 Action 清单
 
-> 本文依据当前低代码运行时源码整理，更新于 2026-08-10。
+> 本文依据当前低代码运行时与数据库定义整理，更新于 2026-08-26。
 >
 > 脚本公共 API 的目标边界参见：[低代码脚本三入口架构](./lowcode-three-entry-script-architecture.md)。
 
@@ -9,7 +9,7 @@
 项目中与 Action 有关的能力分为三层，配置时不要混用：
 
 1. **节点方法（Node Action）**  
-   在按钮脚本或页面函数中通过 `this.executeAction({ node, method, ... })` 直接调用。每类 Node 在 `runtime/node-action/*-action.ts` 中维护自己的合法方法，`node-action-registry.ts` 只负责聚合。
+   在按钮脚本或页面函数中通过 `this.executeAction({ node, method, ... })` 直接调用。合法方法、参数元数据和 QuickJS 源码统一保存在全局表 `lowcode_node_actions`；页面记录不保存 Action，也不关联页面 ID。
 2. **交互动作（Runtime Event）**  
    用户点击按钮、提交表单、选择表格行等操作会发布运行时事件。事件可执行 `directives`、按钮 `script`，也可匹配页面级 `eventHandlers`。
 3. **页面内置动作（Page Function）**  
@@ -39,9 +39,9 @@ async function main() {
 | `tabs` | 标签页 | 无 | 页签切换会派发浏览器事件 `lowcode:tab-activated`，不是低代码运行时事件 |
 | `toolbar` | 工具栏 | 无 | 工具栏按钮点击、路由跳转、脚本、指令、刷新 |
 | `buttonGroup` | 按钮组 | 无 | 普通按钮和下拉按钮点击、路由跳转、脚本、指令、页面内置动作 |
-| `form` | 表单 | `setData`、`validate`、`getData`、`refreshOptions`、`resetData` | 提交、普通动作、字段变化、保存完成 |
+| `form` | 表单 | `loadData`（仅编辑表单）、`setData`、`validate`、`getData`、`refreshOptions`、`resetData` | 提交、普通动作、字段变化、保存完成 |
 | `searchForm` | 查询表单 | `setData`、`validate`、`getData`、`refreshOptions`、`resetData` | 查询、重置、普通动作、字段变化 |
-| `grid` | 表格 | `loadData`、`reloadData`、`validate`、`addRow`、`deleteCurrentRow` | 工具栏、编辑、删除、行按钮、选择、双击、VXE 表格事件、右键菜单 |
+| `grid` | 表格 | `loadData`、`reloadData`、`getChanges`、`validate`、`addRow`、`deleteCurrentRow` | 工具栏、编辑、删除、行按钮、选择、双击、VXE 表格事件、右键菜单 |
 | `detail` | 详情 | 无 | 无 |
 | `modal` | 弹框 | `open` | 关闭、透传子节点动作和事件 |
 | `drawer` | 抽屉 | `open` | 透传子节点动作和事件 |
@@ -455,16 +455,16 @@ type LowCodeEventHandler = {
 
 ## 8. 维护入口
 
-- Node Action 共享类型及导出：[`node-action/index.ts`](../packages/lowcode-framework/src/runtime/node-action/index.ts)
-- ButtonGroup 定义：[`button-group-action.ts`](../packages/lowcode-framework/src/runtime/node-action/button-group-action.ts)
-- Form/SearchForm 定义与执行器：[`form-action.ts`](../packages/lowcode-framework/src/runtime/node-action/form-action.ts)
-- Grid 定义与执行器：[`grid-action.ts`](../packages/lowcode-framework/src/runtime/node-action/grid-action.ts)
-- Node 类型聚合注册表：[`node-action-registry.ts`](../packages/lowcode-framework/src/runtime/node-action-registry.ts)
-- Runtime Context 适配：[`LowCodePageRenderer.vue`](../packages/lowcode-framework/src/components/LowCodePageRenderer.vue)
+- 数据表、内置 Action 和旧选项源清理：[`20260826220000_database_node_actions.sql`](../supabase/migrations/20260826220000_database_node_actions.sql)
+- CRUD 资源与权限：[`lowcode.resources.ts`](../api/src/lowcode-service/lowcode.resources.ts)
+- 运行页面附加全局 Action：[`lowcode.service.ts`](../api/src/lowcode-service/lowcode.service.ts)
+- 数据库 Action 查询与适用条件：[`node-action-registry.ts`](../packages/lowcode-framework/src/runtime/node-action-registry.ts)
+- QuickJS 执行与通用 Node Host Bridge：[`lowcode-page-script-runtime.ts`](../packages/lowcode-framework/src/runtime/lowcode-page-script-runtime.ts)
+- Worker 的 `$node.call` 能力：[`script-runtime.worker.ts`](../packages/lowcode-framework/src/runtime/script-runtime.worker.ts)
 - Runtime Directive 注册表：[`directives.ts`](../packages/lowcode-framework/src/runtime/directives.ts)
 - Runtime Event 匹配和指令合并：[`event-system.ts`](../packages/lowcode-framework/src/lowcode/event-system.ts)
 - 常用按钮动作预设：[`builtins.ts`](../packages/lowcode-framework/src/lowcode/actions/builtins.ts)
 - 列表页/编辑页内置页面函数：[`page-function/`](../packages/lowcode-framework/src/runtime/page-function/index.ts)
 - 各 Node 的交互实现：[`block-materials`](../packages/lowcode-framework/src/lowcode/block-materials)
 
-新增节点方法时，应在对应的 `*-action.ts` 中同时增加 Method 定义和 executor，再由 `lowCodeNodeActionRegistry` 聚合该 Node Definition，并同步更新本文；不要只在按钮脚本中约定一个未注册的 method。
+新增节点方法时，直接向 `lowcode_node_actions` 写入 Node 类型、方法元数据和 `source_code`。脚本只能通过 `$node.call(command, payload)` 使用通用 Host Bridge；不要在前端新增某个 Action 专用的 TypeScript executor。

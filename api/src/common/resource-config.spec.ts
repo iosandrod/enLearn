@@ -79,13 +79,52 @@ assert.deepEqual(createConfig.input_allowed_fields, roleResource.create?.allowed
 assert.ok((createConfig.allowed_fields as string[]).includes('created_at'));
 assert.ok((createConfig.allowed_fields as string[]).includes('created_by'));
 
-assert.equal(
-  adminResources.sales_orders.detailRelations?.sales_order_lines?.updateMode,
-  'changes'
-);
+assert.equal(adminResources.sales_orders.detailRelations, undefined);
 assert.ok(adminResources.sales_order_lines.create);
 assert.ok(adminResources.sales_order_lines.update);
 assert.ok(adminResources.sales_order_lines.delete);
+assert.ok(adminResources.system_option_items.delete);
+assert.deepEqual(
+  adminResources.system_option_items.databaseHooks?.afterDelete,
+  {
+    function: 'public.dynamic_crud_prevent_system_row_delete',
+    args: { message: 'System option items cannot be deleted.' }
+  }
+);
+
+const dynamicSalesConfig = adminService.buildDynamicCrudConfig({
+  action: 'update',
+  serviceName: 'admin',
+  resourceName: 'sales_orders',
+  resource: adminResources.sales_orders,
+  input: {},
+  data: {},
+  filters: undefined,
+  context: {} as ServiceContext,
+  client: {},
+  ids: [],
+  meta: {
+    requestDetailRelations: {
+      sales_order_lines: {
+        resource: 'sales_order_lines',
+        foreignKey: 'order_id',
+        parentKey: 'id',
+        inheritFields: ['account_id'],
+        updateMode: 'changes'
+      }
+    }
+  }
+});
+assert.deepEqual(
+  (dynamicSalesConfig.detail_relations as Record<string, unknown>).sales_order_lines,
+  {
+    resource: 'sales_order_lines',
+    foreign_key: 'order_id',
+    parent_key: 'id',
+    inherit_fields: ['account_id'],
+    update_mode: 'changes'
+  }
+);
 
 const transactionalResources = [
   'admin_roles',

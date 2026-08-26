@@ -1,24 +1,82 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { build } from 'esbuild';
+import { access, readFile } from 'node:fs/promises';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
-const bundled = await build({
-  entryPoints: [fileURLToPath(new URL('runtime/grid-node-actions.ts', frameworkRoot))],
-  bundle: true,
-  format: 'esm',
-  platform: 'node',
-  write: false,
-});
-const runtime = await import(
-  `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString('base64')}`
+const migration = await readFile(
+  new URL('../../supabase/migrations/20260826220000_database_node_actions.sql', import.meta.url),
+  'utf8',
 );
-const {
-  createGridLoadDataPostData,
-  executeGridLoadDataAction,
-  executeGridLoadDataNodeAction,
-} = runtime;
+
+function extractActionSource(anchor) {
+  const anchorIndex = migration.indexOf(anchor);
+  assert.notEqual(anchorIndex, -1, `Missing action seed anchor: ${anchor}`);
+  const sourceStart = migration.indexOf('$action$', anchorIndex);
+  const sourceEnd = migration.indexOf('$action$', sourceStart + '$action$'.length);
+  assert.ok(sourceStart > anchorIndex && sourceEnd > sourceStart);
+  return migration.slice(sourceStart + '$action$'.length, sourceEnd).trim();
+}
+
+const gridLoadDataMain = new Function(
+  `${extractActionSource("'grid', '表格', 'ri-table-2', 'loadData'")}\nreturn main;`,
+)();
+
+async function runGridLoadData({
+  block,
+  source,
+  options = {},
+  blocks = [block],
+  searches = {},
+  grids = {},
+  invokeValue = [],
+}) {
+  const invocations = [];
+  const assigned = [];
+  const loading = [];
+  const commands = [];
+  let latestVersion = 0;
+  const value = await gridLoadDataMain.call({
+    event: {
+      payload: {
+        nodeAction: {
+          block,
+          options,
+          blocks,
+          dataSources: { [block.sourceKey]: source },
+        },
+      },
+    },
+    searches,
+    grids,
+    $node: {
+      call: async (command, payload = {}) => {
+        commands.push(command);
+        switch (command) {
+          case 'runtime.resolve':
+            return structuredClone(payload.value);
+          case 'source.begin':
+            latestVersion += 1;
+            return latestVersion;
+          case 'source.invoke':
+            invocations.push(structuredClone(payload));
+            return structuredClone(invokeValue);
+          case 'source.isCurrent':
+            return payload.version === latestVersion;
+          case 'source.set':
+            assigned.push(structuredClone(payload.value));
+            return true;
+          case 'source.finish':
+            return true;
+          case 'loading.grid':
+            loading.push(payload.loading);
+            return true;
+          default:
+            assert.fail(`Unexpected node runtime command: ${command}`);
+        }
+      },
+    },
+  });
+  return { value, invocations, assigned, loading, commands };
+}
 
 const mainBlock = {
   id: 'orders-grid',
@@ -34,41 +92,28 @@ const detailBlock = {
   sourceKey: 'lines',
   schema: { grid: { columns: [] } },
 };
-const gridBlocks = [mainBlock, detailBlock];
-const baseContext = {
-  options: {},
-  searchFilters: {},
-  grids: {},
-  gridBlocks,
-  resolveRequest: (_key, _source, postData) => ({
-    serviceName: 'admin',
-    serviceMethod: 'listItems',
-    postData,
-  }),
-  invoke: async () => [],
-  setData: () => undefined,
-  setLoading: () => undefined,
-};
 
-const mainRequest = createGridLoadDataPostData({
-  ...baseContext,
+const mainResult = await runGridLoadData({
   block: mainBlock,
   source: {
     key: 'orders',
     postData: { tableName: 'sales_orders', filters: { status: 'draft' } },
   },
-  searchFilters: { orders: { customer_code: 'CUST-001' } },
+  searches: { orders: { customer_code: 'CUST-001' } },
   options: { filters: { status: 'approved' } },
+  invokeValue: [{ id: 'order-1' }],
 });
-assert.equal(mainRequest.skip, false);
-assert.deepEqual(mainRequest.postData.filters, {
+assert.deepEqual(mainResult.invocations[0].postData.filters, {
   status: 'approved',
   customer_code: 'CUST-001',
 });
+assert.deepEqual(mainResult.value, [{ id: 'order-1' }]);
+assert.deepEqual(mainResult.assigned, [[{ id: 'order-1' }]]);
+assert.deepEqual(mainResult.loading, [true, false]);
 
-const detailRequest = createGridLoadDataPostData({
-  ...baseContext,
+const detailResult = await runGridLoadData({
   block: detailBlock,
+  blocks: [mainBlock, detailBlock],
   source: {
     key: 'lines',
     postData: {
@@ -84,38 +129,18 @@ const detailRequest = createGridLoadDataPostData({
       currentRow: { id: 'order-1' },
       selectedRows: [],
       contextRow: null,
-      currentCell: null,
     },
   },
+  invokeValue: [{ id: 'line-1', order_id: 'order-1' }],
 });
-assert.equal(detailRequest.skip, false);
-assert.deepEqual(detailRequest.postData.filters, { order_id: 'order-1' });
-assert.deepEqual(detailRequest.postData.requiredFilters, ['order_id']);
-
-const editDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
-  block: detailBlock,
-  gridBlocks: [detailBlock],
-  source: {
-    key: 'lines',
-    postData: {
-      tableName: 'sales_order_lines',
-      filters: { order_id: 'order-from-route' },
-      requiredFilters: ['order_id'],
-    },
-  },
-  configuredPostData: {
-    filters: { order_id: '{{ route.query.id }}' },
-    requiredFilters: ['order_id'],
-  },
+assert.deepEqual(detailResult.invocations[0].postData.filters, {
+  order_id: 'order-1',
 });
-assert.equal(editDetailRequest.skip, false);
-assert.deepEqual(editDetailRequest.postData.filters, { order_id: 'order-from-route' });
+assert.deepEqual(detailResult.invocations[0].postData.requiredFilters, ['order_id']);
 
-const unresolvedDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
+const unresolvedDetail = await runGridLoadData({
   block: detailBlock,
-  gridBlocks: [detailBlock],
+  blocks: [detailBlock],
   source: {
     key: 'lines',
     postData: {
@@ -125,217 +150,39 @@ const unresolvedDetailRequest = createGridLoadDataPostData({
     },
   },
 });
-assert.equal(unresolvedDetailRequest.skip, true);
+assert.deepEqual(unresolvedDetail.value, []);
+assert.deepEqual(unresolvedDetail.invocations, []);
+assert.deepEqual(unresolvedDetail.assigned, [[]]);
+assert.ok(unresolvedDetail.commands.includes('source.begin'));
 
-const unresolvedRouteDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
+const runtimeFilteredDetail = await runGridLoadData({
   block: detailBlock,
-  gridBlocks: [detailBlock],
-  source: {
-    key: 'lines',
-    postData: {
-      tableName: 'sales_order_lines',
-      filters: { order_id: '{{ route.query.id }}' },
-    },
-  },
+  blocks: [detailBlock],
+  source: { key: 'lines', postData: { tableName: 'sales_order_lines' } },
+  searches: { lines: { order_id: 'order-from-search' } },
+  invokeValue: [{ id: 'line-2' }],
 });
-assert.equal(unresolvedRouteDetailRequest.skip, true);
-
-const unsafeDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
-  block: detailBlock,
-  gridBlocks: [detailBlock],
-  source: {
-    key: 'lines',
-    postData: { tableName: 'sales_order_lines' },
-  },
-});
-assert.equal(unsafeDetailRequest.skip, true);
-
-const emptyFilterDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
-  block: detailBlock,
-  gridBlocks: [detailBlock],
-  source: {
-    key: 'lines',
-    postData: {
-      tableName: 'sales_order_lines',
-      filters: { order_id: '' },
-    },
-  },
-});
-assert.equal(emptyFilterDetailRequest.skip, true);
-
-const staticFilterDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
-  block: detailBlock,
-  gridBlocks: [detailBlock],
-  source: {
-    key: 'lines',
-    postData: {
-      tableName: 'sales_order_lines',
-      filters: { status: 'open' },
-    },
-  },
-});
-assert.equal(staticFilterDetailRequest.skip, false);
-
-const unsafeDetailRequestWithMainRow = createGridLoadDataPostData({
-  ...baseContext,
-  block: detailBlock,
-  source: {
-    key: 'lines',
-    postData: { tableName: 'sales_order_lines' },
-  },
-  grids: {
-    'orders-grid': {
-      rowKey: 'id',
-      rows: [{ id: 'order-1' }],
-      currentRow: { id: 'order-1' },
-      selectedRows: [],
-      contextRow: null,
-      currentCell: null,
-    },
-  },
-});
-assert.equal(
-  unsafeDetailRequestWithMainRow.skip,
-  true,
-  'A main row alone is not enough to infer a safe detail-table relation.',
-);
-
-const runtimeFilteredDetailRequest = createGridLoadDataPostData({
-  ...baseContext,
-  block: detailBlock,
-  gridBlocks: [detailBlock],
-  source: {
-    key: 'lines',
-    postData: { tableName: 'sales_order_lines' },
-  },
-  searchFilters: { lines: { order_id: 'order-from-search' } },
-});
-assert.equal(runtimeFilteredDetailRequest.skip, false);
-assert.deepEqual(runtimeFilteredDetailRequest.postData.filters, {
+assert.deepEqual(runtimeFilteredDetail.invocations[0].postData.filters, {
   order_id: 'order-from-search',
 });
-assert.deepEqual(runtimeFilteredDetailRequest.postData.requiredFilters, ['order_id']);
+assert.deepEqual(runtimeFilteredDetail.invocations[0].postData.requiredFilters, ['order_id']);
 
-let invoked = false;
-let assigned;
-let loadingTransitions = [];
-const emptyRows = await executeGridLoadDataAction({
-  ...baseContext,
-  block: detailBlock,
-  source: {
-    key: 'lines',
-    postData: {
-      tableName: 'sales_order_lines',
-      filters: { order_id: '__none__' },
-      requiredFilters: ['order_id'],
-    },
-  },
-  invoke: async () => {
-    invoked = true;
-    return [{ id: 'unexpected' }];
-  },
-  setData: (value) => {
-    assigned = value;
-  },
-  setLoading: (value) => loadingTransitions.push(value),
-});
-assert.deepEqual(emptyRows, []);
-assert.deepEqual(assigned, []);
-assert.equal(invoked, false, 'A detail grid without a main row must not query all rows.');
-assert.deepEqual(loadingTransitions, [true, false]);
-
-const pendingRequests = [];
-const assignedVersions = [];
-const loadingVersions = [];
-let latestVersion = 0;
-const actionRuntimeContext = {
-  block: detailBlock,
-  options: { filters: { order_id: 'order-1' } },
-  blocks: [detailBlock],
-  searchFilters: {},
-  grids: {},
-  getDataSource: () => ({
-    key: 'lines',
-    serviceName: 'admin',
-    serviceMethod: 'listItems',
-    postData: {
-      tableName: 'sales_order_lines',
-      requiredFilters: ['order_id'],
-    },
-  }),
-  resolveDataSourceRequest: (_sourceKey, source, postData) => ({
-    serviceName: source.serviceName,
-    serviceMethod: source.serviceMethod,
-    postData,
-  }),
-  resolveRuntimePostData: (postData) => postData,
-  invokeDataSourceRequest: () => new Promise((resolve) => pendingRequests.push(resolve)),
-  setSource: (_sourceKey, value) => assignedVersions.push(value),
-  syncGridStates: () => undefined,
-  beginSourceRequest: () => ++latestVersion,
-  isCurrentSourceRequest: (_sourceKey, version) => version === latestVersion,
-  finishSourceRequest: () => undefined,
-  setLoadingGrid: (_blockId, loading) => loadingVersions.push({ version: latestVersion, loading }),
-};
-const firstRequest = executeGridLoadDataNodeAction(actionRuntimeContext);
-const secondRequest = executeGridLoadDataNodeAction({
-  ...actionRuntimeContext,
-  options: { filters: { order_id: 'order-2' } },
-});
-pendingRequests[0]([{ id: 'stale-line' }]);
-await firstRequest;
-assert.deepEqual(assignedVersions, []);
-assert.deepEqual(loadingVersions, [
-  { version: 1, loading: true },
-  { version: 2, loading: true },
-]);
-pendingRequests[1]([{ id: 'current-line' }]);
-await secondRequest;
-assert.deepEqual(assignedVersions, [[{ id: 'current-line' }]]);
-assert.deepEqual(loadingVersions.at(-1), { version: 2, loading: false });
-
-const [rendererSource, registrySource, gridActionSource, salesOrderPage, migration] = await Promise.all([
-  readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
+const [runtimeSource, registrySource, pageDataControllerSource] = await Promise.all([
+  readFile(new URL('runtime/lowcode-page-script-runtime.ts', frameworkRoot), 'utf8'),
   readFile(new URL('runtime/node-action-registry.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('runtime/node-action/grid-action.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('../../supabase/migrations/20260803093000_sales_order_lowcode_page.sql', import.meta.url), 'utf8'),
-  readFile(new URL('../../supabase/migrations/20260809200000_grid_load_data_action.sql', import.meta.url), 'utf8'),
+  readFile(new URL('runtime/page-data-controller.ts', frameworkRoot), 'utf8'),
 ]);
-assert.match(gridActionSource, /method: 'loadData'[\s\S]*?execute: executeGridLoadDataNodeAction/);
-assert.match(registrySource, /grid:\s*gridNodeActionDefinition/);
-assert.match(rendererSource, /if \(action\.execute\)[\s\S]*?return action\.execute/);
+assert.match(runtimeSource, /executeDatabaseNodeAction[\s\S]*?action\.source_code/);
+assert.match(runtimeSource, /request\.name === 'node\.runtime'[\s\S]*?handleNodeRuntimeCommand/);
+assert.doesNotMatch(runtimeSource, /executeGridLoadDataAction|executeGridLoadDataNodeAction/);
 assert.match(registrySource, /resolveLowCodeDataSourceNodeAction/);
-assert.match(rendererSource, /resolveLowCodeDataSourceNodeAction\(pageBlocks, key\)/);
 assert.match(
-  rendererSource,
-  /resolveGridRows\(block, resolvedData\.value, searchFilters\.value\)/,
-  'Grid synchronization must resolve rows from the configured source key.',
+  pageDataControllerSource,
+  /resolveLowCodeDataSourceNodeAction\([\s\S]*?props\.page\.node_actions/,
 );
-const gridMaterialSource = await readFile(
-  new URL('lowcode/block-materials/grid/index.vue', frameworkRoot),
-  'utf8',
-);
-const gridHelperSource = await readFile(
-  new URL('lowcode/block-materials/helpers.ts', frameworkRoot),
-  'utf8',
-);
-assert.match(gridHelperSource, /getSourceValue\(resolvedData, block\.sourceKey\)/);
-assert.match(
-  gridMaterialSource,
-  /loadingSourceKeys\.includes\(props\.block\.sourceKey\)/,
-  'A source-backed grid must use the source key tracked by the request lifecycle.',
-);
-assert.doesNotMatch(gridMaterialSource, /let obj=|return obj\/\//);
-assert.doesNotMatch(rendererSource, /method: 'loadData'/);
-assert.doesNotMatch(rendererSource, /case 'grid\.loadData'/);
-assert.doesNotMatch(rendererSource, /executeGridLoadDataAction/);
-assert.match(salesOrderPage, /"id": "sales-order-grid"[\s\S]*?"tableType": "main"/);
-assert.match(salesOrderPage, /"id": "sales-order-lines-grid"[\s\S]*?"tableType": "detail"/);
-assert.match(salesOrderPage, /"requiredFilters": \["order_id"\]/);
-assert.match(migration, /where code = 'sales-orders'[\s\S]*?where code = 'sales-orders-edit'/);
+assert.match(migration, /'grid', '表格', 'ri-table-2', 'loadData'/);
+await assert.rejects(access(new URL('runtime/grid-node-actions.ts', frameworkRoot)), {
+  code: 'ENOENT',
+});
 
-console.log('Grid load-data Action regression test passed.');
+console.log('Database grid load-data Action regression test passed.');

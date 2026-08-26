@@ -284,7 +284,6 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   const executeIsolatedScript = scriptRuntime.executeIsolatedScript;
   const executeButtonScript = scriptRuntime.executeButtonScript;
   const executeScriptNodeAction = scriptRuntime.executeNodeAction;
-  pageDataController.setScriptRuntime(scriptRuntime);
   onMounted(() => {
     void preloadLowCodeScriptRuntime().catch(() => undefined);
   });
@@ -380,6 +379,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
         route: props.page.route,
         title: props.page.title,
         page_type: props.page.page_type,
+        node_actions: props.page.node_actions,
         mode: props.page.page_type === 'edit'
           ? builtinPageFunctionMode.value
           : undefined,

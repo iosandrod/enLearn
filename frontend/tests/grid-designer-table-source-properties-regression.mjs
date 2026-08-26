@@ -14,15 +14,19 @@ const [
   rendererSource,
   frontendSchemaSource,
   apiSchemaSource,
+  gridDesignerMigrationSource,
+  runtimeMapperSource,
 ] = await Promise.all([
   readSource('../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx'),
   readSource('../../packages/lowcode-framework/src/lowcode/block-materials/grid/runtime-grid-designer.ts'),
   readSource('../../packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue'),
   readSource('../../packages/lowcode-framework/src/lowcode/visual-converters/lowcode-grid/index.ts'),
   readSource('../../packages/lowcode-framework/src/lowcode/visual-converters/index.ts'),
-  readSource('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue'),
+  readSource('../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts'),
   readSource('../../packages/lowcode-framework/src/lowcode/schema.ts'),
   readSource('../../api/src/lowcode-service/lowcode.schema.ts'),
+  readSource('../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql'),
+  readSource('../../packages/lowcode-framework/src/runtime/runtime-block-mapper.ts'),
 ]);
 
 for (const [field, label] of [
@@ -31,8 +35,8 @@ for (const [field, label] of [
   ['viewName', '关联视图'],
 ]) {
   assert.match(
-    designerSource,
-    new RegExp(`field: '${field}'[\\s\\S]*?label: '${label}'`),
+    gridDesignerMigrationSource,
+    new RegExp(`"field": "${field}"[\\s\\S]*?"label": "${label}"`),
     `${label} must be present in the table basic-information form.`,
   );
 }
@@ -43,15 +47,20 @@ for (const [label, value] of [
   ['default', 'default'],
 ]) {
   assert.ok(
-    designerSource.includes(`{ label: '${label}', value: '${value}' }`),
+    gridDesignerMigrationSource.includes(`{ "label": "${label}", "value": "${value}" }`),
     `${label} must be a selectable table type.`,
   );
 }
 
 assert.match(
+  gridDesignerMigrationSource,
+  /"field": "tableName"[\s\S]*"optionsCode": "physical_table_name"/,
+  'Real-table selection must resolve options through the database schema.',
+);
+assert.match(
   designerSource,
-  /'lowcode', 'listTableColumns'[/\s\S]*field: 'tableName'[/\s\S]*optionsCode: physicalTableOptionSourceCode/,
-  'Real-table selection must use the table-column metadata service and optionsCode.',
+  /'lowcode', 'listTableColumns'/,
+  'Real-table association must load column metadata at runtime.',
 );
 assert.match(
   designerSource,
@@ -65,8 +74,8 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /const changedField = readString\(event\.payload\?\.field\)[/\s\S]*if \(changedField === 'tableName'\)[/\s\S]*applyAssociationOption\('table', changedValue\)[/\s\S]*if \(changedField === 'viewName'\)[/\s\S]*applyAssociationOption\('view', changedValue\)/,
-  'The association handler must read the runtime field-change payload safely before loading columns.',
+  /sectionCode = readString\(event\.payload\?\.field\)[\s\S]*sectionCode === gridDesignerFormCodes\.businessInfo[\s\S]*sectionValues\.tableName[\s\S]*applyAssociationOption\('table', sectionValues\.tableName\)[\s\S]*sectionValues\.viewName[\s\S]*applyAssociationOption\('view', sectionValues\.viewName\)/,
+  'The master-form handler must safely route nested business changes before loading columns.',
 );
 assert.match(
   designerSource,
@@ -135,7 +144,7 @@ assert.match(
   'A custom block association must not turn the aggregate data source into a direct table source.',
 );
 assert.match(
-  rendererSource,
+  runtimeMapperSource,
   /visualProps\.tableType = tableType[/\s\S]*visualProps\.sourceType = sourceType[/\s\S]*visualProps\.tableName = sourceType === 'view'[/\s\S]*readString\(targetBlock\.tableName[/\s\S]*visualProps\.viewName = sourceType === 'view'/,
   'Runtime edits must synchronize association fields into the embedded visual model.',
 );

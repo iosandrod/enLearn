@@ -15,6 +15,13 @@ const repairMigrationSource = await readFile(
   ),
   'utf8'
 );
+const formBindingMigrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260826150000_bind_option_items_filter_to_form.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
 const adminServiceSource = await readFile(
   new URL('../../api/src/admin-service/admin.service.ts', import.meta.url),
   'utf8'
@@ -22,6 +29,13 @@ const adminServiceSource = await readFile(
 const visualDesignerSource = await readFile(
   new URL(
     '../../packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
+const pageDataControllerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/runtime/page-data-controller.ts',
     import.meta.url
   ),
   'utf8'
@@ -102,6 +116,16 @@ assert.match(
   'The detail source must wait until the edited option source has loaded.'
 );
 assert.match(
+  formBindingMigrationSource,
+  /\{dataSources,optionItems,postData,filters,source_code\}[\s\S]*\{\{ forms\.option-source-edit-form\.code \}\}/,
+  'The dictionary-detail filter must bind to the option-source edit form.'
+);
+assert.match(
+  formBindingMigrationSource,
+  /version = coalesce\(v_version, 0\) \+ 1[\s\S]*insert into public\.lowcode_page_versions/,
+  'The form-binding migration must version the updated page schema.'
+);
+assert.match(
   visualDesignerSource,
   /function preserveDataSourceRuntimeSettings[\s\S]*previousSource\.autoLoad/,
   'Visual saves must preserve data-source auto-loading that is not exposed by the designer.'
@@ -125,6 +149,11 @@ assert.match(
   adminServiceSource,
   /afterList: \[this\.attachOptionSourceConfigJson\][\s\S]*afterUpdate: \[this\.attachOptionSourceConfigJson\]/,
   'Option-source reads and saves must expose editable source_config JSON.'
+);
+assert.match(
+  pageDataControllerSource,
+  /saveFormSource[\s\S]*resolveDataSourceRequest\(source\.key, source\)[\s\S]*\.invoke\(serviceName, serviceMethod, \{\s*\.\.\.request\.postData,/,
+  'Form saves must submit resolved data-source templates.'
 );
 
 console.log('System option-source edit page regression test passed.');

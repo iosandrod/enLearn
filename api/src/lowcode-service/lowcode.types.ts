@@ -15,6 +15,7 @@ export type LowCodePageRow = {
   table_name: string | null;
   relate_config: Record<string, unknown>;
   schema: LowCodePageSchema;
+  node_actions?: Array<Record<string, unknown>>;
   version: number;
   published_at: string | null;
   created_at: string;

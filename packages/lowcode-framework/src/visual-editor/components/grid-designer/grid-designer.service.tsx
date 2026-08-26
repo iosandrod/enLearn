@@ -22,10 +22,14 @@ import type {
   LowCodeField,
   LowCodeFormSchema,
   LowCodePageBlock,
+  LowCodePageGridBlock,
   LowCodeRuntimeDirective,
   LowCodeRuntimeEvent,
 } from '../../../types/lowcode';
-import { createSubFormField, createSubFormSchema } from '../../../lowcode/form-schema';
+import {
+  createSubFormField,
+  isLowCodeFormSchema,
+} from '../../../lowcode/form-schema';
 import { defer } from '../../utils/defer';
 import { generateNanoid } from '../../utils';
 import type { LowCodeHostServiceApi } from '../../../core/host';
@@ -85,6 +89,18 @@ export type GridDesignerBusinessInfo = {
   showRowActions: boolean;
 };
 
+export type GridDesignerDetailConfig = {
+  enabled: boolean;
+  parentSourceKey: string;
+  resource: string;
+  foreignKey: string;
+  parentKey: string;
+  inheritFields: string[];
+  updateMode: 'replace' | 'changes';
+  defaults: Record<string, unknown>;
+  stripCreatedKey: boolean;
+};
+
 export type GridDesignerEvent = {
   key: string;
   vxeName: string;
@@ -98,6 +114,7 @@ export type GridDesignerEvent = {
 
 export type GridDesignerResult = {
   business: GridDesignerBusinessInfo;
+  detailConfig: GridDesignerDetailConfig;
   columns: GridDesignerColumn[];
   gridOptions: Record<string, unknown>;
   gridEvents: GridDesignerEvent[];
@@ -106,6 +123,7 @@ export type GridDesignerResult = {
 interface GridDesignerServiceOption {
   title?: string;
   business?: Partial<GridDesignerBusinessInfo> | null;
+  detailConfig?: Partial<GridDesignerDetailConfig> | null;
   columns?: GridDesignerColumn[];
   gridOptions?: Record<string, unknown> | null;
   gridEvents?: GridDesignerEvent[] | null;
@@ -132,9 +150,19 @@ type GridDesignerSourceColumn = {
   primaryKey?: boolean;
 };
 
-const physicalTableOptionSourceCode = 'physical_table_name';
-const databaseViewOptionSourceCode = 'database_view_name';
-const gridColumnEditTypeOptionSourceCode = 'grid_column_edit_type';
+const gridDesignerFormCode = 'grid-designer';
+
+const gridDesignerFormCodes = {
+  columns: 'grid-designer-columns',
+  businessInfo: 'grid-designer-business-info',
+  detailConfig: 'grid-designer-detail-config',
+  gridOptions: 'grid-designer-grid-options',
+  formSettings: 'grid-designer-form-settings',
+  rowConfig: 'grid-designer-row-config',
+  columnConfig: 'grid-designer-column-config',
+  events: 'grid-designer-events',
+  extraProps: 'grid-designer-extra-props',
+} as const;
 
 const gridDesignerSourcePageCodes: Record<GridDesignerSourceKind, string> = {
   entity: 'admin-system-entities',
@@ -161,405 +189,30 @@ function assertJsonParsed(result: JsonParseResult): asserts result is JsonParseS
   }
 }
 
-const columnTypeOptions = [
-  { label: '默认', value: '' },
-  { label: '序号', value: 'seq' },
-  { label: '单选', value: 'radio' },
-  { label: '复选', value: 'checkbox' },
-  { label: '展开', value: 'expand' },
-  { label: '网页内容', value: 'html' },
-];
-
-const selectionColumnTypeOptions = [
-  { label: '关闭', value: '' },
-  { label: '复选', value: 'checkbox' },
-  { label: '单选', value: 'radio' },
-];
-
-const gridTableTypeOptions = [
-  { label: 'main', value: 'main' },
-  { label: 'detail', value: 'detail' },
-  { label: 'default', value: 'default' },
-];
-
-const alignOptions = [
-  { label: '默认', value: '' },
-  { label: '左对齐', value: 'left' },
-  { label: '居中', value: 'center' },
-  { label: '右对齐', value: 'right' },
-];
-
-const fixedOptions = [
-  { label: '不固定', value: '' },
-  { label: '固定在左侧', value: 'left' },
-  { label: '固定在右侧', value: 'right' },
-];
-
-const sizeOptions = [
-  { label: '默认', value: '' },
-  { label: '中等', value: 'medium' },
-  { label: '小型', value: 'small' },
-  { label: '迷你', value: 'mini' },
-];
-
-const borderOptions = [
-  { label: '显示边框', value: true },
-  { label: '隐藏边框', value: false },
-  { label: '默认边框', value: 'default' },
-  { label: '完整边框', value: 'full' },
-  { label: '外边框', value: 'outer' },
-  { label: '内边框', value: 'inner' },
-  { label: '无边框', value: 'none' },
-];
-
-const overflowOptions = [
-  { label: '默认', value: '' },
-  { label: '启用', value: true },
-  { label: '禁用', value: false },
-  { label: '显示省略号', value: 'ellipsis' },
-  { label: '标题提示', value: 'title' },
-  { label: '浮层提示', value: 'tooltip' },
-];
-
-const rendererPropFields: LowCodeField[] = [
-  { field: 'placeholder', label: '占位提示', component: 'vxe-input' },
-  { field: 'clearable', label: '可清空', component: 'vxe-switch' },
-  { field: 'disabled', label: '禁用', component: 'vxe-switch' },
-  { field: 'readonly', label: '只读', component: 'vxe-switch' },
-];
-
-const rendererObjectFields: LowCodeField[] = [
-  { field: 'name', label: '渲染器名称', component: 'vxe-input', props: { placeholder: 'VxeInput' } },
-  createSubFormField({
-    field: 'props',
-    label: '组件属性',
-    fields: rendererPropFields,
-  }),
-  createSubFormField({
-    field: 'attrs',
-    label: '附加属性',
-    fields: rendererPropFields,
-  }),
-];
-
-const formatterObjectFields: LowCodeField[] = [
-  {
-    field: 'type',
-    label: '格式化类型',
-    component: 'vxe-select',
-    options: [
-      { label: '文本', value: 'text' },
-      { label: '日期', value: 'date' },
-      { label: '日期时间', value: 'datetime' },
-      { label: '货币', value: 'currency' },
-      { label: '数字', value: 'number' },
-      { label: '枚举', value: 'enum' },
-    ],
-  },
-  { field: 'emptyText', label: '空值文本', component: 'vxe-input' },
-  { field: 'locale', label: '区域设置', component: 'vxe-input' },
-  createSubFormField({
-    field: 'options',
-    label: '格式选项',
-    fields: [
-      { field: 'dateStyle', label: '日期样式', component: 'vxe-input' },
-      { field: 'timeStyle', label: '时间样式', component: 'vxe-input' },
-      { field: 'style', label: '数字样式', component: 'vxe-input' },
-      { field: 'currency', label: '货币代码', component: 'vxe-input' },
-      { field: 'minimumFractionDigits', label: '最少小数位', component: 'lc-number-input' },
-      { field: 'maximumFractionDigits', label: '最多小数位', component: 'lc-number-input' },
-    ],
-  }),
-  createSubFormField({
-    field: 'map',
-    label: '枚举映射',
-    fields: [],
-  }),
-];
-
 type AdvancedGridConfigDefinition = {
+  code: string;
   field: string;
   label: string;
-  fields: LowCodeField[];
 };
 
-const triggerOptions = [
-  { label: '默认', value: '' },
-  { label: '手动', value: 'manual' },
-  { label: '单击', value: 'click' },
-  { label: '双击', value: 'dblclick' },
-];
-
-const editModeOptions = [
-  { label: '默认', value: '' },
-  { label: '整行编辑', value: 'row' },
-  { label: '单元格编辑', value: 'cell' },
-];
-
-const pagerConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: '启用分页', component: 'vxe-switch' },
-  { field: 'pageSize', label: '每页条数', component: 'lc-number-input' },
-  { field: 'currentPage', label: '当前页', component: 'lc-number-input' },
-  {
-    field: 'pageSizes',
-    label: '每页条数选项',
-    component: 'lc-array-table',
-    props: { valueMode: 'primitive', valueField: 'value', valueTitle: '每页条数', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
-  },
-  {
-    field: 'layouts',
-    label: '分页布局',
-    component: 'lc-array-table',
-    props: { valueMode: 'primitive', valueField: 'value', valueTitle: '布局项', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
-  },
-  { field: 'autoHidden', label: '单页自动隐藏', component: 'vxe-switch' },
-  { field: 'perfect', label: '完整布局', component: 'vxe-switch' },
-];
-
-const toolbarConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: '启用工具栏', component: 'vxe-switch' },
-  { field: 'refresh', label: '显示刷新', component: 'vxe-switch' },
-  { field: 'import', label: '显示导入', component: 'vxe-switch' },
-  { field: 'export', label: '显示导出', component: 'vxe-switch' },
-  { field: 'print', label: '显示打印', component: 'vxe-switch' },
-  { field: 'zoom', label: '显示全屏', component: 'vxe-switch' },
-  { field: 'custom', label: '显示列设置', component: 'vxe-switch' },
-  createSubFormField({
-    field: 'slots',
-    label: '插槽',
-    fields: [
-      { field: 'buttons', label: '按钮插槽', component: 'vxe-input' },
-      { field: 'tools', label: '工具插槽', component: 'vxe-input' },
-    ],
-  }),
-];
-
-const proxyConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: '启用数据代理', component: 'vxe-switch' },
-  { field: 'autoLoad', label: '自动加载', component: 'vxe-switch' },
-  { field: 'seq', label: '序号代理', component: 'vxe-switch' },
-  { field: 'sort', label: '排序代理', component: 'vxe-switch' },
-  { field: 'filter', label: '筛选代理', component: 'vxe-switch' },
-  { field: 'form', label: '表单代理', component: 'vxe-switch' },
-  createSubFormField({
-    field: 'props',
-    label: '响应字段映射',
-    fields: [
-      { field: 'result', label: '数据字段', component: 'vxe-input', props: { placeholder: 'result' } },
-      { field: 'total', label: '总数字段', component: 'vxe-input', props: { placeholder: 'total' } },
-      { field: 'message', label: '消息字段', component: 'vxe-input', props: { placeholder: 'message' } },
-    ],
-  }),
-  createSubFormField({
-    field: 'ajax',
-    label: '请求方法',
-    fields: [
-      { field: 'query', label: '查询方法', component: 'vxe-input' },
-      { field: 'queryAll', label: '全量查询方法', component: 'vxe-input' },
-      { field: 'save', label: '保存方法', component: 'vxe-input' },
-      { field: 'delete', label: '删除方法', component: 'vxe-input' },
-    ],
-  }),
-];
-
-const editConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: '启用编辑', component: 'vxe-switch' },
-  { field: 'mode', label: '编辑模式', component: 'vxe-select', options: editModeOptions },
-  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
-  { field: 'showStatus', label: '显示编辑状态', component: 'vxe-switch' },
-  { field: 'showIcon', label: '显示状态图标', component: 'vxe-switch' },
-  { field: 'autoClear', label: '自动清除状态', component: 'vxe-switch' },
-  { field: 'showUpdateStatus', label: '显示更新状态', component: 'vxe-switch' },
-  { field: 'showInsertStatus', label: '显示新增状态', component: 'vxe-switch' },
-  { field: 'activeMethod', label: '激活校验方法', component: 'vxe-input' },
-  { field: 'beforeEditMethod', label: '编辑前置方法', component: 'vxe-input' },
-];
-
-const checkboxConfigFields: LowCodeField[] = [
-  { field: 'checkField', label: '选中状态字段', component: 'vxe-input' },
-  { field: 'labelField', label: '标签字段', component: 'vxe-input' },
-  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
-  { field: 'showHeader', label: '显示表头复选框', component: 'vxe-switch' },
-  { field: 'reserve', label: '保留选中状态', component: 'vxe-switch' },
-  { field: 'range', label: '启用范围选择', component: 'vxe-switch' },
-  { field: 'highlight', label: '高亮选中行', component: 'vxe-switch' },
-  { field: 'strict', label: '严格模式', component: 'vxe-switch' },
-  { field: 'checkStrictly', label: '严格勾选模式', component: 'vxe-switch' },
-];
-
-const radioConfigFields: LowCodeField[] = [
-  { field: 'checkRowKey', label: '选中行键值', component: 'vxe-input' },
-  { field: 'labelField', label: '标签字段', component: 'vxe-input' },
-  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
-  { field: 'reserve', label: '保留选中状态', component: 'vxe-switch' },
-  { field: 'highlight', label: '高亮选中行', component: 'vxe-switch' },
-  { field: 'strict', label: '严格模式', component: 'vxe-switch' },
-];
-
-const sortConfigFields: LowCodeField[] = [
-  { field: 'remote', label: '远程排序', component: 'vxe-switch' },
-  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
-  { field: 'multiple', label: '多列排序', component: 'vxe-switch' },
-  { field: 'chronological', label: '按点击顺序排序', component: 'vxe-switch' },
-  {
-    field: 'orders',
-    label: '排序方向选项',
-    component: 'lc-array-table',
-    props: { valueMode: 'primitive', valueField: 'value', valueTitle: '排序方向', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
-  },
-  createSubFormField({
-    field: 'defaultSort',
-    label: '默认排序',
-    fields: [
-      { field: 'field', label: '排序字段', component: 'vxe-input' },
-      {
-        field: 'order',
-        label: '排序方向',
-        component: 'vxe-select',
-        options: [
-          { label: '升序', value: 'asc' },
-          { label: '降序', value: 'desc' },
-        ],
-      },
-    ],
-  }),
-];
-
-const filterConfigFields: LowCodeField[] = [
-  { field: 'remote', label: '远程筛选', component: 'vxe-switch' },
-  { field: 'showIcon', label: '显示筛选图标', component: 'vxe-switch' },
-  { field: 'showFilterFooter', label: '显示筛选底栏', component: 'vxe-switch' },
-  { field: 'filterMethod', label: '筛选方法', component: 'vxe-input' },
-];
-
-const treeConfigFields: LowCodeField[] = [
-  { field: 'transform', label: '自动转换树结构', component: 'vxe-switch' },
-  { field: 'rowField', label: '行标识字段', component: 'vxe-input', props: { placeholder: 'id' } },
-  { field: 'parentField', label: '父级字段', component: 'vxe-input', props: { placeholder: 'parentId' } },
-  { field: 'childrenField', label: '子级字段', component: 'vxe-input', props: { placeholder: 'children' } },
-  { field: 'hasChild', label: '子节点标识字段', component: 'vxe-input' },
-  { field: 'indent', label: '层级缩进', component: 'lc-number-input' },
-  { field: 'showIcon', label: '显示树图标', component: 'vxe-switch' },
-  { field: 'expandAll', label: '默认展开全部', component: 'vxe-switch' },
-  { field: 'lazy', label: '懒加载', component: 'vxe-switch' },
-  { field: 'accordion', label: '手风琴展开', component: 'vxe-switch' },
-  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
-];
-
-const expandConfigFields: LowCodeField[] = [
-  { field: 'expandAll', label: '默认展开全部', component: 'vxe-switch' },
-  { field: 'accordion', label: '手风琴展开', component: 'vxe-switch' },
-  { field: 'lazy', label: '懒加载', component: 'vxe-switch' },
-  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
-  { field: 'labelField', label: '标签字段', component: 'vxe-input' },
-  { field: 'iconOpen', label: '展开图标', component: 'vxe-input' },
-  { field: 'iconClose', label: '收起图标', component: 'vxe-input' },
-  { field: 'visibleMethod', label: '展开校验方法', component: 'vxe-input' },
-];
-
 const advancedGridConfigDefinitions: AdvancedGridConfigDefinition[] = [
-  { field: 'pagerConfigJson', label: '分页配置', fields: pagerConfigFields },
-  { field: 'toolbarConfigJson', label: '工具栏配置', fields: toolbarConfigFields },
-  { field: 'proxyConfigJson', label: '数据代理配置', fields: proxyConfigFields },
-  { field: 'editConfigJson', label: '编辑配置', fields: editConfigFields },
-  { field: 'checkboxConfigJson', label: '复选配置', fields: checkboxConfigFields },
-  { field: 'radioConfigJson', label: '单选配置', fields: radioConfigFields },
-  { field: 'sortConfigJson', label: '排序配置', fields: sortConfigFields },
-  { field: 'filterConfigJson', label: '筛选配置', fields: filterConfigFields },
-  { field: 'treeConfigJson', label: '树形配置', fields: treeConfigFields },
-  { field: 'expandConfigJson', label: '展开配置', fields: expandConfigFields },
+  { code: 'grid-designer-pager-config', field: 'pagerConfigJson', label: '分页配置' },
+  { code: 'grid-designer-toolbar-config', field: 'toolbarConfigJson', label: '工具栏配置' },
+  { code: 'grid-designer-proxy-config', field: 'proxyConfigJson', label: '数据代理配置' },
+  { code: 'grid-designer-edit-config', field: 'editConfigJson', label: '编辑配置' },
+  { code: 'grid-designer-checkbox-config', field: 'checkboxConfigJson', label: '复选配置' },
+  { code: 'grid-designer-radio-config', field: 'radioConfigJson', label: '单选配置' },
+  { code: 'grid-designer-sort-config', field: 'sortConfigJson', label: '排序配置' },
+  { code: 'grid-designer-filter-config', field: 'filterConfigJson', label: '筛选配置' },
+  { code: 'grid-designer-tree-config', field: 'treeConfigJson', label: '树形配置' },
+  { code: 'grid-designer-expand-config', field: 'expandConfigJson', label: '展开配置' },
 ];
 
-const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] }> = [
-  {
-    title: '尺寸与对齐',
-    fields: [
-      {
-        field: 'maxWidth',
-        label: '最大宽度',
-        component: 'vxe-input',
-        props: { placeholder: 'maxWidth' },
-      },
-      {
-        field: 'headerAlign',
-        label: '表头对齐',
-        component: 'vxe-select',
-        options: alignOptions,
-      },
-      {
-        field: 'footerAlign',
-        label: '表尾对齐',
-        component: 'vxe-select',
-        options: alignOptions,
-      },
-    ],
-  },
-  {
-    title: '显示行为',
-    fields: [
-      {
-        field: 'resizable',
-        label: '可调整宽度',
-        component: 'vxe-switch',
-      },
-      {
-        field: 'showHeaderOverflow',
-        label: '表头溢出处理',
-        component: 'vxe-select',
-        options: overflowOptions as any,
-      },
-      {
-        field: 'showFooterOverflow',
-        label: '表尾溢出处理',
-        component: 'vxe-select',
-        options: overflowOptions as any,
-      },
-    ],
-  },
-  {
-    title: '筛选项',
-    fields: [
-      {
-        field: 'filters',
-        label: '筛选项',
-        component: 'lc-array-table',
-        props: {
-          toolbarButtons: [{ code: 'add', label: '新增筛选', command: 'add', status: 'primary' }],
-          rowKey: '__rowKey',
-          defaultRow: {
-            label: '筛选项',
-            value: '',
-            checked: false,
-          },
-          columns: [
-            { field: 'label', title: '标签', minWidth: 110 },
-            { field: 'value', title: '值', minWidth: 110 },
-            { field: 'checked', title: '默认选中', component: 'vxe-switch', width: 86 },
-          ],
-        },
-      },
-    ],
-  },
-  {
-    title: '渲染配置',
-    fields: [
-      createSubFormField({
-        field: 'cellRender',
-        label: '单元格渲染',
-        fields: rendererObjectFields,
-      }),
-      createSubFormField({
-        field: 'editRender',
-        label: '编辑渲染',
-        fields: rendererObjectFields,
-      }),
-      createSubFormField({
-        field: 'params',
-        label: '参数',
-        fields: formatterObjectFields,
-      }),
-    ],
-  },
+const columnAdvancedFormSections: Array<{ code: string; title: string }> = [
+  { code: 'grid-designer-column-size-align', title: '尺寸与对齐' },
+  { code: 'grid-designer-column-display', title: '显示行为' },
+  { code: 'grid-designer-column-filters', title: '筛选项' },
+  { code: 'grid-designer-column-renderers', title: '渲染配置' },
 ];
 
 const eventDefinitions: Omit<
@@ -1186,6 +839,44 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
   };
 }
 
+function createDefaultDetailConfig(): GridDesignerDetailConfig {
+  return {
+    enabled: false,
+    parentSourceKey: '',
+    resource: '',
+    foreignKey: '',
+    parentKey: 'id',
+    inheritFields: [],
+    updateMode: 'changes',
+    defaults: {},
+    stripCreatedKey: true,
+  };
+}
+
+function normalizeDetailConfig(value: unknown): GridDesignerDetailConfig {
+  const row = isPlainRecord(value) ? value : {};
+  const fallback = createDefaultDetailConfig();
+  const rawInheritFields = row.inheritFields ?? row.inherit_fields;
+  const updateMode = readString(row.updateMode ?? row.update_mode) === 'replace'
+    ? 'replace'
+    : 'changes';
+  return {
+    enabled: readBoolean(row.enabled, fallback.enabled),
+    parentSourceKey: readString(row.parentSourceKey ?? row.parent_source_key),
+    resource: readString(row.resource),
+    foreignKey: readString(row.foreignKey ?? row.foreign_key),
+    parentKey: readString(row.parentKey ?? row.parent_key, fallback.parentKey),
+    inheritFields: Array.isArray(rawInheritFields)
+      ? [...new Set(rawInheritFields
+        .map((item: unknown) => readString(item))
+        .filter(Boolean))]
+      : [],
+    updateMode,
+    defaults: isPlainRecord(row.defaults) ? cloneDeep(row.defaults) : fallback.defaults,
+    stripCreatedKey: readBoolean(row.stripCreatedKey, fallback.stripCreatedKey),
+  };
+}
+
 function createDefaultGridOptions(): Record<string, unknown> {
   return {
     id: '',
@@ -1608,8 +1299,8 @@ const ServiceComponent = defineComponent({
     const state = reactive({
       option: props.option,
       activeDialogId: '',
-      activeTab: 'columns',
       business: normalizeBusiness(props.option.business),
+      detailConfig: normalizeDetailConfig(props.option.detailConfig),
       columns: initialColumns,
       formSettings: createFormSettings(initialColumns),
       selectedColumnId: readString(initialColumns[0]?.__id),
@@ -1624,6 +1315,7 @@ const ServiceComponent = defineComponent({
       })(),
     });
     const designerFormModels = reactive<Record<string, Record<string, unknown>>>({});
+    let databaseFormSchema: LowCodeFormSchema | undefined;
     const getServiceApi = () => {
       if (state.option.serviceApi) return state.option.serviceApi;
       try {
@@ -1632,12 +1324,42 @@ const ServiceComponent = defineComponent({
         return undefined;
       }
     };
+    const resolveGridDesignerFormSchema = (code: string) => {
+      const sectionField = databaseFormSchema?.fields.find((field) => field.field === code);
+      const sectionSchema = isPlainRecord(sectionField?.props)
+        ? sectionField.props.schema
+        : undefined;
+      if (!isLowCodeFormSchema(sectionSchema)) {
+        throw new Error(`数据表格设计表单缺少有效区段：${code}`);
+      }
+      return cloneDeep(sectionSchema);
+    };
+    const loadGridDesignerFormSchemas = async () => {
+      const serviceApi = getServiceApi();
+      if (!serviceApi) {
+        throw new Error('数据表格设计器无法连接低代码服务。');
+      }
+
+      const rows = await serviceApi.invoke<Array<{ schema?: unknown }>>('lowcode', 'listItems', {
+        resource: 'lowcode_form_definitions',
+        filters: {
+          code: gridDesignerFormCode,
+          enabled: true,
+        },
+        limit: 1,
+      });
+      const schema = Array.isArray(rows) ? rows[0]?.schema : undefined;
+      if (!isLowCodeFormSchema(schema)) {
+        throw new Error(`低代码表单“${gridDesignerFormCode}”不存在、已停用或 schema 无效。`);
+      }
+      databaseFormSchema = cloneDeep(schema);
+    };
     const methods = {
       service: async (option: GridDesignerServiceOption) => {
         const nextGridOptions = normalizeGridOptions(option.gridOptions);
         state.option = option;
-        state.activeTab = 'columns';
         resetReactiveObject(state.business, normalizeBusiness(option.business));
+        resetReactiveObject(state.detailConfig, normalizeDetailConfig(option.detailConfig));
         state.columns = normalizeColumns(option.columns);
         resetReactiveObject(state.formSettings, createFormSettings(state.columns));
         state.selectedColumnId = readString(state.columns[0]?.__id);
@@ -1649,6 +1371,7 @@ const ServiceComponent = defineComponent({
       },
       show: async () => {
         await state.mounted;
+        await loadGridDesignerFormSchemas();
         syncActiveDesignerDialogModel();
         await nextTick();
         const dialogId = `grid-designer-${generateNanoid()}`;
@@ -1759,6 +1482,9 @@ const ServiceComponent = defineComponent({
         null,
         2,
       );
+      if (!readString(state.detailConfig.resource)) {
+        state.detailConfig.resource = readString(source.code, sourceTarget.split('.').at(-1));
+      }
       state.business.showRowActions = false;
       state.gridOptions.rowConfig = {
         ...(isPlainRecord(state.gridOptions.rowConfig) ? state.gridOptions.rowConfig : {}),
@@ -2052,6 +1778,14 @@ const ServiceComponent = defineComponent({
             ElMessage.error('请选择关联视图');
             return false;
           }
+          if (state.detailConfig.enabled && (
+            !readString(state.detailConfig.parentSourceKey) ||
+            !readString(state.detailConfig.resource) ||
+            !readString(state.detailConfig.foreignKey)
+          )) {
+            ElMessage.error('子表配置需要填写主表数据源、子表资源和关联外键');
+            return false;
+          }
 
           const invalidColumn = state.columns.find(
             (column) => !readString(column.field) && !readString(column.title) && !readString(column.type),
@@ -2068,6 +1802,7 @@ const ServiceComponent = defineComponent({
 
           await state.option.onConfirm?.({
             business: cloneDeep(state.business),
+            detailConfig: cloneDeep(state.detailConfig),
             columns: state.columns.map((column, index) => normalizeColumnForResult(column, index)),
             gridOptions: buildGridOptions(state.gridOptions, state.advanced),
             gridEvents: buildEvents(state.gridEvents),
@@ -2148,10 +1883,7 @@ const ServiceComponent = defineComponent({
           kind: 'form',
           title: section.title,
           className: 'grid-designer-column-dialog__section grid-designer-schema-form-block',
-          schema: {
-            fields: section.fields,
-            actions: [],
-          },
+          schema: resolveGridDesignerFormSchema(section.code),
         })),
       },
     });
@@ -2188,174 +1920,80 @@ const ServiceComponent = defineComponent({
       });
     };
 
-    const createSchema = (fields: LowCodeField[], columns = 4): LowCodeFormSchema =>
-      createSubFormSchema({ columns, fields });
+    const openColumnFieldEditor = async (
+      column: GridDesignerColumn,
+      rows: GridDesignerColumn[],
+    ) => {
+      const columnIndex = rows.indexOf(column);
+      if (columnIndex < 0 || !readString(column.field)) return;
 
-    const businessInfoSchema = createSchema([
-      { field: 'blockId', label: '区块标识', component: 'vxe-input' },
-      { field: 'title', label: '表格标题', component: 'vxe-input' },
-      {
-        field: 'tableType',
-        label: '表格类型',
-        component: 'vxe-select',
-        options: gridTableTypeOptions,
-      },
-      {
-        field: 'tableName',
-        label: '关联真实表',
-        component: 'vxe-select',
-        optionsCode: physicalTableOptionSourceCode,
-        props: {
-          filterable: true,
-          clearable: true,
-          placeholder: '请选择真实表',
-        },
-      },
-      {
-        field: 'viewName',
-        label: '关联视图',
-        component: 'vxe-select',
-        optionsCode: databaseViewOptionSourceCode,
-        props: {
-          filterable: true,
-          clearable: true,
-          placeholder: '请选择视图',
-        },
-      },
-      {
-        field: 'categoryField',
-        label: '类别关联字段',
-        component: 'vxe-input',
-        props: {
-          clearable: true,
-          placeholder: '如 category_id；留空不按类别过滤',
-        },
-      },
-      { field: 'sourceKey', label: '数据源标识', component: 'vxe-input' },
-      { field: 'serviceName', label: '服务名称', component: 'vxe-input' },
-      { field: 'serviceMethod', label: '查询方法', component: 'vxe-input' },
-      { field: 'saveMethod', label: '保存方法', component: 'vxe-input' },
-      { field: 'deleteMethod', label: '删除方法', component: 'vxe-input' },
-      { field: 'showRowActions', label: '显示行操作', component: 'vxe-switch' },
-      {
-        field: 'postDataJson',
-        label: '请求参数',
-        component: 'lc-json-editor',
-        props: { rows: 4 },
-      },
-    ]);
-
-    const gridOptionsSchema = createSchema([
-      { field: 'id', label: '表格标识', component: 'vxe-input' },
-      { field: 'size', label: '组件尺寸', component: 'vxe-select', options: sizeOptions },
-      { field: 'height', label: '表格高度', component: 'vxe-input', props: { placeholder: 'auto / 480' } },
-      {
-        field: 'mobileDisplay',
-        label: '移动端显示方式',
-        component: 'vxe-select',
-        options: [
-          { label: '表格', value: 'table' },
-          { label: '卡片', value: 'card' },
-        ],
-      },
-      { field: 'rowHeight', label: '行高', component: 'vxe-number-input', props: { min: 34, max: 120 } },
-      { field: 'headerHeight', label: '表头高度', component: 'vxe-number-input', props: { min: 34, max: 100 } },
-      { field: 'overscanRowCount', label: '预渲染行数', component: 'vxe-number-input', props: { min: 1, max: 50 } },
-      { field: 'overscanColumnCount', label: '预渲染列数', component: 'vxe-number-input', props: { min: 1, max: 20 } },
-      { field: 'maxHeight', label: '最大高度', component: 'vxe-input' },
-      { field: 'border', label: '边框样式', component: 'vxe-select', options: borderOptions as any },
-      { field: 'stripe', label: '显示斑马纹', component: 'vxe-switch' },
-      { field: 'round', label: '圆角边框', component: 'vxe-switch' },
-      { field: 'showHeader', label: '显示表头', component: 'vxe-switch' },
-      { field: 'showFooter', label: '显示表尾', component: 'vxe-switch' },
-      { field: 'showOverflow', label: '内容溢出处理', component: 'vxe-select', options: overflowOptions as any },
-      {
-        field: 'showHeaderOverflow',
-        label: '表头溢出处理',
-        component: 'vxe-select',
-        options: overflowOptions as any,
-      },
-      { field: 'align', label: '内容对齐', component: 'vxe-select', options: alignOptions },
-      { field: 'headerAlign', label: '表头对齐', component: 'vxe-select', options: alignOptions },
-      { field: 'autoResize', label: '自动调整尺寸', component: 'vxe-switch' },
-      { field: 'keepSource', label: '保留源数据', component: 'vxe-switch' },
-    ]);
-
-    const formSettingsSchema = createSchema([
-      {
-        field: 'selectionColumnType',
-        label: '选择列',
-        component: 'vxe-select',
-        options: selectionColumnTypeOptions,
-      },
-      {
-        field: 'selectionColumnWidth',
-        label: '选择列宽度',
-        component: 'vxe-number-input',
-        props: {
-          min: 36,
-          max: 120,
-          visibleWhen: {
-            field: 'selectionColumnType',
-            includes: ['checkbox', 'radio'],
+      try {
+        const gridOptions = buildGridOptions(state.gridOptions, state.advanced);
+        const draftBlock: LowCodePageGridBlock = {
+          id: readString(state.business.blockId, 'grid-designer'),
+          kind: 'grid',
+          title: readString(state.business.title, '数据表格'),
+          schema: {
+            title: readString(state.business.title, '数据表格'),
+            grid: {
+              ...cloneDeep(gridOptions),
+              columns: cloneDeep(rows),
+            },
           },
-        },
-      },
-      {
-        field: 'selectionColumnFixed',
-        label: '选择列位置',
-        component: 'vxe-select',
-        options: fixedOptions,
-        props: {
-          visibleWhen: {
-            field: 'selectionColumnType',
-            includes: ['checkbox', 'radio'],
+        };
+        let updatedBlock: LowCodePageGridBlock | undefined;
+        const { openRuntimeGridFieldEditor } = await import(
+          '../../../lowcode/block-materials/grid/runtime-grid-field-editor'
+        );
+
+        await openRuntimeGridFieldEditor(
+          draftBlock,
+          draftBlock.schema.grid.columns[columnIndex],
+          columnIndex,
+          {
+            getServiceApi,
+            updateBlock: async ({ changes }) => {
+              updatedBlock = {
+                ...draftBlock,
+                ...cloneDeep(changes),
+              } as LowCodePageGridBlock;
+              return updatedBlock;
+            },
           },
-        },
-      },
-    ]);
+        );
 
-    const rowConfigSubFields: LowCodeField[] = [
-      { field: 'keyField', label: '行键字段', component: 'vxe-input' },
-      { field: 'useKey', label: '启用行键', component: 'vxe-switch' },
-      { field: 'isCurrent', label: '高亮当前行', component: 'vxe-switch' },
-      { field: 'isHover', label: '高亮悬停行', component: 'vxe-switch' },
-      { field: 'resizable', label: '可调整行高', component: 'vxe-switch' },
-      { field: 'drag', label: '允许拖动行', component: 'vxe-switch' },
-    ];
+        if (!updatedBlock) return;
+        const updatedGrid = updatedBlock.schema.grid;
+        const updatedColumn = updatedGrid.columns?.[columnIndex];
+        if (!updatedColumn) return;
 
-    const columnConfigSubFields: LowCodeField[] = [
-      { field: 'useKey', label: '启用列键', component: 'vxe-switch' },
-      { field: 'resizable', label: '可调整列宽', component: 'vxe-switch' },
-      { field: 'isCurrent', label: '高亮当前列', component: 'vxe-switch' },
-      { field: 'isHover', label: '高亮悬停列', component: 'vxe-switch' },
-      { field: 'drag', label: '允许拖动列', component: 'vxe-switch' },
-      { field: 'minWidth', label: '最小列宽', component: 'vxe-input' },
-    ];
-
-    const rowConfigSchema = createSchema(
-      [
-        createSubFormField({
-          field: 'rowConfig',
-          label: '行配置',
-          fields: rowConfigSubFields,
-          columns: 3,
-        }),
-      ],
-      1,
-    );
-
-    const columnConfigSchema = createSchema(
-      [
-        createSubFormField({
-          field: 'columnConfig',
-          label: '列配置',
-          fields: columnConfigSubFields,
-          columns: 3,
-        }),
-      ],
-      1,
-    );
+        Object.assign(column, normalizeColumn({
+          ...column,
+          ...updatedColumn,
+          __id: column.__id,
+        }, columnIndex));
+        const {
+          columns: _columns,
+          data: _data,
+          menuConfig: _menuConfig,
+          ...updatedGridOptions
+        } = updatedGrid;
+        const normalizedGridOptions = normalizeGridOptions(updatedGridOptions);
+        resetReactiveObject(state.gridOptions, normalizedGridOptions.options);
+        resetReactiveObject(state.advanced, normalizedGridOptions.advanced);
+        resetReactiveObject(
+          state.advancedModels,
+          createAdvancedFormModels(normalizedGridOptions.advanced),
+        );
+        syncColumnsFromRows(rows);
+        selectColumn(
+          state.columns.find((item) => item.__id === column.__id) ?? state.columns[columnIndex],
+        );
+        syncActiveDesignerDialogModel();
+      } catch (error) {
+        ElMessage.error(error instanceof Error ? error.message : '高级列设计打开失败');
+      }
+    };
 
     const syncAdvancedConfigModel = (
       field: string,
@@ -2366,135 +2004,31 @@ const ServiceComponent = defineComponent({
       state.advanced[field] = JSON.stringify(compactObject(cloneDeep(nextValue)), null, 2);
     };
 
-    const toArrayTableOptions = (options: Array<{ label: string; value: unknown }>) =>
-      options.map((option) =>
-        typeof option.value === 'boolean'
-          ? {
-              label: option.label,
-              value: String(option.value),
-              rawValue: option.value,
-            }
-          : option,
-      );
+    const gridDesignerFormBlockId = 'grid-designer-form';
 
-    const createColumnArrayDefaultRow = () => {
-      const { __id, ...row } = createDefaultColumn(0);
-      return {
-        ...row,
-        field: 'field_{{ index }}',
-        title: '列 {{ index }}',
-      };
+    const readGridDesignerFormModel = () => {
+      const model = designerFormModels[gridDesignerFormBlockId];
+      return isPlainRecord(model) ? model : undefined;
     };
 
-    const createColumnDesignerArrayColumns = (): ArrayEditorColumn[] => [
-      { field: 'field', title: '字段名', minWidth: 150 },
-      { field: 'title', title: '列标题', minWidth: 150 },
-      {
-        field: 'editType',
-        title: '编辑类型',
-        component: 'vxe-select',
-        width: 180,
-        optionsCode: gridColumnEditTypeOptionSourceCode,
-      },
-      {
-        field: 'type',
-        title: '列类型',
-        component: 'vxe-select',
-        width: 132,
-        options: toArrayTableOptions(columnTypeOptions),
-      },
-      { field: 'width', title: '宽度', width: 108, props: { placeholder: '自动' } },
-      { field: 'minWidth', title: '最小宽度', width: 118 },
-      {
-        field: 'fixed',
-        title: '固定位置',
-        component: 'vxe-select',
-        width: 116,
-        options: toArrayTableOptions(fixedOptions),
-      },
-      {
-        field: 'align',
-        title: '对齐方式',
-        component: 'vxe-select',
-        width: 124,
-        options: toArrayTableOptions(alignOptions),
-      },
-      {
-        field: 'sortable',
-        title: '可排序',
-        component: 'vxe-switch',
-        width: 96,
-      },
-      {
-        field: 'visible',
-        title: '显示',
-        component: 'vxe-switch',
-        width: 92,
-      },
-      {
-        field: 'showOverflow',
-        title: '溢出处理',
-        component: 'vxe-select',
-        width: 138,
-        options: toArrayTableOptions(overflowOptions),
-      },
-      {
-        field: 'formatter',
-        title: '格式化配置',
-        minWidth: 210,
-        props: {
-          placeholder: '{"type":"text"} 或格式化器名',
-          fields: formatterObjectFields,
-        },
-      },
-    ];
-
-    const createEventDesignerArrayColumns = (): ArrayEditorColumn[] => [
-      {
-        field: 'enabled',
-        title: '启用',
-        component: 'vxe-switch',
-        width: 78,
-      },
-      { field: 'label', title: '事件说明', width: 130, readonly: true },
-      { field: 'vxeName', title: '表格事件属性', width: 170, readonly: true },
-      { field: 'nativeName', title: '原生事件名', width: 190, readonly: true },
-      {
-        field: 'eventName',
-        title: '运行事件名',
-        minWidth: 220,
-        props: { placeholder: 'grid.rowDblclick' },
-      },
-      {
-        field: 'directives',
-        title: '指令',
-        component: 'lc-json-editor',
-        minWidth: 260,
-        props: { rows: 3, placeholder: JSON.stringify([createArrayDefaultRow(directiveArrayColumns)], null, 2) },
-      },
-    ];
-
-    const columnDesignerBlockId = 'grid-designer-columns-form';
-    const businessInfoBlockId = 'grid-designer-business-info-form';
-    const formSettingsBlockId = 'grid-designer-form-settings-form';
-    const gridOptionsBlockId = 'grid-designer-grid-options-form';
-    const rowConfigBlockId = 'grid-designer-row-config-form';
-    const columnConfigBlockId = 'grid-designer-column-config-form';
-    const eventDesignerBlockId = 'grid-designer-events-form';
-    const extraPropsBlockId = 'grid-designer-extra-props-form';
-    const advancedBlockId = (field: string) => `grid-designer-advanced-${field}-form`;
+    const readGridDesignerSectionModel = (code: string) => {
+      const section = readGridDesignerFormModel()?.[code];
+      return isPlainRecord(section) ? section : undefined;
+    };
 
     const syncColumnsFromRows = (rows: unknown) => {
       const selectedId = state.selectedColumnId;
       state.columns = normalizeColumns(rows);
       resetReactiveObject(state.formSettings, createFormSettings(state.columns));
 
-      const formSettingsModel = designerFormModels[formSettingsBlockId];
+      const formSettingsModel = readGridDesignerSectionModel(
+        gridDesignerFormCodes.formSettings,
+      );
       if (isPlainRecord(formSettingsModel)) {
         resetReactiveObject(
           formSettingsModel,
           createSchemaModel(
-            formSettingsSchema,
+            resolveGridDesignerFormSchema(gridDesignerFormCodes.formSettings),
             state.formSettings as unknown as Record<string, unknown>,
           ),
         );
@@ -2509,136 +2043,103 @@ const ServiceComponent = defineComponent({
       state.gridEvents = normalizeEvents(rows);
     };
 
-    const createColumnDesignerSchema = (): LowCodeFormSchema =>
-      createSchema(
-        [
+    const createColumnDesignerSchema = (): LowCodeFormSchema => {
+      const schema = resolveGridDesignerFormSchema(gridDesignerFormCodes.columns);
+      const columnsField = schema.fields.find((field) => field.field === 'columns');
+      if (!columnsField) {
+        throw new Error('数据表格设计表单的列设计区段缺少 columns 字段。');
+      }
+
+      const fieldProps = isPlainRecord(columnsField.props) ? columnsField.props : {};
+      const toolbarButtons = Array.isArray(fieldProps.toolbarButtons)
+        ? fieldProps.toolbarButtons.filter(isPlainRecord).map((button) => {
+            const code = readString(button.code);
+            if (code === 'associate-entity') {
+              return { ...button, execute: async () => openSourcePicker('entity') };
+            }
+            if (code === 'associate-view') {
+              return { ...button, execute: async () => openSourcePicker('view') };
+            }
+            if (code === 'sync-table-comments') {
+              return { ...button, execute: async () => syncColumnsFromTableComments() };
+            }
+            return button;
+          })
+        : [];
+
+      columnsField.props = {
+        ...fieldProps,
+        toolbarButtons,
+        rowActions: [
           {
-            field: 'columns',
-            label: '列配置',
-            component: 'lc-array-table',
-            props: {
-              toolbarButtons: [
-                {
-                  code: 'add',
-                  label: '新增列',
-                  command: 'add',
-                  status: 'primary',
-                  prefixIcon: 'ri-add-line',
-                },
-                {
-                  code: 'associate-entity',
-                  label: '关联实体',
-                  prefixIcon: 'ri-database-2-line',
-                  execute: async () => openSourcePicker('entity'),
-                },
-                {
-                  code: 'associate-view',
-                  label: '关联视图',
-                  prefixIcon: 'ri-eye-2-line',
-                  execute: async () => openSourcePicker('view'),
-                },
-                {
-                  code: 'sync-table-comments',
-                  label: '同步列注释',
-                  prefixIcon: 'ri-refresh-line',
-                  execute: async () => syncColumnsFromTableComments(),
-                },
-              ],
-              rowKey: '__id',
-              preserveRowKey: true,
-              rowDraggable: true,
-              onRowMove: ({ rows }: { rows: unknown }) => {
-                syncColumnsFromRows(rows);
-                const columnModel = designerFormModels[columnDesignerBlockId];
-                if (isPlainRecord(columnModel)) {
-                  columnModel.columns = state.columns as unknown as Record<string, unknown>[];
-                }
-              },
-              movable: false,
-              copyable: true,
-              minRows: 1,
-              actionWidth: 72,
-              height: 520,
-              toolbarAlign: 'left',
-              columns: createColumnDesignerArrayColumns(),
-              defaultRow: createColumnArrayDefaultRow(),
-              onRowClick: ({ row }: { row: GridDesignerColumn }) => selectColumn(row),
-              onRowDblclick: ({
-                row,
-                rows,
-              }: {
-                row: GridDesignerColumn;
-                rows: GridDesignerColumn[];
-              }) => {
-                const rowIndex = rows.indexOf(row);
-                Object.assign(row, normalizeColumn(row, rowIndex >= 0 ? rowIndex : 0));
-                selectColumn(row);
-                openColumnAdvancedDialog(row, () => syncColumnsFromRows(rows));
-              },
-            },
+            code: 'advanced-column-design',
+            title: '高级列设计',
+            icon: 'ri-settings-3-line',
+            status: 'primary',
+            disabled: ({ row }: { row?: GridDesignerColumn }) => !readString(row?.field),
           },
         ],
-        1,
-      );
-
-    const createEventDesignerSchema = (): LowCodeFormSchema =>
-      createSchema(
-        [
-          {
-            field: 'gridEvents',
-            label: '事件配置',
-            component: 'lc-array-table',
-            props: {
-              showToolbar: false,
-              showActions: false,
-              rowKey: 'key',
-              preserveRowKey: true,
-              height: 560,
-              columns: createEventDesignerArrayColumns(),
-            },
-          },
-        ],
-        1,
-      );
-
-    const createFormBlock = (
-      id: string,
-      title: string,
-      schema: LowCodeFormSchema,
-      className = 'grid-designer-card grid-designer-schema-form-block',
-    ): LowCodePageBlock => ({
-      id,
-      kind: 'form',
-      title,
-      className,
-      schema,
-    });
-
-    const createContainerBlock = (
-      id: string,
-      className: unknown,
-      blocks: LowCodePageBlock[],
-      extra: Partial<LowCodePageBlock> = {},
-    ): LowCodePageBlock =>
-      ({
-        id,
-        kind: 'container',
-        className,
-        panel: false,
-        blocks,
-        ...extra,
-      }) as LowCodePageBlock;
-
-    const createColumnDesignerBlocks = (): LowCodePageBlock[] => [
-      createContainerBlock('grid-designer-columns-panel', 'grid-designer-panel', [
-        createFormBlock(
-          columnDesignerBlockId,
-          '列配置',
-          createColumnDesignerSchema(),
-          'grid-designer-array-table-card grid-designer-column-table-panel',
+        actionWidth: Math.max(
+          Number(fieldProps.actionWidth) || 0,
+          108,
         ),
-      ]),
-    ];
+        onRowAction: ({
+          action,
+          row,
+          rows,
+        }: {
+          action: { code?: string };
+          row: GridDesignerColumn;
+          rows: GridDesignerColumn[];
+        }) => {
+          if (readString(action?.code) !== 'advanced-column-design') return;
+          const rowIndex = rows.indexOf(row);
+          Object.assign(row, normalizeColumn(row, rowIndex >= 0 ? rowIndex : 0));
+          selectColumn(row);
+          void openColumnFieldEditor(row, rows);
+        },
+        onRowMove: ({ rows }: { rows: unknown }) => {
+          syncColumnsFromRows(rows);
+          const columnModel = readGridDesignerSectionModel(gridDesignerFormCodes.columns);
+          if (isPlainRecord(columnModel)) {
+            columnModel.columns = state.columns as unknown as Record<string, unknown>[];
+          }
+        },
+        onRowClick: ({ row }: { row: GridDesignerColumn }) => selectColumn(row),
+        onRowDblclick: ({
+          row,
+          rows,
+        }: {
+          row: GridDesignerColumn;
+          rows: GridDesignerColumn[];
+        }) => {
+          const rowIndex = rows.indexOf(row);
+          Object.assign(row, normalizeColumn(row, rowIndex >= 0 ? rowIndex : 0));
+          selectColumn(row);
+          openColumnAdvancedDialog(row, () => syncColumnsFromRows(rows));
+        },
+      };
+      return schema;
+    };
+
+    const createGridDesignerSchema = (): LowCodeFormSchema => {
+      if (!databaseFormSchema) {
+        throw new Error('数据表格设计表单尚未加载。');
+      }
+
+      const schema = cloneDeep(databaseFormSchema);
+      const columnsSection = schema.fields.find(
+        (field) => field.field === gridDesignerFormCodes.columns,
+      );
+      if (!columnsSection || !isPlainRecord(columnsSection.props)) {
+        throw new Error('数据表格设计表单缺少列设计区段。');
+      }
+      columnsSection.props = {
+        ...columnsSection.props,
+        schema: createColumnDesignerSchema(),
+      };
+      return schema;
+    };
 
     const normalizePostDataJsonField = (value: unknown) => {
       if (typeof value === 'string') return;
@@ -2667,212 +2168,6 @@ const ServiceComponent = defineComponent({
       );
     };
 
-    const createInfoTabPanelBlock = (
-      id: string,
-      blocks: LowCodePageBlock[],
-    ): LowCodePageBlock =>
-      createContainerBlock(id, 'grid-designer-info-tab-panel', blocks);
-
-    const createAdvancedConfigFormBlock = (
-      config: AdvancedGridConfigDefinition,
-      className = 'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-advanced-item',
-    ) =>
-      createFormBlock(
-        advancedBlockId(config.field),
-        config.label,
-        createSchema(config.fields, 2),
-        className,
-      );
-
-    const advancedConfigByField = advancedGridConfigDefinitions.reduce<
-      Record<string, AdvancedGridConfigDefinition>
-    >((prev, config) => {
-      prev[config.field] = config;
-      return prev;
-    }, {});
-
-    const createTabbedBaseInfoBlocks = (): LowCodePageBlock[] => [
-      createContainerBlock(
-        'grid-designer-info-panel',
-        'grid-designer-panel grid-designer-info-panel',
-        [
-          {
-            id: 'grid-designer-info-tabs',
-            kind: 'tabs',
-            className: 'grid-designer-info-tabs',
-            defaultKey: 'business',
-            layout: { fillRemaining: true },
-            tabs: [
-              {
-                key: 'business',
-                label: '基础信息',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-business-info-panel', [
-                    createFormBlock(
-                      businessInfoBlockId,
-                      '业务信息',
-                      businessInfoSchema,
-                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-business-card',
-                    ),
-                  ]),
-                ],
-              },
-              {
-                key: 'options',
-                label: '表格参数',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-grid-options-panel', [
-                    createFormBlock(
-                      gridOptionsBlockId,
-                      '表格参数',
-                      gridOptionsSchema,
-                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-options-card',
-                    ),
-                  ]),
-                ],
-              },
-              {
-                key: 'form-settings',
-                label: '表单设置',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-form-settings-panel', [
-                    createFormBlock(
-                      formSettingsBlockId,
-                      '表单设置',
-                      formSettingsSchema,
-                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-form-settings-card',
-                    ),
-                  ]),
-                ],
-              },
-              {
-                key: 'row-config',
-                label: '行配置',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-row-config-panel', [
-                    createFormBlock(
-                      rowConfigBlockId,
-                      '行配置',
-                      rowConfigSchema,
-                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-row-column-card',
-                    ),
-                  ]),
-                ],
-              },
-              {
-                key: 'column-config',
-                label: '列配置',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-column-config-panel', [
-                    createFormBlock(
-                      columnConfigBlockId,
-                      '列配置',
-                      columnConfigSchema,
-                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-row-column-card',
-                    ),
-                  ]),
-                ],
-              },
-              {
-                key: 'pager',
-                label: '分页',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-pager-config-panel', [
-                    createAdvancedConfigFormBlock(advancedConfigByField.pagerConfigJson),
-                  ]),
-                ],
-              },
-              {
-                key: 'toolbar',
-                label: '工具栏',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-toolbar-config-panel', [
-                    createAdvancedConfigFormBlock(advancedConfigByField.toolbarConfigJson),
-                  ]),
-                ],
-              },
-              {
-                key: 'proxy',
-                label: '数据代理',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-proxy-config-panel', [
-                    createAdvancedConfigFormBlock(advancedConfigByField.proxyConfigJson),
-                  ]),
-                ],
-              },
-              {
-                key: 'edit',
-                label: '编辑',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-edit-config-panel', [
-                    createAdvancedConfigFormBlock(advancedConfigByField.editConfigJson),
-                  ]),
-                ],
-              },
-              {
-                key: 'more',
-                label: '更多配置',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-more-config-panel', [
-                    createContainerBlock(
-                      'grid-designer-more-config-grid',
-                      'grid-designer-advanced-grid',
-                      advancedGridConfigDefinitions
-                        .filter(
-                          (config) =>
-                            ![
-                              'pagerConfigJson',
-                              'toolbarConfigJson',
-                              'proxyConfigJson',
-                              'editConfigJson',
-                            ].includes(config.field),
-                        )
-                        .map((config) => createAdvancedConfigFormBlock(config)),
-                    ),
-                  ]),
-                ],
-              },
-              {
-                key: 'extra',
-                label: '扩展属性',
-                blocks: [
-                  createInfoTabPanelBlock('grid-designer-extra-props-panel', [
-                    createFormBlock(
-                      extraPropsBlockId,
-                      '扩展属性',
-                      createSchema(
-                        [
-                          {
-                            field: 'value',
-                            label: '扩展属性',
-                            component: 'lc-json-editor',
-                            props: { rows: 12 },
-                          },
-                        ],
-                        1,
-                      ),
-                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-advanced-item grid-designer-advanced-item--wide',
-                    ),
-                  ]),
-                ],
-              },
-            ],
-          },
-        ],
-      ),
-    ];
-
-    const createEventDesignerBlocks = (): LowCodePageBlock[] => [
-      createContainerBlock('grid-designer-events-panel', 'grid-designer-panel', [
-        createFormBlock(
-          eventDesignerBlockId,
-          '事件配置',
-          createEventDesignerSchema(),
-          'grid-designer-array-table-card',
-        ),
-      ]),
-    ];
-
     const createSchemaModel = (
       schema: LowCodeFormSchema,
       source: Record<string, unknown>,
@@ -2884,44 +2179,51 @@ const ServiceComponent = defineComponent({
 
     const createGridDesignerFormModels = () => {
       const advancedModels = state.advancedModels as Record<string, Record<string, unknown>>;
-
-      return {
-        [columnDesignerBlockId]: {
+      const formModel = {
+        [gridDesignerFormCodes.columns]: {
           columns: state.columns as unknown as Record<string, unknown>[],
         },
-        [businessInfoBlockId]: createSchemaModel(
-          businessInfoSchema,
+        [gridDesignerFormCodes.businessInfo]: createSchemaModel(
+          resolveGridDesignerFormSchema(gridDesignerFormCodes.businessInfo),
           state.business as unknown as Record<string, unknown>,
         ),
-        [formSettingsBlockId]: createSchemaModel(
-          formSettingsSchema,
+        [gridDesignerFormCodes.detailConfig]: createSchemaModel(
+          resolveGridDesignerFormSchema(gridDesignerFormCodes.detailConfig),
+          state.detailConfig as unknown as Record<string, unknown>,
+        ),
+        [gridDesignerFormCodes.formSettings]: createSchemaModel(
+          resolveGridDesignerFormSchema(gridDesignerFormCodes.formSettings),
           state.formSettings as unknown as Record<string, unknown>,
         ),
-        [gridOptionsBlockId]: createSchemaModel(
-          gridOptionsSchema,
+        [gridDesignerFormCodes.gridOptions]: createSchemaModel(
+          resolveGridDesignerFormSchema(gridDesignerFormCodes.gridOptions),
           state.gridOptions as Record<string, unknown>,
         ),
-        [rowConfigBlockId]: createSchemaModel(
-          rowConfigSchema,
+        [gridDesignerFormCodes.rowConfig]: createSchemaModel(
+          resolveGridDesignerFormSchema(gridDesignerFormCodes.rowConfig),
           state.gridOptions as Record<string, unknown>,
         ),
-        [columnConfigBlockId]: createSchemaModel(
-          columnConfigSchema,
+        [gridDesignerFormCodes.columnConfig]: createSchemaModel(
+          resolveGridDesignerFormSchema(gridDesignerFormCodes.columnConfig),
           state.gridOptions as Record<string, unknown>,
         ),
-        [eventDesignerBlockId]: {
+        [gridDesignerFormCodes.events]: {
           gridEvents: state.gridEvents as unknown as Record<string, unknown>[],
         },
         ...advancedGridConfigDefinitions.reduce<Record<string, Record<string, unknown>>>(
           (models, config) => {
-            models[advancedBlockId(config.field)] = advancedModels[config.field] ?? {};
+            models[config.code] = advancedModels[config.field] ?? {};
             return models;
           },
           {},
         ),
-        [extraPropsBlockId]: {
+        [gridDesignerFormCodes.extraProps]: {
           value: advancedModels.extraPropsJson ?? {},
         },
+      };
+
+      return {
+        [gridDesignerFormBlockId]: formModel,
       };
     };
 
@@ -2931,47 +2233,64 @@ const ServiceComponent = defineComponent({
         : null;
 
     const syncGridDesignerRuntimeEvent = async (event: LowCodeRuntimeEvent) => {
-      if (event.name !== 'form.fieldChange') return;
+      if (event.name !== 'form.fieldChange' || event.blockId !== gridDesignerFormBlockId) {
+        return;
+      }
 
       const values = readRuntimeFormValues(event);
       if (!values) return;
+      const sectionCode = readString(event.payload?.field);
+      const payloadValue = isPlainRecord(event.payload)
+        ? event.payload.value
+        : undefined;
+      const modelValue = values[sectionCode];
+      let sectionValues: Record<string, unknown> | undefined;
+      if (isPlainRecord(payloadValue)) {
+        sectionValues = payloadValue;
+      } else if (isPlainRecord(modelValue)) {
+        sectionValues = modelValue;
+      }
+      if (!sectionValues) return;
 
-      if (event.blockId === columnDesignerBlockId) {
-        syncColumnsFromRows(values.columns);
+      if (sectionCode === gridDesignerFormCodes.columns) {
+        syncColumnsFromRows(sectionValues.columns);
         return;
       }
 
-      if (event.blockId === eventDesignerBlockId) {
-        syncEventsFromRows(values.gridEvents);
+      if (sectionCode === gridDesignerFormCodes.events) {
+        syncEventsFromRows(sectionValues.gridEvents);
         return;
       }
 
-      if (event.blockId === formSettingsBlockId) {
-        Object.assign(state.formSettings, values);
+      if (sectionCode === gridDesignerFormCodes.formSettings) {
+        Object.assign(state.formSettings, sectionValues);
         syncColumnsFromFormSettings();
-        const columnModel = designerFormModels[columnDesignerBlockId];
-        if (isPlainRecord(columnModel)) {
+        const columnModel = readGridDesignerSectionModel(gridDesignerFormCodes.columns);
+        if (columnModel) {
           columnModel.columns = state.columns as unknown as Record<string, unknown>[];
         }
         return;
       }
 
-      if (event.blockId === businessInfoBlockId) {
+      if (sectionCode === gridDesignerFormCodes.businessInfo) {
+        const previousBusiness = cloneDeep(state.business);
         const previousSourceType = state.business.sourceType;
-        const changedField = readString(event.payload?.field);
-        const changedValue = event.payload?.value;
-        Object.assign(state.business, values);
-        if (changedField === 'tableType') {
-          const tableType = readString(changedValue);
+        Object.assign(state.business, sectionValues);
+
+        if (Object.prototype.hasOwnProperty.call(sectionValues, 'tableType')) {
+          const tableType = readString(sectionValues.tableType);
           state.business.tableType = tableType === 'main'
             ? 'main'
             : tableType === 'detail'
               ? 'detail'
               : 'default';
-          syncActiveDesignerDialogModel();
         }
-        if (changedField === 'sourceType') {
-          const sourceType = readString(changedValue);
+
+        if (
+          Object.prototype.hasOwnProperty.call(sectionValues, 'sourceType') &&
+          readString(sectionValues.sourceType) !== readString(previousBusiness.sourceType)
+        ) {
+          const sourceType = readString(sectionValues.sourceType);
           state.business.sourceType = sourceType === 'view'
             ? 'view'
             : sourceType === 'table'
@@ -2986,88 +2305,77 @@ const ServiceComponent = defineComponent({
           syncBusinessSourceTarget(
             state.business.sourceType === 'custom' && previousSourceType !== 'custom',
           );
-          syncActiveDesignerDialogModel();
         }
-        if (changedField === 'tableName') {
-          if (!readString(changedValue)) {
+
+        if (readString(sectionValues.tableName) !== readString(previousBusiness.tableName)) {
+          if (!readString(sectionValues.tableName)) {
             state.business.tableName = '';
             if (state.business.sourceType === 'table') state.business.sourceType = 'custom';
             syncBusinessSourceTarget(previousSourceType === 'table');
-            syncActiveDesignerDialogModel();
           } else {
-            await applyAssociationOption('table', changedValue);
+            await applyAssociationOption('table', sectionValues.tableName);
           }
         }
-        if (changedField === 'viewName') {
-          if (!readString(changedValue)) {
+
+        if (readString(sectionValues.viewName) !== readString(previousBusiness.viewName)) {
+          if (!readString(sectionValues.viewName)) {
             state.business.viewName = '';
             if (state.business.sourceType === 'view') state.business.sourceType = 'custom';
             syncBusinessSourceTarget(previousSourceType === 'view');
-            syncActiveDesignerDialogModel();
           } else {
-            await applyAssociationOption('view', changedValue);
+            await applyAssociationOption('view', sectionValues.viewName);
           }
         }
-        if (changedField === 'postDataJson') {
-          normalizePostDataJsonField(changedValue);
+
+        if (Object.prototype.hasOwnProperty.call(sectionValues, 'postDataJson')) {
+          normalizePostDataJsonField(sectionValues.postDataJson);
         }
+        syncActiveDesignerDialogModel();
+        return;
+      }
+
+      if (sectionCode === gridDesignerFormCodes.detailConfig) {
+        Object.assign(state.detailConfig, normalizeDetailConfig({
+          ...state.detailConfig,
+          ...sectionValues,
+        }));
         return;
       }
 
       if (
-        event.blockId === gridOptionsBlockId ||
-        event.blockId === rowConfigBlockId ||
-        event.blockId === columnConfigBlockId
+        sectionCode === gridDesignerFormCodes.gridOptions ||
+        sectionCode === gridDesignerFormCodes.rowConfig ||
+        sectionCode === gridDesignerFormCodes.columnConfig
       ) {
-        Object.assign(state.gridOptions, values);
+        Object.assign(state.gridOptions, sectionValues);
         return;
       }
 
       const advancedConfig = advancedGridConfigDefinitions.find(
-        (config) => event.blockId === advancedBlockId(config.field),
+        (config) => sectionCode === config.code,
       );
 
       if (advancedConfig) {
-        syncAdvancedConfigModel(advancedConfig.field, values);
+        syncAdvancedConfigModel(advancedConfig.field, sectionValues);
         return;
       }
 
-      if (event.blockId === extraPropsBlockId) {
+      if (sectionCode === gridDesignerFormCodes.extraProps) {
         syncAdvancedConfigModel(
           'extraPropsJson',
-          isPlainRecord(values.value) ? values.value : {},
+          isPlainRecord(sectionValues.value) ? sectionValues.value : {},
         );
       }
     };
 
-    const createGridDesignerDialogBlocks = (): LowCodePageBlock[] => [
-      createContainerBlock('grid-designer-workbench', 'grid-designer-workbench', [
-        {
-          id: 'grid-designer-tabs',
-          kind: 'tabs',
-          className: 'grid-designer-tabs',
-          defaultKey: state.activeTab,
-          layout: { fillRemaining: true },
-          tabs: [
-            {
-              key: 'columns',
-              label: '列设计',
-              blocks: createColumnDesignerBlocks(),
-            },
-            {
-              key: 'info',
-              label: '表格信息设计',
-              blocks: createTabbedBaseInfoBlocks(),
-            },
-            {
-              key: 'events',
-              label: '事件属性',
-              blocks: createEventDesignerBlocks(),
-            },
-          ],
-        },
-      ]),
-    ];
+    const createGridDesignerDialogBlocks = (): LowCodePageBlock[] => [{
+      id: gridDesignerFormBlockId,
+      kind: 'form',
+      title: '数据表格设计',
+      className: 'grid-designer-master-form grid-designer-schema-form-block',
+      layout: { fillRemaining: true },
+      schema: createGridDesignerSchema(),
+    }];
 
     const createGridDesignerDialogSchema = (): GlobalDialogContentNode[] => [
       {
@@ -3116,13 +2424,16 @@ export const $$gridDesigner = (() => {
       ins = app.mount(el);
     }
     const dfd = defer<GridDesignerResult>();
-    ins.service({
+    void Promise.resolve(ins.service({
       ...option,
       serviceApi: resolvedServiceApi,
       onConfirm: async (result: GridDesignerResult) => {
         await option.onConfirm?.(result);
         dfd.resolve(result);
       },
+    })).catch((error) => {
+      ElMessage.error(error instanceof Error ? error.message : '数据表格设计表单加载失败。');
+      dfd.reject();
     });
     return dfd.promise;
   };

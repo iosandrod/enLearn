@@ -1,4 +1,5 @@
 import type {
+  LowCodeGridDetailConfig,
   LowCodeGridRowAction,
   LowCodePageBlock,
   LowCodePageDataSource,
@@ -215,6 +216,33 @@ function normalizeGridRowActions(value: unknown) {
     .filter(Boolean) as LowCodeGridRowAction[];
 }
 
+function normalizeGridDetailConfig(value: unknown): LowCodeGridDetailConfig | undefined {
+  if (!isPlainRecord(value) || value.enabled === false) return undefined;
+  const parentSourceKey = readString(value.parentSourceKey ?? value.parent_source_key);
+  const resource = readString(value.resource);
+  const foreignKey = readString(value.foreignKey ?? value.foreign_key);
+  if (!parentSourceKey || !resource || !foreignKey) return undefined;
+  const rawInheritFields = value.inheritFields ?? value.inherit_fields;
+  const inheritFields = Array.isArray(rawInheritFields)
+    ? rawInheritFields
+      .map((item: unknown) => readString(item))
+      .filter(Boolean)
+    : [];
+  return {
+    enabled: true,
+    parentSourceKey,
+    resource,
+    foreignKey,
+    parentKey: readString(value.parentKey ?? value.parent_key, 'id'),
+    inheritFields: [...new Set(inheritFields)],
+    updateMode: readString(value.updateMode ?? value.update_mode) === 'replace'
+      ? 'replace'
+      : 'changes',
+    defaults: isPlainRecord(value.defaults) ? value.defaults : {},
+    stripCreatedKey: readBoolean(value.stripCreatedKey, true),
+  };
+}
+
 const converter: VisualToLowCodeConverter = {
   type: 'lowcode-grid',
   componentKey: 'lowcode-grid',
@@ -261,6 +289,7 @@ const converter: VisualToLowCodeConverter = {
     const columns = normalizeRows(gridProps.columns).map(normalizeColumn).filter(isDefined);
     const showRowActions = readBoolean(props.showRowActions, true);
     const rowActions = normalizeGridRowActions(props.rowActions);
+    const detailConfig = normalizeGridDetailConfig(props.detailConfig);
     const gridOptions = toRuntimeGridOptions(gridProps);
     const rowConfig = isPlainRecord(gridOptions.rowConfig) ? gridOptions.rowConfig : {};
     const columnConfig = isPlainRecord(gridOptions.columnConfig) ? gridOptions.columnConfig : {};
@@ -300,6 +329,7 @@ const converter: VisualToLowCodeConverter = {
         : {}),
       schema: {
         title: readString(props.title, 'Records'),
+        ...(detailConfig ? { detailConfig } : {}),
         grid: {
           border: true,
           stripe: true,

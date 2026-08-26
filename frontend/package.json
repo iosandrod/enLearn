@@ -75,6 +75,7 @@
     "test:form-type-property": "node tests/form-type-property-regression.mjs",
     "test:empty-form-designer": "node tests/empty-form-designer-regression.mjs",
     "test:grid-table-type-property": "node tests/grid-table-type-property-regression.mjs",
+    "test:grid-detail-schema-save": "node tests/grid-detail-schema-save-regression.mjs",
     "test:grid-selection-column": "node tests/grid-designer-selection-column-regression.mjs",
     "test:grid-selection-column-browser": "node tests/grid-designer-selection-column-browser-launcher.mjs",
     "test:grid-column-drag": "node tests/grid-designer-column-drag-regression.mjs",

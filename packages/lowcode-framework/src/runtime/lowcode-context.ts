@@ -76,7 +76,7 @@ export type LowCodeContextNodeMethod = {
 };
 
 export type LowCodeContextSource = {
-  page?: Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'schema'> & {
+  page?: Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'schema' | 'node_actions'> & {
     page_type?: LowCodePageRecord['page_type'];
     mode?: LowCodeEditPageMode;
   };
@@ -874,8 +874,12 @@ function createFunctionEntries(source: LowCodeContextSource) {
   ];
 }
 
-function blockNode(block: LowCodePageBlock, path: string): LowCodeContextNode {
-  const typeDefinition = getLowCodeNodeTypeDefinition(block.kind);
+function blockNode(
+  block: LowCodePageBlock,
+  path: string,
+  actions: NonNullable<LowCodePageRecord['node_actions']>,
+): LowCodeContextNode {
+  const typeDefinition = getLowCodeNodeTypeDefinition(block.kind, actions);
   return {
     id: path,
     blockId: block.id,
@@ -885,7 +889,7 @@ function blockNode(block: LowCodePageBlock, path: string): LowCodeContextNode {
     icon: typeDefinition?.icon ?? 'ri-box-3-line',
     description: readString('description' in block ? block.description : undefined, block.id),
     insertText: jsString(block.id),
-    methods: getLowCodeNodeActionMethods(block.kind, block).map((method) => ({
+    methods: getLowCodeNodeActionMethods(block.kind, block, actions).map((method) => ({
       id: `${path}/method:${method.method}`,
       method: method.method,
       label: method.label,
@@ -895,7 +899,7 @@ function blockNode(block: LowCodePageBlock, path: string): LowCodeContextNode {
       returns: method.returns,
     })),
     children: childBlocks(block).map((child, index) =>
-      blockNode(child, `${path}/${index}:${child.id || child.kind}`),
+      blockNode(child, `${path}/${index}:${child.id || child.kind}`, actions),
     ),
   };
 }
@@ -922,7 +926,11 @@ export function createLowCodeContextCatalog(
     ],
     nodes: schema
       ? [...schema.blocks, ...(schema.overlays ?? [])].map((block, index) =>
-          blockNode(block, `root/${index}:${block.id || block.kind}`),
+          blockNode(
+            block,
+            `root/${index}:${block.id || block.kind}`,
+            source.page?.node_actions ?? [],
+          ),
         )
       : [],
   };

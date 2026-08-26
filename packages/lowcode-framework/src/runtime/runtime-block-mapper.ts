@@ -152,6 +152,9 @@ export class RuntimeBlockMapper {
     visualProps.saveMethod = source?.saveMethod ?? '';
     visualProps.deleteMethod = source?.deleteMethod ?? '';
     visualProps.postDataJson = JSON.stringify(source?.postData ?? {}, null, 2);
+    visualProps.detailConfig = cloneRuntimeValue(
+      isRecord(schema.detailConfig) ? schema.detailConfig : {},
+    );
     visualProps.showRowActions = Boolean(
       rowActions.edit === true ||
       rowActions.delete === true ||

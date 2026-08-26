@@ -299,6 +299,17 @@ export type LowCodeGridRowAction = LowCodeGridAction & {
     plain?: boolean;
     text?: boolean;
 };
+export type LowCodeGridDetailConfig = {
+    enabled?: boolean;
+    parentSourceKey: string;
+    resource: string;
+    foreignKey: string;
+    parentKey?: string;
+    inheritFields?: string[];
+    updateMode?: 'replace' | 'changes';
+    defaults?: Record<string, unknown>;
+    stripCreatedKey?: boolean;
+};
 export type LowCodeGridSchema = {
     title?: string;
     toolbar?: LowCodeGridAction[];
@@ -311,6 +322,7 @@ export type LowCodeGridSchema = {
         overscanRowCount?: number;
         overscanColumnCount?: number;
     };
+    detailConfig?: LowCodeGridDetailConfig;
     rowActions?: {
         edit?: boolean;
         editLabel?: string;
@@ -419,6 +431,31 @@ export type LowCodeExecuteActionHook = {
     enabled?: boolean;
     critical?: boolean;
     script: string;
+};
+export type LowCodeNodeActionParameter = {
+    name: string;
+    type: string;
+    required?: boolean;
+    description: string;
+};
+export type LowCodeNodeActionDefinition = {
+    id: string;
+    node_type: string;
+    node_label: string;
+    node_icon: string;
+    action_code: string;
+    label: string;
+    description: string;
+    source_code: string;
+    parameters: LowCodeNodeActionParameter[];
+    returns: string;
+    insert_text_template: string;
+    applicable_when: Record<string, unknown>;
+    is_data_source_loader: boolean;
+    enabled: boolean;
+    is_system: boolean;
+    sort_order: number;
+    limits: import('../runtime/scripts').LowCodeScriptExecutionLimits;
 };
 export type LowCodePageTextBlock = LowCodeMaterialVersionedBlock & {
     id: string;
@@ -677,6 +714,7 @@ export type LowCodePageRecord = {
     table_name: string | null;
     relate_config: LowCodePageRelateConfig;
     schema: LowCodePageSchema;
+    node_actions?: LowCodeNodeActionDefinition[];
     version: number;
     published_at: string | null;
     created_at: string;

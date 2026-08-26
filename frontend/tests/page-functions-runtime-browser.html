@@ -34,6 +34,17 @@
       import 'vxe-pc-ui/lib/style.css';
       import 'vxe-table/lib/style.css';
       import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+      import nodeActionMigration from '../../supabase/migrations/20260826220000_database_node_actions.sql?raw';
+
+      function extractActionSource(anchor) {
+        const anchorIndex = nodeActionMigration.indexOf(anchor);
+        const sourceStart = nodeActionMigration.indexOf('$action$', anchorIndex);
+        const sourceEnd = nodeActionMigration.indexOf('$action$', sourceStart + 8);
+        if (anchorIndex < 0 || sourceStart < 0 || sourceEnd < 0) {
+          throw new Error(`Missing database node action: ${anchor}`);
+        }
+        return nodeActionMigration.slice(sourceStart + 8, sourceEnd).trim();
+      }
 
       const renderer = ref(null);
       const serviceCalls = [];
@@ -48,6 +59,27 @@
         keep_alive: false,
         page_type: 'custom',
         edit_page_id: null,
+        node_actions: [
+          {
+            id: 'form-set-data',
+            node_type: 'form',
+            node_label: '表单',
+            node_icon: 'ri-survey-line',
+            action_code: 'setData',
+            label: '设置表单数据',
+            description: '',
+            source_code: extractActionSource("'setData',"),
+            parameters: [],
+            returns: '',
+            insert_text_template: '',
+            applicable_when: {},
+            is_data_source_loader: false,
+            enabled: true,
+            is_system: true,
+            sort_order: 10,
+            limits: {},
+          },
+        ],
         schema: {
           schemaVersion: 3,
           code: 'page-functions-runtime',

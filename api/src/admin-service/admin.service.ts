@@ -532,7 +532,11 @@ export class AdminService extends BaseService {
         transactionalHooks: true,
         databaseHooks: {
           beforeCreate: 'public.dynamic_crud_normalize_option_item',
-          beforeUpdate: 'public.dynamic_crud_normalize_option_item'
+          beforeUpdate: 'public.dynamic_crud_normalize_option_item',
+          afterDelete: {
+            function: 'public.dynamic_crud_prevent_system_row_delete',
+            args: { message: 'System option items cannot be deleted.' }
+          }
         },
         databaseHookInputFields: [
           'sourceCode', 'parentValue', 'metadata_json', 'metadata'
@@ -548,6 +552,10 @@ export class AdminService extends BaseService {
           allowedFields: ['source_code', 'label', 'value', 'parent_value', 'color', 'disabled', 'status', 'sort_order', 'is_system', 'metadata'],
           requiredFields: ['source_code', 'label', 'value'],
           userFields: { updatedBy: 'updated_by' }
+        },
+        delete: {
+          allowedFields: [],
+          timestamp: false
         }
       },
       admin_user_roles: {
@@ -574,14 +582,6 @@ export class AdminService extends BaseService {
         tableName: 'sales_orders',
         accountField: 'account_id',
         permissions: this.adminCrudPermissions('sales.orders.manage'),
-        detailRelations: {
-          sales_order_lines: {
-            foreignKey: 'order_id',
-            parentKey: 'id',
-            inheritFields: ['account_id'],
-            updateMode: 'changes'
-          }
-        },
         defaults: {
           external_source: 'manual',
           status: 'draft',

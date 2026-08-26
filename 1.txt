@@ -1472,3 +1472,26 @@ const publishScript = `async function main() {
   await this.$message.success("计划版本已发布。");
   return result;
 }`;
+
+
+
+DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA
+
+
+
+{ key: 'start', label: '开始时间', control: 'datetime-local' },
+  { key: 'end', label: '结束时间', control: 'datetime-local' },
+  {
+    key: 'granularity',
+    label: '日期粒度',
+    control: 'select',
+    options: [
+      { label: '自动', value: 'auto' },
+      { label: '小时', value: 'hour' },
+      { label: '天', value: 'day' },
+      { label: '周', value: 'week' },
+      { label: '月', value: 'month' },
+    ],
+  },
+  { key: 'cellWidth', label: '时间格宽度', control: 'number', min: 40, max: 160, step: 4 },
+  { key: 'gridWidth', label: '左侧列宽', control: 'number', min: 176, max: 420, step: 8 },

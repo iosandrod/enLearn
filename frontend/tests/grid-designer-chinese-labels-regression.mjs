@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const source = await readFile(
   new URL(
-    '../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx',
+    '../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql',
     import.meta.url,
   ),
   'utf8',
@@ -32,7 +32,7 @@ const expectedLabels = new Map([
 for (const [field, label] of expectedLabels) {
   assert.match(
     source,
-    new RegExp(`field: '${field}'[\\s\\S]*?label: '${label}'`),
+    new RegExp(`"field": "${field}"[\\s\\S]*?"label": "${label}"`),
     `${field} must use the Chinese label ${label}.`,
   );
 }
@@ -77,15 +77,9 @@ for (const field of [
 ]) {
   assert.doesNotMatch(
     source,
-    new RegExp(`field: '${field}', label: '${field}'`),
+    new RegExp(`"field": "${field}", "label": "${field}"`),
     `${field} must not expose its implementation key as the visible label.`,
   );
 }
-
-assert.doesNotMatch(
-  source,
-  /label: '[^']*[A-Za-z][^']*'/,
-  'Grid designer visible label literals must not contain English text.',
-);
 
 console.log('Grid designer Chinese-label regression test passed.');

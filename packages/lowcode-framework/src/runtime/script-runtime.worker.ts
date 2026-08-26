@@ -73,6 +73,7 @@ const allowedCapabilityNames = new Set<LowCodeScriptCapabilityName>([
   'message.info',
   'message.success',
   'message.warning',
+  'node.runtime',
   'page.refresh',
   'router.push',
   'search.patch',
@@ -200,6 +201,9 @@ function createScriptSource(request: LowCodeScriptExecutionRequest, contextJson:
     warning: (text) => call("message.warning", text),
     error: (text) => call("message.error", text),
   });
+  const node = Object.freeze({
+    call: (command, payload = {}) => call("node.runtime", command, payload),
+  });
   const scriptThis = Object.freeze({
     context: freeze(snapshot),
     page: snapshot.page,
@@ -221,6 +225,7 @@ function createScriptSource(request: LowCodeScriptExecutionRequest, contextJson:
     $page: Object.freeze({ refresh: () => call("page.refresh") }),
     $router: Object.freeze({ push: (to) => call("router.push", to) }),
     $message: message,
+    $node: node,
     $dialog: dialog,
     $events: events,
     executeAction: (options) => call("action.execute", options),

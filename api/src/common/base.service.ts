@@ -727,11 +727,138 @@ export abstract class BaseService implements ServiceExecutor {
     };
   }
 
+  protected readRequestDetailRelations(ctx: CrudContext) {
+    return this.isRecord(ctx.meta.requestDetailRelations)
+      ? ctx.meta.requestDetailRelations as Record<string, ResourceDetailRelation>
+      : {};
+  }
+
+  protected resolveRequestDetailRelation(
+    ctx: CrudContext,
+    rawDetail: Record<string, unknown>,
+    detailIndex: number,
+    mode?: 'replace' | 'changes'
+  ) {
+    const resourceName = this.readOptionalString(rawDetail.resource);
+    if (!resourceName) {
+      throw new BadRequestException(`__details[${detailIndex}].resource is required.`);
+    }
+
+    const configured = ctx.resource.detailRelations?.[resourceName];
+    const resolved = this.tryResolveResource({
+      resource: configured?.resource ?? resourceName
+    });
+    if (!resolved) {
+      throw new BadRequestException(`Unsupported detail resource: ${resourceName}`);
+    }
+    if (
+      (resolved.config.clientMode ?? 'user') !==
+      (ctx.resource.clientMode ?? 'user')
+    ) {
+      throw new BadRequestException(
+        `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
+      );
+    }
+    this.assertSameAccountScope(ctx.resource, resolved.config, resourceName);
+
+    const requestedForeignKey = this.readOptionalString(
+      rawDetail.foreignKey ?? rawDetail.foreign_key
+    );
+    const foreignKey = configured?.foreignKey ?? requestedForeignKey;
+    if (!foreignKey) {
+      throw new BadRequestException(`__details[${detailIndex}].foreignKey is required.`);
+    }
+    if (configured && requestedForeignKey && requestedForeignKey !== configured.foreignKey) {
+      throw new BadRequestException(
+        `__details[${detailIndex}].foreignKey must be ${configured.foreignKey}.`
+      );
+    }
+    this.assertIdentifier(foreignKey, `__details[${detailIndex}].foreignKey`);
+
+    const requestedParentKey = this.readOptionalString(
+      rawDetail.parentKey ?? rawDetail.parent_key
+    );
+    const parentKey = configured?.parentKey || requestedParentKey || this.primaryKey(ctx.resource);
+    if (configured?.parentKey && requestedParentKey && requestedParentKey !== configured.parentKey) {
+      throw new BadRequestException(
+        `__details[${detailIndex}].parentKey must be ${configured.parentKey}.`
+      );
+    }
+    this.assertIdentifier(parentKey, `__details[${detailIndex}].parentKey`);
+
+    const requestedInheritFields = this.readStringArray(
+      rawDetail.inheritFields ?? rawDetail.inherit_fields
+    );
+    const inheritFields = configured?.inheritFields ?? requestedInheritFields;
+    if (
+      configured &&
+      (rawDetail.inheritFields !== undefined || rawDetail.inherit_fields !== undefined) &&
+      (
+        requestedInheritFields.length !== inheritFields.length ||
+        requestedInheritFields.some((field) => !inheritFields.includes(field))
+      )
+    ) {
+      throw new BadRequestException(
+        `__details[${detailIndex}].inheritFields does not match the configured relation.`
+      );
+    }
+    inheritFields.forEach((field) =>
+      this.assertIdentifier(field, `__details[${detailIndex}].inheritFields`)
+    );
+
+    const requestedUpdateMode = this.readOptionalString(
+      rawDetail.updateMode ?? rawDetail.update_mode
+    );
+    if (requestedUpdateMode && requestedUpdateMode !== 'replace' && requestedUpdateMode !== 'changes') {
+      throw new BadRequestException(
+        `Unsupported __details[${detailIndex}].updateMode: ${requestedUpdateMode}.`
+      );
+    }
+    const updateMode = configured?.updateMode || requestedUpdateMode || mode || 'changes';
+    if (mode && updateMode !== mode) {
+      throw new BadRequestException(
+        `Detail resource ${resourceName} does not allow ${mode} updates.`
+      );
+    }
+
+    if (!configured) {
+      const requestRelations = this.readRequestDetailRelations(ctx);
+      const nextRelation: ResourceDetailRelation = {
+        resource: resolved.name,
+        foreignKey,
+        parentKey,
+        inheritFields,
+        updateMode: updateMode as 'replace' | 'changes'
+      };
+      const existing = requestRelations[resourceName];
+      if (existing && JSON.stringify(existing) !== JSON.stringify(nextRelation)) {
+        throw new BadRequestException(`Conflicting detail relation for ${resourceName}.`);
+      }
+      ctx.meta.requestDetailRelations = {
+        ...requestRelations,
+        [resourceName]: nextRelation
+      };
+    }
+
+    return {
+      resourceName,
+      resolved,
+      foreignKey,
+      parentKey,
+      inheritFields,
+      updateMode: updateMode as 'replace' | 'changes'
+    };
+  }
+
   protected buildDynamicCrudConfig(ctx: CrudContext) {
     const resources = this.resources();
+    const detailRelations = {
+      ...this.readRequestDetailRelations(ctx),
+      ...(ctx.resource.detailRelations ?? {})
+    };
     const included = new Set<string>([ctx.resourceName]);
 
-    for (const [name, relation] of Object.entries(ctx.resource.detailRelations ?? {})) {
+    for (const [name, relation] of Object.entries(detailRelations)) {
       included.add(relation.resource ?? name);
     }
     for (const relation of Object.entries(ctx.resource.afterSaveRelations ?? {})) {
@@ -752,7 +879,7 @@ export abstract class BaseService implements ServiceExecutor {
       resource_name: ctx.resourceName,
       resources: serializedResources,
       detail_relations: Object.fromEntries(
-        Object.entries(ctx.resource.detailRelations ?? {}).map(([name, relation]) => [
+        Object.entries(detailRelations).map(([name, relation]) => [
           name,
           {
             resource: relation.resource ?? name,
@@ -975,74 +1102,16 @@ export abstract class BaseService implements ServiceExecutor {
           throw new BadRequestException(`__details[${detailIndex}] must be an object.`);
         }
 
-        const resourceName = this.readOptionalString(rawDetail.resource);
-        if (!resourceName) {
-          throw new BadRequestException(`__details[${detailIndex}].resource is required.`);
-        }
-
-        const relation = ctx.resource.detailRelations?.[resourceName];
-        if (!relation) {
-          throw new BadRequestException(
-            `Detail resource ${resourceName} is not configured for ${ctx.resourceName}.`
-          );
-        }
-
-        const resolved = this.tryResolveResource({
-          resource: relation.resource ?? resourceName
-        });
-        if (!resolved || !resolved.config.create) {
+        const {
+          resourceName,
+          resolved,
+          foreignKey,
+          parentKey,
+          inheritFields
+        } = this.resolveRequestDetailRelation(ctx, rawDetail, detailIndex);
+        if (!resolved.config.create) {
           throw new BadRequestException(`Unsupported create detail resource: ${resourceName}`);
         }
-        if (
-          (resolved.config.clientMode ?? 'user') !==
-          (ctx.resource.clientMode ?? 'user')
-        ) {
-          throw new BadRequestException(
-            `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
-          );
-        }
-        this.assertSameAccountScope(ctx.resource, resolved.config, resourceName);
-
-        const requestedForeignKey = this.readOptionalString(
-          rawDetail.foreignKey ?? rawDetail.foreign_key
-        );
-        const foreignKey = relation.foreignKey;
-        if (requestedForeignKey && requestedForeignKey !== foreignKey) {
-          throw new BadRequestException(
-            `__details[${detailIndex}].foreignKey must be ${foreignKey}.`
-          );
-        }
-        this.assertIdentifier(foreignKey, `__details[${detailIndex}].foreignKey`);
-
-        const requestedParentKey = this.readOptionalString(
-          rawDetail.parentKey ?? rawDetail.parent_key
-        );
-        const parentKey = relation.parentKey ?? this.primaryKey(ctx.resource);
-        if (requestedParentKey && requestedParentKey !== parentKey) {
-          throw new BadRequestException(
-            `__details[${detailIndex}].parentKey must be ${parentKey}.`
-          );
-        }
-        this.assertIdentifier(parentKey, `__details[${detailIndex}].parentKey`);
-
-        const requestedInheritFields = this.readStringArray(
-          rawDetail.inheritFields ?? rawDetail.inherit_fields
-        );
-        const inheritFields = relation.inheritFields ?? [];
-        if (
-          (rawDetail.inheritFields !== undefined || rawDetail.inherit_fields !== undefined) &&
-          (
-            requestedInheritFields.length !== inheritFields.length ||
-            requestedInheritFields.some((field) => !inheritFields.includes(field))
-          )
-        ) {
-          throw new BadRequestException(
-            `__details[${detailIndex}].inheritFields does not match the configured relation.`
-          );
-        }
-        inheritFields.forEach((field) =>
-          this.assertIdentifier(field, `__details[${detailIndex}].inheritFields`)
-        );
 
         const allowedFields = resolved.config.create.allowedFields;
         for (const managedField of [foreignKey, ...inheritFields]) {
@@ -1205,60 +1274,13 @@ export abstract class BaseService implements ServiceExecutor {
           );
         }
 
-        const resourceName = this.readOptionalString(rawDetail.resource);
-        if (!resourceName) {
-          throw new BadRequestException(`__details[${detailIndex}].resource is required.`);
-        }
-
-        const relation = ctx.resource.detailRelations?.[resourceName];
-        if (!relation) {
-          throw new BadRequestException(
-            `Detail resource ${resourceName} is not configured for ${ctx.resourceName}.`
-          );
-        }
-        if (relation.updateMode !== mode) {
-          throw new BadRequestException(
-            `Detail resource ${resourceName} does not allow ${mode} updates.`
-          );
-        }
-
-        const resolved = this.tryResolveResource({
-          resource: relation.resource ?? resourceName
-        });
-        if (!resolved) {
-          throw new BadRequestException(`Unsupported ${mode} detail resource: ${resourceName}`);
-        }
-        if (
-          (resolved.config.clientMode ?? 'user') !==
-          (ctx.resource.clientMode ?? 'user')
-        ) {
-          throw new BadRequestException(
-            `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
-          );
-        }
-        this.assertSameAccountScope(ctx.resource, resolved.config, resourceName);
-
-        const requestedForeignKey = this.readOptionalString(
-          rawDetail.foreignKey ?? rawDetail.foreign_key
-        );
-        const foreignKey = relation.foreignKey;
-        if (requestedForeignKey && requestedForeignKey !== foreignKey) {
-          throw new BadRequestException(
-            `__details[${detailIndex}].foreignKey must be ${foreignKey}.`
-          );
-        }
-        this.assertIdentifier(foreignKey, `__details[${detailIndex}].foreignKey`);
-
-        const requestedParentKey = this.readOptionalString(
-          rawDetail.parentKey ?? rawDetail.parent_key
-        );
-        const parentKey = relation.parentKey ?? primaryKey;
-        if (requestedParentKey && requestedParentKey !== parentKey) {
-          throw new BadRequestException(
-            `__details[${detailIndex}].parentKey must be ${parentKey}.`
-          );
-        }
-        this.assertIdentifier(parentKey, `__details[${detailIndex}].parentKey`);
+        const {
+          resourceName,
+          resolved,
+          foreignKey,
+          parentKey,
+          inheritFields
+        } = this.resolveRequestDetailRelation(ctx, rawDetail, detailIndex, mode);
 
         const targetKey = `${resolved.name}:${foreignKey}:${parentKey}`;
         if (targets.has(targetKey)) {
@@ -1267,25 +1289,6 @@ export abstract class BaseService implements ServiceExecutor {
           );
         }
         targets.add(targetKey);
-
-        const requestedInheritFields = this.readStringArray(
-          rawDetail.inheritFields ?? rawDetail.inherit_fields
-        );
-        const inheritFields = relation.inheritFields ?? [];
-        if (
-          (rawDetail.inheritFields !== undefined || rawDetail.inherit_fields !== undefined) &&
-          (
-            requestedInheritFields.length !== inheritFields.length ||
-            requestedInheritFields.some((field) => !inheritFields.includes(field))
-          )
-        ) {
-          throw new BadRequestException(
-            `__details[${detailIndex}].inheritFields does not match the configured relation.`
-          );
-        }
-        inheritFields.forEach((field) =>
-          this.assertIdentifier(field, `__details[${detailIndex}].inheritFields`)
-        );
 
         if (
           mode === 'changes' &&

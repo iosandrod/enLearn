@@ -8,13 +8,19 @@ const arrayTableSource = await readFile(
   ),
   'utf8',
 );
-const designerSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx',
-    import.meta.url,
+const [designerSource, migrationSource] = await Promise.all([
+  readFile(
+    new URL(
+      '../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx',
+      import.meta.url,
+    ),
+    'utf8',
   ),
-  'utf8',
-);
+  readFile(
+    new URL('../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql', import.meta.url),
+    'utf8',
+  ),
+]);
 const runtimeGridDesignerSource = await readFile(
   new URL(
     '../../packages/lowcode-framework/src/lowcode/block-materials/grid/runtime-grid-designer.ts',
@@ -49,9 +55,14 @@ assert.match(
   'A completed VXE drag must reorder the array-table model and commit the new row order.',
 );
 assert.match(
+  migrationSource,
+  /"field": "columns"[\s\S]*"component": "lc-array-table"[\s\S]*"rowDraggable": true[\s\S]*"movable": false/,
+  'The database schema must enable row dragging and replace the legacy up/down controls.',
+);
+assert.match(
   designerSource,
-  /field: 'columns'[\s\S]*component: 'lc-array-table'[\s\S]*rowDraggable: true[\s\S]*onRowMove:[\s\S]*syncColumnsFromRows\(rows\)[\s\S]*movable: false/,
-  'The grid column designer must enable drag ordering, sync the reordered model, and replace the legacy up/down controls.',
+  /onRowMove: \(\{ rows \}[\s\S]*syncColumnsFromRows\(rows\)[\s\S]*columnModel\.columns = state\.columns/,
+  'The frontend must inject only the runtime row-move synchronization handler.',
 );
 assert.match(
   runtimeGridDesignerSource,

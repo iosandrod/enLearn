@@ -13,6 +13,7 @@ const [
   gridDesignerSource,
   gridTypesSource,
   migrationSource,
+  gridDesignerMigrationSource,
 ] = await Promise.all([
   readFrameworkSource('packages/business-component/lowcode-grid/index.tsx'),
   readFrameworkSource('lowcode/visual-converters/lowcode-grid/index.ts'),
@@ -21,6 +22,10 @@ const [
   readFrameworkSource('types/lowcode.ts'),
   readFile(
     new URL('../../supabase/migrations/20260819100000_database_only_material_property_forms.sql', import.meta.url),
+    'utf8',
+  ),
+  readFile(
+    new URL('../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql', import.meta.url),
     'utf8',
   ),
 ]);
@@ -38,12 +43,12 @@ assert.match(gridConverterSource, /tableType:\s*'default'/);
 assert.match(gridDesignerSource, /GridDesignerTableType = 'main' \| 'detail' \| 'default'/);
 for (const value of ['main', 'detail', 'default']) {
   assert.match(
-    gridDesignerSource,
-    new RegExp(`label: '${value}', value: '${value}'`),
+    gridDesignerMigrationSource,
+    new RegExp(`"label": "${value}", "value": "${value}"`),
     `The full grid designer must include ${value}.`,
   );
 }
-assert.doesNotMatch(gridDesignerSource, /label: '普通表格', value: 'normal'/);
+assert.doesNotMatch(gridDesignerMigrationSource, /"label": "普通表格", "value": "normal"/);
 assert.match(
   runtimeToVisualSource,
   /tableType === 'normal'\) return 'default'[\s\S]*tableType === 'default'/,

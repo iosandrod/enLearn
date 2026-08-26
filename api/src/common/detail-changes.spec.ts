@@ -11,6 +11,7 @@ type PreparedCall = {
 
 class TestAdminService extends AdminService {
   preparedCall?: PreparedCall;
+  dynamicConfig?: Record<string, unknown>;
 
   protected override async createCrudClient() {
     return {} as never;
@@ -25,10 +26,11 @@ class TestAdminService extends AdminService {
   }
 
   protected override async callDynamicCrudRpc(
-    _ctx: CrudContext,
+    ctx: CrudContext,
     action: 'create' | 'update' | 'delete',
     operation: Record<string, unknown>,
   ) {
+    this.dynamicConfig = this.buildDynamicCrudConfig(ctx);
     this.preparedCall = { action, operation };
     return operation;
   }
@@ -41,6 +43,14 @@ const context: ServiceContext = {
 const orderId = '00000000-0000-4000-8000-000000000010';
 const updatedId = '00000000-0000-4000-8000-000000000020';
 const deletedId = '00000000-0000-4000-8000-000000000030';
+const deletedOptionId = '00000000-0000-4000-8000-000000000050';
+const salesOrderLineRelation = {
+  resource: 'sales_order_lines',
+  foreignKey: 'order_id',
+  parentKey: 'id',
+  inheritFields: ['account_id'],
+  updateMode: 'changes',
+} as const;
 
 async function main() {
   const service = new TestAdminService();
@@ -50,10 +60,8 @@ async function main() {
     data: {
       remark: 'incremental detail update',
       __details: [{
-        resource: 'sales_order_lines',
+        ...salesOrderLineRelation,
         mode: 'changes',
-        foreignKey: 'order_id',
-        inheritFields: ['account_id'],
         created: [{
           id: 'new-local-id',
           account_id: 'forged-account',
@@ -75,6 +83,17 @@ async function main() {
   }, context);
 
   assert.equal(service.preparedCall?.action, 'update');
+  const dynamicRelations = service.dynamicConfig?.detail_relations as Record<
+    string,
+    Record<string, unknown>
+  >;
+  assert.deepEqual(dynamicRelations.sales_order_lines, {
+    resource: 'sales_order_lines',
+    foreign_key: 'order_id',
+    parent_key: 'id',
+    inherit_fields: ['account_id'],
+    update_mode: 'changes',
+  });
   const details = service.preparedCall?.operation.details as Array<Record<string, unknown>>;
   assert.equal(details.length, 1);
   assert.deepEqual(details[0].deleted, [deletedId]);
@@ -94,7 +113,7 @@ async function main() {
     id: orderId,
     data: {
       __details: [{
-        resource: 'sales_order_lines',
+        ...salesOrderLineRelation,
         mode: 'changes',
         created: [],
         updated: [{ id: 101, item_name: 'Numeric primary key' }],
@@ -109,13 +128,46 @@ async function main() {
   assert.equal(numericDetails[0].updated[0].id, 101);
   assert.deepEqual(numericDetails[0].deleted, [102]);
 
+  const optionService = new TestAdminService();
+  await optionService.execute('updateItem', {
+    resource: 'system_option_sources',
+    id: '00000000-0000-4000-8000-000000000040',
+    data: {
+      code: 'planning_plan_type',
+      __details: [{
+        resource: 'system_option_items',
+        mode: 'changes',
+        foreignKey: 'source_code',
+        parentKey: 'code',
+        inheritFields: [],
+        updateMode: 'changes',
+        created: [{ label: '生产单', value: 'MO' }],
+        updated: [],
+        deleted: [deletedOptionId],
+      }],
+    },
+  }, context);
+  const optionDetails = optionService.preparedCall?.operation.details as Array<{
+    foreign_key: string;
+    parent_key: string;
+    created: Array<Record<string, unknown>>;
+    deleted: string[];
+  }>;
+  assert.equal(optionDetails[0].foreign_key, 'source_code');
+  assert.equal(optionDetails[0].parent_key, 'code');
+  assert.equal(optionDetails[0].created[0].source_code, undefined);
+  assert.equal(optionDetails[0].created[0].label, '生产单');
+  assert.equal(optionDetails[0].created[0].value, 'MO');
+  assert.equal(optionDetails[0].created[0].status, 'active');
+  assert.deepEqual(optionDetails[0].deleted, [deletedOptionId]);
+
   await assert.rejects(
     () => new TestAdminService().execute('updateItem', {
       resource: 'sales_orders',
       id: orderId,
       data: {
         __details: [{
-          resource: 'sales_order_lines',
+          ...salesOrderLineRelation,
           mode: 'changes',
           inserts: [{ item_name: 'Ambiguous alias' }],
           updated: [],
@@ -132,7 +184,7 @@ async function main() {
       id: orderId,
       data: {
         __details: [{
-          resource: 'sales_order_lines',
+          ...salesOrderLineRelation,
           mode: 'changes',
           created: [],
           updated: [{ id: updatedId, item_name: 'Updated' }],
@@ -149,7 +201,7 @@ async function main() {
       id: orderId,
       data: {
         __details: [{
-          resource: 'sales_order_lines',
+          ...salesOrderLineRelation,
           mode: 'changes',
           created: [],
           updated: [],

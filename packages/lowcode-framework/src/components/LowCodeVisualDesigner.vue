@@ -294,6 +294,7 @@ const designerPageRecord = computed<LowCodePageRecord>(() => {
     view_name: current?.view_name ?? null,
     table_name: current?.table_name ?? null,
     relate_config: current?.relate_config ?? {},
+    node_actions: current?.node_actions ?? [],
     schema: {
       ...(currentSchema ?? {}),
       code: form.value.code,

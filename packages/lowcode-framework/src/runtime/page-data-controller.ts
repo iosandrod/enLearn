@@ -26,7 +26,10 @@ import {
   isRecord,
   readString,
 } from './renderer-value-utils';
-import { LowCodePageScriptRuntime } from './lowcode-page-script-runtime';
+import {
+  buildLowCodeGridDetailSubmission,
+  normalizeLowCodeGridDetailConfig,
+} from './grid-detail-submission';
 
 type ValueRef<T> = { value: T };
 type DataSourceRequest = {
@@ -213,7 +216,11 @@ export class PageDataController {
       : allEntries;
     const pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
     const refreshEntry = async ([key, source]: readonly [string, LowCodePageDataSource]) => {
-      const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
+      const nodeAction = resolveLowCodeDataSourceNodeAction(
+        pageBlocks,
+        key,
+        this.dependencies.props.page.node_actions,
+      );
       if (nodeAction) {
         try {
           await this.dependencies.executeNodeAction({
@@ -647,6 +654,79 @@ export class PageDataController {
     return groups;
   }
 
+  private readonly collectGridDetailSubmissionGroups = (
+    formGroups: Map<string, LowCodePageFormBlock[]>,
+  ) => {
+    const groups = new Map<string, LowCodePageGridBlock[]>();
+
+    for (const block of this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema)) {
+      if (block.kind !== 'grid' || !isRecord(block.schema.detailConfig)) continue;
+      if (block.schema.detailConfig.enabled === false) continue;
+
+      const source = this.dependencies.getDataSource(block.sourceKey);
+      const config = normalizeLowCodeGridDetailConfig(block.schema.detailConfig, source);
+      if (!config) {
+        throw new Error(`子表“${block.title ?? block.id}”缺少主表数据源、子表资源或关联外键。`);
+      }
+      if (!formGroups.has(config.parentSourceKey)) {
+        throw new Error(
+          `子表“${block.title ?? block.id}”关联的主表数据源“${config.parentSourceKey}”没有可保存表单。`,
+        );
+      }
+      groups.set(config.parentSourceKey, [
+        ...(groups.get(config.parentSourceKey) ?? []),
+        block,
+      ]);
+    }
+
+    return groups;
+  }
+
+  private readonly validateSubmissionBlocks = async (
+    formGroups: Map<string, LowCodePageFormBlock[]>,
+    detailGroups: Map<string, LowCodePageGridBlock[]>,
+  ) => {
+    for (const blocks of formGroups.values()) {
+      for (const block of blocks) {
+        const controller = this.dependencies.runtime.getFormController(block.id);
+        if (controller && !(await controller.validate())) return false;
+      }
+    }
+
+    for (const blocks of detailGroups.values()) {
+      for (const block of blocks) {
+        const controller = this.dependencies.runtime.getGridController(block.id);
+        if (controller && !(await controller.validate())) return false;
+      }
+    }
+
+    return true;
+  }
+
+  private readonly buildGridDetailSubmissions = (
+    blocks: LowCodePageGridBlock[],
+  ) => {
+    const creating =
+      this.dependencies.props.page.page_type === 'edit' &&
+      this.dependencies.builtinPageFunctionMode.value === 'add';
+
+    return blocks.map((block) => {
+      const grid = this.dependencies.runtime.state.grids[block.id];
+      const source = this.dependencies.getDataSource(block.sourceKey);
+      const submission = buildLowCodeGridDetailSubmission({
+        block,
+        source,
+        rows: grid?.rows ?? [],
+        changes: this.dependencies.runtime.getGridChanges(block.id),
+        creating,
+      });
+      if (!submission) {
+        throw new Error(`子表“${block.title ?? block.id}”配置无效。`);
+      }
+      return submission;
+    });
+  }
+
   private readonly buildFormSubmissionValues = (
     sourceKey: string,
     blocks: LowCodePageFormBlock[]
@@ -710,7 +790,7 @@ export class PageDataController {
     }
 
     return this.dependencies.host.getServiceApi().invoke(serviceName, serviceMethod, {
-      ...(source.postData ?? {}),
+      ...request.postData,
       ...values,
     });
   }
@@ -758,11 +838,19 @@ export class PageDataController {
     this.lastSavedFormRecord = undefined;
 
     try {
+      const detailGroups = this.collectGridDetailSubmissionGroups(groups);
+      if (!(await this.validateSubmissionBlocks(groups, detailGroups))) {
+        throw new Error('请检查表单和子表中的必填项。');
+      }
+
       for (const [sourceKey, blocks] of groups) {
         this.dependencies.loadingBlockId.value = blocks[0]?.id ?? '';
+        const values = this.buildFormSubmissionValues(sourceKey, blocks);
+        const details = this.buildGridDetailSubmissions(detailGroups.get(sourceKey) ?? []);
+        if (details.length) values.__details = details;
         const saved = await this.saveFormSource(
           sourceKey,
-          this.buildFormSubmissionValues(sourceKey, blocks),
+          values,
         );
         if (!this.lastSavedFormRecord) this.lastSavedFormRecord = this.readSavedRecord(saved);
       }
@@ -846,7 +934,11 @@ export class PageDataController {
     source: LowCodePageDataSource,
     pageBlocks: LowCodePageBlock[]
   ) => {
-    const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
+    const nodeAction = resolveLowCodeDataSourceNodeAction(
+      pageBlocks,
+      key,
+      this.dependencies.props.page.node_actions,
+    );
     if (nodeAction) {
       if (source.autoLoad === false) return '';
       return this.dependencies.executeNodeAction({
@@ -876,22 +968,21 @@ export class PageDataController {
       })
       .finally(() => this.finishSourceRequest(key, version));
   }
-  scriptRuntime: LowCodePageScriptRuntime
-  setScriptRuntime(scriptRuntime: LowCodePageScriptRuntime) {
-    this.scriptRuntime = scriptRuntime
-  }
   private readonly loadDataSourceWaves = async (
     entries: Array<[string, LowCodePageDataSource]>,
     pageBlocks: LowCodePageBlock[],
     sources: Record<string, LowCodePageDataSource>
   ) => {
-    pageBlocks.forEach((block) => {
-      this.scriptRuntime.executeNodeAction({
-        node: block.id,
-        method: 'loadData',
-      })//
-    })
-   
+    const results = await Promise.all(
+      entries.map(([key, source]) => this.loadDataSourceEntry(key, source, pageBlocks)),
+    );
+    const loadedSourceKeys = new Set(
+      entries
+        .filter((_, index) => !results[index])
+        .map(([key]) => key),
+    );
+    this.hydrateSourceBoundForms(pageBlocks, sources, loadedSourceKeys);
+    return results.filter(Boolean);
   }
 
   readonly loadPageData = async (nextPage: LowCodePageRecord) => {

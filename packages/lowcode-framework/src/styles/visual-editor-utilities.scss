@@ -469,6 +469,27 @@
   background: #f5f7fb;
 }
 
+.grid-designer-master-form {
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #f5f7fb;
+}
+
+.grid-designer-master-form > .lc-form {
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+}
+
+.grid-designer-master-form > .lc-form > .vxe-form--wrapper,
+.grid-designer-master-form > .lc-form > .vxe-form--wrapper > .lc-form-layout {
+  height: 100%;
+  min-height: 0;
+}
+
 .grid-designer-tabs,
 .grid-designer-tabs > .vxe-tabs--body {
   height: 100%;

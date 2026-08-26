@@ -1,4 +1,5 @@
 import type {
+  LowCodeNodeActionDefinition,
   LowCodePageRelateConfig,
   LowCodePageSchema,
   LowCodePageType
@@ -283,6 +284,13 @@ export type LowCodePageVersionRow = {
   created_at: string;
 };
 
+export type LowCodeNodeActionRow = LowCodeNodeActionDefinition & {
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type LowCodeFormDefinitionRow = {
   id: string;
   code: string;
@@ -366,6 +374,7 @@ export interface Database {
       system_config: TableDefinition<SystemConfigRow>;
       lowcode_pages: TableDefinition<LowCodePageRow>;
       lowcode_page_versions: TableDefinition<LowCodePageVersionRow>;
+      lowcode_node_actions: TableDefinition<LowCodeNodeActionRow>;
       lowcode_form_definitions: TableDefinition<LowCodeFormDefinitionRow>;
     };
     Views: Record<string, never>;

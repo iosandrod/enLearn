@@ -49,7 +49,6 @@ const {
   clearLowCodeScriptApis,
   createLowCodeContextCatalog,
   getLowCodeNodeActionMethods,
-  lowCodeNodeActionRegistry,
   registerLowCodeScriptApi,
   resolveLowCodeNodeAction,
 } = contextModule;
@@ -69,11 +68,66 @@ registerLowCodeScriptApi('records.allowed', {
 });
 registerLowCodeScriptApi('records.hidden', () => true);
 
+let nodeActionIndex = 0;
+const nodeLabels = {
+  form: ['表单', 'ri-survey-line'],
+  searchForm: ['查询表单', 'ri-filter-3-line'],
+  grid: ['表格', 'ri-table-2'],
+  modal: ['弹框', 'ri-window-line'],
+  drawer: ['抽屉', 'ri-layout-right-line'],
+};
+const createNodeAction = (nodeType, actionCode, sortOrder, overrides = {}) => ({
+  id: `node-action-${++nodeActionIndex}`,
+  node_type: nodeType,
+  node_label: nodeLabels[nodeType][0],
+  node_icon: nodeLabels[nodeType][1],
+  action_code: actionCode,
+  label: actionCode,
+  description: '',
+  source_code: 'async function main() {}',
+  parameters: [],
+  returns: '',
+  insert_text_template:
+    `await this.executeAction({ node: {{nodeId}}, method: "${actionCode}" });`,
+  applicable_when: {},
+  is_data_source_loader: false,
+  enabled: true,
+  is_system: true,
+  sort_order: sortOrder,
+  limits: {},
+  ...overrides,
+});
+const formMethods = ['setData', 'validate', 'getData', 'refreshOptions', 'resetData'];
+const gridMethods = [
+  'loadData',
+  'reloadData',
+  'getChanges',
+  'validate',
+  'addRow',
+  'deleteCurrentRow',
+];
+const nodeActions = [
+  ...formMethods.flatMap((method, index) => [
+    createNodeAction('form', method, (index + 1) * 10),
+    createNodeAction('searchForm', method, (index + 1) * 10),
+  ]),
+  createNodeAction('form', 'loadData', 5, {
+    applicable_when: { formType: ['edit'] },
+    is_data_source_loader: true,
+  }),
+  ...gridMethods.map((method, index) => createNodeAction('grid', method, (index + 1) * 10, {
+    is_data_source_loader: method === 'loadData',
+  })),
+  createNodeAction('modal', 'open', 10),
+  createNodeAction('drawer', 'open', 10),
+];
+
 const page = {
   id: 'page-1',
   code: 'records',
   route: '/records',
   title: 'Records',
+  node_actions: nodeActions,
   schema: {
     code: 'records',
     route: '/records',
@@ -237,7 +291,7 @@ assert.deepEqual(
   listBuiltinFunctionCatalog.functions
     .filter((item) => item.group === '内置页面函数')
     .map((item) => item.label),
-  ['新增跳转到编辑页', '编辑跳转到编辑页', '审核', '反审', '关闭', '打开', '刷新', '打印', '退出'],
+  ['新增跳转到编辑页', '编辑跳转到编辑页', '删除', '审核', '反审', '关闭', '打开', '刷新', '打印', '退出'],
 );
 assert.equal(catalog.nodes[1].children[0].blockId, 'edit');
 assert.equal(catalog.nodes[2].children[0].blockId, 'details');
@@ -254,18 +308,17 @@ assert.match(
   catalog.nodes[1].children[0].methods[0].insertText,
   /node: "edit"[\s\S]*?method: "setData"/,
 );
-assert.equal(lowCodeNodeActionRegistry.grid.label, '表格');
-assert.equal(resolveLowCodeNodeAction('grid', 'loadData')?.executor, 'grid.loadData');
-assert.equal(resolveLowCodeNodeAction('grid', 'reloadData')?.executor, 'grid.reloadData');
-assert.equal(resolveLowCodeNodeAction('grid', 'getChanges')?.executor, 'grid.getChanges');
-assert.equal(resolveLowCodeNodeAction('grid', 'validate')?.executor, 'grid.validate');
-assert.equal(resolveLowCodeNodeAction('grid', 'addRow')?.executor, 'grid.addRow');
 assert.equal(
-  resolveLowCodeNodeAction('grid', 'deleteCurrentRow')?.executor,
-  'grid.deleteCurrentRow',
+  resolveLowCodeNodeAction('grid', 'loadData', page.schema.blocks[1].tabs[0].blocks[1], nodeActions)
+    ?.source_code,
+  'async function main() {}',
 );
-assert.equal(resolveLowCodeNodeAction('grid', 'setData'), undefined);
-assert.deepEqual(getLowCodeNodeActionMethods('text'), []);
+assert.equal(
+  resolveLowCodeNodeAction('grid', 'deleteCurrentRow', undefined, nodeActions)?.action_code,
+  'deleteCurrentRow',
+);
+assert.equal(resolveLowCodeNodeAction('grid', 'setData', undefined, nodeActions), undefined);
+assert.deepEqual(getLowCodeNodeActionMethods('text', undefined, nodeActions), []);
 
 const duplicateNodeCatalog = createLowCodeContextCatalog({
   page: {
@@ -307,6 +360,7 @@ const designerContext = createDesignerScriptContextSource({
     code: 'live-code',
     route: '/live-route',
     title: 'Live title',
+    node_actions: nodeActions,
     schema: {
       code: 'saved-code',
       route: '/saved-route',
@@ -340,6 +394,7 @@ const designerContext = createDesignerScriptContextSource({
 });
 assert.equal(designerContext.page.code, 'live-code');
 assert.equal(designerContext.page.route, '/live-route');
+assert.equal(designerContext.page.node_actions.length, 19);
 assert.deepEqual(designerContext.apiNames, ['records.allowed']);
 assert.deepEqual(designerContext.capabilities, ['api.invoke', 'message.info']);
 assert.deepEqual(Object.keys(designerContext.page.schema.dataSources).sort(), [
@@ -376,9 +431,7 @@ const [
   contextDrawerSource,
   drawerSource,
   nodeRegistrySource,
-  buttonGroupActionSource,
-  formActionSource,
-  gridActionSource,
+  nodeActionMigrationSource,
   hostSource,
   dialogHostSource,
   designerSource,
@@ -389,9 +442,7 @@ const [
   readFile(new URL('runtime/lowcode-context-drawer.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeContextDrawerPanel.vue', frameworkRoot), 'utf8'),
   readFile(new URL('runtime/node-action-registry.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('runtime/node-action/button-group-action.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('runtime/node-action/form-action.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('runtime/node-action/grid-action.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('../../supabase/migrations/20260826220000_database_node_actions.sql', import.meta.url), 'utf8'),
   readFile(new URL('components/GlobalDrawerHost.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/GlobalDialogHost.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeVisualDesigner.vue', frameworkRoot), 'utf8'),
@@ -431,23 +482,18 @@ assert.match(
 );
 assert.match(
   nodeRegistrySource,
-  /lowCodeNodeActionRegistry[^]*?buttonGroup:\s*buttonGroupNodeActionDefinition[^]*?form:\s*formNodeActionDefinition[^]*?searchForm:\s*searchFormNodeActionDefinition[^]*?grid:\s*gridNodeActionDefinition/,
-  'The registry must aggregate the definitions owned by each node module.',
+  /getLowCodeNodeActionMethods[^]*?actions[^]*?action\.node_type === kind[^]*?action\.action_code/,
+  'The context registry must derive node methods from the API action collection.',
 );
 assert.match(
-  buttonGroupActionSource,
-  /buttonGroupNodeActionDefinition[^]*?kind: 'buttonGroup'[^]*?methods: \{\}/,
-  'Button-group node metadata must live in its node action module.',
+  nodeActionMigrationSource,
+  /create table if not exists public\.lowcode_node_actions[^]*?source_code text not null/,
+  'The database table must own node metadata and executable source.',
 );
 assert.match(
-  formActionSource,
-  /executeFormSetDataNodeAction[^]*?executeFormValidateNodeAction[^]*?executeFormGetDataNodeAction[^]*?executeFormRefreshOptionsNodeAction[^]*?executeFormResetDataNodeAction[^]*?formNodeActionDefinition[^]*?searchFormNodeActionDefinition/,
-  'Form and search-form methods must live in the form node action module.',
-);
-assert.match(
-  gridActionSource,
-  /executeGridLoadDataNodeAction[^]*?executeGridReloadDataNodeAction[^]*?executeGridGetChangesNodeAction[^]*?executeGridValidateNodeAction[^]*?executeGridAddRowNodeAction[^]*?executeGridDeleteCurrentRowNodeAction[^]*?gridNodeActionDefinition/,
-  'Grid methods must live in the grid node action module.',
+  nodeActionMigrationSource,
+  /action_count <> 19 or node_type_count <> 5/,
+  'The migration must validate the complete built-in database action catalog.',
 );
 assert.match(
   hostSource,

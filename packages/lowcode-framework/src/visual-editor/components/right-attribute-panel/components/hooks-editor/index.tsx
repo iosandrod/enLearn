@@ -1,4 +1,4 @@
-import { computed, defineComponent, onBeforeUnmount, ref } from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import LowCodeForm from '../../../../../components/LowCodeForm.vue';
 import { ElEmpty } from '../../../common/designer-ui';
@@ -10,16 +10,7 @@ import type {
 } from '../../../../../types/lowcode';
 import { useVisualData } from '../../../../hooks/useVisualData';
 import { useLowCodeHost } from '../../../../../core/host';
-import { lowCodeOptionSourceRegistry } from '../../../../../runtime/option-source-registry';
 import styles from '../../index.module.scss';
-
-const HOOK_ACTION_OPTION_SOURCES: Record<string, string> = {
-  form: 'lowcode_node_action_form_method',
-  searchForm: 'lowcode_node_action_search_form_method',
-  grid: 'lowcode_node_action_grid_method',
-  modal: 'lowcode_node_action_modal_method',
-  drawer: 'lowcode_node_action_drawer_method',
-};
 
 function nodeActionKindForVisualBlock(block: { componentKey?: string; props?: Record<string, unknown> }) {
   const componentKey = block.componentKey ?? '';
@@ -52,14 +43,14 @@ function resolveActionOptions(value: unknown, nodeKind: string): LowCodeOption[]
     .filter((option) => {
       const metadata = isRecord(option.metadata) ? option.metadata : {};
       const optionNodeKind = readString(
-        option.nodeKind ?? option.node_kind ?? metadata.nodeKind ?? metadata.node_kind,
+        option.node_type ?? option.nodeKind ?? option.node_kind ?? metadata.nodeKind ?? metadata.node_kind,
       );
       return optionNodeKind === nodeKind;
     })
     .map((option) => ({
-      label: readString(option.label) || readString(option.value),
+      label: readString(option.label) || readString(option.name) || readString(option.action_code),
       value: readString(
-        isRecord(option.metadata) ? option.metadata.method : option.value,
+        option.action_code ?? (isRecord(option.metadata) ? option.metadata.method : option.value),
       ) || readString(option.value),
       rawValue: isRecord(option.metadata)
         ? option.metadata.method ?? option.rawValue ?? option.value
@@ -190,25 +181,26 @@ export const HooksEditor = defineComponent({
   setup() {
     const { currentBlock, historyState } = useVisualData();
     const host = useLowCodeHost();
-    const actionOptions = ref<Record<string, unknown[]>>({});
-    const unsubscribe = lowCodeOptionSourceRegistry.subscribe(
-      Object.values(HOOK_ACTION_OPTION_SOURCES),
-      (code, options) => {
-        actionOptions.value = {
-          ...actionOptions.value,
-          [code]: options,
-        };
-      },
-      () => host.getServiceApi(),
-    );
-    onBeforeUnmount(unsubscribe);
+    const actionOptions = ref<unknown[]>([]);
+    onMounted(async () => {
+      actionOptions.value = await host.getServiceApi().invoke<unknown[]>(
+        'lowcode',
+        'listItems',
+        {
+          resource: 'lowcode_node_actions',
+          filters: { enabled: true },
+          sorts: [
+            { field: 'node_type', direction: 'asc' },
+            { field: 'sort_order', direction: 'asc' },
+          ],
+          limit: 500,
+        },
+      );
+    });
 
     const nodeKind = computed(() => nodeActionKindForVisualBlock(currentBlock.value ?? {}));
-    const actionOptionSource = computed(
-      () => HOOK_ACTION_OPTION_SOURCES[nodeKind.value] ?? '',
-    );
     const nodeActionOptions = computed(() => resolveActionOptions(
-      actionOptions.value[actionOptionSource.value] ?? [],
+      actionOptions.value,
       nodeKind.value,
     ));
     const schema = computed(() => createHooksSchema(nodeActionOptions.value));

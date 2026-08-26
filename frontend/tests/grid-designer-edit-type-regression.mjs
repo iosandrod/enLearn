@@ -15,13 +15,19 @@ const arrayTableSource = await readFile(
   ),
   'utf8',
 );
-const migrationSource = await readFile(
-  new URL(
-    '../../supabase/migrations/20260811100000_grid_column_edit_type_options.sql',
-    import.meta.url,
+const [migrationSource, formMigrationSource] = await Promise.all([
+  readFile(
+    new URL(
+      '../../supabase/migrations/20260811100000_grid_column_edit_type_options.sql',
+      import.meta.url,
+    ),
+    'utf8',
   ),
-  'utf8',
-);
+  readFile(
+    new URL('../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql', import.meta.url),
+    'utf8',
+  ),
+]);
 
 assert.doesNotMatch(
   designerSource,
@@ -29,13 +35,13 @@ assert.doesNotMatch(
   'Edit renderer choices must not remain hardcoded in the grid designer.',
 );
 assert.match(
-  designerSource,
-  /const gridColumnEditTypeOptionSourceCode = 'grid_column_edit_type'/,
-  'The grid designer must reference the database dropdown source code.',
+  formMigrationSource,
+  /"field": "editType"[\s\S]*"optionsCode": "grid_column_edit_type"/,
+  'The database form schema must reference the dropdown source code.',
 );
 assert.match(
-  designerSource,
-  /field: 'editType'[\s\S]*?component: 'vxe-select'[\s\S]*?optionsCode: gridColumnEditTypeOptionSourceCode/,
+  formMigrationSource,
+  /"field": "editType", "title": "编辑类型", "component": "vxe-select"[\s\S]*?"optionsCode": "grid_column_edit_type"/,
   'The edit-type array-table column must resolve its choices through optionsCode.',
 );
 assert.match(
@@ -65,8 +71,8 @@ assert.match(
 );
 
 assert.match(
-  designerSource,
-  /field: 'title'[\s\S]*field: 'editType',[\s\S]*title: '编辑类型'[\s\S]*field: 'type'/,
+  formMigrationSource,
+  /"field": "title"[\s\S]*"field": "editType", "title": "编辑类型"[\s\S]*"field": "type"/,
   'The edit-type selector must appear between title and type in the column designer.',
 );
 assert.match(

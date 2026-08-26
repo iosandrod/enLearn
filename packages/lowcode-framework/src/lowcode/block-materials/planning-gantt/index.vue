@@ -126,14 +126,16 @@ const displaySettingsSchema = shallowRef<LowCodeFormSchema | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 let tabRenderFrame = 0;
 
-async function loadDisplaySettingsSchema() {
-  const code = readString(props.block.settingsFormCode);
+async function loadDisplaySettingsSchema() {//
+  let code = readString(props.block.settingsFormCode);
+  code=code||'planning-gantt-display-settings'//
   if (!code) return;
-  displaySettingsSchema.value = DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA;
+  // displaySettingsSchema.value = DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA;
   try {
     const definition = await loadLowCodeFormDefinition(host.getServiceApi(), code);
     displaySettingsSchema.value = definition.schema;
-  } catch {
+  } catch(error) {//
+    console.error(error)
     // Keep the bundled schema as a usable fallback when the definition is unavailable.
   }
 }

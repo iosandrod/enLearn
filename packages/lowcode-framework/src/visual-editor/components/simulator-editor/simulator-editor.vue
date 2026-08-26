@@ -526,6 +526,7 @@
     result: GridDesignerResult,
   ) => {
     Object.assign(block.props, cloneDeep(result.business));
+    block.props.detailConfig = cloneDeep(result.detailConfig);
     block.props.columns = cloneDeep(result.columns);
     Object.assign(block.props, cloneDeep(result.gridOptions));
     delete block.props.gridOptions;
@@ -652,6 +653,9 @@
         postDataJson: block.props?.postDataJson,
         showRowActions: block.props?.showRowActions,
       },
+      detailConfig: isRecord(block.props?.detailConfig)
+        ? cloneDeep(block.props.detailConfig)
+        : {},
       columns: Array.isArray(block.props?.columns) ? block.props.columns : [],
       gridOptions: readVxeGridOptions(block.props),
       gridEvents: Array.isArray(block.props?.gridEvents) ? block.props.gridEvents : [],
@@ -688,6 +692,7 @@
         postDataJson: '{}',
         showRowActions: false,
       },
+      detailConfig: {},
       columns,
       gridOptions: {
         ...readVxeGridOptions(block.props),

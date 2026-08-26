@@ -1,5 +1,6 @@
 import type { LowCodeHostRuntime } from '../core/host';
 import type {
+  LowCodeNodeActionDefinition,
   LowCodePageBlock,
   LowCodePageDataSource,
   LowCodePageFormBlock,
@@ -192,24 +193,8 @@ export class LowCodePageScriptRuntime {
     const {
       beginSourceRequest,
       builtinPageFunctionMode,
-      cloneScriptValue,
       findRuntimeBlock,
-      finishSourceRequest,
-      flattenPageBlocks,
-      formBaselines,
-      getDataSource,
-      host,
-      isCurrentSourceRequest,
-      isOverlayBlock,
-      loadingGridId,
       props,
-      refreshFormNodeOptions,
-      resolveDataSourceRequest,
-      resolveRuntimePostData,
-      runtime,
-      searchFilters,
-      shouldReturnEmptyForUnavailableList,
-      syncPageGridStates
     } = this.dependencies;
     const node = readString(options.node);
     const method = readString(options.method);
@@ -218,79 +203,238 @@ export class LowCodePageScriptRuntime {
 
     const block = findRuntimeBlock(node);
     if (!block) throw new Error(`页面节点 "${node}" 不存在。`);
-    if (block.kind == 'form') {
-    }
-    const action = resolveLowCodeNodeAction(block.kind, method);
-    if (!action) throw new Error(`节点 "${node}${block.kind}" 不支持动作 "${method}"。`);
+    const action = resolveLowCodeNodeAction(
+      block.kind,
+      method,
+      block,
+      props.page.node_actions,
+    );
+    if (!action) throw new Error(`节点 "${node}" 不支持动作 "${method}"。`);
     this.assertEditPageNodeActionWritable(block.kind, method);
+    return this.executeDatabaseNodeAction(action, block, options);
+  }
 
-    if (action.execute) {
-      return action.execute({
-        block,
-        options,
-        blocks: flattenPageBlocks(props.page.schema),
-        searchFilters: searchFilters.value,
-        grids: runtime.state.grids,
-        editPageMode: props.page.page_type === 'edit' ? builtinPageFunctionMode.value : undefined,
-        getDataSource,
-        resolveDataSourceRequest: (sourceKey, source, postData) =>
-          resolveDataSourceRequest(sourceKey, source, postData, false),
-        resolveRuntimePostData,
-        invokeDataSourceRequest: async (request, source) => {
-          //
-          try {
-            if (Object.keys(request.postData).length === 0) {
-              return []//
-            }
-            return await host.getServiceApi().invoke(request.serviceName, request.serviceMethod, request.postData);
-          } catch (error) {
-            if (shouldReturnEmptyForUnavailableList(error, source.serviceMethod ?? request.serviceMethod)) {
-              return [];
-            }
-            throw error;
+  private async executeDatabaseNodeAction(
+    action: LowCodeNodeActionDefinition,
+    block: LowCodePageBlock,
+    options: Record<string, unknown>,
+  ) {
+    const {
+      builtinPageFunctionMode,
+      flattenPageBlocks,
+      host,
+      props,
+      runtime,
+      searchFilters,
+    } = this.dependencies;
+    const event: LowCodeRuntimeEvent = {
+      name: `nodeAction.${block.kind}.${action.action_code}`,
+      blockId: block.id,
+      blockKind: block.kind,
+      timestamp: Date.now(),
+      payload: {
+        nodeAction: cloneRuntimeValue({
+          block,
+          options,
+          blocks: flattenPageBlocks(props.page.schema),
+          dataSources: props.page.schema.dataSources ?? {},
+          editPageMode: props.page.page_type === 'edit'
+            ? builtinPageFunctionMode.value
+            : undefined,
+        }),
+      },
+    };
+    const context: LowCodeScriptContextSnapshot = {
+      page: cloneRuntimeValue({
+        id: props.page.id,
+        code: props.page.code,
+        route: props.page.route,
+        page_type: props.page.page_type,
+      }),
+      route: cloneRuntimeValue(host.getRoute()),
+      data: cloneRuntimeValue(runtime.state.sources),
+      forms: cloneRuntimeValue(runtime.state.forms),
+      searches: cloneRuntimeValue(searchFilters.value),
+      grids: cloneRuntimeValue(runtime.state.grids),
+      event: cloneRuntimeValue(event),
+      policy: { capabilities: ['node.runtime', 'action.execute'] },
+    };
+    const result = await executeLowCodeScript(
+      {
+        script: action.source_code,
+        context,
+        limits: action.limits,
+      },
+      (request) => {
+        if (request.name === 'node.runtime') {
+          return this.handleNodeRuntimeCommand(request, block, options);
+        }
+        if (request.name === 'action.execute') {
+          return this.executeScriptNodeAction(this.readScriptRecordArg(request.args, 0));
+        }
+        throw new Error(`节点动作脚本能力 "${request.name}" 未授权。`);
+      },
+    );
+    return result.value;
+  }
+
+  private async handleNodeRuntimeCommand(
+    request: LowCodeScriptCapabilityRequest,
+    block: LowCodePageBlock,
+    actionOptions: Record<string, unknown>,
+  ) {
+    const {
+      beginSourceRequest,
+      cloneScriptValue,
+      finishSourceRequest,
+      formBaselines,
+      getDataSource,
+      getGridRowKey,
+      host,
+      isCurrentSourceRequest,
+      isOverlayBlock,
+      loadingGridId,
+      refreshFormNodeOptions,
+      resolveDataSourceRequest,
+      resolveRuntimePostData,
+      runtime,
+      shouldReturnEmptyForUnavailableList,
+      syncPageGridStates,
+    } = this.dependencies;
+    const command = this.readScriptStringArg(request.args, 0, 'command');
+    const payload = this.readScriptRecordArg(request.args, 1);
+    const sourceKey = readString(payload.sourceKey ?? (
+      'sourceKey' in block ? block.sourceKey : undefined
+    ));
+
+    switch (command) {
+      case 'runtime.resolve':
+        return resolveRuntimePostData(this.readScriptRecordArg([payload.value], 0));
+      case 'source.begin':
+        return beginSourceRequest(sourceKey);
+      case 'source.isCurrent':
+        return isCurrentSourceRequest(sourceKey, Number(payload.version));
+      case 'source.finish':
+        finishSourceRequest(sourceKey, Number(payload.version));
+        return true;
+      case 'source.invoke': {
+        const source = getDataSource(sourceKey);
+        if (!source) throw new Error(`数据源 "${sourceKey}" 不可用。`);
+        const postData = resolveRuntimePostData(
+          this.readScriptRecordArg([payload.postData], 0),
+        );
+        const resolved = resolveDataSourceRequest(sourceKey, source, postData, false);
+        if (!resolved.serviceName || !resolved.serviceMethod) {
+          throw new Error(`数据源 "${sourceKey}" 未配置 serviceName 或 serviceMethod。`);
+        }
+        try {
+          return await host.getServiceApi().invoke(
+            resolved.serviceName,
+            resolved.serviceMethod,
+            resolved.postData,
+          );
+        } catch (error) {
+          if (shouldReturnEmptyForUnavailableList(error, source.serviceMethod ?? resolved.serviceMethod)) {
+            return [];
           }
-        },
-        getSourceValue: (sourceKey) => runtime.state.sources[sourceKey],
-        setSource: (sourceKey, value, sourceOptions) => runtime.setSource(sourceKey, value, sourceOptions),
-        syncGridStates: () => syncPageGridStates(),
-        beginSourceRequest,
-        isCurrentSourceRequest,
-        finishSourceRequest,
-        setLoadingGrid: (blockId, loading) => {
-          if (loading) {
-            loadingGridId.value = blockId;
-          } else if (loadingGridId.value === blockId) {
-            loadingGridId.value = '';
-          }
-        },
-        getFormValues: (blockId) => runtime.state.forms[blockId] ?? {},
-        getFormBaseline: (blockId) => formBaselines[blockId] ?? {},
-        patchFormValues: (blockId, values) => runtime.patchForm(blockId, values),
-        replaceFormValues: (blockId, values) => runtime.replaceForm(blockId, values),
-        validateForm: (blockId) =>
-          runtime.getFormController(blockId)?.validate() ??
-          Promise.reject(new Error(`表单节点 "${blockId}" 当前未挂载，无法校验。`)),
-        clearFormValidation: (blockId) => runtime.getFormController(blockId)?.clearValidation(),
-        refreshFormOptions: (blockId, refreshOptions) => refreshFormNodeOptions(blockId, refreshOptions),
-        setGridRows: (blockId, rows, actionOptions) => runtime.setGridRows(blockId, rows, actionOptions),
-        getGridChanges: (blockId) => runtime.getGridChanges(blockId),
-        setGridCurrentRow: async (blockId, row) => {
-          runtime.setGridCurrentRow(blockId, row);
-          await runtime.getGridController(blockId)?.setCurrentRow(runtime.state.grids[blockId]?.currentRow ?? null);
-        },
-        validateGrid: (blockId) =>
-          runtime.getGridController(blockId)?.validate() ??
-          Promise.reject(new Error(`表格节点 "${blockId}" 当前未挂载，无法校验。`))
-      });
+          throw error;
+        }
+      }
+      case 'source.set':
+        runtime.setSource(sourceKey, cloneRuntimeValue(payload.value), {
+          resetGridBaseline: payload.resetGridBaseline === true,
+        });
+        syncPageGridStates();
+        return true;
+      case 'loading.grid':
+        if (payload.loading === true) loadingGridId.value = block.id;
+        else if (loadingGridId.value === block.id) loadingGridId.value = '';
+        return true;
+      case 'form.get':
+        return cloneRuntimeValue(runtime.state.forms[block.id] ?? {});
+      case 'form.baseline':
+        return cloneRuntimeValue(formBaselines[block.id] ?? {});
+      case 'form.patch':
+        runtime.patchForm(block.id, this.readScriptRecordArg([payload.values], 0));
+        return cloneRuntimeValue(runtime.state.forms[block.id] ?? {});
+      case 'form.replace':
+        runtime.replaceForm(block.id, this.readScriptRecordArg([payload.values], 0));
+        return cloneRuntimeValue(runtime.state.forms[block.id] ?? {});
+      case 'form.validate':
+        return runtime.getFormController(block.id)?.validate() ??
+          Promise.reject(new Error(`表单节点 "${block.id}" 当前未挂载，无法校验。`));
+      case 'form.clearValidation':
+        await runtime.getFormController(block.id)?.clearValidation();
+        return true;
+      case 'form.refreshOptions':
+        return refreshFormNodeOptions(
+          block.id,
+          this.readScriptRecordArg([payload.options], 0),
+        );
+      case 'grid.state':
+        return cloneRuntimeValue(runtime.state.grids[block.id] ?? {});
+      case 'grid.rows': {
+        const value = block.kind === 'grid' && block.sourceKey
+          ? runtime.state.sources[block.sourceKey]
+          : runtime.state.grids[block.id]?.rows;
+        return Array.isArray(value)
+          ? cloneRuntimeValue(value.filter(isRecord))
+          : isRecord(value) && Array.isArray(value.rows)
+            ? cloneRuntimeValue(value.rows.filter(isRecord))
+            : [];
+      }
+      case 'grid.replaceRows': {
+        if (block.kind !== 'grid') throw new Error(`节点 "${block.id}" 不是表格。`);
+        const rows = this.readScriptRowsArg([payload.rows], 0);
+        if (block.sourceKey) {
+          const current = runtime.state.sources[block.sourceKey];
+          runtime.setSource(
+            block.sourceKey,
+            isRecord(current) && Array.isArray(current.rows)
+              ? { ...current, rows }
+              : rows,
+          );
+          syncPageGridStates();
+        } else {
+          runtime.setGridRows(block.id, rows, { rowKey: getGridRowKey(block) });
+        }
+        return cloneRuntimeValue(runtime.state.grids[block.id]?.rows ?? rows);
+      }
+      case 'grid.getChanges':
+        return runtime.getGridChanges(block.id);
+      case 'grid.setCurrentRow': {
+        const candidate = isRecord(payload.row) ? payload.row : null;
+        const grid = runtime.state.grids[block.id];
+        const rowKey = grid?.rowKey || (block.kind === 'grid' ? getGridRowKey(block) : 'id');
+        const row = candidate
+          ? grid?.rows.find((item) => (
+              candidate[rowKey] != null
+                ? Object.is(item[rowKey], candidate[rowKey])
+                : JSON.stringify(item) === JSON.stringify(candidate)
+            )) ?? null
+          : null;
+        runtime.setGridCurrentRow(block.id, row);
+        await runtime.getGridController(block.id)?.setCurrentRow(row);
+        return cloneRuntimeValue(row);
+      }
+      case 'grid.validate':
+        return runtime.getGridController(block.id)?.validate() ??
+          Promise.reject(new Error(`表格节点 "${block.id}" 当前未挂载，无法校验。`));
+      case 'overlay.open': {
+        if (!isOverlayBlock(block)) throw new Error(`节点 "${block.id}" 不是弹框或抽屉。`);
+        const result = await openLowCodeGlobalDialog(
+          this.createNodeDialogConfig(block, {
+            ...actionOptions,
+            ...this.readScriptRecordArg([payload.options], 0),
+          }),
+        );
+        return result.action === 'confirm'
+          ? cloneScriptValue(result.values, {})
+          : null;
+      }
+      default:
+        throw new Error(`未知节点运行时命令 "${command}"。`);
     }
-
-    if (action.executor === 'overlay.open' && isOverlayBlock(block)) {
-      const result = await openLowCodeGlobalDialog(this.createNodeDialogConfig(block, options));
-      if (result.action !== 'confirm') return null;
-      return cloneScriptValue(result.values, {});
-    }
-
-    throw new Error(`节点动作执行器 "${action.executor}" 与节点 "${node}" 不匹配。`);
   }
 
   private assertEditPageNodeActionWritable(kind: string, method: string) {

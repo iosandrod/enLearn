@@ -45,7 +45,18 @@ export class LowCodeService extends BaseService {
     postData: Parameters<BaseService['execute']>[1],
     context: ServiceContext
   ) {
-    return super.saveItem(this.preparePageWrite(postData), context);
+    const prepared = this.preparePageWrite(postData);
+    const result = await super.saveItem(prepared, context);
+    if (readString(prepared.resource) !== 'lowcode_pages' || !this.isRecord(result)) {
+      return result;
+    }
+
+    const activeAccount = await requireActiveAccount(context);
+    const client = createSupabaseClient('admin', activeAccount.context);
+    return {
+      ...result,
+      node_actions: await this.readActiveNodeActions(client)
+    };
   }
 
   private preparePageWrite(postData: Parameters<BaseService['execute']>[1]) {
@@ -259,12 +270,30 @@ export class LowCodeService extends BaseService {
       }
     }
 
-    return this.prepareRuntimePage(page, authorization);
+    return this.prepareRuntimePage(
+      page,
+      authorization,
+      await this.readActiveNodeActions(adminClient)
+    );
+  }
+
+  private async readActiveNodeActions(
+    client: ReturnType<typeof createSupabaseClient>
+  ) {
+    const { data, error } = await client
+      .from('lowcode_node_actions')
+      .select('*')
+      .eq('enabled', true)
+      .order('node_type', { ascending: true })
+      .order('sort_order', { ascending: true });
+    if (error) throw new BadRequestException(error.message);
+    return data ?? [];
   }
 
   protected prepareRuntimePage(
     page: Record<string, unknown>,
-    authorization: Awaited<ReturnType<typeof getUserAuthorization>>
+    authorization: Awaited<ReturnType<typeof getUserAuthorization>>,
+    nodeActions: Array<Record<string, unknown>> = []
   ) {
     const schema = page.schema && typeof page.schema === 'object' && !Array.isArray(page.schema)
       ? structuredClone(page.schema as Record<string, unknown>)
@@ -272,6 +301,7 @@ export class LowCodeService extends BaseService {
     const moduleName = schema && typeof schema === 'object'
       ? readString((schema as Record<string, unknown>).code).split('_')[0]
       : '';
+    const runtimePage = { ...page, schema, node_actions: nodeActions };
     if (moduleName === 'mes') {
       const canManageMes = hasRequiredPermission(
         authorization,
@@ -279,13 +309,13 @@ export class LowCodeService extends BaseService {
       );
       this.applyMesRuntimeAccess(schema, canManageMes);
       return {
-        ...page,
+        ...runtimePage,
         schema,
         runtime_capabilities: { mes: { canManage: canManageMes } }
       };
     }
 
-    if (moduleName !== 'planning') return page;
+    if (moduleName !== 'planning') return runtimePage;
 
     const canManagePlanning = hasRequiredPermission(
       authorization,
@@ -294,7 +324,7 @@ export class LowCodeService extends BaseService {
     this.applyPlanningRuntimeAccess(schema, canManagePlanning);
 
     return {
-      ...page,
+      ...runtimePage,
       schema,
       runtime_capabilities: { planning: { canManage: canManagePlanning } }
     };

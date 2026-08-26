@@ -21,6 +21,7 @@ export type LowCodeScriptCapabilityName =
   | 'message.info'
   | 'message.success'
   | 'message.warning'
+  | 'node.runtime'
   | 'page.refresh'
   | 'router.push'
   | 'search.patch'

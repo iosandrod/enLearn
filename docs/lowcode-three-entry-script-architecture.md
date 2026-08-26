@@ -334,7 +334,7 @@ async function main() {
 }
 ```
 
-`node` 必须是页面中真实存在的 Node ID，`method` 必须在该 Node 类型的 Action Registry 中注册。
+`node` 必须是页面中真实存在的 Node ID，`method` 必须是 `lowcode_node_actions` 中该 Node 类型已启用且满足 `applicable_when` 的 Action。
 
 ### 5.2 当前 Node Action
 
@@ -342,21 +342,22 @@ async function main() {
 | --- | --- | --- |
 | `grid` | `loadData` | 根据 Grid 数据源和过滤条件请求数据 |
 | `grid` | `reloadData` | 使用本地数组覆盖 Grid 数据 |
+| `grid` | `getChanges` | 返回 Grid 的新增、更新和删除集合 |
 | `grid` | `validate` | 使用 Grid 的编辑规则校验当前全部行 |
 | `grid` | `addRow` | 向 Grid 末尾新增一行并设为当前行 |
 | `grid` | `deleteCurrentRow` | 删除 Grid 当前行；无当前行时返回 `null` |
-| `form` | `setData`、`validate`、`getData`、`refreshOptions`、`resetData` | 写入、校验、读取、刷新下拉或重置表单 |
+| `form` | `loadData`、`setData`、`validate`、`getData`、`refreshOptions`、`resetData` | 编辑表单加载数据，或写入、校验、读取、刷新下拉和重置表单 |
 | `searchForm` | `setData`、`validate`、`getData`、`refreshOptions`、`resetData` | 写入、校验、读取、刷新下拉或重置查询表单 |
 | `modal` | `open` | 打开弹框并等待结果 |
 | `drawer` | `open` | 打开抽屉并等待结果 |
 
-Node Action 按 Node 类型维护在：
+Node Action 按 Node 类型全局维护在：
 
 ```text
-runtime/node-action/*-action.ts
+lowcode_node_actions
 ```
 
-`runtime/node-action-registry.ts` 只聚合各 Node Definition，并提供统一查询入口。
+API 将启用的 Action 附加到运行页面；`runtime/node-action-registry.ts` 只负责筛选和查询，`lowcode-page-script-runtime.ts` 在 QuickJS 中执行 `source_code`，并通过 `$node.call` 提供通用 Host Bridge。
 
 ### 5.3 边界
 
@@ -646,13 +647,13 @@ async function main() {
 
 ### 11.3 Node Action
 
-Node Action 不存放在页面 Schema 中。页面只保存 Node 配置，Method 定义由代码 Registry 管理：
+Node Action 不存放在页面 Schema 中，也不关联页面 ID。页面只保存 Node 配置，Method 定义和函数源码由全局数据库表管理：
 
 ```text
-runtime/node-action/*-action.ts -> runtime/node-action-registry.ts
+lowcode_node_actions -> lowcode service -> node-action-registry -> QuickJS
 ```
 
-这样可以防止页面 Schema 声明任意可执行 Method。
+这样可以防止页面 Schema 声明任意可执行 Method，同时允许在不发布前端代码的情况下维护 Node Action。
 
 ## 12. 文件职责
 
@@ -664,12 +665,9 @@ runtime/node-action/*-action.ts -> runtime/node-action-registry.ts
 | `runtime/page-function/index.ts` | 聚合并查询各页面类型的内置函数 |
 | `runtime/builtin-page-functions.ts` | 旧公开路径的兼容转发入口 |
 | `page.schema.functions` | 当前页面覆盖或新增的页面函数 |
-| `runtime/node-action/index.ts` | Node Action 共享类型和模块导出 |
-| `runtime/node-action/button-group-action.ts` | ButtonGroup Node 定义；当前无 `executeAction` Method |
-| `runtime/node-action/form-action.ts` | Form/SearchForm Method 定义与受信任实现 |
-| `runtime/node-action/grid-action.ts` | Grid Method 定义与受信任实现 |
-| `runtime/node-action-registry.ts` | 聚合各 Node Definition，并提供统一查询入口 |
-| `runtime/grid-node-actions.ts` | Grid 旧公开路径的兼容转发入口 |
+| `lowcode_node_actions` | 全局 Node Action 元数据、适用条件、参数和 QuickJS 源码 |
+| `runtime/node-action-registry.ts` | 从 API Action 集合筛选 Node Method，并提供统一查询入口 |
+| `runtime/lowcode-page-script-runtime.ts` | 隔离执行数据库源码并实现通用 `$node.call` Host Bridge |
 | `page.schema.apis` | 页面允许调用的 HTTP API 白名单 |
 | `runtime/script-runtime.worker.ts` | 构造精简的脚本 `this`，运行 QuickJS |
 | `runtime/scripts.ts` | 脚本执行限制、序列化和 Host Capability 通道 |
@@ -726,7 +724,7 @@ Node 状态与行为：executeAction
 
 - [低代码 Node 可执行 Action 清单](./lowcode-node-actions.md)
 - [页面内置函数](../packages/lowcode-framework/src/runtime/page-function/index.ts)
-- [Node Action 模块](../packages/lowcode-framework/src/runtime/node-action/index.ts)
+- [Node Action 数据库迁移](../supabase/migrations/20260826220000_database_node_actions.sql)
 - [Node Action Registry](../packages/lowcode-framework/src/runtime/node-action-registry.ts)
 - [脚本 Worker](../packages/lowcode-framework/src/runtime/script-runtime.worker.ts)
 - [脚本执行器](../packages/lowcode-framework/src/runtime/scripts.ts)

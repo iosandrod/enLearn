@@ -80,6 +80,48 @@ export const lowCodeResources: ResourceConfigMap = {
       timestamp: false
     }
   },
+  lowcode_node_actions: {
+    tableName: 'lowcode_node_actions',
+    clientMode: 'user',
+    permissions: {
+      create: 'lowcode.pages.manage',
+      update: 'lowcode.pages.manage',
+      delete: 'lowcode.pages.manage'
+    },
+    defaults: {
+      parameters: [],
+      applicable_when: {},
+      limits: {},
+      is_data_source_loader: false,
+      enabled: true,
+      is_system: false,
+      sort_order: 0
+    },
+    list: { defaultSorts: [
+      { field: 'node_type', direction: 'asc' },
+      { field: 'sort_order', direction: 'asc' }
+    ] },
+    create: {
+      allowedFields: [
+        'node_type', 'node_label', 'node_icon', 'action_code', 'label',
+        'description', 'source_code', 'parameters', 'returns',
+        'insert_text_template', 'applicable_when', 'is_data_source_loader',
+        'enabled', 'is_system', 'sort_order', 'limits'
+      ],
+      requiredFields: [
+        'node_type', 'node_label', 'action_code', 'label', 'source_code'
+      ],
+      userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+    },
+    update: {
+      allowedFields: [
+        'node_label', 'node_icon', 'label', 'description', 'source_code',
+        'parameters', 'returns', 'insert_text_template', 'applicable_when',
+        'is_data_source_loader', 'enabled', 'sort_order', 'limits'
+      ],
+      userFields: { updatedBy: 'updated_by' }
+    }
+  },
   lowcode_form_definitions: {
     tableName: 'lowcode_form_definitions',
     clientMode: 'user',

@@ -22,20 +22,29 @@ const simulatorSource = await readFile(
   ),
   'utf8',
 );
+const migrationSource = await readFile(
+  new URL('../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql', import.meta.url),
+  'utf8',
+);
 
 for (const [code, label, kind] of [
   ['associate-entity', '关联实体', 'entity'],
   ['associate-view', '关联视图', 'view'],
 ]) {
-  assert.match(designerSource, new RegExp(`code: '${code}'`));
-  assert.match(designerSource, new RegExp(`label: '${label}'`));
+  assert.match(
+    migrationSource,
+    new RegExp(`"code": "${code}", "label": "${label}"`),
+  );
   assert.ok(
     designerSource.includes(`execute: async () => openSourcePicker('${kind}')`),
     `${label} must open its source picker.`,
   );
 }
 
-assert.match(designerSource, /code: 'sync-table-comments'[\s\S]*label: '同步列注释'/);
+assert.match(
+  migrationSource,
+  /"code": "sync-table-comments", "label": "同步列注释"/,
+);
 assert.match(
   designerSource,
   /execute: async \(\) => syncColumnsFromTableComments\(\)/,

@@ -694,6 +694,7 @@ function convertRuntimeBlockToVisual(
         deleteMethod: source?.deleteMethod ?? '',
         entityCode: readDataSourceEntityCode(source),
         postDataJson: stringifyJson(source?.postData, {}),
+        detailConfig: cloneJson(schema.detailConfig ?? {}),
         showRowActions: hasRuntimeRowActions(schema, columns),
         rowActions: runtimeGridRowActionsToVisualRows(schema),
         ...runtimeGridOptionsToVisualOptions(grid),

@@ -5,7 +5,7 @@ const readSource = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const [
   migration,
   adminService,
-  renderer,
+  requestResolver,
   designer,
   form,
   fieldTypes,
@@ -13,10 +13,11 @@ const [
   applyScript,
   bareTableMigration,
   bareTableApplyScript,
+  gridDesignerMigration,
 ] = await Promise.all([
   readSource('../../supabase/migrations/20260809110000_dynamic_grid_association_options.sql'),
   readSource('../../api/src/admin-service/admin.service.ts'),
-  readSource('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue'),
+  readSource('../../packages/lowcode-framework/src/runtime/data-source-request-resolver.ts'),
   readSource('../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx'),
   readSource('../../packages/lowcode-framework/src/components/LowCodeForm.vue'),
   readSource('../../packages/lowcode-framework/src/types/lowcode.ts'),
@@ -24,6 +25,7 @@ const [
   readSource('../../api/scripts/apply-dynamic-grid-association-options.ts'),
   readSource('../../supabase/migrations/20260810135000_bare_grid_table_options.sql'),
   readSource('../../api/scripts/apply-bare-grid-table-options.ts'),
+  readSource('../../supabase/migrations/20260826130000_grid_designer_form_schemas.sql'),
 ]);
 
 for (const viewName of [
@@ -105,18 +107,18 @@ assert.match(
   'List rows must derive the display-only source target from source_config.',
 );
 assert.match(
-  renderer,
+  requestResolver,
   /legacyDynamicOptionListMethods[\s\S]*'listOptionItems'[\s\S]*serviceMethod: 'resolveOptionItems'/,
   'Legacy dynamic option calls must no longer be flattened into system_option_items reads.',
 );
 
 for (const [field, sourceCode] of [
-  ['tableName', 'physicalTableOptionSourceCode'],
-  ['viewName', 'databaseViewOptionSourceCode'],
+  ['tableName', 'physical_table_name'],
+  ['viewName', 'database_view_name'],
 ]) {
   assert.match(
-    designer,
-    new RegExp(`field: '${field}'[\\s\\S]*?component: 'vxe-select'[\\s\\S]*?optionsCode: ${sourceCode}`),
+    gridDesignerMigration,
+    new RegExp(`"field": "${field}"[\\s\\S]*?"component": "vxe-select"[\\s\\S]*?"optionsCode": "${sourceCode}"`),
     `${field} must use a searchable select backed by optionsCode.`,
   );
 }

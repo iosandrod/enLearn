@@ -4,7 +4,7 @@ export declare const DEFAULT_LOW_CODE_SCRIPT_MEMORY_LIMIT_BYTES: number;
 export declare const DEFAULT_LOW_CODE_SCRIPT_STACK_LIMIT_BYTES: number;
 export declare const DEFAULT_LOW_CODE_SCRIPT_MAX_API_CALLS = 50;
 export declare const DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES: number;
-export type LowCodeScriptCapabilityName = 'action.execute' | 'api.invoke' | 'dialog.open' | 'event.emit' | 'form.patch' | 'form.replace' | 'grid.setRows' | 'http.execute' | 'pageFunction.execute' | 'message.error' | 'message.info' | 'message.success' | 'message.warning' | 'page.refresh' | 'router.push' | 'search.patch' | 'search.replace' | 'source.refresh' | 'source.refreshAll' | 'source.set';
+export type LowCodeScriptCapabilityName = 'action.execute' | 'api.invoke' | 'dialog.open' | 'event.emit' | 'form.patch' | 'form.replace' | 'grid.setRows' | 'http.execute' | 'pageFunction.execute' | 'message.error' | 'message.info' | 'message.success' | 'message.warning' | 'node.runtime' | 'page.refresh' | 'router.push' | 'search.patch' | 'search.replace' | 'source.refresh' | 'source.refreshAll' | 'source.set';
 export type LowCodeScriptCapabilityRequest = {
     id: number;
     name: LowCodeScriptCapabilityName;

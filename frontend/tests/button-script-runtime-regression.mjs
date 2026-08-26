@@ -11,9 +11,10 @@ import {
 } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
-const [rendererSource, workerSource, scriptsSource, buttonMaterialSource, converterSource, monacoTypesSource, schemaSource, apiSchemaSource, formActionSource, gridActionSource] =
+const [rendererSource, rendererInteractionsSource, workerSource, scriptsSource, buttonMaterialSource, converterSource, monacoTypesSource, schemaSource, apiSchemaSource, nodeActionRegistrySource, nodeActionMigration] =
   await Promise.all([
-    readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
+    readFile(new URL('runtime/lowcode-page-script-runtime.ts', frameworkRoot), 'utf8'),
+    readFile(new URL('runtime/useLowCodePageRenderer.ts', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/script-runtime.worker.ts', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/scripts.ts', frameworkRoot), 'utf8'),
     readFile(new URL('lowcode/block-materials/button-group/index.vue', frameworkRoot), 'utf8'),
@@ -21,8 +22,8 @@ const [rendererSource, workerSource, scriptsSource, buttonMaterialSource, conver
     readFile(new URL('visual-editor/components/button-group-designer/button-script-monaco.ts', frameworkRoot), 'utf8'),
     readFile(new URL('lowcode/schema.ts', frameworkRoot), 'utf8'),
     readFile(new URL('../../api/src/lowcode-service/lowcode.schema.ts', import.meta.url), 'utf8'),
-    readFile(new URL('runtime/node-action/form-action.ts', frameworkRoot), 'utf8'),
-    readFile(new URL('runtime/node-action/grid-action.ts', frameworkRoot), 'utf8'),
+    readFile(new URL('runtime/node-action-registry.ts', frameworkRoot), 'utf8'),
+    readFile(new URL('../../supabase/migrations/20260826220000_database_node_actions.sql', import.meta.url), 'utf8'),
   ]);
 
 assert.match(
@@ -49,6 +50,11 @@ assert.match(
   workerSource,
   /const scriptThis = Object\.freeze\([\s\S]*?\$api:[\s\S]*?\$form:[\s\S]*?\$grid:[\s\S]*?\$source:/,
   'Scripts must receive a frozen this capability object with registered APIs.',
+);
+assert.match(
+  workerSource,
+  /const node = Object\.freeze\([\s\S]*?call: \(command, payload = \{\}\) => call\("node\.runtime"[\s\S]*?\$node: node/,
+  'Database node actions must use the generic node runtime capability.',
 );
 assert.match(
   workerSource,
@@ -149,28 +155,28 @@ for (const source of [schemaSource, apiSchemaSource]) {
 }
 assert.match(
   rendererSource,
-  /resolveLowCodeNodeAction\(block\.kind, method\)[\s\S]*?if \(action\.execute\)[\s\S]*?return action\.execute/,
-  'executeAction must dispatch executable methods declared by the node registry.',
-);
-assert.match(
-  formActionSource,
-  /executeFormSetDataNodeAction[\s\S]*?executeFormValidateNodeAction[\s\S]*?executeFormGetDataNodeAction[\s\S]*?executeFormRefreshOptionsNodeAction[\s\S]*?executeFormResetDataNodeAction/,
-  'Form node execution must be owned by the form node action module.',
-);
-assert.match(
-  gridActionSource,
-  /executeGridLoadDataNodeAction[\s\S]*?executeGridReloadDataNodeAction[\s\S]*?executeGridGetChangesNodeAction[\s\S]*?executeGridValidateNodeAction[\s\S]*?executeGridAddRowNodeAction[\s\S]*?executeGridDeleteCurrentRowNodeAction[\s\S]*?execute: executeGridLoadDataNodeAction[\s\S]*?execute: executeGridReloadDataNodeAction[\s\S]*?execute: executeGridGetChangesNodeAction[\s\S]*?execute: executeGridValidateNodeAction[\s\S]*?execute: executeGridAddRowNodeAction[\s\S]*?execute: executeGridDeleteCurrentRowNodeAction/,
-  'Grid execution must be owned by the grid node action module.',
+  /resolveLowCodeNodeAction\([\s\S]*?block\.kind[\s\S]*?props\.page\.node_actions[\s\S]*?executeDatabaseNodeAction\(action, block, options\)/,
+  'executeAction must resolve the method attached by the API and run its database source.',
 );
 assert.match(
   rendererSource,
-  /action\.executor === 'overlay\.open'[\s\S]*?openLowCodeGlobalDialog/,
-  'Overlay open remains a renderer executor until its node module is migrated.',
+  /executeLowCodeScript\([\s\S]*?script: action\.source_code[\s\S]*?request\.name === 'node\.runtime'/,
+  'Database action source must execute inside the existing isolated QuickJS runtime.',
+);
+assert.match(
+  nodeActionRegistrySource,
+  /actions[\s\S]*?action\.node_type === kind[\s\S]*?action\.action_code === method/,
+  'The frontend registry must derive available methods exclusively from API action rows.',
+);
+assert.match(
+  nodeActionMigration,
+  /create table if not exists public\.lowcode_node_actions[\s\S]*?source_code text not null[\s\S]*?action_count <> 19 or node_type_count <> 5/,
+  'The migration must own and validate every built-in node action.',
 );
 assert.doesNotMatch(
   rendererSource,
-  /case 'grid\.reloadData'|case 'form\.setData'/,
-  'Migrated node executors must not drift back into the page renderer.',
+  /executeFormSetDataNodeAction|executeGridLoadDataNodeAction|action\.executor/,
+  'Per-action TypeScript executors must not drift back into the page runtime.',
 );
 assert.match(
   rendererSource,
@@ -179,7 +185,7 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /resolvePageFunction[\s\S]*?schema\.functions\?\.find[\s\S]*?case 'pageFunction\.execute'[\s\S]*?executePageFunction/,
+  /resolvePageFunction[\s\S]*?schema\.functions\?\.find[\s\S]*?new PageFunctionExecutor\([\s\S]*?executePageFunction/,
   'executeFunction must resolve and run only an enabled function declared by the page schema.',
 );
 assert.match(
@@ -189,7 +195,7 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /schema\.functions\?\.length[\s\S]*?'action\.execute'[\s\S]*?Object\.keys\(props\.page\.schema\.apis \?\? \{\}\)\.length > 0[\s\S]*?'http\.execute'/,
+  /hasSchemaPageFunctions\(\)[\s\S]*?'action\.execute'[\s\S]*?Object\.keys\(props\.page\.schema\.apis \?\? \{\}\)\.length > 0[\s\S]*?'http\.execute'/,
   'Page functions and declared API aliases must automatically expose their controlled capabilities.',
 );
 assert.match(
@@ -199,11 +205,11 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /function sanitizeScriptEventPayload[\s\S]*?delete payload\.script;[\s\S]*?delete payload\.directives;[\s\S]*?payload: sanitizeScriptEventPayload\(args\[1\]\)/,
+  /sanitizeScriptEventPayload[\s\S]*?delete payload\.script;[\s\S]*?delete payload\.directives;[\s\S]*?payload: this\.sanitizeScriptEventPayload\(request\.args\[1\]\)/,
   'Script-emitted events must not inject executable scripts or inline directives.',
 );
 assert.match(
-  rendererSource,
+  rendererInteractionsSource,
   /pendingActionEvents\.set\(action, execution\)[\s\S]*?await waitForActionEvent\(action\)/,
   'Built-in button behavior must wait for its directives and script to finish.',
 );

@@ -382,6 +382,27 @@ export type LowCodeGridRowAction = LowCodeGridAction & {
   text?: boolean;
 };
 
+export type LowCodeGridDetailConfig = {
+  /** Enable master-detail submission for this grid. */
+  enabled?: boolean;
+  /** Form data source that owns the parent record. */
+  parentSourceKey: string;
+  /** Authorized child resource sent in data.__details. */
+  resource: string;
+  /** Child field that references the saved parent record. */
+  foreignKey: string;
+  /** Parent field copied into foreignKey. Defaults to id. */
+  parentKey?: string;
+  /** Parent fields copied to child rows by the transactional save. */
+  inheritFields?: string[];
+  /** Replace all rows or submit only created, updated, and deleted rows. */
+  updateMode?: 'replace' | 'changes';
+  /** Defaults merged into newly created detail rows before submission. */
+  defaults?: Record<string, unknown>;
+  /** Remove the grid row key from newly created rows so the database can generate it. */
+  stripCreatedKey?: boolean;
+};
+
 export type LowCodeGridSchema = {
   title?: string;
   toolbar?: LowCodeGridAction[];
@@ -394,6 +415,7 @@ export type LowCodeGridSchema = {
     overscanRowCount?: number;
     overscanColumnCount?: number;
   };
+  detailConfig?: LowCodeGridDetailConfig;
   rowActions?: {
     edit?: boolean;
     editLabel?: string;
@@ -502,6 +524,34 @@ export type LowCodePageFunction = {
   description?: string;
   enabled?: boolean;
   script: string;
+};
+
+export type LowCodeNodeActionParameter = {
+  name: string;
+  type: string;
+  required?: boolean;
+  description: string;
+};
+
+/** Database-owned action definition shared by every node of the same type. */
+export type LowCodeNodeActionDefinition = {
+  id: string;
+  node_type: string;
+  node_label: string;
+  node_icon: string;
+  action_code: string;
+  label: string;
+  description: string;
+  source_code: string;
+  parameters: LowCodeNodeActionParameter[];
+  returns: string;
+  insert_text_template: string;
+  applicable_when: Record<string, unknown>;
+  is_data_source_loader: boolean;
+  enabled: boolean;
+  is_system: boolean;
+  sort_order: number;
+  limits: import('../runtime/scripts').LowCodeScriptExecutionLimits;
 };
 
 export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
@@ -825,6 +875,8 @@ export type LowCodePageRecord = {
   table_name: string | null;
   relate_config: LowCodePageRelateConfig;
   schema: LowCodePageSchema;
+  /** Active global node actions resolved by the low-code service. */
+  node_actions?: LowCodeNodeActionDefinition[];
   version: number;
   published_at: string | null;
   created_at: string;

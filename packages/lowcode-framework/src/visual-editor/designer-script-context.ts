@@ -57,6 +57,7 @@ export function createDesignerScriptContextSource({
       route,
       title,
       page_type: pageType,
+      node_actions: cloneJson(pageRecord?.node_actions ?? []),
       schema: {
         ...(pageSchema ?? {}),
         code,
