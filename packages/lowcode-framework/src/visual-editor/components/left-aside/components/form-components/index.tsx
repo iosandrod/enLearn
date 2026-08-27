@@ -34,8 +34,11 @@ export default defineComponent({
       >
         {{
           item: ({ element }: { element: VisualEditorComponent }) => (
-            <div class={styles.listGroupItem} data-label={element.label}>
-              {element.preview()}
+            <div
+              class={[styles.listGroupItem, styles.formMaterialItem]}
+              data-label={element.label}
+            >
+              <div class={styles.formMaterialPreview}>{element.preview()}</div>
             </div>
           ),
         }}

@@ -161,6 +161,38 @@ async function main() {
   assert.equal(optionDetails[0].created[0].status, 'active');
   assert.deepEqual(optionDetails[0].deleted, [deletedOptionId]);
 
+  const optionUpdatedService = new TestAdminService();
+  await optionUpdatedService.execute('saveItem', {
+    tableName: 'system_option_sources',
+    id: '00000000-0000-4000-8000-000000000040',
+    code: 'planning_plan_type',
+    __details: [{
+      resource: 'system_option_items',
+      foreignKey: 'source_code',
+      parentKey: 'code',
+      inheritFields: [],
+      updateMode: 'changes',
+      mode: 'changes',
+      created: [],
+      updated: [{
+        id: updatedId,
+        source_code: 'forged-source',
+        label: '更新后的生产单',
+      }],
+      deleted: [],
+    }],
+  }, context);
+  const optionUpdatedDetails = optionUpdatedService.preparedCall?.operation.details as Array<{
+    foreign_key: string;
+    parent_key: string;
+    updated: Array<{ id: string; data: Record<string, unknown> }>;
+  }>;
+  assert.equal(optionUpdatedDetails[0].foreign_key, 'source_code');
+  assert.equal(optionUpdatedDetails[0].parent_key, 'code');
+  assert.equal(optionUpdatedDetails[0].updated[0].id, updatedId);
+  assert.equal(optionUpdatedDetails[0].updated[0].data.source_code, undefined);
+  assert.equal(optionUpdatedDetails[0].updated[0].data.label, '更新后的生产单');
+
   await assert.rejects(
     () => new TestAdminService().execute('updateItem', {
       resource: 'sales_orders',

@@ -14,6 +14,8 @@ import { VxeGrid } from 'vxe-table';
 import LowCodeForm from './LowCodeForm.vue';
 import LowCodeGrid from './LowCodeGrid.vue';
 import LowCodeBlockRenderer from './LowCodeBlockRenderer.vue';
+import { normalizeLowCodeGridColumns } from '../utils/lowcode';
+import type { LowCodeGridColumn } from '../types/lowcode';
 import GlobalDrawerHost from './GlobalDrawerHost';
 import {
   closeGlobalDialog,
@@ -344,13 +346,16 @@ function renderGrid(grid: GlobalDialogGridConfig, node?: ContentNodeMeta) {
 
   const VxeGridComponent = VxeGrid as any;
   const resolvedGridProps = resolveProps(grid.props);
+  const configuredColumns = readValue(
+    grid.columns,
+    resolvedGridProps.columns as Record<string, unknown>[],
+  );
   const vxeGridProps = {
     ...resolvedGridProps,
     data: readValue(grid.rows, resolvedGridProps.data as Record<string, unknown>[]),
-    columns: readValue(
-      grid.columns,
-      resolvedGridProps.columns as Record<string, unknown>[],
-    ),
+    columns: Array.isArray(configuredColumns)
+      ? normalizeLowCodeGridColumns(configuredColumns as LowCodeGridColumn[])
+      : configuredColumns,
     loading: readValue(grid.loading, Boolean(resolvedGridProps.loading)),
     ...events,
   };

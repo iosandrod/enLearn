@@ -426,8 +426,9 @@
   gap: 8px;
 }
 
-.form-workbench .left-aside > .vxe-tabs--header .vxe-tabs--item {
-  width: 82px;
+.form-workbench .left-aside > .vxe-tabs--header .vxe-tabs--item,
+.form-workbench .left-aside > .vxe-tabs-header .vxe-tabs-header--item {
+  width: 68px;
 }
 
 .form-workbench .visual-editor-main {

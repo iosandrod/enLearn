@@ -1,4 +1,6 @@
--- Apply detail-row change sets without deleting and recreating unchanged rows.
+-- Ensure incremental detail updates always carry the parent relation key.
+-- This replaces the function introduced by 20260813120000 for databases where
+-- that migration has already been applied.
 
 create or replace function dynamic_crud_private.apply_detail_changes(
   p_parent jsonb,
@@ -48,7 +50,6 @@ begin
     end if;
 
     v_resource := p_config->'resources'->(v_relation_config->>'resource');
-
     v_foreign_key := v_relation_config->>'foreign_key';
     v_parent_key := v_relation_config->>'parent_key';
     v_primary_key := coalesce(nullif(v_resource->>'primary_key', ''), 'id');
@@ -154,8 +155,7 @@ begin
       if v_id is null or v_id = 'null'::jsonb or coalesce(v_id #>> '{}', '') = '' then
         raise exception 'Each updated detail row must include id.' using errcode = '22023';
       end if;
-      -- Relation fields are server-owned. Keep updated rows attached to the saved parent
-      -- even when the client omitted or supplied a stale foreign key value.
+      -- The child foreign key is relation-managed, so client values are ignored.
       v_payload := coalesce(v_change->'data', '{}'::jsonb)
         || pg_catalog.jsonb_build_object(v_foreign_key, v_parent_value);
       v_payload := dynamic_crud_private.prepare_hooked_payload(
@@ -166,9 +166,7 @@ begin
         p_context,
         false
       );
-      -- The update allowlist may intentionally exclude relation columns (for
-      -- example, an order line's order_id). Append the trusted relation value
-      -- after hook normalization so the child foreign key is still persisted.
+      -- Relation columns can be excluded from the client update allowlist.
       v_payload := v_payload
         || pg_catalog.jsonb_build_object(v_foreign_key, v_parent_value);
       v_rows := dynamic_crud_private.update_rows(
@@ -225,109 +223,6 @@ begin
         raise exception 'No detail row matched %: %.', v_primary_key, v_id #>> '{}' using errcode = 'P0002';
       end if;
       perform dynamic_crud_private.call_hooks(v_resource->'hooks', 'afterDelete', v_rows->0, p_context);
-    end loop;
-  end loop;
-end;
-$function$;
-
-create or replace function dynamic_crud_private.replace_details(
-  p_parent jsonb,
-  p_details jsonb,
-  p_config jsonb,
-  p_context jsonb,
-  p_account_id uuid
-)
-returns void
-language plpgsql
-volatile
-security invoker
-set search_path = pg_catalog
-as $function$
-declare
-  v_detail jsonb;
-  v_relation_config jsonb;
-  v_resource_name text;
-  v_resource jsonb;
-  v_foreign_key text;
-  v_parent_key text;
-  v_parent_value jsonb;
-  v_inherit text;
-  v_row jsonb;
-  v_payload jsonb;
-  v_filters jsonb;
-  v_filter jsonb;
-begin
-  if p_details is null or pg_catalog.jsonb_typeof(p_details) <> 'array' then return; end if;
-  for v_detail in select value from pg_catalog.jsonb_array_elements(p_details)
-  loop
-    if coalesce(nullif(v_detail->>'mode', ''), 'replace') = 'changes' then
-      perform dynamic_crud_private.apply_detail_changes(
-        p_parent,
-        pg_catalog.jsonb_build_array(v_detail),
-        p_config,
-        p_context,
-        p_account_id
-      );
-      continue;
-    end if;
-
-    v_resource_name := v_detail->>'resource';
-    v_relation_config := p_config->'detail_relations'->v_resource_name;
-    if v_relation_config is null then
-      raise exception 'Detail resource % is not configured.', v_resource_name using errcode = '42501';
-    end if;
-    if coalesce(v_relation_config->>'update_mode', '') <> 'replace' then
-      raise exception 'Detail resource % does not allow replace updates.', v_resource_name using errcode = '42501';
-    end if;
-    v_resource := p_config->'resources'->(v_relation_config->>'resource');
-    perform dynamic_crud_private.assert_resource_config(v_relation_config->>'resource', v_resource, 'create', p_account_id);
-    v_foreign_key := v_relation_config->>'foreign_key';
-    v_parent_key := v_relation_config->>'parent_key';
-    perform dynamic_crud_private.assert_identifier(v_foreign_key, 'detail foreignKey');
-    perform dynamic_crud_private.assert_identifier(v_parent_key, 'detail parentKey');
-    if nullif(v_detail->>'foreign_key', '') is not null
-       and v_detail->>'foreign_key' <> v_foreign_key then
-      raise exception 'Detail resource % foreignKey does not match its configuration.', v_resource_name using errcode = '42501';
-    end if;
-    if nullif(v_detail->>'parent_key', '') is not null
-       and v_detail->>'parent_key' <> v_parent_key then
-      raise exception 'Detail resource % parentKey does not match its configuration.', v_resource_name using errcode = '42501';
-    end if;
-    if v_detail ? 'inherit_fields'
-       and coalesce(v_detail->'inherit_fields', '[]'::jsonb) <> coalesce(v_relation_config->'inherit_fields', '[]'::jsonb) then
-      raise exception 'Detail resource % inheritFields do not match its configuration.', v_resource_name using errcode = '42501';
-    end if;
-    v_parent_value := p_parent->v_parent_key;
-    if v_parent_value is null then
-      raise exception 'Parent field % is required for detail resource %.', v_parent_key, v_resource_name using errcode = '22023';
-    end if;
-    v_filters := pg_catalog.jsonb_build_object(v_foreign_key, v_parent_value);
-    if nullif(v_resource->>'account_field', '') is not null then
-      v_filters := v_filters || pg_catalog.jsonb_build_object(v_resource->>'account_field', p_account_id);
-    end if;
-    for v_inherit in select value #>> '{}' from pg_catalog.jsonb_array_elements(coalesce(v_relation_config->'inherit_fields','[]'::jsonb))
-    loop
-      if p_parent->v_inherit is null then
-        raise exception 'Parent field % is required for detail resource %.', v_inherit, v_resource_name using errcode = '22023';
-      end if;
-      v_filters := v_filters || pg_catalog.jsonb_build_object(v_inherit, p_parent->v_inherit);
-    end loop;
-    v_filter := dynamic_crud_private.build_filter_clause(v_filters, v_resource->>'table_name');
-    execute 'delete from ' || dynamic_crud_private.quote_relation(v_resource->>'table_name') ||
-            ' where ' || (v_filter->>'sql') using v_filter->'values';
-
-    for v_row in select value from pg_catalog.jsonb_array_elements(coalesce(v_detail->'rows','[]'::jsonb))
-    loop
-      v_payload := v_row || pg_catalog.jsonb_build_object(v_foreign_key, v_parent_value);
-      for v_inherit in select value #>> '{}' from pg_catalog.jsonb_array_elements(coalesce(v_relation_config->'inherit_fields','[]'::jsonb))
-      loop
-        v_payload := v_payload || pg_catalog.jsonb_build_object(v_inherit, p_parent->v_inherit);
-      end loop;
-      v_payload := dynamic_crud_private.prepare_hooked_payload(
-        v_payload, v_resource, 'create', p_account_id, p_context
-      );
-      v_payload := dynamic_crud_private.insert_row(v_resource->>'table_name', v_payload);
-      perform dynamic_crud_private.call_hooks(v_resource->'hooks', 'afterCreate', v_payload, p_context);
     end loop;
   end loop;
 end;

@@ -57,6 +57,12 @@
         const includeLabels = props.includeLabels;
         const excludeLabels = props.excludeLabels;
 
+        // Data sources are configured from the page settings and are no longer
+        // exposed as a material tab in the visual editor.
+        if (tab.label === '数据源') {
+          return false;
+        }
+
         if (includeLabels.length && !includeLabels.includes(tab.label)) {
           return false;
         }
@@ -90,22 +96,57 @@
     background: #fff;
     contain: layout;
 
-    > :deep(.vxe-tabs--header) {
+    > :deep(.vxe-tabs--header),
+    > :deep(.vxe-tabs-header) {
+      flex: 0 0 80px;
+      width: 80px;
+      padding: 10px 6px;
       margin-right: 0;
       border-right: 1px solid #e2e8f0;
       background: #f8fafc;
+      box-sizing: border-box;
 
-      .vxe-tabs--item {
-        width: 88px;
-        height: 72px;
-        padding: 10px 8px;
+      .vxe-tabs--header-wrapper,
+      .vxe-tabs-header--wrapper {
+        gap: 2px;
+      }
+
+      .vxe-tabs--item,
+      .vxe-tabs-header--item {
+        width: 68px;
+        height: 68px;
+        margin: 0 0 4px;
+        padding: 8px 5px;
+        border-radius: 8px;
         color: #475569;
-        font-size: 13px;
+        font-size: 12px;
         line-height: 1.2;
+        transition:
+          color 0.15s ease,
+          background-color 0.15s ease;
 
-        &.is-active {
-          background: #eef6ff;
+        &.is-active,
+        &.is--active {
+          position: relative;
+          background: #eaf3ff;
           color: #1d73d8;
+          font-weight: 600;
+
+          &::before {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 3px;
+            height: 28px;
+            border-radius: 0 3px 3px 0;
+            background: #2f80ed;
+            content: '';
+            transform: translateY(-50%);
+          }
+
+          .tab-item .tab-icon {
+            background: #dbeafe;
+          }
         }
 
         .tab-item {
@@ -115,14 +156,21 @@
           justify-content: center;
 
           .tab-icon {
-            font-size: 20px;
-            margin-bottom: 5px;
+            display: grid;
+            width: 28px;
+            height: 28px;
+            margin-bottom: 4px;
+            border-radius: 7px;
+            background: #eef2f7;
+            font-size: 17px;
+            place-items: center;
           }
         }
       }
     }
 
-    > :deep(.vxe-tabs--body) {
+    > :deep(.vxe-tabs--body),
+    > :deep(.vxe-tabs-pane--wrapper) {
       height: 100%;
       background: #ffffff;
       overflow: hidden auto;

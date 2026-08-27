@@ -10,6 +10,23 @@ function readModel(attrs: AnyRecord) {
   return attrs.modelValue ?? attrs.value ?? '';
 }
 
+function readDatetimeModel(attrs: AnyRecord) {
+  const value = readModel(attrs);
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return '';
+    const pad = (part: number) => String(part).padStart(2, '0');
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`
+      + `T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}`;
+  }
+
+  if (typeof value !== 'string') return '';
+  const normalized = value.trim().replace(' ', 'T');
+  const match = normalized.match(
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?)(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/,
+  );
+  return match?.[1] ?? '';
+}
+
 function emitModel(
   emit: (event: string, ...args: any[]) => void,
   value: unknown
@@ -655,7 +672,7 @@ export const DatetimePicker: any = defineComponent({
     return () => (
       <input
         type="datetime-local"
-        value={readModel(attrs as AnyRecord)}
+        value={readDatetimeModel(attrs as AnyRecord)}
         style={{ width: '100%', boxSizing: 'border-box' }}
         onInput={(event: Event) => {
           const value = (event.target as HTMLInputElement).value;

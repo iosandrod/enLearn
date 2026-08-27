@@ -2,6 +2,16 @@ import type { LowCodeGridColumn, LowCodeGridFormatter } from '../types/lowcode';
 
 const DEFAULT_TIMEZONE = 'UTC';
 
+const VXE_COLUMN_TYPES = new Set(['seq', 'checkbox', 'radio', 'expand', 'html']);
+
+export type VxeColumnType = 'seq' | 'checkbox' | 'radio' | 'expand' | 'html';
+
+/** Keep business display types out of VXE's special-purpose column `type` prop. */
+export function normalizeVxeColumnType(value: unknown): VxeColumnType | undefined {
+  const type = typeof value === 'string' ? value.trim() : '';
+  return VXE_COLUMN_TYPES.has(type) ? type as VxeColumnType : undefined;
+}
+
 function toDateValue(value: unknown) {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return new Date(value);
@@ -121,18 +131,26 @@ export function normalizeLowCodeGridColumns(
   timeZone = DEFAULT_TIMEZONE,
 ) {
   return columns.map((column) => {
+    const vxeType = normalizeVxeColumnType(column.type);
+    const normalizedColumn = vxeType
+      ? { ...column, type: vxeType }
+      : (() => {
+          const { type: _type, ...rest } = column;
+          return rest;
+        })();
+
     if (
-      !column.formatter ||
-      typeof column.formatter === 'function' ||
-      typeof column.formatter === 'string'
+      !normalizedColumn.formatter ||
+      typeof normalizedColumn.formatter === 'function' ||
+      typeof normalizedColumn.formatter === 'string'
     ) {
-      return column;
+      return normalizedColumn;
     }
 
     return {
-      ...column,
+      ...normalizedColumn,
       formatter: ({ cellValue }: { cellValue: unknown }) =>
-        formatLowCodeGridValue(cellValue, column.formatter, timeZone)
+        formatLowCodeGridValue(cellValue, normalizedColumn.formatter, timeZone)
     };
   });
 }

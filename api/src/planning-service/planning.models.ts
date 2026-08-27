@@ -122,7 +122,7 @@ const categoryFields = [
   text('category', '分类'),
   text('subcategory', '子分类')
 ];
-const masterCategoryFields = (targetType: 'item' | 'customer' | 'supplier') => [
+const masterCategoryFields = (targetType: 'item' | 'customer' | 'supplier' | 'resource') => [
   text('description', '说明'),
   relation('category_id', '类别', 'planning_category', {
     relationFilters: { target_type: targetType, status: 'active' },
@@ -164,14 +164,15 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
   {
     key: 'planning_category', sourceTable: 'category', title: '主数据类别', group: '基础数据',
     icon: 'ri-folder-tree-line', businessKey: 'code', businessKeyUnique: false,
-    description: '统一维护物料、客户和供应商的账套级层级类别。',
+    description: '统一维护物料、客户、供应商和资源的账套级层级类别。',
     fields: [
       text('target_type', '类别对象', {
         required: true,
         options: [
           { label: '物料', value: 'item' },
           { label: '客户', value: 'customer' },
-          { label: '供应商', value: 'supplier' }
+          { label: '供应商', value: 'supplier' },
+          { label: '资源', value: 'resource' }
         ]
       }),
       text('code', '类别编码', { required: true }),
@@ -274,7 +275,14 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     key: 'planning_resource', sourceTable: 'resource', title: '资源', group: '产能工艺',
     icon: 'ri-hammer-line', businessKey: 'name', description: '设备、人员、产线等能力资源。',
     fields: [
-      text('name', '名称', { required: true }), ...hierarchyFields('planning_resource'), ...categoryFields,
+      text('name', '名称', { required: true }), ...hierarchyFields('planning_resource'),
+      relation('category_id', '类别', 'planning_category', {
+        relationFilters: { target_type: 'resource', status: 'active' },
+        relationLabelField: 'name',
+        relationOnDelete: 'restrict',
+        relationTree: true
+      }),
+      text('category', '分类'), text('subcategory', '子分类'),
       text('type', '类型', { default: 'default', options: choices('default', 'buckets', 'buckets_day', 'buckets_week', 'buckets_month', 'infinite') }),
       bool('constrained', '受约束'), number('maximum', '最大能力', { default: 1 }), relation('maximum_calendar_id', '最大能力日历', 'planning_calendar'),
       relation('available_id', '可用日历', 'planning_calendar'), relation('location_id', '地点', 'planning_location'), number('cost', '单位成本'),

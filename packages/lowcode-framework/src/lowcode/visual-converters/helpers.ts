@@ -9,6 +9,7 @@ import type {
 } from '../../types/lowcode';
 import type { VisualEditorBlockData, VisualEditorModelValue } from '../../visual-editor/visual-editor.utils';
 import type { VisualBlockProps } from './types';
+import { normalizeVxeColumnType } from '../../utils/lowcode';
 
 const componentMap: Record<string, LowCodeField['component']> = {
   input: 'vxe-input',
@@ -316,9 +317,10 @@ function cloneJson<T>(value: T): T {
 
 export function normalizeColumn(row: Record<string, unknown>): LowCodeGridColumn | null {
   const field = readString(row.field);
-  const type = readString(row.type);
-  const title = readString(row.title, field || type);
-  if (!field && !title && !type) return null;
+  const rawType = readString(row.type);
+  const type = normalizeVxeColumnType(rawType);
+  const title = readString(row.title, field || rawType);
+  if (!field && !title && !rawType) return null;
 
   const formatter = normalizeColumnFormatter(row.formatter);
   const width = readDimension(row.width);

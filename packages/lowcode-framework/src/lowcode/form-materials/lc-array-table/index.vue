@@ -248,6 +248,7 @@ import type {
 } from '../../../types/lowcode';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 import { lowCodeOptionSourceRegistry } from '../../../runtime/option-source-registry';
+import { normalizeVxeColumnType } from '../../../utils/lowcode';
 import LcJsonEditor from '../lc-json-editor/index.vue';
 import LcMonacoEditor from '../lc-monaco-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
@@ -596,7 +597,7 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
       return {
         field,
         title: readString(column.title ?? column.label, field),
-        type: readString(column.type) || undefined,
+        type: normalizeVxeColumnType(column.type),
         component: readComponent(column.component),
         width: readSize(column.width),
         minWidth: readSize(column.minWidth),

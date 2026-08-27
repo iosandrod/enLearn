@@ -7,6 +7,8 @@ import {
 } from '../../../core/system-settings';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
+import { normalizeLowCodeGridColumns } from '../../../utils/lowcode';
+import type { LowCodeGridColumn } from '../../../types/lowcode';
 
 export const defaultArrayTableColumns: Record<string, unknown>[] = [
   { field: 'name', title: 'Name', minWidth: 120, placeholder: 'Enter name', defaultValue: '' },
@@ -75,6 +77,9 @@ function createArrayTableGridProps(
   const data = normalizeRows(props.data ?? props.modelValue, createPreviewData(dataColumns));
   const configuredRowConfig = isRecord(options.rowConfig) ? options.rowConfig : {};
   const rowKey = String(configuredRowConfig.keyField || props.rowKey || '__rowKey');
+  const normalizedColumns = normalizeLowCodeGridColumns(
+    dataColumns as LowCodeGridColumn[],
+  );
 
   return {
     border: true,
@@ -84,7 +89,7 @@ function createArrayTableGridProps(
     ...options,
     height: options.height ?? (preview ? 128 : 160),
     rowConfig: { ...configuredRowConfig, keyField: rowKey },
-    columns: [{ type: 'seq', width: 42, fixed: 'left' }, ...dataColumns],
+    columns: [{ type: 'seq', width: 42, fixed: 'left' }, ...normalizedColumns],
     data,
   };
 }
