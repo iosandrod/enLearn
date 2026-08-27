@@ -200,8 +200,14 @@ function createCategoryEditPage(
     if (block.kind === 'form') {
       return {
         ...block,
-        sourceKey: undefined,
-        submitSourceKey: 'planning_categoryRows',
+        dataSource: {
+          key: block.id,
+          serviceName: 'planning',
+          serviceMethod: 'listItems',
+          saveMethod: 'saveItem',
+          postData: { resource: 'planning_category' },
+          autoLoad: false,
+        },
         initialValues,
         schema: { ...block.schema, actions: [] },
       };
@@ -223,14 +229,6 @@ function createCategoryEditPage(
     schema: {
       ...page.schema,
       dataSources: {
-        planning_categoryRows: {
-          key: 'planning_categoryRows',
-          serviceName: 'planning',
-          serviceMethod: 'listItems',
-          saveMethod: 'saveItem',
-          postData: { resource: 'planning_category' },
-          autoLoad: false,
-        },
         ...(page.schema.dataSources?.planning_categoryOptions
           ? { planning_categoryOptions: page.schema.dataSources.planning_categoryOptions }
           : {}),

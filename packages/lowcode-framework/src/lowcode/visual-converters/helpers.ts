@@ -429,30 +429,60 @@ export function readVisualBlockProps(block: VisualEditorBlockData): VisualBlockP
   return isPlainRecord(block.props) ? block.props : {};
 }
 
-export function upsertFormDataSource(
-  dataSources: Record<string, LowCodePageDataSource>,
+export function createFormDataSource(
   key: string,
   props: VisualBlockProps,
   autoLoad = false
-) {
-  if (!key) return;
+): LowCodePageDataSource | undefined {
+  if (!key) return undefined;
 
-  const serviceName = readString(props.serviceName, 'admin');
-  const serviceMethod = readString(props.serviceMethod, readString(props.saveMethod, 'save'));
-  const saveMethod = readString(props.saveMethod);
-  const postData = readJsonObject(props.postDataJson, {});
-  const entityCode = readString(props.entityCode, readString(postData.entityCode ?? postData.entity_code));
-  const tableName = readString(props.tableName, readString(postData.tableName ?? postData.table_name)) || (entityCode === 'users' ? 'profiles' : entityCode);
+  const configured = isPlainRecord(props.dataSource) ? props.dataSource : {};
+  const configuredPostData = readJsonObject(configured.postData, {});
+  const postData = {
+    ...configuredPostData,
+    ...readJsonObject(props.postDataJson, {}),
+  };
+  const serviceName = readString(props.serviceName, readString(configured.serviceName, 'admin'));
+  const serviceMethod = readString(
+    props.serviceMethod,
+    readString(configured.serviceMethod, readString(props.saveMethod, readString(configured.saveMethod, 'save'))),
+  );
+  const saveMethod = readString(props.saveMethod, readString(configured.saveMethod));
+  const deleteMethod = readString(props.deleteMethod, readString(configured.deleteMethod));
+  const entityCode = readString(
+    props.entityCode,
+    readString(configured.entityCode, readString(postData.entityCode ?? postData.entity_code)),
+  );
+  const tableName = readString(
+    props.tableName,
+    readString(
+      configured.tableName,
+      readString(postData.tableName ?? postData.table_name) ||
+        (entityCode === 'users' ? 'profiles' : entityCode),
+    ),
+  );
+  const viewName = readString(props.viewName, readString(configured.viewName));
+  const sourceType = readString(props.sourceType, readString(configured.sourceType));
+  const loadAfterSourceKeys = Array.isArray(configured.loadAfterSourceKeys)
+    ? configured.loadAfterSourceKeys.filter(
+        (item): item is string => typeof item === 'string' && Boolean(item.trim()),
+      )
+    : undefined;
 
-  dataSources[key] = {
+  return {
     key,
-    label: readString(props.title, key),
+    label: readString(props.title, readString(configured.label, key)),
+    ...(sourceType === 'custom' || sourceType === 'table' || sourceType === 'view' ? { sourceType } : {}),
     serviceName,
     serviceMethod,
     ...(saveMethod ? { saveMethod } : {}),
+    ...(deleteMethod ? { deleteMethod } : {}),
+    ...(entityCode ? { entityCode } : {}),
     ...(tableName ? { tableName } : {}),
+    ...(viewName ? { viewName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
-    autoLoad,
+    ...(loadAfterSourceKeys?.length ? { loadAfterSourceKeys } : {}),
+    autoLoad: typeof configured.autoLoad === 'boolean' ? configured.autoLoad : autoLoad,
   };
 }
 

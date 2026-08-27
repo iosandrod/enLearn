@@ -200,11 +200,32 @@ export class PageDataController {
     this.dependencies.sourceRequestVersions.clear();
   }
 
+  private readonly collectConfiguredDataSources = (
+    schema: LowCodePageRecord['schema'],
+    pageBlocks = this.dependencies.flattenPageBlocks(schema),
+  ) => {
+    const sources: Record<string, LowCodePageDataSource> = {
+      ...(schema.dataSources ?? {}),
+    };
+
+    pageBlocks.forEach((block) => {
+      if (block.kind !== 'form' || !isRecord(block.dataSource)) return;
+      sources[block.id] = {
+        ...block.dataSource,
+        key: block.id,
+      };
+    });
+
+    return sources;
+  }
+
+  private readonly getFormSourceKey = (block: LowCodePageFormBlock) => block.id;
+
   readonly refreshDataSources = async (
     sourceKeys: string[] = [],
     options: RefreshDataSourceOptions = {},
   ) => {
-    const allEntries = Object.entries(this.dependencies.props.page.schema.dataSources ?? {});
+    const allEntries = Object.entries(this.collectConfiguredDataSources(this.dependencies.props.page.schema));
     const uniqueSourceKeys = [...new Set(sourceKeys)];
     const entries = uniqueSourceKeys.length
       ? uniqueSourceKeys
@@ -646,8 +667,8 @@ export class PageDataController {
 
     for (const block of this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema)) {
       if (block.kind !== 'form') continue;
-      const sourceKey = block.submitSourceKey ?? block.sourceKey;
-      if (!sourceKey || !this.dependencies.getDataSource(sourceKey)?.saveMethod) continue;
+      const sourceKey = this.getFormSourceKey(block);
+      if (!this.dependencies.getDataSource(sourceKey)?.saveMethod) continue;
       groups.set(sourceKey, [...(groups.get(sourceKey) ?? []), block]);
     }
 
@@ -894,8 +915,7 @@ export class PageDataController {
 
     for (const block of blocks) {
       if (block.kind !== 'form') continue;
-      const sourceKey = block.sourceKey ?? block.submitSourceKey;
-      if (!sourceKey) continue;
+      const sourceKey = this.getFormSourceKey(block);
 
       defaultsBySource[sourceKey] = this.mergeFormModelValues(
         defaultsBySource[sourceKey] ?? {},
@@ -914,8 +934,8 @@ export class PageDataController {
     for (const block of blocks) {
       if (block.kind !== 'form') continue;
 
-      const sourceKey = block.sourceKey ?? block.submitSourceKey;
-      if (!sourceKey || !loadedSourceKeys.has(sourceKey)) continue;
+      const sourceKey = this.getFormSourceKey(block);
+      if (!loadedSourceKeys.has(sourceKey)) continue;
       const source = sourceKey ? sources[sourceKey] : undefined;
       const sourceValue = source ? this.dependencies.resolvedData.value[source.key] : undefined;
       const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
@@ -986,9 +1006,9 @@ export class PageDataController {
   }
 
   readonly loadPageData = async (nextPage: LowCodePageRecord) => {
-    const sources = nextPage.schema.dataSources ?? {};
-    const entries = Object.entries(sources);
     const pageBlocks = this.dependencies.flattenPageBlocks(nextPage.schema);
+    const sources = this.collectConfiguredDataSources(nextPage.schema, pageBlocks);
+    const entries = Object.entries(sources);
     const sharedFormDefaults = this.collectSharedFormDefaults(pageBlocks);
     const preserveGrids = this.runtimePageId === nextPage.id;
     const gridInteractionState = preserveGrids ? this.captureGridInteractionState() : {};
@@ -1008,10 +1028,10 @@ export class PageDataController {
       if (block.kind === 'grid') {
         await this.resolveGridDynamicDefaults(block);
       } else if (block.kind === 'form') {
-        const sourceKey = block.sourceKey ?? block.submitSourceKey;
+        const sourceKey = this.getFormSourceKey(block);
         this.dependencies.runtime.replaceForm(block.id, await this.deriveFormModel(
           block,
-          sourceKey ? sharedFormDefaults[sourceKey] : undefined
+          sharedFormDefaults[sourceKey]
         ));
       } else if (block.kind === 'searchForm') {
         this.dependencies.runtime.replaceForm(block.id, await this.deriveFormModel(block));

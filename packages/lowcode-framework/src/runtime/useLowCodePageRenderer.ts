@@ -761,7 +761,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       props.page.page_type === 'edit' &&
       isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
     ) return;
-    const source = getDataSource(block.submitSourceKey ?? block.sourceKey);
+    const source = getDataSource(block.id);
 
     if (!source) {
       return;

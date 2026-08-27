@@ -31,6 +31,45 @@ assert.notEqual(
   sourcePage.schema,
   'Runtime page preparation must clone the stored schema before attaching actions.'
 );
+
+const legacyRuntimePage = service.prepareRuntimePage({
+  id: 'sales-orders-edit',
+  code: 'sales-orders-edit',
+  schema: {
+    code: 'sales-orders-edit',
+    route: '/sales/orders/edit',
+    title: '销售订单编辑',
+    dataSources: {
+      salesOrder: {
+        key: 'salesOrder',
+        serviceName: 'admin',
+        serviceMethod: 'listItems',
+        tableName: 'sales_orders'
+      }
+    },
+    blocks: [
+      {
+        id: 'sales-order-edit-form',
+        kind: 'form',
+        sourceKey: 'salesOrder',
+        submitSourceKey: 'salesOrder',
+        schema: { fields: [{ field: 'id' }] }
+      },
+      {
+        id: 'sales-order-actions',
+        kind: 'buttonGroup',
+        actions: [{ code: 'refresh', script: "await this.$source.refresh('salesOrder');" }]
+      }
+    ]
+  }
+}, {});
+const legacySchema = legacyRuntimePage.schema as Record<string, any>;
+assert.equal(legacySchema.dataSources.salesOrder, undefined);
+assert.equal(legacySchema.blocks[0].sourceKey, undefined);
+assert.equal(legacySchema.blocks[0].submitSourceKey, undefined);
+assert.equal(legacySchema.blocks[0].dataSource.key, 'sales-order-edit-form');
+assert.match(legacySchema.blocks[1].actions[0].script, /sales-order-edit-form/);
+
 assert.equal(lowCodeResources.lowcode_node_actions.tableName, 'lowcode_node_actions');
 assert.equal(lowCodeResources.lowcode_node_actions.clientMode, 'user');
 assert.deepEqual(

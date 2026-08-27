@@ -646,8 +646,8 @@ export type LowCodePageFormBlock = LowCodeMaterialVersionedBlock & {
   title?: string;
   description?: string;
   schema: LowCodeFormSchema;
-  sourceKey?: string;
-  submitSourceKey?: string;
+  /** 表单节点自己的数据源；运行时使用表单 id 作为数据源键。 */
+  dataSource?: LowCodePageDataSource;
   initialValues?: Record<string, unknown>;
   formDesignerModel?: Record<string, unknown>;
   formDesignerUpdatedAt?: number;

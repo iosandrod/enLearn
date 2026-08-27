@@ -30,6 +30,7 @@ import { lowCodeResources } from './lowcode.resources';
 import type { LowCodePageRow } from './lowcode.types';
 import {
   LowCodeSchemaValidationError,
+  migrateLowCodePageSchema,
   prepareLowCodePageSchema
 } from './lowcode.schema';
 import {
@@ -296,7 +297,7 @@ export class LowCodeService extends BaseService {
     nodeActions: Array<Record<string, unknown>> = []
   ) {
     const schema = page.schema && typeof page.schema === 'object' && !Array.isArray(page.schema)
-      ? structuredClone(page.schema as Record<string, unknown>)
+      ? migrateLowCodePageSchema(structuredClone(page.schema as Record<string, unknown>))
       : {};
     const moduleName = schema && typeof schema === 'object'
       ? readString((schema as Record<string, unknown>).code).split('_')[0]

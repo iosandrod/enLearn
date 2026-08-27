@@ -394,7 +394,22 @@ function applyToCurrentBlock() {
 
   if (block.componentKey === 'lowcode-edit-form' || block.componentKey === 'form') {
     block.props.title ||= `${source.name}表单`;
-    block.props.submitSourceKey ||= source.key;
+    const nodeId = String(block.props.blockId || block._vid || 'form-block');
+    block.props.dataSource = {
+      key: nodeId,
+      label: block.props.title,
+      sourceType: 'table',
+      serviceName: 'admin',
+      serviceMethod: 'listItems',
+      ...(source.entityCode ? { entityCode: source.entityCode } : {}),
+      ...(source.tableName ? { tableName: source.tableName } : {}),
+      ...(Object.keys(buildListItemsPostData(source)).length
+        ? { postData: buildListItemsPostData(source) }
+        : {}),
+      autoLoad: true,
+    };
+    delete block.props.sourceKey;
+    delete block.props.submitSourceKey;
     block.props.fields = fieldsByUsage('formItem').map((field: any) => ({
       field: field.key,
       label: field.name || field.key,

@@ -311,7 +311,7 @@ function normalizeDataSource(
   };
 }
 
-function normalizeDataSources(value: unknown): LowCodePageSchema['dataSources'] {
+function normalizeDataSources(value: unknown): NonNullable<LowCodePageSchema['dataSources']> {
   if (!isRecord(value)) return {};
 
   return Object.fromEntries(
@@ -399,21 +399,37 @@ function normalizeEventHandlers(value: unknown) {
     : [];
 }
 
-function normalizeBlocks(value: unknown): Array<Record<string, unknown>> {
+type NormalizedDataSources = NonNullable<LowCodePageSchema['dataSources']>;
+
+function normalizeBlocks(
+  value: unknown,
+  legacyDataSources: NormalizedDataSources = {},
+  legacySourceAliases = new Map<string, string>(),
+): Array<Record<string, unknown>> {
   return Array.isArray(value)
-    ? value.map((block) => normalizeBlock(block)).filter(isRecord)
+    ? value
+        .map((block) => normalizeBlock(block, legacyDataSources, legacySourceAliases))
+        .filter(isRecord)
     : [];
 }
 
-function normalizeOverlays(value: unknown): Array<Record<string, unknown>> {
+function normalizeOverlays(
+  value: unknown,
+  legacyDataSources: NormalizedDataSources = {},
+  legacySourceAliases = new Map<string, string>(),
+): Array<Record<string, unknown>> {
   return Array.isArray(value)
     ? (value
-        .map((block) => normalizeBlock(block))
+        .map((block) => normalizeBlock(block, legacyDataSources, legacySourceAliases))
         .filter((block) => isRecord(block) && (block.kind === 'modal' || block.kind === 'drawer')) as Array<Record<string, unknown>>)
     : [];
 }
 
-function normalizeTabs(value: unknown) {
+function normalizeTabs(
+  value: unknown,
+  legacyDataSources: NormalizedDataSources = {},
+  legacySourceAliases = new Map<string, string>(),
+) {
   return Array.isArray(value)
     ? value
         .filter(isRecord)
@@ -421,12 +437,16 @@ function normalizeTabs(value: unknown) {
           ...tab,
           key: readString(tab.key, `tab${index + 1}`),
           label: readString(tab.label, `Tab ${index + 1}`),
-          blocks: normalizeBlocks(tab.blocks),
+          blocks: normalizeBlocks(tab.blocks, legacyDataSources, legacySourceAliases),
         }))
     : [];
 }
 
-function normalizeBlock(value: unknown) {
+function normalizeBlock(
+  value: unknown,
+  legacyDataSources: NormalizedDataSources = {},
+  legacySourceAliases = new Map<string, string>(),
+) {
   if (!isRecord(value)) return value;
 
   const kind = normalizeBlockKind(readString(value.kind));
@@ -445,9 +465,9 @@ function normalizeBlock(value: unknown) {
   ) {
     return {
       ...block,
-      blocks: normalizeBlocks(value.blocks),
+      blocks: normalizeBlocks(value.blocks, legacyDataSources, legacySourceAliases),
       ...((kind === 'modal' || kind === 'drawer') && Array.isArray(value.overlays)
-        ? { overlays: normalizeOverlays(value.overlays) }
+        ? { overlays: normalizeOverlays(value.overlays, legacyDataSources, legacySourceAliases) }
         : {}),
     };
   }
@@ -455,11 +475,78 @@ function normalizeBlock(value: unknown) {
   if (kind === 'tabs') {
     return {
       ...block,
-      tabs: normalizeTabs(value.tabs),
+      tabs: normalizeTabs(value.tabs, legacyDataSources, legacySourceAliases),
+    };
+  }
+
+  if (kind === 'form') {
+    const formBlock: Record<string, unknown> = { ...block };
+    const legacySourceKey = readString(value.submitSourceKey, readString(value.sourceKey));
+    const formId = readString(value.id);
+    [readString(value.sourceKey), readString(value.submitSourceKey)]
+      .filter(Boolean)
+      .forEach((key) => legacySourceAliases.set(key, formId));
+    const rawDataSource = isRecord(value.dataSource)
+      ? value.dataSource
+      : legacyDataSources[legacySourceKey];
+    delete formBlock.sourceKey;
+    delete formBlock.submitSourceKey;
+    if (!isRecord(rawDataSource)) return formBlock;
+    return {
+      ...formBlock,
+      dataSource: {
+        ...normalizeDataSource(formId, rawDataSource),
+        key: formId,
+      },
     };
   }
 
   return block;
+}
+
+const sourceReferenceKeys = new Set([
+  'sourceKey',
+  'submitSourceKey',
+  'deleteSourceKey',
+  'parentSourceKey',
+  'targetSourceKey',
+  'sourceKeys',
+  'targetSourceKeys',
+  'refreshSourceKeys',
+  'loadAfterSourceKeys',
+  'dataSourceKeys',
+  'assignTo',
+]);
+
+function rewriteLegacyFormSourceReferences(
+  value: unknown,
+  aliases: ReadonlyMap<string, string>,
+  propertyKey = '',
+): unknown {
+  if (!aliases.size) return value;
+  if (typeof value === 'string') {
+    if (sourceReferenceKeys.has(propertyKey)) return aliases.get(value) ?? value;
+    if (propertyKey === 'script' || propertyKey === 'source_code') {
+      let script = value;
+      aliases.forEach((nodeId, sourceKey) => {
+        script = script
+          .replaceAll(`'${sourceKey}'`, `'${nodeId}'`)
+          .replaceAll(`"${sourceKey}"`, `"${nodeId}"`);
+      });
+      return script;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => rewriteLegacyFormSourceReferences(item, aliases, propertyKey));
+  }
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      rewriteLegacyFormSourceReferences(item, aliases, key),
+    ]),
+  );
 }
 
 export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
@@ -479,6 +566,15 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
   const description = readString(value.description);
   const eventHandlers = normalizeEventHandlers(value.eventHandlers);
   const scriptPolicy = normalizeScriptPolicy(value.scriptPolicy);
+  const dataSources = normalizeDataSources(value.dataSources);
+  const legacySourceAliases = new Map<string, string>();
+  const blocks = normalizeBlocks(value.blocks, dataSources, legacySourceAliases);
+  const overlays = Array.isArray(value.overlays)
+    ? normalizeOverlays(value.overlays, dataSources, legacySourceAliases)
+    : undefined;
+  const nodeDataSources = Object.fromEntries(
+    Object.entries(dataSources).filter(([key]) => !legacySourceAliases.has(key)),
+  );
 
   return {
     schemaVersion: readSchemaVersion(value.schemaVersion),
@@ -496,7 +592,9 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
         ? value.status
         : 'draft',
     keepAlive: value.keepAlive !== false,
-    ...(isRecord(value.visualEditor) ? { visualEditor: value.visualEditor } : {}),
+    ...(isRecord(value.visualEditor)
+      ? { visualEditor: rewriteLegacyFormSourceReferences(value.visualEditor, legacySourceAliases) as Record<string, unknown> }
+      : {}),
     ...(isRecord(value.config)
       ? {
           config: {
@@ -505,15 +603,17 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
           },
         }
       : {}),
-    dataSources: normalizeDataSources(value.dataSources),
+    dataSources: nodeDataSources,
     ...(isRecord(value.apis) ? { apis: normalizePageApis(value.apis) } : {}),
     ...(Array.isArray(value.functions)
       ? { functions: normalizePageFunctions(value.functions) }
       : {}),
     ...(eventHandlers.length ? { eventHandlers } : {}),
     ...(scriptPolicy ? { scriptPolicy } : {}),
-    blocks: normalizeBlocks(value.blocks),
-    ...(Array.isArray(value.overlays) ? { overlays: normalizeOverlays(value.overlays) } : {}),
+    blocks: rewriteLegacyFormSourceReferences(blocks, legacySourceAliases) as Array<Record<string, unknown>>,
+    ...(overlays
+      ? { overlays: rewriteLegacyFormSourceReferences(overlays, legacySourceAliases) as Array<Record<string, unknown>> }
+      : {}),
   };
 }
 
@@ -816,18 +916,17 @@ function validateBlock(
   if (kind === 'form') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     validateFields(schemaRecord.fields, issues, `${path}.schema.fields`);
-
-    if (!dataSourceExists(schema, block.sourceKey)) {
-      pushIssue(issues, 'error', `${path}.sourceKey`, `Data source "${block.sourceKey}" does not exist.`);
-    }
-
-    if (!dataSourceExists(schema, block.submitSourceKey)) {
-      pushIssue(
-        issues,
-        'error',
-        `${path}.submitSourceKey`,
-        `Submit data source "${block.submitSourceKey}" does not exist.`
-      );
+    if (isRecord(block.dataSource)) {
+      const source = block.dataSource as NonNullable<LowCodePageSchema['dataSources']>[string];
+      if (source.key !== id) {
+        pushIssue(issues, 'error', `${path}.dataSource.key`, 'Form data source key must equal the block ID.');
+      }
+      if (!source.serviceName && !hasDataSourceTableTarget(source)) {
+        pushIssue(issues, 'error', `${path}.dataSource.serviceName`, 'Service name is required.');
+      }
+      if (!source.serviceMethod && !hasDataSourceTableTarget(source)) {
+        pushIssue(issues, 'error', `${path}.dataSource.serviceMethod`, 'Service method is required.');
+      }
     }
   }
 

@@ -76,7 +76,7 @@ export function resolveLowCodeDataSourceNodeAction(
 ) {
   for (const block of blocks) {
     const blockSourceKey = block.kind === 'form'
-      ? block.sourceKey ?? block.submitSourceKey ?? block.id
+      ? block.id
       : 'sourceKey' in block
         ? block.sourceKey
         : undefined;

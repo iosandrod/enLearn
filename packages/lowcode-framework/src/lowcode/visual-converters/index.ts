@@ -713,11 +713,12 @@ function convertRuntimeBlockToVisual(
     const actions = Array.isArray(schema.actions) ? schema.actions : [];
     const submitAction = actions.find((action) => action?.type === 'submit');
     const resetAction = actions.find((action) => action?.type === 'reset');
-    const sourceKey =
-      block.kind === 'searchForm'
-        ? readString(block.targetSourceKey, 'records')
-        : readString(block.sourceKey, 'record');
-    const source = getDataSource(context.dataSources, sourceKey);
+    const sourceKey = block.kind === 'searchForm'
+      ? readString(block.targetSourceKey, 'records')
+      : block.id;
+    const source = block.kind === 'form' && isPlainRecord(block.dataSource)
+      ? { ...cloneJson(block.dataSource), key: block.id }
+      : getDataSource(context.dataSources, sourceKey);
     const title = readString(
       block.title,
       block.kind === 'searchForm' ? '查询条件' : '普通表单',
@@ -744,11 +745,8 @@ function convertRuntimeBlockToVisual(
               ? 'search'
               : 'default',
         title,
-        sourceKey,
-        submitSourceKey:
-          block.kind === 'form'
-            ? readString(block.submitSourceKey, sourceKey)
-            : undefined,
+        ...(block.kind === 'searchForm' ? { sourceKey } : {}),
+        ...(block.kind === 'form' && source ? { dataSource: cloneJson(source) } : {}),
         serviceName: source?.serviceName ?? 'admin',
         serviceMethod: source?.serviceMethod ?? '',
         saveMethod: source?.saveMethod ?? '',

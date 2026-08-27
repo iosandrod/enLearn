@@ -16,6 +16,7 @@
     "test:grid-load-data-action": "node tests/grid-load-data-action-regression.mjs",
     "test:mes-runtime-safety": "node tests/mes-lowcode-runtime-safety-regression.mjs && node tests/mes-mobile-command-runtime-regression.mjs",
     "test:node-actions": "node tests/node-action-modules-regression.mjs",
+    "test:form-node-data-source": "node tests/form-node-data-source-regression.mjs",
     "test:grid-load-data-action-browser": "node tests/grid-load-data-action-browser-launcher.mjs",
     "test:table-search-filter-browser": "node tests/table-search-filter-browser-launcher.mjs",
     "test:table-advanced-filter-browser": "node tests/table-advanced-filter-browser-launcher.mjs",

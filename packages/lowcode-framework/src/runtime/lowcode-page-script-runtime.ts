@@ -135,12 +135,16 @@ export class LowCodePageScriptRuntime {
     return value;
   }
 
-  private readScriptRecordArg(args: unknown[], index: number) {
-    return isRecord(args[index]) ? cloneRuntimeValue(args[index]) : {};
+  private readScriptRecordArg(args: unknown[], index: number): Record<string, unknown> {
+    const value = args[index];
+    return isRecord(value) ? cloneRuntimeValue(value) : {};
   }
 
-  private readScriptRowsArg(args: unknown[], index: number) {
-    return Array.isArray(args[index]) ? args[index].filter(isRecord).map((row) => cloneRuntimeValue(row)) : [];
+  private readScriptRowsArg(args: unknown[], index: number): Record<string, unknown>[] {
+    const value = args[index];
+    return Array.isArray(value)
+      ? value.filter(isRecord).map((row) => cloneRuntimeValue(row))
+      : [];
   }
 
   private findNestedRuntimeBlock(block: LowCodePageBlock, blockId: string) {
@@ -222,11 +226,20 @@ export class LowCodePageScriptRuntime {
     const {
       builtinPageFunctionMode,
       flattenPageBlocks,
+      getDataSource,
       host,
       props,
       runtime,
       searchFilters,
     } = this.dependencies;
+    const dataSources = {
+      ...(props.page.schema.dataSources ?? {}),
+    };
+    flattenPageBlocks(props.page.schema).forEach((candidate) => {
+      if (candidate.kind !== 'form') return;
+      const source = getDataSource(candidate.id);
+      if (source) dataSources[candidate.id] = cloneRuntimeValue(source);
+    });
     const event: LowCodeRuntimeEvent = {
       name: `nodeAction.${block.kind}.${action.action_code}`,
       blockId: block.id,
@@ -237,7 +250,7 @@ export class LowCodePageScriptRuntime {
           block,
           options,
           blocks: flattenPageBlocks(props.page.schema),
-          dataSources: props.page.schema.dataSources ?? {},
+          dataSources,
           editPageMode: props.page.page_type === 'edit'
             ? builtinPageFunctionMode.value
             : undefined,
@@ -303,9 +316,9 @@ export class LowCodePageScriptRuntime {
     } = this.dependencies;
     const command = this.readScriptStringArg(request.args, 0, 'command');
     const payload = this.readScriptRecordArg(request.args, 1);
-    const sourceKey = readString(payload.sourceKey ?? (
-      'sourceKey' in block ? block.sourceKey : undefined
-    ));
+    const sourceKey = block.kind === 'form'
+      ? block.id
+      : readString(payload.sourceKey ?? ('sourceKey' in block ? block.sourceKey : undefined));
 
     switch (command) {
       case 'runtime.resolve':
@@ -649,7 +662,7 @@ export class LowCodePageScriptRuntime {
   }
 
   private resolveBuiltinSourceForRows(rows: Record<string, unknown>[]) {
-    const { getDataSource, props, runtime } = this.dependencies;
+    const { flattenPageBlocks, getDataSource, props, runtime } = this.dependencies;
     const matchingGrid = Object.values(runtime.state.grids).find((grid) => {
       if (!grid.sourceKey) return false;
       return rows.some((row) => grid.rows.some((candidate) => Object.is(candidate[grid.rowKey], row[grid.rowKey])));
@@ -659,7 +672,12 @@ export class LowCodePageScriptRuntime {
     const sourceKey = readString(isRecord(rows[0]) ? rows[0].sourceKey : undefined);
     if (sourceKey) return getDataSource(sourceKey);
 
-    return Object.values(props.page.schema.dataSources ?? {}).find((source) => Boolean(source.saveMethod));
+    const formSource = flattenPageBlocks(props.page.schema)
+      .filter((block): block is LowCodePageFormBlock => block.kind === 'form')
+      .map((block) => getDataSource(block.id))
+      .find((source) => Boolean(source?.saveMethod));
+    return formSource ?? Object.values(props.page.schema.dataSources ?? {})
+      .find((source) => Boolean(source.saveMethod));
   }
 
   private resolveBuiltinDeleteSourceForRows(rows: Record<string, unknown>[]) {

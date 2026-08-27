@@ -121,8 +121,6 @@ export function createDefaultFormBlock(overrides?: Partial<LowCodePageFormBlock>
       id: 'form-block',
       kind: 'form',
       title: '普通表单',
-      sourceKey: 'record',
-      submitSourceKey: 'record',
       schema: {
         fields: [],
         actions: [

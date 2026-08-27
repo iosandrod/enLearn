@@ -504,11 +504,7 @@ function createFieldEntries(source: LowCodeContextSource) {
         group: `表单 · ${block.title ?? block.id}`,
         label,
         field: field.field,
-        sourceKey: readBlockString(
-          block,
-          'sourceKey',
-          readBlockString(block, 'submitSourceKey'),
-        ),
+        sourceKey: block.id,
         blockId: block.id,
         description: field.field,
         insertText: `this.forms[${jsString(block.id)}]?.[${jsString(field.field)}]`,
@@ -669,7 +665,7 @@ function createFieldTree(
     });
 
   forms.forEach((block) => {
-    const sourceKey = readString(block.sourceKey, readString(block.submitSourceKey));
+    const sourceKey = block.id;
     if (sourceKey && gridSourceKeys.has(sourceKey)) return;
     if (sourceKey) claimedSourceKeys.add(sourceKey);
     owners.push({

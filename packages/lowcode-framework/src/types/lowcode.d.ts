@@ -518,8 +518,7 @@ export type LowCodePageFormBlock = LowCodeMaterialVersionedBlock & {
     title?: string;
     description?: string;
     schema: LowCodeFormSchema;
-    sourceKey?: string;
-    submitSourceKey?: string;
+    dataSource?: LowCodePageDataSource;
     initialValues?: Record<string, unknown>;
     formDesignerModel?: Record<string, unknown>;
     formDesignerUpdatedAt?: number;

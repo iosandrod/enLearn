@@ -414,18 +414,23 @@ function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
     const runtimeIsForm = runtimeBlock.componentKey === 'form' || runtimeBlock.componentKey === 'lowcode-search-form';
     const storedIsForm = block.componentKey === 'form' || block.componentKey === 'lowcode-search-form';
     if (runtimeIsForm && storedIsForm) {
+      const mergedProps: Record<string, unknown> = {
+        ...block.props,
+        ...runtimeBlock.props,
+        formDesignerModel: isVisualEditorModel(block.props?.formDesignerModel) &&
+          block.componentKey === runtimeBlock.componentKey
+          ? block.props.formDesignerModel
+          : runtimeBlock.props?.formDesignerModel,
+      };
+      if (runtimeBlock.componentKey === 'form') {
+        delete mergedProps.sourceKey;
+        delete mergedProps.submitSourceKey;
+      }
       return {
         ...block,
         componentKey: runtimeBlock.componentKey,
         label: runtimeBlock.label,
-        props: {
-          ...block.props,
-          ...runtimeBlock.props,
-          formDesignerModel: isVisualEditorModel(block.props?.formDesignerModel) &&
-            block.componentKey === runtimeBlock.componentKey
-            ? block.props.formDesignerModel
-            : runtimeBlock.props?.formDesignerModel,
-        },
+        props: mergedProps,
       };
     }
 
@@ -619,7 +624,7 @@ function createMenuChildEditPage(
   const formBlock =
     findPageForm(
       blocks,
-      (block) => block.id === DYNAMIC_ROUTE_EDIT_FORM_ID || block.sourceKey === 'record',
+      (block) => block.id === DYNAMIC_ROUTE_EDIT_FORM_ID,
     ) ?? findPageForm(blocks);
 
   if (!formBlock) {
@@ -630,8 +635,7 @@ function createMenuChildEditPage(
     ...(formBlock.initialValues ?? {}),
     ...cloneDeep(initialValues),
   };
-  formBlock.sourceKey = undefined;
-  formBlock.submitSourceKey = undefined;
+  formBlock.dataSource = undefined;
   formBlock.schema.actions = [];
 
   if (schema.dataSources && 'record' in schema.dataSources) {
@@ -1253,8 +1257,7 @@ function createPageInfoEditorPage(
   }
 
   formBlock.initialValues = cloneDeep(initialValues);
-  formBlock.sourceKey = undefined;
-  formBlock.submitSourceKey = undefined;
+  formBlock.dataSource = undefined;
   formBlock.schema.actions = [];
 
   return { ...editorPage, schema };

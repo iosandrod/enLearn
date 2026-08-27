@@ -81,8 +81,22 @@ export class PageSchemaRepository {
     ].map((key) => readString(key)).filter(Boolean)),
   ];
 
-  readonly getDataSource = (key?: string): LowCodePageDataSource | undefined =>
-    key ? this.getPage().schema.dataSources?.[key] : undefined;
+  readonly getDataSource = (key?: string): LowCodePageDataSource | undefined => {
+    if (!key) return undefined;
+
+    const node = this.flattenPageBlocks().find(
+      (block): block is LowCodePageFormBlock =>
+        block.kind === 'form' && block.id === key,
+    );
+    if (node && isRecord(node.dataSource)) {
+      return {
+        ...node.dataSource,
+        key: node.id,
+      };
+    }
+
+    return this.getPage().schema.dataSources?.[key];
+  };
 
   readonly getGridRowKey = (block: LowCodePageGridBlock) => {
     const rowConfig = block.schema.grid.rowConfig;
