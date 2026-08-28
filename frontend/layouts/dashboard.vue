@@ -1,10 +1,28 @@
 <template>
-  <div class="admin-shell">
+  <div
+    class="admin-shell"
+    :class="{
+      'has-mobile-menu': mobileMenuOpen,
+      'has-mobile-utility-panel': mobileUtilityOpen,
+      'has-mobile-tab-panel': mobileTabListOpen,
+    }"
+  >
     <header class="admin-topbar">
+      <button
+        class="admin-mobile-icon-button admin-mobile-menu-button"
+        type="button"
+        aria-label="打开菜单"
+        :aria-expanded="mobileMenuOpen"
+        aria-controls="admin-mobile-navigation"
+        @click.stop="toggleMobileMenu"
+      >
+        <i class="ri-menu-line" aria-hidden="true" />
+      </button>
       <RouterLink class="admin-brand" to="/dashboard">
         <span class="admin-brand-mark">M</span>
-        <span>工厂制造管理平台</span>
+        <span class="admin-brand-name">工厂制造管理平台</span>
       </RouterLink>
+      <span class="admin-mobile-page-title" :title="activeTitle">{{ activeTitle }}</span>
 
       <div class="admin-account-switcher" @click.stop>
         <button
@@ -266,11 +284,128 @@
         </div>
         </vxe-button>
         <vxe-button size="mini" mode="text" @click="signOut">退出</vxe-button>
+        <button
+          class="admin-mobile-icon-button admin-mobile-utility-button"
+          type="button"
+          aria-label="打开更多操作"
+          :aria-expanded="mobileUtilityOpen"
+          aria-controls="admin-mobile-utility-panel"
+          @click.stop="toggleMobileUtilityPanel"
+        >
+          <i class="ri-more-2-fill" aria-hidden="true" />
+        </button>
       </div>
     </header>
 
+    <div
+      v-if="mobileMenuOpen || mobileUtilityOpen || mobileTabListOpen"
+      class="admin-mobile-backdrop"
+      aria-hidden="true"
+      @click="closeMobilePanels"
+    />
+
+    <section
+      v-if="mobileUtilityOpen"
+      id="admin-mobile-utility-panel"
+      class="admin-mobile-utility-panel"
+      role="dialog"
+      aria-label="更多操作"
+      @click.stop
+    >
+      <header class="admin-mobile-panel-header">
+        <strong>更多操作</strong>
+        <button type="button" aria-label="关闭" @click="closeMobilePanels">
+          <i class="ri-close-line" aria-hidden="true" />
+        </button>
+      </header>
+
+      <div class="admin-mobile-account-summary">
+        <span>{{ displayUserLabel }}</span>
+        <strong>{{ auth.activeAccount.value?.name ?? '未选择账套' }}</strong>
+      </div>
+
+      <div class="admin-mobile-utility-actions">
+        <RouterLink
+          v-if="canOpenTaskConsole"
+          :to="TASK_CONSOLE_PATH"
+          @click="closeMobilePanels"
+        >
+          <i class="ri-task-line" aria-hidden="true" />
+          <span>任务总控</span>
+        </RouterLink>
+        <RouterLink
+          v-if="canOpenApprovalConsole"
+          :to="APPROVAL_CONSOLE_PATH"
+          @click="closeMobilePanels"
+        >
+          <i class="ri-flow-chart" aria-hidden="true" />
+          <span>审批总控</span>
+        </RouterLink>
+        <button type="button" @click="openMobileSystemSettings">
+          <i class="ri-settings-3-line" aria-hidden="true" />
+          <span>系统设置</span>
+        </button>
+        <button type="button" @click="reloadMobileMenu">
+          <i class="ri-refresh-line" aria-hidden="true" />
+          <span>刷新菜单</span>
+        </button>
+      </div>
+
+      <section v-if="topToolGroups.length" class="admin-mobile-tool-groups" aria-label="业务工具">
+        <strong>业务工具</strong>
+        <div v-for="toolGroup in topToolGroups" :key="toolGroup.code">
+          <span>{{ toolGroup.title }}</span>
+          <RouterLink
+            v-for="tool in toolGroup.tools"
+            :key="tool.code"
+            :to="tool.path"
+            @click="handleMobileTopToolClick($event, tool)"
+          >
+            <i v-if="tool.icon" :class="tool.icon" aria-hidden="true" />
+            <span>{{ tool.title }}</span>
+          </RouterLink>
+        </div>
+      </section>
+
+      <section v-if="auth.accounts.value.length > 1" class="admin-mobile-account-list" aria-label="切换账套">
+        <strong>切换账套</strong>
+        <button
+          v-for="account in auth.accounts.value"
+          :key="account.account_id"
+          type="button"
+          :class="{ 'is-active': account.account_id === auth.activeAccount.value?.account_id }"
+          :disabled="accountSwitching || !isAccountEnabled(account)"
+          @click="switchAccount(account.account_id)"
+        >
+          <span>{{ account.code ?? '---' }}</span>
+          <strong>{{ account.name ?? '未命名账套' }}</strong>
+          <i
+            v-if="account.account_id === auth.activeAccount.value?.account_id"
+            class="ri-check-line"
+            aria-hidden="true"
+          />
+        </button>
+      </section>
+
+      <button class="admin-mobile-sign-out" type="button" @click="signOut">
+        <i class="ri-logout-box-r-line" aria-hidden="true" />
+        退出登录
+      </button>
+    </section>
+
     <div class="admin-body">
-      <aside class="admin-sidebar">
+      <aside
+        id="admin-mobile-navigation"
+        class="admin-sidebar"
+        :aria-hidden="mobileViewport && !mobileMenuOpen ? 'true' : undefined"
+        @click.stop
+      >
+        <header class="admin-mobile-sidebar-header">
+          <strong>功能菜单</strong>
+          <button type="button" aria-label="关闭菜单" @click="closeMobilePanels">
+            <i class="ri-close-line" aria-hidden="true" />
+          </button>
+        </header>
         <div class="admin-filter">
           <input
             v-model="menuFilter"
@@ -313,7 +448,43 @@
           >
             {{ tab.title }}
           </RouterLink>
+          <button
+            class="admin-mobile-tabs-button"
+            type="button"
+            aria-label="查看已打开页面"
+            :aria-expanded="mobileTabListOpen"
+            aria-controls="admin-mobile-tab-panel"
+            @click.stop="toggleMobileTabList"
+          >
+            <i class="ri-list-check-2" aria-hidden="true" />
+          </button>
         </div>
+
+        <section
+          v-if="mobileTabListOpen"
+          id="admin-mobile-tab-panel"
+          class="admin-mobile-tab-panel"
+          role="dialog"
+          aria-label="已打开页面"
+          @click.stop
+        >
+          <header class="admin-mobile-panel-header">
+            <strong>已打开页面</strong>
+            <button type="button" aria-label="关闭" @click="closeMobilePanels">
+              <i class="ri-close-line" aria-hidden="true" />
+            </button>
+          </header>
+          <RouterLink
+            v-for="tab in visitedTabs"
+            :key="tab.path"
+            :class="{ 'is-active': tab.path === route.path }"
+            :to="tab.fullPath"
+            @click="closeMobilePanels"
+          >
+            <span>{{ tab.title }}</span>
+            <i v-if="tab.path === route.path" class="ri-check-line" aria-hidden="true" />
+          </RouterLink>
+        </section>
 
         <p v-if="routeError" class="admin-route-error lc-error">{{ routeError }}</p>
 
@@ -446,12 +617,17 @@ const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<VisitedTab[]>([]);
 const menuFilter = ref('');
 const openTopToolCode = ref('');
+const mobileViewport = ref(false);
+const mobileMenuOpen = ref(false);
+const mobileUtilityOpen = ref(false);
+const mobileTabListOpen = ref(false);
 const accountMenuOpen = ref(false);
 const accountSearch = ref('');
 const accountSearchInput = ref<HTMLInputElement | null>(null);
 const accountSwitching = ref(false);
 const accountSwitchError = ref('');
 let pageInfoDesignOpening = false;
+let mobileViewportQuery: MediaQueryList | null = null;
 const filteredAccounts = computed(() => {
   const keyword = accountSearch.value.trim().toLowerCase();
   if (!keyword) return auth.accounts.value;
@@ -474,15 +650,56 @@ function toggleAccountMenu() {
   }
 }
 
+function closeMobilePanels() {
+  mobileMenuOpen.value = false;
+  mobileUtilityOpen.value = false;
+  mobileTabListOpen.value = false;
+}
+
+function handleMobileViewportChange(event: MediaQueryListEvent) {
+  mobileViewport.value = event.matches;
+  if (!event.matches) closeMobilePanels();
+}
+
+function toggleMobileMenu() {
+  const willOpen = !mobileMenuOpen.value;
+  closeMobilePanels();
+  mobileMenuOpen.value = willOpen;
+}
+
+function toggleMobileUtilityPanel() {
+  const willOpen = !mobileUtilityOpen.value;
+  closeMobilePanels();
+  mobileUtilityOpen.value = willOpen;
+}
+
+function toggleMobileTabList() {
+  const willOpen = !mobileTabListOpen.value;
+  closeMobilePanels();
+  mobileTabListOpen.value = willOpen;
+}
+
+function openMobileSystemSettings() {
+  closeMobilePanels();
+  void openSystemSettingsDialog();
+}
+
+function reloadMobileMenu() {
+  closeMobilePanels();
+  void reloadRoutes();
+}
+
 async function switchAccount(accountId: string) {
   if (accountSwitching.value || accountId === auth.activeAccount.value?.account_id) {
     accountMenuOpen.value = false;
+    closeMobilePanels();
     return;
   }
 
   accountSwitching.value = true;
   accountSwitchError.value = '';
   try {
+    closeMobilePanels();
     await aiAssistant.cancel();
     await auth.selectAccount(accountId);
     routes.value = [];
@@ -1051,6 +1268,11 @@ async function handleTopToolClick(event: MouseEvent, item: AdminRouteNode) {
   }
 }
 
+function handleMobileTopToolClick(event: MouseEvent, item: AdminRouteNode) {
+  closeMobilePanels();
+  void handleTopToolClick(event, item);
+}
+
 async function openLowCodeDesigner(item: AdminRouteNode) {
   await openLowCodeDesignerByCode(resolveLowCodePageCode(item));
 }
@@ -1181,6 +1403,7 @@ function handleMenuContextKeydown(event: KeyboardEvent) {
     openTopToolCode.value = '';
     testUserMenuOpen.value = false;
     accountMenuOpen.value = false;
+    closeMobilePanels();
   }
 }
 
@@ -1189,9 +1412,13 @@ function closeFloatingPanels() {
   openTopToolCode.value = '';
   testUserMenuOpen.value = false;
   accountMenuOpen.value = false;
+  closeMobilePanels();
 }
 
 onMounted(async () => {
+  mobileViewportQuery = window.matchMedia('(max-width: 820px)');
+  mobileViewport.value = mobileViewportQuery.matches;
+  mobileViewportQuery.addEventListener('change', handleMobileViewportChange);
   await auth.init();
   reconnectFrontendCommandSocket();
   if (showApprovalTestSwitcher.value) {
@@ -1207,6 +1434,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  mobileViewportQuery?.removeEventListener('change', handleMobileViewportChange);
+  mobileViewportQuery = null;
   frontendCommandSocket.disconnect();
   window.removeEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
   window.removeEventListener('enlearn:auth-user-changed', handleAuthUserChanged);
@@ -1219,6 +1448,7 @@ watch(
   ([path], [previousPath]) => {
     closeMenuContext();
     openTopToolCode.value = '';
+    closeMobilePanels();
     rememberTab();
     if (
       path.startsWith('/dashboard/workflow') &&

@@ -8,7 +8,6 @@ export const visualConfig = createVisualEditorConfig();
 const formComponentKeys = new Set([
   'array-table',
   'checkbox',
-  'datetimePicker',
   'input',
   'picker',
   'radio',

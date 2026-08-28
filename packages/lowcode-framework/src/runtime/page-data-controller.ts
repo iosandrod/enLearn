@@ -7,6 +7,7 @@ import type {
   LowCodePageGridBlock,
   LowCodePageRecord,
   LowCodePageSearchFormBlock,
+  LowCodeField,
   LowCodeRuntimeEvent,
 } from '../types/lowcode';
 import { ensureLowCodeEditPage } from './lowcode-pages';
@@ -50,6 +51,29 @@ type GridInteractionStates = Record<
     'currentRow' | 'selectedRows' | 'contextRow' | 'currentCell'
   >
 >;
+
+function formatDynamicDateValue(value: unknown, type: string) {
+  if (!['date', 'datetime', 'time'].includes(type)) return value;
+  const date = value instanceof Date
+    ? value
+    : typeof value === 'string' || typeof value === 'number'
+      ? new Date(value)
+      : undefined;
+  if (!date || Number.isNaN(date.getTime())) return value;
+  const pad = (part: number) => String(part).padStart(2, '0');
+  if (type === 'time') {
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+  const result = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return type === 'datetime'
+    ? `${result} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+    : result;
+}
+
+function normalizeDynamicDefaultValue(field: LowCodeField, value: unknown) {
+  const props = isRecord(field.props) ? field.props : {};
+  return formatDynamicDateValue(value, readString(props.type));
+}
 
 export type PageDataControllerDependencies = {
   props: LowCodePageRendererProps;
@@ -97,7 +121,7 @@ export class PageDataController {
   private runtimePageId = '';
   private lastSavedFormRecord: Record<string, unknown> | undefined;
 
-  constructor(private readonly dependencies: PageDataControllerDependencies) {}
+  constructor(private readonly dependencies: PageDataControllerDependencies) { }
 
   readonly findLowCodePage = async (filters: Record<string, unknown>) => {
     const pages = await this.dependencies.host.getServiceApi().invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
@@ -224,77 +248,17 @@ export class PageDataController {
   readonly refreshDataSources = async (
     sourceKeys: string[] = [],
     options: RefreshDataSourceOptions = {},
-  ) => {
-    const allEntries = Object.entries(this.collectConfiguredDataSources(this.dependencies.props.page.schema));
-    const uniqueSourceKeys = [...new Set(sourceKeys)];
-    const entries = uniqueSourceKeys.length
-      ? uniqueSourceKeys
-        .map((key) => {
-          const source = this.dependencies.getDataSource(key);
-          return source ? ([key, source] as const) : undefined;
+  ) => {//
+    
+    let pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
+    for(let key of sourceKeys) {
+      if(pageBlocks.find((block) => block.id == key)) {
+        await this.dependencies.executeNodeAction({
+          node: key,
+          method: 'loadData',
         })
-        .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
-      : allEntries;
-    const pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
-    const refreshEntry = async ([key, source]: readonly [string, LowCodePageDataSource]) => {
-      const nodeAction = resolveLowCodeDataSourceNodeAction(
-        pageBlocks,
-        key,
-        this.dependencies.props.page.node_actions,
-      );
-      if (nodeAction) {
-        try {
-          await this.dependencies.executeNodeAction({
-            node: nodeAction.block.id,
-            method: nodeAction.action.method,
-          });
-          return '';
-        } catch (error) {
-          console.error(`[LowCode Runtime] 数据源 ${key} 刷新失败`, error);
-          return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.refreshDataSource')}`;
-        }
       }
-
-      const version = this.beginSourceRequest(key);
-      this.dependencies.runtime.setSource(key, undefined);
-
-      try {
-        const [resolvedKey, value] = await this.invokeDataSource(key, source, true);
-        if (!this.isCurrentSourceRequest(key, version)) return '';
-        if (typeof value !== 'undefined') {
-          this.dependencies.runtime.setSource(resolvedKey, value, { resetGridBaseline: true });
-        }
-        return '';
-      } catch (error) {
-        if (!this.isCurrentSourceRequest(key, version)) return '';
-        console.error(`[LowCode Runtime] 数据源 ${key} 刷新失败`, error);
-        return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.refreshDataSource')}`;
-      } finally {
-        this.finishSourceRequest(key, version);
-      }
-    };
-    const errors: string[] = [];
-    if (options.ordered) {
-      for (const entry of entries) {
-        const error = await refreshEntry(entry);
-        if (error) {
-          errors.push(error);
-          if (options.strict) break;
-        }
-      }
-    } else {
-      errors.push(...(await Promise.all(entries.map(refreshEntry))).filter(Boolean));
-    }
-
-    if (errors.length) {
-      this.dependencies.message.value = errors[0];
-      this.dependencies.messageClass.value = 'lc-error';
-    }
-
-    this.syncPageGridStates();
-
-    if (errors.length && options.strict) throw new Error(errors[0]);
-    return errors;
+    }//
   }
 
   private readonly uniqueStrings = (values: unknown[]) => {
@@ -442,19 +406,24 @@ export class PageDataController {
   ) => {
     const nextModel = cloneRuntimeValue(model);
     for (const field of block.schema.fields) {
-      if (field.field in nextModel) continue;
-
       const defaultValueType = readString(field.defaultValueType);
-      const defaultValueScript = readString(field.defaultValueScript);
+      const defaultValue = readString(field.defaultValue);
       const defaultValueProcedure = readString(field.defaultValueProcedure);
+      const hasConfiguredDynamicDefault =
+        (defaultValueType === 'function' && Boolean(defaultValue)) ||
+        (defaultValueType === 'procedure' && Boolean(defaultValueProcedure));
+      const hasStaleEmptyInitialValue =
+        !options.skipAllocatingDefaults &&
+        field.field in nextModel &&
+        (nextModel[field.field] === '' || nextModel[field.field] === null);
+      if (
+        !hasConfiguredDynamicDefault ||
+        (field.field in nextModel && !hasStaleEmptyInitialValue)
+      ) continue;
       if (
         options.skipAllocatingDefaults &&
         defaultValueType === 'procedure' &&
         defaultValueProcedure === 'public.generate_document_number'
-      ) continue;
-      if (
-        (defaultValueType !== 'function' || !defaultValueScript) &&
-        (defaultValueType !== 'procedure' || !defaultValueProcedure)
       ) continue;
 
       const event: LowCodeRuntimeEvent = {
@@ -475,8 +444,10 @@ export class PageDataController {
             field: field.field,
             values: cloneRuntimeValue(nextModel),
           })
-          : (await this.dependencies.executeIsolatedScript(defaultValueScript, event, 'function')).value;
-        if (typeof value !== 'undefined') nextModel[field.field] = cloneRuntimeValue(value);
+          : (await this.dependencies.executeIsolatedScript(defaultValue, event, 'function')).value;
+        if (typeof value !== 'undefined') {
+          nextModel[field.field] = cloneRuntimeValue(normalizeDynamicDefaultValue(field, value));
+        }
       } catch (error) {
         this.dependencies.reportRuntimeDirectiveError(error);
       }
@@ -537,7 +508,7 @@ export class PageDataController {
       return Boolean(
         column.field &&
         (type === 'function' || type === 'procedure') &&
-        (readString(field.defaultValueScript) || readString(field.defaultValueProcedure))
+        (readString(field.defaultValue) || readString(field.defaultValueProcedure))
       );
     });
     if (!dynamicColumns.length) return;
@@ -546,8 +517,9 @@ export class PageDataController {
       const params = isRecord(column.params) ? column.params : {};
       const field = isRecord(params.lowcodeField) ? params.lowcodeField : {};
       const defaultValueType = readString(field.defaultValueType);
-      const defaultValueScript = readString(field.defaultValueScript);
+      const defaultValue = readString(field.defaultValue);
       const defaultValueProcedure = readString(field.defaultValueProcedure);
+      const editRender = isRecord(column.editRender) ? column.editRender : {};
       const event: LowCodeRuntimeEvent = {
         name: 'grid.fieldDefaultValue',
         blockId: block.id,
@@ -567,10 +539,14 @@ export class PageDataController {
             field: column.field,
             values: {},
           })
-          : (await this.dependencies.executeIsolatedScript(defaultValueScript, event, 'function')).value;
-        const editRender = isRecord(column.editRender) ? column.editRender : {};
+          : (await this.dependencies.executeIsolatedScript(defaultValue, event, 'function')).value;
         if (typeof value === 'undefined') delete editRender.defaultValue;
-        else editRender.defaultValue = cloneRuntimeValue(value);
+        else editRender.defaultValue = cloneRuntimeValue(
+          normalizeDynamicDefaultValue(
+            { props: isRecord(field.props) ? field.props : {} } as LowCodeField,
+            value,
+          ),
+        );
         column.editRender = editRender;
       } catch (error) {
         this.dependencies.reportRuntimeDirectiveError(error);

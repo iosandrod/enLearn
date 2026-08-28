@@ -1495,3 +1495,131 @@ DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA
   },
   { key: 'cellWidth', label: '时间格宽度', control: 'number', min: 40, max: 160, step: 4 },
   { key: 'gridWidth', label: '左侧列宽', control: 'number', min: 176, max: 420, step: 8 },
+
+
+
+
+ const allEntries = Object.entries(this.collectConfiguredDataSources(this.dependencies.props.page.schema));
+    const uniqueSourceKeys = [...new Set(sourceKeys)];
+    const entries = uniqueSourceKeys.length
+      ? uniqueSourceKeys
+        .map((key) => {
+          const source = this.dependencies.getDataSource(key);
+          return source ? ([key, source] as const) : undefined;
+        })
+        .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
+      : allEntries;
+    const pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
+    const refreshEntry = async ([key, source]: readonly [string, LowCodePageDataSource]) => {
+      const nodeAction = resolveLowCodeDataSourceNodeAction(
+        pageBlocks,
+        key,
+        this.dependencies.props.page.node_actions,
+      );
+      if (nodeAction) {
+        try {
+          await this.dependencies.executeNodeAction({
+            node: nodeAction.block.id,
+            method: nodeAction.action.method,
+          });
+          return '';
+        } catch (error) {
+          console.error(`[LowCode Runtime] 数据源 ${key} 刷新失败`, error);
+          return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.refreshDataSource')}`;
+        }
+      }
+
+      const version = this.beginSourceRequest(key);
+      this.dependencies.runtime.setSource(key, undefined);
+
+      try {
+        const [resolvedKey, value] = await this.invokeDataSource(key, source, true);
+        if (!this.isCurrentSourceRequest(key, version)) return '';
+        if (typeof value !== 'undefined') {
+          this.dependencies.runtime.setSource(resolvedKey, value, { resetGridBaseline: true });
+        }
+        return '';
+      } catch (error) {
+        if (!this.isCurrentSourceRequest(key, version)) return '';
+        console.error(`[LowCode Runtime] 数据源 ${key} 刷新失败`, error);
+        return `${key}: ${error instanceof Error ? error.message : this.dependencies.host.t('runtime.errors.refreshDataSource')}`;
+      } finally {
+        this.finishSourceRequest(key, version);
+      }
+    };
+    const errors: string[] = [];
+    if (options.ordered) {
+      for (const entry of entries) {
+        const error = await refreshEntry(entry);
+        if (error) {
+          errors.push(error);
+          if (options.strict) break;
+        }
+      }
+    } else {
+      errors.push(...(await Promise.all(entries.map(refreshEntry))).filter(Boolean));
+    }
+
+    if (errors.length) {
+      this.dependencies.message.value = errors[0];
+      this.dependencies.messageClass.value = 'lc-error';
+    }
+
+    this.syncPageGridStates();
+
+    if (errors.length && options.strict) throw new Error(errors[0]);
+    return errors;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // let pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
+    // let pageType = this.dependencies.props.page.page_type;
+    // if (pageType == 'list') {
+    //   let tBlock = pageBlocks.find((block) => block.kind === 'grid' && block.tableType == 'main');
+    //   if (tBlock) {
+    //     this.dependencies.executeNodeAction({
+    //       node: tBlock.id,
+    //       method: 'loadData',
+    //     });
+    //   }
+    // }
+    // if (pageType == 'edit') {
+    //   let tBlock = pageBlocks.find((block) => block.kind === 'form' && block.formType == 'edit');
+    //   if (tBlock) {//
+    //     this.dependencies.executeNodeAction({
+    //       node: tBlock.id,
+    //       method: 'loadData',
+    //     });
+    //   }
+    // }
+
+
+
+
+
+     selectedCategoryId.value = readString(node.id);
+    const mainSourceKeys = [...new Set(flattenPageBlocks(props.page.schema)
+      .filter((block): block is LowCodePageGridBlock => (
+        block.kind === 'grid' && block.tableType === 'main' && readString(block.categoryField) !== ''
+      ))
+      .map((block) => readString(block.sourceKey))
+      .filter(Boolean))];
+    if (mainSourceKeys.length) {
+      const errors = await refreshDataSources(mainSourceKeys);
+      if (errors.length) {
+        message.value = errors[0];
+        messageClass.value = 'lc-error';
+      }
+    }

@@ -1783,25 +1783,25 @@ grant execute on function public.planning_resync_sales_orders(uuid, uuid[]) to a
 
 function seedExtendedPlanningDataSql() {
   const parameters = [
-    ['currentdate', 'now', 'Current date of the plan. Use now or a date-time value.'],
-    ['last_currentdate', '', 'Date of the last completed plan execution.'],
-    ['plan.administrativeLeadtime', '0', 'Administrative lead time in days.'],
-    ['plan.minimumdelay', '3600', 'Minimum delivery-date increment in seconds.'],
-    ['plan.loglevel', '0', 'Planning log verbosity.'],
-    ['plan.rotateResources', 'true', 'Distribute demand across alternate resources.'],
-    ['plan.individualPoolResources', 'false', 'Interpret pool quantities as individual members.'],
-    ['plan.move_approved_early', '0', 'Controls early rescheduling of approved orders.'],
-    ['plan.autoFenceOperations', '999', 'Days to wait for confirmed replenishment.'],
-    ['plan.deliveryDuration', '0', 'Final shipment duration in working hours.'],
-    ['plan.fixBrokenSupplyPath', 'true', 'Create fallback sourcing for broken supply paths.'],
-    ['plan.solver', 'heuristic', 'Solver selection: heuristic or heuristic_2.'],
-    ['plan.iterationmax', '0', 'Maximum solver iterations.'],
-    ['plan.resourceiterationmax', '500', 'Maximum resource-search iterations.'],
-    ['forecast.calendar', 'month', 'Forecast bucket calendar.'],
-    ['forecast.Horizon_future', '365', 'Forecast future horizon in days.'],
-    ['forecast.Horizon_history', '1095', 'Forecast history horizon in days.'],
-    ['forecast.populateForecastTable', 'true', 'Populate missing forecast combinations.'],
-    ['forecast.runnetting', 'true', 'Net sales orders against forecast.']
+    ['currentdate', 'now', '当前计划日期。可填写 now 或日期时间值。'],
+    ['last_currentdate', '', '上次完成计划运行的日期。'],
+    ['plan.administrativeLeadtime', '0', '管理提前期，单位为天。'],
+    ['plan.minimumdelay', '3600', '最小交付日期增量，单位为秒。'],
+    ['plan.loglevel', '0', '计划日志详细级别。'],
+    ['plan.rotateResources', 'true', '在备用资源之间分配需求。'],
+    ['plan.individualPoolResources', 'false', '将资源池数量解释为单个成员。'],
+    ['plan.move_approved_early', '0', '控制已批准订单的提前重排。'],
+    ['plan.autoFenceOperations', '999', '等待已确认补给的天数。'],
+    ['plan.deliveryDuration', '0', '最终发货持续时间，单位为工作小时。'],
+    ['plan.fixBrokenSupplyPath', 'true', '为中断的供应路径创建备用来源。'],
+    ['plan.solver', 'heuristic', '求解器选择：heuristic 或 heuristic_2。'],
+    ['plan.iterationmax', '0', '求解器最大迭代次数。'],
+    ['plan.resourceiterationmax', '500', '资源搜索最大迭代次数。'],
+    ['forecast.calendar', 'month', '预测时间桶日历。'],
+    ['forecast.Horizon_future', '365', '预测未来范围，单位为天。'],
+    ['forecast.Horizon_history', '1095', '预测历史范围，单位为天。'],
+    ['forecast.populateForecastTable', 'true', '填充缺失的预测组合。'],
+    ['forecast.runnetting', 'true', '将销售订单与预测进行净额计算。']
   ];
   const parameterValues = parameters.map(([name, value, description]) =>
     `(${sqlString(name)}, ${sqlString(value)}, ${sqlString(description)})`

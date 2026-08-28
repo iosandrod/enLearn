@@ -55,7 +55,15 @@ const componentTypeVisualMap: Record<string, string> = {
   'base-info': 'input',
   'lc-array-table': 'array-table',
   'lc-sub-form': 'sub-form',
+  'lc-stepper': 'stepper',
+  'lc-rate': 'rate',
+  'lc-slider': 'slider',
 };
+
+function getMaterialPropComponentKey(componentKey: unknown) {
+  const key = readString(componentKey);
+  return componentTypeVisualMap[key] ?? key;
+}
 
 const editorDefaultRuntimeMap: Record<string, string | undefined> = {
   input: 'vxe-input',
@@ -63,6 +71,9 @@ const editorDefaultRuntimeMap: Record<string, string | undefined> = {
   switch: 'vxe-switch',
   radio: 'vxe-radio-group',
   checkbox: 'vxe-checkbox-group',
+  stepper: 'lc-stepper',
+  rate: 'lc-rate',
+  slider: 'lc-slider',
   'array-table': 'lc-array-table',
   'sub-form': 'lc-sub-form',
 };
@@ -290,7 +301,7 @@ export const AttrEditor = defineComponent({
     void loadComponentTypeOptions();
 
     watch(
-      () => currentBlock.value?.componentKey,
+      () => getMaterialPropComponentKey(currentBlock.value?.componentKey),
       async (componentKey) => {
         const sequence = ++loadSequence;
         definition.value = null;

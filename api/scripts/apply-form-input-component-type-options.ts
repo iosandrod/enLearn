@@ -13,10 +13,11 @@ if (!rawConnectionString) {
 const repoRoot = process.cwd().toLowerCase().endsWith('api')
   ? resolve(process.cwd(), '..')
   : process.cwd();
-const migrationPath = resolve(
-  repoRoot,
-  'supabase/migrations/20260823120000_form_input_component_type_options.sql',
-);
+const migrationPaths = [
+  resolve(repoRoot, 'supabase/migrations/20260823120000_form_input_component_type_options.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260826090000_form_input_monaco_component_type.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260828110000_remove_datetime_picker_form_component_type.sql'),
+];
 
 function connectionString(value: string) {
   const url = new URL(normalizePostgresConnectionString(value));
@@ -36,7 +37,9 @@ async function main() {
 
   await client.connect();
   try {
-    await client.query(await readFile(migrationPath, 'utf8'));
+    for (const migrationPath of migrationPaths) {
+      await client.query(await readFile(migrationPath, 'utf8'));
+    }
     const { rows } = await client.query(`
       select
         count(distinct sources.code)::integer as source_count,
@@ -55,7 +58,7 @@ async function main() {
     const expectedValues = [
       'input',
       'picker',
-      'datetimePicker',
+      'lc-monaco-editor',
       'switch',
       'checkbox',
       'radio',

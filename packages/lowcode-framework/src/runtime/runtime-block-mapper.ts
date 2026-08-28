@@ -181,7 +181,7 @@ export class RuntimeBlockMapper {
       placeholder: readString(props.placeholder),
       required: rules.some((rule) => rule.required === true),
       defaultValueType: readString(field.defaultValueType),
-      defaultValueScript: readString(field.defaultValueScript),
+      ...(typeof field.defaultValue !== 'undefined' ? { defaultValue: field.defaultValue } : {}),
       defaultValueProcedure: readString(field.defaultValueProcedure),
       updateScript: readString(field.updateScript, readString(props.onChange)),
       validationScript: readString(field.validationScript),

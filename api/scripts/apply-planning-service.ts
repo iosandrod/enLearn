@@ -26,7 +26,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260826121000_planning_console_gantt_form_binding.sql',
   'supabase/migrations/20260810210000_planning_master_categories.sql',
   'supabase/migrations/20260811120000_planning_structure_pages.sql',
-  'supabase/migrations/20260813090000_planning_item_display_name.sql'
+  'supabase/migrations/20260813090000_planning_item_display_name.sql',
+  'supabase/migrations/20260828140000_translate_planning_parameter_descriptions.sql'
 ];
 
 function directProjectConnectionString(value: string) {

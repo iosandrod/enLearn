@@ -139,7 +139,7 @@
                     label: '函数默认编码',
                     component: 'vxe-input',
                     defaultValueType: 'function',
-                    defaultValueScript: `
+                    defaultValue: `
                       async function loadGeneratedCode(event) {
                         await Promise.resolve();
                         return "AUTO-" + event.blockKind + "-" + event.field + "-" + event.timestamp;
@@ -350,7 +350,6 @@
                         },
                       },
                       { field: 'validationMessage', label: '校验提示', component: 'vxe-input' },
-                      { field: 'defaultValueScript', label: '默认值函数', component: 'vxe-textarea', span: 2 },
                       { field: 'updateScript', label: '值更新事件', component: 'vxe-textarea', span: 2 },
                       { field: 'validationScript', label: '校验函数', component: 'vxe-textarea', span: 2 },
                     ],
@@ -409,7 +408,6 @@
                               },
                               { kind: 'field', field: 'optionsCode' },
                               { kind: 'field', field: 'defaultValueProcedure' },
-                              { kind: 'field', field: 'defaultValueScript' },
                             ],
                           },
                           {

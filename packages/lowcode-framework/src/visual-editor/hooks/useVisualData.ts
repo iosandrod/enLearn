@@ -109,6 +109,13 @@ function normalizeProjectData(jsonData: VisualEditorModelValue | string) {
 }
 
 function normalizeLegacyBlock(block: VisualEditorBlockData) {
+  if (block.componentKey === 'datetimePicker') {
+    block.componentKey = 'input';
+    block.moduleName = 'formComponents';
+    block.props ??= {};
+    block.props.type ??= 'datetime';
+  }
+
   if (block.componentKey === 'form') {
     if (block.label === '表单容器') {
       block.label = '普通表单';

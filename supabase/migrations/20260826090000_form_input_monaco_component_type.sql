@@ -43,7 +43,7 @@ begin
     and value = 'lc-monaco-editor'
     and status = 'active';
 
-  if v_option_count <> 12 or v_code_editor_count <> 1 then
+  if v_option_count <> 11 or v_code_editor_count <> 1 then
     raise exception 'Form input Monaco component validation failed: options %, code editor %. ',
       v_option_count, v_code_editor_count;
   end if;

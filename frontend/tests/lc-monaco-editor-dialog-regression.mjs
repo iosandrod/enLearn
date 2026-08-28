@@ -171,12 +171,12 @@ assert.match(
 );
 assert.match(
   componentTypeMigrationSource,
-  /'form_input_component_type'[\s\S]*?'lc-monaco-editor'[\s\S]*?v_option_count <> 12/,
+  /'form_input_component_type'[\s\S]*?'lc-monaco-editor'[\s\S]*?v_option_count <> 11/,
   'Existing databases must expose the Monaco code input in the form component selector.',
 );
 assert.match(
   onChangeMigrationSource,
-  /'array-table'[\s\S]*?'checkbox'[\s\S]*?'datetimePicker'[\s\S]*?'input'[\s\S]*?'picker'[\s\S]*?'radio'[\s\S]*?'rate'[\s\S]*?'slider'[\s\S]*?'stepper'[\s\S]*?'sub-form'[\s\S]*?'switch'/,
+  /'array-table'[\s\S]*?'checkbox'[\s\S]*?'input'[\s\S]*?'picker'[\s\S]*?'radio'[\s\S]*?'rate'[\s\S]*?'slider'[\s\S]*?'stepper'[\s\S]*?'sub-form'[\s\S]*?'switch'/,
   'Every database-backed form input definition must be included in the onChange property migration.',
 );
 assert.match(

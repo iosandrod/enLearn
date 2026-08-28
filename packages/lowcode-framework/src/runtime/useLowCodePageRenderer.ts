@@ -335,20 +335,6 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   });
 
   async function handleCategorySelect(node: { id: unknown; label: string }) {
-    selectedCategoryId.value = readString(node.id);
-    const mainSourceKeys = [...new Set(flattenPageBlocks(props.page.schema)
-      .filter((block): block is LowCodePageGridBlock => (
-        block.kind === 'grid' && block.tableType === 'main' && readString(block.categoryField) !== ''
-      ))
-      .map((block) => readString(block.sourceKey))
-      .filter(Boolean))];
-    if (mainSourceKeys.length) {
-      const errors = await refreshDataSources(mainSourceKeys);
-      if (errors.length) {
-        message.value = errors[0];
-        messageClass.value = 'lc-error';
-      }
-    }
     await publishRuntimeEvent({
       name: 'category.selected',
       blockId: 'page-category-drawer',

@@ -158,7 +158,7 @@ async function editRuntimeField({
   expectedSaveCount,
   nextLabel = currentLabel,
   requiredMessage = `${nextLabel}不能为空`,
-  defaultValueScript = 'async function main() { return "AUTO-001"; }',
+  defaultValue = 'async function main() { return "AUTO-001"; }',
   defaultValueType = 'function',
   defaultValueProcedure = 'public.test_order_default',
   optionsCode = 'order_code',
@@ -238,7 +238,7 @@ async function editRuntimeField({
       hasText: '订单默认号',
     }).last().click();
   } else {
-    await fieldControl('默认值函数').locator('textarea').fill(defaultValueScript);
+    await fieldControl('默认值').locator('input').fill(defaultValue);
   }
   const optionsCodeControl = fieldControl('关联下拉 Code');
   await optionsCodeControl.locator('.vxe-select').click({ force: true });
@@ -687,7 +687,7 @@ async function runScenario(pageMode, runtimeMode) {
   assert.equal(editFormBlock.schema.fields[1].createDisabled, true);
   assert.equal(editFormBlock.schema.fields[1].editDisabled, true);
   assert.equal(editFormBlock.schema.fields[1].defaultValueType, 'function');
-  assert.match(editFormBlock.schema.fields[1].defaultValueScript, /AUTO-001/);
+  assert.match(editFormBlock.schema.fields[1].defaultValue, /AUTO-001/);
   assert.match(editFormBlock.schema.fields[1].updateScript, /event\.value/);
   assert.match(editFormBlock.schema.fields[1].validationScript, /startsWith/);
   assert.equal(

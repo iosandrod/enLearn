@@ -14,6 +14,7 @@ const [
   materialsApi,
   migration,
   formInputTypeMigration,
+  removeDatetimePickerMigration,
   pickerOptionSourceMigration,
   designerPage,
   emptyDesignerPage,
@@ -28,6 +29,7 @@ const [
   source('packages/lowcode-framework/src/materials/index.ts'),
   source('supabase/migrations/20260819100000_database_only_material_property_forms.sql'),
   source('supabase/migrations/20260823120000_form_input_component_type_options.sql'),
+  source('supabase/migrations/20260828110000_remove_datetime_picker_form_component_type.sql'),
   source('supabase/migrations/20260823130000_picker_option_source_code_property.sql'),
   source('frontend/pages/dashboard/low-code/designer/[code].vue'),
   source('frontend/pages/dashboard/low-code/designer/index.vue'),
@@ -50,7 +52,9 @@ assert.doesNotMatch(materialsApi, /registerMaterialPropForm/);
 assert.doesNotMatch(visualProps, /VisualEditorProps|promoteArrayTableFieldsToTabs|mergeBuiltinFields|extendsVisualProps/);
 assert.doesNotMatch(provider, /loadDatabaseMaterialPropForm/);
 assert.match(attrEditor, /loadDatabaseMaterialPropForm\(host\.getServiceApi\(\), componentKey\)/);
-assert.match(attrEditor, /watch\(\s*\(\) => currentBlock\.value\?\.componentKey/);
+assert.match(attrEditor, /watch\(\s*\(\) => getMaterialPropComponentKey\(currentBlock\.value\?\.componentKey\)/);
+assert.match(attrEditor, /getMaterialPropComponentKey/);
+assert.match(attrEditor, /componentTypeVisualMap\[key\] \?\? key/);
 assert.match(attrEditor, /formInputComponentTypeOptionCode = 'form_input_component_type'/);
 assert.match(
   attrEditor,
@@ -114,7 +118,6 @@ assert.match(formInputTypeMigration, /'form_input_component_type'/);
 for (const componentKey of [
   'input',
   'picker',
-  'datetimePicker',
   'switch',
   'checkbox',
   'radio',
@@ -130,7 +133,9 @@ for (const componentKey of [
     `missing form input component type option for ${componentKey}`,
   );
 }
-assert.match(formInputTypeMigration, /v_option_count <> 11/);
+assert.match(formInputTypeMigration, /v_option_count <> 10/);
+assert.match(removeDatetimePickerMigration, /value = 'datetimePicker'/);
+assert.match(removeDatetimePickerMigration, /material-prop\.datetimepicker/);
 
 assert.match(pickerOptionSourceMigration, /definitions\.code = 'material-prop\.picker'/);
 assert.match(pickerOptionSourceMigration, /'field', '__lowcodeOptionsCode'/);
@@ -178,7 +183,7 @@ for (const [componentKey, definition] of definitions) {
   assert.ok(definition.layout[0].tabs.length > 0, `${componentKey} needs at least one tab`);
 }
 
-for (const componentKey of ['form', 'lowcode-edit-form', 'lowcode-search-form', 'lowcode-grid', 'array-table', 'input', 'picker', 'datetimePicker', 'stepper', 'switch', 'radio', 'checkbox', 'rate', 'slider', 'sub-form']) {
+for (const componentKey of ['form', 'lowcode-edit-form', 'lowcode-search-form', 'lowcode-grid', 'array-table', 'input', 'picker', 'stepper', 'switch', 'radio', 'checkbox', 'rate', 'slider', 'sub-form']) {
   assert.ok(definitions.has(componentKey), `missing database material property definition for ${componentKey}`);
 }
 

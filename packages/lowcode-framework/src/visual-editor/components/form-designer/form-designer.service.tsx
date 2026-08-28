@@ -52,6 +52,9 @@ export type FormDesignerField = {
   help?: string;
   optionsCode?: string;
   optionsJson?: string;
+  defaultValueType?: 'function' | 'procedure';
+  defaultValue?: unknown;
+  defaultValueProcedure?: string;
   updateScript?: string;
   propsJson?: string;
   props?: Record<string, unknown>;
@@ -110,6 +113,9 @@ const runtimeToEditorComponent: Record<string, string> = {
   'base-info': 'input',
   'lc-array-table': 'array-table',
   'lc-sub-form': 'sub-form',
+  'lc-stepper': 'stepper',
+  'lc-rate': 'rate',
+  'lc-slider': 'slider',
 };
 
 const editorToRuntimeComponent: Record<string, string> = {
@@ -120,6 +126,9 @@ const editorToRuntimeComponent: Record<string, string> = {
   checkbox: 'vxe-checkbox-group',
   'array-table': 'lc-array-table',
   'sub-form': 'lc-sub-form',
+  stepper: 'lc-stepper',
+  rate: 'lc-rate',
+  slider: 'lc-slider',
 };
 
 const defaultCodeEditorProps = {
@@ -333,6 +342,9 @@ function normalizeCodeEditorProps(value: unknown) {
     '__lowcodeComponent',
     '__lowcodeOptions',
     '__lowcodeOptionsCode',
+    '__lowcodeDefaultValueType',
+    '__lowcodeDefaultValue',
+    '__lowcodeDefaultValueProcedure',
   ].forEach((key) => delete source[key]);
 
   return {
@@ -488,6 +500,13 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
       : fieldProps;
   const options = parseJsonArray(field.optionsJson);
   const optionsCode = readString(field.optionsCode);
+  const defaultValueType = field.defaultValueType === 'function' || field.defaultValueType === 'procedure'
+    ? field.defaultValueType
+    : undefined;
+  const defaultValue = defaultValueType === 'function' ? field.defaultValue : undefined;
+  const defaultValueProcedure = defaultValueType === 'procedure'
+    ? readString(field.defaultValueProcedure)
+    : '';
   const required = normalizeRequired(field.required);
   const span = normalizeSpan(field.span);
 
@@ -498,6 +517,9 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     ...(Object.keys(normalizedProps).length ? { props: normalizedProps } : {}),
     ...(options?.length ? { options: cloneDeep(options) as LowCodeField['options'] } : {}),
     ...(optionsCode ? { optionsCode } : {}),
+    ...(defaultValueType ? { defaultValueType } : {}),
+    ...(typeof defaultValue !== 'undefined' ? { defaultValue: cloneDeep(defaultValue) } : {}),
+    ...(defaultValueProcedure ? { defaultValueProcedure } : {}),
     ...(updateScript ? { updateScript } : {}),
     ...(readString(field.help) ? { help: readString(field.help) } : {}),
     ...(span ? { span } : {}),
@@ -518,6 +540,19 @@ function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesigner
   block.props.__formSpan = normalizeSpan(field.span) || 1;
   block.props.__formHelp = readString(field.help);
   block.props.__lowcodeOptionsCode = readString(field.optionsCode);
+  if (field.defaultValueType === 'function') {
+    block.props.__lowcodeDefaultValueType = 'function';
+    block.props.__lowcodeDefaultValue = cloneDeep(field.defaultValue);
+    delete block.props.__lowcodeDefaultValueProcedure;
+  } else if (field.defaultValueType === 'procedure') {
+    block.props.__lowcodeDefaultValueType = 'procedure';
+    block.props.__lowcodeDefaultValueProcedure = readString(field.defaultValueProcedure);
+    delete block.props.__lowcodeDefaultValue;
+  } else {
+    delete block.props.__lowcodeDefaultValueType;
+    delete block.props.__lowcodeDefaultValue;
+    delete block.props.__lowcodeDefaultValueProcedure;
+  }
   const updateScript = readString(field.updateScript, readString(field.props?.onChange));
   if (updateScript) block.props.onChange = updateScript;
   else delete block.props.onChange;
@@ -525,6 +560,7 @@ function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesigner
 
 function createFieldBlock(field: FormDesignerField, index: number) {
   const runtimeComponent = readString(field.component, 'vxe-input');
+  const fieldProps = isRecord(field.props) ? field.props : {};
   const componentKey = runtimeToEditorComponent[runtimeComponent] || 'input';
   const component = visualConfig.componentMap[componentKey];
 
@@ -545,6 +581,10 @@ function createFieldBlock(field: FormDesignerField, index: number) {
   if (runtimeComponent === 'lc-monaco-editor') {
     Object.assign(block.props, normalizeCodeEditorProps(field.props));
     block.props.__lowcodeComponent = 'lc-monaco-editor';
+  }
+
+  if (runtimeComponent === 'vxe-input' && readString(fieldProps.type) === 'datetime') {
+    Object.assign(block.props, cloneDeep(fieldProps));
   }
 
   if (
@@ -636,6 +676,11 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
       span: normalizeSpan(row.span) || 1,
       help: readString(row.help, readString(props?.help)),
       optionsCode: readString(row.optionsCode),
+      defaultValueType: row.defaultValueType === 'function' || row.defaultValueType === 'procedure'
+        ? row.defaultValueType
+        : undefined,
+      defaultValue: row.defaultValue,
+      defaultValueProcedure: readString(row.defaultValueProcedure),
       updateScript: readString(row.updateScript, readString(props?.onChange)),
       optionsJson:
         stringifyOptions(row.optionsJson) ||
@@ -866,6 +911,31 @@ function getOptionsJson(block: VisualEditorBlockData, runtimeComponent: string) 
   return stringifyOptions(block.props?.options);
 }
 
+function getFieldProps(block: VisualEditorBlockData) {
+  const {
+    __formSpan: _formSpan,
+    __formHelp: _formHelp,
+    __lowcodeComponent: _lowcodeComponent,
+    __lowcodeOptionsCode: _lowcodeOptionsCode,
+    __lowcodeOptions: _lowcodeOptions,
+    __lowcodeDefaultValueType: _lowcodeDefaultValueType,
+    __lowcodeDefaultValue: _lowcodeDefaultValue,
+    __lowcodeDefaultValueProcedure: _lowcodeDefaultValueProcedure,
+    defaultValueType: _defaultValueType,
+    defaultValue: _defaultValue,
+    defaultValueProcedure: _defaultValueProcedure,
+    name: _name,
+    label: _label,
+    required: _required,
+    modelValue: _modelValue,
+    onChange: _onChange,
+    columns: _columns,
+    options: _options,
+    ...props
+  } = block.props ?? {};
+  return cloneDeep(props);
+}
+
 function blockToField(block: VisualEditorBlockData, index: number): FormDesignerField | null {
   const runtimeComponent = getRuntimeComponent(block);
   if (!runtimeComponent) return null;
@@ -885,8 +955,21 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     help: readString(block.props?.__formHelp || block.props?.help),
     optionsCode: readString(block.props?.__lowcodeOptionsCode),
     optionsJson: getOptionsJson(block, runtimeComponent),
+    defaultValueType:
+      block.props?.__lowcodeDefaultValueType === 'function' ||
+      block.props?.__lowcodeDefaultValueType === 'procedure'
+        ? block.props.__lowcodeDefaultValueType
+        : undefined,
+    defaultValue: block.props?.__lowcodeDefaultValue,
+    defaultValueProcedure: readString(block.props?.__lowcodeDefaultValueProcedure),
     updateScript: readString(block.props?.onChange),
   };
+
+  const fieldProps = getFieldProps(block);
+  if (Object.keys(fieldProps).length) {
+    result.props = fieldProps;
+    result.propsJson = stringifyFieldProps(fieldProps);
+  }
 
   if (runtimeComponent === 'base-info') {
     const {

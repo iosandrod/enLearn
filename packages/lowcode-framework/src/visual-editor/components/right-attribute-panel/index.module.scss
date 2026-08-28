@@ -295,7 +295,9 @@ $primary: #1d73d8;
     }
 
     .material-prop-form .lc-form-tabs {
-      display: flex !important;
+      // VxeTabs manages its own layout. Making this wrapper a flex row can
+      // collapse the tab content for forms such as the input material.
+      display: block !important;
       width: 100%;
       min-width: 0;
       border: 1px solid #dfe7f0;

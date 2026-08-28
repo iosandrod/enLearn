@@ -45,15 +45,14 @@ insert into public.system_option_items (
 ) values
   ('form_input_component_type', U&'\8F93\5165\6846', 'input',          'active', 10,  true, '{}'::jsonb),
   ('form_input_component_type', U&'\4E0B\62C9\9009\62E9', 'picker',    'active', 20,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\65E5\671F\65F6\95F4', 'datetimePicker', 'active', 30, true, '{}'::jsonb),
-  ('form_input_component_type', U&'\5F00\5173', 'switch',              'active', 40,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\590D\9009\6846\7EC4', 'checkbox',  'active', 50,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\5355\9009\6846\7EC4', 'radio',     'active', 60,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\6B65\8FDB\5668', 'stepper',        'active', 70,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\8BC4\5206', 'rate',                'active', 80,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\6ED1\5757', 'slider',              'active', 90,  true, '{}'::jsonb),
-  ('form_input_component_type', U&'\8868\683C\8F93\5165', 'array-table', 'active', 100, true, '{}'::jsonb),
-  ('form_input_component_type', U&'\5B50\8868\5355', 'sub-form',       'active', 110, true, '{}'::jsonb)
+  ('form_input_component_type', U&'\5F00\5173', 'switch',              'active', 30,  true, '{}'::jsonb),
+  ('form_input_component_type', U&'\590D\9009\6846\7EC4', 'checkbox',  'active', 40,  true, '{}'::jsonb),
+  ('form_input_component_type', U&'\5355\9009\6846\7EC4', 'radio',     'active', 50,  true, '{}'::jsonb),
+  ('form_input_component_type', U&'\6B65\8FDB\5668', 'stepper',        'active', 60,  true, '{}'::jsonb),
+  ('form_input_component_type', U&'\8BC4\5206', 'rate',                'active', 70,  true, '{}'::jsonb),
+  ('form_input_component_type', U&'\6ED1\5757', 'slider',              'active', 80,  true, '{}'::jsonb),
+  ('form_input_component_type', U&'\8868\683C\8F93\5165', 'array-table', 'active', 90, true, '{}'::jsonb),
+  ('form_input_component_type', U&'\5B50\8868\5355', 'sub-form',       'active', 100, true, '{}'::jsonb)
 on conflict (source_code, value) do update set
   label = excluded.label,
   status = excluded.status,
@@ -67,7 +66,6 @@ where source_code = 'form_input_component_type'
   and value not in (
     'input',
     'picker',
-    'datetimePicker',
     'switch',
     'checkbox',
     'radio',
@@ -98,11 +96,10 @@ begin
     and status = 'active';
 
   if v_source_count <> 1
-    or v_option_count <> 11
+    or v_option_count <> 10
     or v_values <> array[
       'input',
       'picker',
-      'datetimePicker',
       'switch',
       'checkbox',
       'radio',

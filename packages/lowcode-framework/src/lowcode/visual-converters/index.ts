@@ -279,9 +279,12 @@ function createFormDesignerFieldBlock(
     'base-info': 'input',
     'lc-array-table': 'array-table',
     'lc-sub-form': 'sub-form',
+    'lc-stepper': 'stepper',
+    'lc-rate': 'rate',
+    'lc-slider': 'slider',
   };
-  const componentKey = componentMap[field.component ?? ''] ?? 'input';
   const props = isPlainRecord(field.props) ? field.props : {};
+  const componentKey = componentMap[field.component ?? ''] ?? 'input';
   const onChange = readString(field.updateScript, readString(props.onChange));
   const block = {
     _vid: toVisualId(field.field, `form_field_${index}`),
@@ -312,6 +315,9 @@ function createFormDesignerFieldBlock(
     model: {},
   } as VisualEditorBlockData;
 
+  if (field.component === 'vxe-input' && readString(props.type) === 'datetime') {
+    Object.assign(block.props, cloneJson(props));
+  }
   if (field.component === 'vxe-textarea') block.props.type = 'textarea';
   if (field.component === 'vxe-password-input') block.props.type = 'password';
   if (
@@ -325,6 +331,9 @@ function createFormDesignerFieldBlock(
       'vxe-switch',
       'vxe-radio-group',
       'vxe-checkbox-group',
+      'lc-stepper',
+      'lc-rate',
+      'lc-slider',
       'base-info',
       'lc-array-table',
       'lc-sub-form',
@@ -511,7 +520,7 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     placeholder: readString(props.placeholder),
     required,
     ...(field.defaultValueType ? { defaultValueType: field.defaultValueType } : {}),
-    ...(field.defaultValueScript ? { defaultValueScript: field.defaultValueScript } : {}),
+    ...(typeof field.defaultValue !== 'undefined' ? { defaultValue: field.defaultValue } : {}),
     ...(field.defaultValueProcedure
       ? { defaultValueProcedure: field.defaultValueProcedure }
       : {}),

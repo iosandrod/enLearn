@@ -246,7 +246,7 @@ function createUpdatedColumn(
   } else if (
     (field.defaultValueType === 'function' || field.defaultValueType === 'procedure') &&
     previousMetadata.defaultValueType === field.defaultValueType &&
-    previousMetadata.defaultValueScript === field.defaultValueScript &&
+    previousMetadata.defaultValue === field.defaultValue &&
     previousMetadata.defaultValueProcedure === field.defaultValueProcedure &&
     Object.prototype.hasOwnProperty.call(editRender, 'defaultValue')
   ) {

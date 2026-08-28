@@ -112,7 +112,6 @@ set schema = pg_temp.patch_form_input_on_change(definitions.schema)
 where definitions.schema->>'componentKey' in (
   'array-table',
   'checkbox',
-  'datetimePicker',
   'input',
   'picker',
   'radio',
@@ -131,7 +130,6 @@ begin
     where definitions.schema->>'componentKey' in (
       'array-table',
       'checkbox',
-      'datetimePicker',
       'input',
       'picker',
       'radio',

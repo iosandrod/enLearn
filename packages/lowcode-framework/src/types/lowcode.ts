@@ -98,9 +98,9 @@ export type LowCodeField = {
   createDisabled?: boolean;
   /** Disable this field while the edit page is modifying an existing record. */
   editDisabled?: boolean;
-  /** Resolve the initial value through an isolated script or a database procedure. */
+  /** Resolve the configured default value through an isolated function or a database procedure. */
   defaultValueType?: 'function' | 'procedure';
-  defaultValueScript?: string;
+  defaultValue?: unknown;
   defaultValueProcedure?: string;
   /** Run after the field value changes. */
   updateScript?: string;

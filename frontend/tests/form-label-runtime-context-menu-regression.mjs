@@ -225,8 +225,18 @@ assert.match(
 );
 assert.match(
   runtimeDesignerSource,
-  /'defaultValueType',[\s\S]*?'defaultValueScript',[\s\S]*?'defaultValueProcedure',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?original\[key\][\s\S]*?\['createDisabled', 'editDisabled'\][\s\S]*?original\[key\]/,
-  'Full-form design must preserve field scripts configured by the lightweight editor.',
+  /'defaultValueType',[\s\S]*?'defaultValue',[\s\S]*?'defaultValueProcedure',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?designed\[key\][\s\S]*?original\[key\][\s\S]*?\['createDisabled', 'editDisabled'\][\s\S]*?original\[key\]/,
+  'Full-form design must preserve field default metadata and prefer newly designed values.',
+);
+assert.match(
+  runtimeDesignerSource,
+  /defaultValueType: field\.defaultValueType,[\s\S]*?defaultValue: cloneValue\(field\.defaultValue\),[\s\S]*?defaultValueProcedure: field\.defaultValueProcedure/,
+  'Full-form design must supply dynamic default metadata to the visual designer.',
+);
+assert.match(
+  runtimeDesignerSource,
+  /legacyDefaultValueScript[\s\S]*?merged\.defaultValueType === 'function'[\s\S]*?merged\.defaultValue = legacyDefaultValueScript[\s\S]*?delete \(merged as Record<string, unknown>\)\.defaultValueScript/,
+  'Full-form saves must migrate any stale defaultValueScript value and never write the legacy key back.',
 );
 assert.match(
   formSource,

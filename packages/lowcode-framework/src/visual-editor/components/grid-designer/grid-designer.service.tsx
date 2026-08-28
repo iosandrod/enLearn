@@ -21,7 +21,9 @@ import {
 import type {
   LowCodeField,
   LowCodeFormSchema,
+  LowCodeOption,
   LowCodePageBlock,
+  LowCodePageDataSource,
   LowCodePageGridBlock,
   LowCodeRuntimeDirective,
   LowCodeRuntimeEvent,
@@ -124,6 +126,7 @@ interface GridDesignerServiceOption {
   title?: string;
   business?: Partial<GridDesignerBusinessInfo> | null;
   detailConfig?: Partial<GridDesignerDetailConfig> | null;
+  dataSources?: Record<string, LowCodePageDataSource>;
   columns?: GridDesignerColumn[];
   gridOptions?: Record<string, unknown> | null;
   gridEvents?: GridDesignerEvent[] | null;
@@ -150,6 +153,31 @@ type GridDesignerSourceColumn = {
   primaryKey?: boolean;
 };
 
+type GridDesignerFieldOptionColumn = {
+  field?: unknown;
+  title?: unknown;
+  label?: unknown;
+};
+
+function createGridDesignerTableFieldOptions(
+  columns: readonly GridDesignerFieldOptionColumn[],
+): LowCodeOption[] {
+  const options = new Map<string, LowCodeOption>();
+
+  columns.forEach((column) => {
+    const field = readString(column.field);
+    if (!field) return;
+
+    const title = readString(column.title, readString(column.label, field));
+    options.set(field, {
+      label: title === field ? field : `${title} (${field})`,
+      value: field,
+    });
+  });
+
+  return [...options.values()];
+}
+
 const gridDesignerFormCode = 'grid-designer';
 
 const gridDesignerFormCodes = {
@@ -168,6 +196,13 @@ const gridDesignerSourcePageCodes: Record<GridDesignerSourceKind, string> = {
   entity: 'admin-system-entities',
   view: 'entity-views',
 };
+
+const gridDesignerFieldOptionSourceKeys = {
+  source: 'grid-designer-source-fields',
+  detail: 'grid-designer-detail-fields',
+  parent: 'grid-designer-parent-fields',
+  pageSources: 'grid-designer-page-sources',
+} as const;
 
 declare const useServiceApi: undefined | (() => LowCodeHostServiceApi);
 
@@ -376,6 +411,35 @@ function readString(value: unknown, fallback = '') {
   if (typeof value === 'string') return value.trim() || fallback;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   return fallback;
+}
+
+function resolveGridDesignerDataSourceTableName(source?: LowCodePageDataSource) {
+  const postData = source?.postData ?? {};
+  return readString(
+    source?.tableName ??
+      source?.table_name ??
+      source?.viewName ??
+      postData.tableName ??
+      postData.table_name ??
+      postData.resource,
+  );
+}
+
+function createGridDesignerPageSourceOptions(
+  dataSources?: Record<string, LowCodePageDataSource>,
+): LowCodeOption[] {
+  if (!dataSources) return [];
+
+  return Object.entries(dataSources).flatMap(([key, source]) => {
+    const sourceKey = readString(source?.key, key);
+    if (!sourceKey) return [];
+
+    const label = readString(source?.label, sourceKey);
+    return [{
+      label: label === sourceKey ? sourceKey : `${label} (${sourceKey})`,
+      value: sourceKey,
+    }];
+  });
 }
 
 function readBoolean(value: unknown, fallback = false) {
@@ -1315,6 +1379,18 @@ const ServiceComponent = defineComponent({
       })(),
     });
     const designerFormModels = reactive<Record<string, Record<string, unknown>>>({});
+    const gridDesignerFieldOptionSources = reactive<Record<string, LowCodeOption[]>>({
+      [gridDesignerFieldOptionSourceKeys.source]: [],
+      [gridDesignerFieldOptionSourceKeys.detail]: [],
+      [gridDesignerFieldOptionSourceKeys.parent]: [],
+      [gridDesignerFieldOptionSourceKeys.pageSources]: [],
+    });
+    const syncGridDesignerTableFieldOptions = (
+      sourceKey: string,
+      columns: readonly GridDesignerFieldOptionColumn[],
+    ) => {
+      gridDesignerFieldOptionSources[sourceKey] = createGridDesignerTableFieldOptions(columns);
+    };
     let databaseFormSchema: LowCodeFormSchema | undefined;
     const getServiceApi = () => {
       if (state.option.serviceApi) return state.option.serviceApi;
@@ -1360,7 +1436,13 @@ const ServiceComponent = defineComponent({
         state.option = option;
         resetReactiveObject(state.business, normalizeBusiness(option.business));
         resetReactiveObject(state.detailConfig, normalizeDetailConfig(option.detailConfig));
+        gridDesignerFieldOptionSources[gridDesignerFieldOptionSourceKeys.pageSources] =
+          createGridDesignerPageSourceOptions(option.dataSources);
         state.columns = normalizeColumns(option.columns);
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.source,
+          state.columns,
+        );
         resetReactiveObject(state.formSettings, createFormSettings(state.columns));
         state.selectedColumnId = readString(state.columns[0]?.__id);
         resetReactiveObject(state.gridOptions, nextGridOptions.options);
@@ -1372,6 +1454,9 @@ const ServiceComponent = defineComponent({
       show: async () => {
         await state.mounted;
         await loadGridDesignerFormSchemas();
+        await refreshCurrentTableFieldOptions();
+        await refreshDetailTableFieldOptions();
+        await refreshParentTableFieldOptions();
         syncActiveDesignerDialogModel();
         await nextTick();
         const dialogId = `grid-designer-${generateNanoid()}`;
@@ -1482,7 +1567,8 @@ const ServiceComponent = defineComponent({
         null,
         2,
       );
-      if (!readString(state.detailConfig.resource)) {
+      const assignedDetailResource = !readString(state.detailConfig.resource);
+      if (assignedDetailResource) {
         state.detailConfig.resource = readString(source.code, sourceTarget.split('.').at(-1));
       }
       state.business.showRowActions = false;
@@ -1493,6 +1579,16 @@ const ServiceComponent = defineComponent({
           readString(source.primaryKey, readString(source.columns[0]?.field, 'id')),
         ),
       };
+      syncGridDesignerTableFieldOptions(
+        gridDesignerFieldOptionSourceKeys.source,
+        source.columns,
+      );
+      if (assignedDetailResource) {
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.detail,
+          source.columns,
+        );
+      }
       return true;
     };
 
@@ -1546,6 +1642,75 @@ const ServiceComponent = defineComponent({
       };
     };
 
+    const refreshCurrentTableFieldOptions = async () => {
+      const sourceTarget = state.business.sourceType === 'table'
+        ? readString(state.business.tableName)
+        : state.business.sourceType === 'view'
+          ? readString(state.business.viewName)
+          : '';
+      if (!sourceTarget) {
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.source,
+          state.columns,
+        );
+        return;
+      }
+
+      try {
+        const source = await loadPhysicalTableSource({ value: sourceTarget });
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.source,
+          source.columns,
+        );
+      } catch {
+        // A custom view can be configured without table-column metadata. Keep usable grid fields.
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.source,
+          state.columns,
+        );
+      }
+    };
+
+    const refreshDetailTableFieldOptions = async () => {
+      const resource = readString(state.detailConfig.resource);
+      if (!resource) {
+        syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.detail, []);
+        return;
+      }
+
+      try {
+        const source = await loadPhysicalTableSource({ value: resource });
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.detail,
+          source.columns,
+        );
+      } catch {
+        syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.detail, []);
+      }
+    };
+
+    const refreshParentTableFieldOptions = async () => {
+      const parentSourceKey = readString(state.detailConfig.parentSourceKey);
+      const parentSource = parentSourceKey
+        ? state.option.dataSources?.[parentSourceKey]
+        : undefined;
+      const parentTableName = resolveGridDesignerDataSourceTableName(parentSource);
+      if (!parentTableName) {
+        syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.parent, []);
+        return;
+      }
+
+      try {
+        const source = await loadPhysicalTableSource({ value: parentTableName });
+        syncGridDesignerTableFieldOptions(
+          gridDesignerFieldOptionSourceKeys.parent,
+          source.columns,
+        );
+      } catch {
+        syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.parent, []);
+      }
+    };
+
     const applyAssociationOption = async (
       kind: 'table' | 'view',
       value: unknown,
@@ -1567,7 +1732,10 @@ const ServiceComponent = defineComponent({
       syncBusinessSourceTarget();
       syncActiveDesignerDialogModel();
 
-      if (preserveCustomService) return;
+      if (preserveCustomService) {
+        await refreshCurrentTableFieldOptions();
+        return;
+      }
 
       try {
         const source = await loadPhysicalTableSource(row);
@@ -2335,10 +2503,14 @@ const ServiceComponent = defineComponent({
       }
 
       if (sectionCode === gridDesignerFormCodes.detailConfig) {
+        const previousResource = readString(state.detailConfig.resource);
         Object.assign(state.detailConfig, normalizeDetailConfig({
           ...state.detailConfig,
           ...sectionValues,
         }));
+        if (readString(state.detailConfig.resource) !== previousResource) {
+          await refreshDetailTableFieldOptions();
+        }
         return;
       }
 
@@ -2388,6 +2560,7 @@ const ServiceComponent = defineComponent({
         lowcode: {
           blocks: createGridDesignerDialogBlocks(),
           formModels: designerFormModels,
+          resolvedData: gridDesignerFieldOptionSources,
           onRuntimeEvent: syncGridDesignerRuntimeEvent,
         },
       },

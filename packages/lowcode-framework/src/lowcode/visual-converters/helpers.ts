@@ -13,8 +13,14 @@ import { normalizeVxeColumnType } from '../../utils/lowcode';
 
 const componentMap: Record<string, LowCodeField['component']> = {
   input: 'vxe-input',
+  picker: 'vxe-select',
   select: 'vxe-select',
   switch: 'vxe-switch',
+  checkbox: 'vxe-checkbox-group',
+  radio: 'vxe-radio-group',
+  stepper: 'lc-stepper',
+  rate: 'lc-rate',
+  slider: 'lc-slider',
   'vxe-input': 'vxe-input',
   'vxe-textarea': 'vxe-textarea',
   'vxe-select': 'vxe-select',
@@ -26,6 +32,9 @@ const componentMap: Record<string, LowCodeField['component']> = {
   'lc-json-editor': 'lc-json-editor',
   'lc-monaco-editor': 'lc-monaco-editor',
   'lc-number-input': 'lc-number-input',
+  'lc-stepper': 'lc-stepper',
+  'lc-rate': 'lc-rate',
+  'lc-slider': 'lc-slider',
   'array-table': 'lc-array-table',
   'lc-array-table': 'lc-array-table',
   'lc-sub-form': 'lc-sub-form',
@@ -243,7 +252,7 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   };
   const required = readBoolean(row.required, false);
   const defaultValueType = readString(row.defaultValueType);
-  const defaultValueScript = readString(row.defaultValueScript);
+  const defaultValue = row.defaultValue;
   const defaultValueProcedure = readString(row.defaultValueProcedure);
   const validationScript = readString(row.validationScript);
   const validationMessage = readString(row.validationMessage);
@@ -295,8 +304,8 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     ...(required
       ? { rules: [{ required: true, message: `${label}不能为空` }] }
       : {}),
-    ...(defaultValueType === 'function' && defaultValueScript
-      ? { defaultValueType: 'function', defaultValueScript }
+    ...(defaultValueType === 'function' && typeof defaultValue !== 'undefined'
+      ? { defaultValueType: 'function', defaultValue: cloneJson(defaultValue) }
       : {}),
     ...(defaultValueType === 'procedure' && defaultValueProcedure
       ? { defaultValueType: 'procedure', defaultValueProcedure }

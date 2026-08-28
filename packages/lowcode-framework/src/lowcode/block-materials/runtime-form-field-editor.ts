@@ -7,6 +7,7 @@ import type {
   LowCodeFormSchema,
   LowCodePageFormBlock,
   LowCodePageSearchFormBlock,
+  LowCodeOption,
   LowCodeRelateInfoConfig,
   LowCodeRule,
 } from '../../types/lowcode';
@@ -31,9 +32,10 @@ type FieldEditorModel = Record<string, unknown> & {
   relateInfoConfig: LowCodeRelateInfoConfig;
   defaultValueType: 'none' | 'literal' | 'function' | 'procedure';
   defaultValue?: unknown;
-  defaultValueScript: string;
   defaultValueProcedure: string;
+  options: LowCodeOption[];
   optionsCode: string;
+  optionsSourceKey: string;
   updateScript: string;
   validationScript: string;
   validationMessage: string;
@@ -86,6 +88,26 @@ function normalizeRelateInfoConfig(value: unknown): LowCodeRelateInfoConfig {
   }
 
   return config;
+}
+
+function normalizeOptions(value: unknown): LowCodeOption[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((option) => {
+    if (!isRecord(option)) return [];
+    const label = option.label;
+    const rawValue = option.value;
+    if (
+      typeof label !== 'string' ||
+      (typeof rawValue !== 'string' && typeof rawValue !== 'number')
+    ) {
+      return [];
+    }
+    return [{
+      ...option,
+      label,
+      value: rawValue,
+    } as LowCodeOption];
+  });
 }
 
 function createDefaultRelateInfoConfig(fieldName: string) {
@@ -147,12 +169,15 @@ function createEditorModel(block: RuntimeFormBlock, field: LowCodeField): FieldE
     editDisabled: field.editDisabled === true,
     relateInfoConfig: createRelateInfoConfig(field),
     defaultValueType,
-    defaultValue: hasLiteralDefault
-      ? formatLiteralDefaultValue(block.initialValues?.[field.field])
-      : undefined,
-    defaultValueScript: field.defaultValueScript ?? '',
+    defaultValue: defaultValueType === 'function'
+      ? readString(field.defaultValue)
+      : hasLiteralDefault
+        ? formatLiteralDefaultValue(block.initialValues?.[field.field])
+        : undefined,
     defaultValueProcedure: field.defaultValueProcedure ?? '',
+    options: cloneValue(field.options ?? []),
     optionsCode: field.optionsCode ?? '',
+    optionsSourceKey: field.optionsSourceKey ?? '',
     updateScript,
     validationScript: field.validationScript ?? '',
     validationMessage: field.validationMessage ?? `${field.label}校验不通过`,
@@ -190,10 +215,14 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
     ...(values.createDisabled === true ? { createDisabled: true } : {}),
     ...(values.editDisabled === true ? { editDisabled: true } : {}),
     ...(readString(values.optionsCode) ? { optionsCode: readString(values.optionsCode) } : {}),
+    ...(normalizeOptions(values.options).length ? { options: normalizeOptions(values.options) } : {}),
+    ...(readString(values.optionsSourceKey)
+      ? { optionsSourceKey: readString(values.optionsSourceKey) }
+      : {}),
     ...(values.defaultValueType === 'function'
       ? {
           defaultValueType: 'function',
-          defaultValueScript: readString(values.defaultValueScript),
+          defaultValue: readString(values.defaultValue),
         }
       : {}),
     ...(values.defaultValueType === 'procedure'
@@ -233,9 +262,12 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
   else delete updated.props;
 
   if (!readString(values.optionsCode)) delete updated.optionsCode;
+  if (!normalizeOptions(values.options).length) delete updated.options;
+  if (!readString(values.optionsSourceKey)) delete updated.optionsSourceKey;
   if (values.createDisabled !== true) delete updated.createDisabled;
   if (values.editDisabled !== true) delete updated.editDisabled;
-  if (values.defaultValueType !== 'function') delete updated.defaultValueScript;
+  delete (updated as Record<string, unknown>).defaultValueScript;
+  if (values.defaultValueType !== 'function') delete updated.defaultValue;
   if (values.defaultValueType !== 'procedure') delete updated.defaultValueProcedure;
   if (!['function', 'procedure'].includes(values.defaultValueType)) {
     delete updated.defaultValueType;
@@ -388,8 +420,8 @@ export async function openRuntimeFormFieldEditor(
       ],
       onConfirm: async (context) => {
         const values = context.model;
-        if (values.defaultValueType === 'function' && !readString(values.defaultValueScript)) {
-          notifyError('默认值类型为函数时，默认值函数不能为空。');
+        if (values.defaultValueType === 'function' && !readString(values.defaultValue)) {
+          notifyError('默认值类型为函数时，默认值不能为空。');
           return { close: false };
         }
         if (

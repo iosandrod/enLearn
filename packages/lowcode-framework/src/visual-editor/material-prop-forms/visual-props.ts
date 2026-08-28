@@ -26,7 +26,16 @@ export function createMaterialPropForm(
   definition: MaterialPropFormDefinition,
   block: VisualEditorBlockData,
 ): MaterialPropFormSchema {
-  const fields = cloneDeep(definition.fields);
+  const fields = cloneDeep(definition.fields).map((field) => {
+    if (definition.componentKey !== 'input') return field;
+
+    const runtimePath = {
+      defaultValueType: '__lowcodeDefaultValueType',
+      defaultValue: '__lowcodeDefaultValue',
+      defaultValueProcedure: '__lowcodeDefaultValueProcedure',
+    }[field.field];
+    return runtimePath ? { ...field, target: 'props' as const, path: runtimePath } : field;
+  });
 
   ensureDefaultValues(block, fields);
 

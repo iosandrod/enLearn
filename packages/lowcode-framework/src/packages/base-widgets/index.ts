@@ -1,5 +1,5 @@
 import type { VisualEditorComponent } from '../../visual-editor/visual-editor.utils';
-import arrayTable from './array-table';
+import { formMaterialVisualComponents } from '../../visual-editor/form-material-visual-components';
 
 const modules = import.meta.glob<{ default?: VisualEditorComponent } | VisualEditorComponent>(
   './*/index.tsx',
@@ -7,13 +7,15 @@ const modules = import.meta.glob<{ default?: VisualEditorComponent } | VisualEdi
 );
 
 const components: Record<string, VisualEditorComponent> = {};
+const formMaterialComponentKeys = new Set(Object.keys(formMaterialVisualComponents));
 
 Object.entries(modules).forEach(([key, module]) => {
   const name = key.replace(/\.\/(.*)\/index\.(tsx|vue)/, '$1');
+  if (formMaterialComponentKeys.has(name)) return;
   components[name] = ((module as { default?: VisualEditorComponent }).default ||
     module) as VisualEditorComponent;
 });
 
-components['array-table'] = arrayTable;
+Object.assign(components, formMaterialVisualComponents);
 
 export default components;

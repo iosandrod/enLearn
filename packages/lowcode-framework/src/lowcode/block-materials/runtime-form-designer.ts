@@ -20,6 +20,9 @@ type DesignerModelField = {
   field: string;
   component: string;
   relateInfoConfig?: unknown;
+  defaultValueType?: 'function' | 'procedure';
+  defaultValue?: unknown;
+  defaultValueProcedure?: string;
 };
 
 function cloneValue<T>(value: T): T {
@@ -58,6 +61,9 @@ function runtimeFieldToDesignerField(field: LowCodeField): FormDesignerField {
     required: field.rules?.some((rule) => rule.required === true) ?? false,
     span: field.span,
     help: field.help,
+    defaultValueType: field.defaultValueType,
+    defaultValue: cloneValue(field.defaultValue),
+    defaultValueProcedure: field.defaultValueProcedure,
     ...(updateScript ? { updateScript } : {}),
     optionsJson: field.options?.length ? JSON.stringify(field.options) : '',
     propsJson: Object.keys(props).length ? JSON.stringify(props) : '',
@@ -106,12 +112,22 @@ function designerModelFields(model: unknown): DesignerModelField[] {
                 checkbox: 'vxe-checkbox-group',
                 'array-table': 'lc-array-table',
                 'sub-form': 'lc-sub-form',
+                stepper: 'lc-stepper',
+                rate: 'lc-rate',
+                slider: 'lc-slider',
               } as Record<string, string>)[componentKey] || componentKey
         );
         result.push({
           field,
           component,
           relateInfoConfig: cloneValue(props.relateInfoConfig),
+          defaultValueType:
+            props.__lowcodeDefaultValueType === 'function' ||
+            props.__lowcodeDefaultValueType === 'procedure'
+              ? props.__lowcodeDefaultValueType
+              : undefined,
+          defaultValue: cloneValue(props.__lowcodeDefaultValue),
+          defaultValueProcedure: readString(props.__lowcodeDefaultValueProcedure),
         });
       }
 
@@ -129,14 +145,33 @@ function isDesignerModelCurrent(block: RuntimeFormBlock) {
   if (!block.formDesignerModel) return false;
   const modelFields = designerModelFields(block.formDesignerModel);
   return modelFields.length === block.schema.fields.length && block.schema.fields.every(
-    (field, index) =>
-      modelFields[index]?.field === field.field &&
-      modelFields[index]?.component === field.component &&
-      (
-        field.component !== 'base-info' ||
-        JSON.stringify(modelFields[index]?.relateInfoConfig ?? {}) ===
+    (field, index) => {
+      const modelField = modelFields[index];
+      if (!modelField || modelField.field !== field.field || modelField.component !== field.component) {
+        return false;
+      }
+
+      if (
+        field.component === 'base-info' &&
+        JSON.stringify(modelField.relateInfoConfig ?? {}) !==
           JSON.stringify(field.props?.relateInfoConfig ?? {})
-      ),
+      ) {
+        return false;
+      }
+
+      const defaultValueType = field.defaultValueType === 'function' ||
+        field.defaultValueType === 'procedure'
+        ? field.defaultValueType
+        : undefined;
+      if (modelField.defaultValueType !== defaultValueType) return false;
+      if (defaultValueType === 'function') {
+        return JSON.stringify(modelField.defaultValue) === JSON.stringify(field.defaultValue);
+      }
+      if (defaultValueType === 'procedure') {
+        return modelField.defaultValueProcedure === readString(field.defaultValueProcedure);
+      }
+      return true;
+    },
   );
 }
 
@@ -163,10 +198,13 @@ function mergeField(
     ...(Object.keys(props).length ? { props } : {}),
     ...(rules.length ? { rules } : {}),
   };
+  const legacyDefaultValueScript = readString(
+    (original as Record<string, unknown>).defaultValueScript,
+  );
 
   for (const key of [
     'defaultValueType',
-    'defaultValueScript',
+    'defaultValue',
     'defaultValueProcedure',
     'updateScript',
     'validationScript',
@@ -180,16 +218,29 @@ function mergeField(
       else delete merged.updateScript;
       continue;
     }
-    if (typeof original[key] !== 'undefined') {
+    // The visual designer carries dynamic default metadata on each field.
+    // Prefer that value when present, but retain metadata from the original
+    // schema when an older designer payload does not include it.
+    if (typeof designed[key] !== 'undefined') {
+      Object.assign(merged, { [key]: designed[key] });
+    } else if (typeof original[key] !== 'undefined') {
       Object.assign(merged, { [key]: original[key] });
-    }
-    else delete merged[key];
+    } else delete merged[key];
   }
 
   for (const key of ['createDisabled', 'editDisabled'] as const) {
     if (typeof original[key] !== 'undefined') merged[key] = original[key];
     else delete merged[key];
   }
+
+  if (
+    merged.defaultValueType === 'function' &&
+    typeof merged.defaultValue === 'undefined' &&
+    legacyDefaultValueScript
+  ) {
+    merged.defaultValue = legacyDefaultValueScript;
+  }
+  delete (merged as Record<string, unknown>).defaultValueScript;
 
   if (!Object.keys(props).length) delete merged.props;
   if (!rules.length) delete merged.rules;
