@@ -15,7 +15,6 @@ const repoRoot = process.cwd().toLowerCase().endsWith('api')
   ? resolve(process.cwd(), '..')
   : process.cwd();
 const runtimeRoot = resolve(repoRoot, 'packages/lowcode-framework/src/runtime');
-const runtimeCoreRoot = resolve(repoRoot, 'packages/lowcode-framework/src/runtime-core');
 
 async function listFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -36,20 +35,14 @@ function connectionString(value: string) {
 }
 
 async function main() {
-  const [files, coreFiles] = await Promise.all([
-    listFiles(runtimeRoot),
-    listFiles(runtimeCoreRoot),
-  ]);
+  const files = await listFiles(runtimeRoot);
   const readStats = async (path: string) => {
     const source = await readFile(path, 'utf8');
     const lines = source.split(/\r?\n/);
     if (lines.at(-1) === '') lines.pop();
     return { path: relative(repoRoot, path), lines: lines.length, nonBlank: lines.filter((line) => line.trim()).length };
   };
-  const [fileStats, coreFileStats] = await Promise.all([
-    Promise.all(files.map(readStats)),
-    Promise.all(coreFiles.map(readStats)),
-  ]);
+  const fileStats = await Promise.all(files.map(readStats));
   const client = new Client({
     connectionString: connectionString(rawConnectionString),
     application_name: 'lowcode-runtime-audit',
@@ -113,14 +106,8 @@ async function main() {
       lines: result.lines + item.lines,
       nonBlank: result.nonBlank + item.nonBlank,
     }), { files: 0, lines: 0, nonBlank: 0 });
-    const coreTotals = coreFileStats.reduce((result, item) => ({
-      files: result.files + 1,
-      lines: result.lines + item.lines,
-      nonBlank: result.nonBlank + item.nonBlank,
-    }), { files: 0, lines: 0, nonBlank: 0 });
     const result = {
       directory: totals,
-      implementationDirectory: coreTotals,
       target: {
         publicRuntimeMaxLines: 5000,
         publicRuntimeWithinTarget: totals.lines <= 5000,
@@ -131,7 +118,6 @@ async function main() {
         remote_script_execution_failures: remoteScriptFailures,
       },
       largestFiles: fileStats.sort((a, b) => b.lines - a.lines).slice(0, 12),
-      largestImplementationFiles: coreFileStats.sort((a, b) => b.lines - a.lines).slice(0, 12),
     };
     console.log(JSON.stringify(result, null, 2));
     if (remoteScriptFailures.length) process.exitCode = 1;

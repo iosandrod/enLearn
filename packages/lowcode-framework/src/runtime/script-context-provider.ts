@@ -1,2 +1,9 @@
-/** Compatibility export. Script context provider lives outside the runtime kernel. */
-export * from '../runtime-core/script-context-provider.ts';
+import type { InjectionKey } from 'vue';
+import type { LowCodeContextSource } from './lowcode-context';
+
+export type LowCodeScriptContextProvider = {
+  getSource(): LowCodeContextSource | undefined;
+};
+
+export const lowCodeScriptContextProviderKey: InjectionKey<LowCodeScriptContextProvider> =
+  Symbol('lowCodeScriptContextProvider');

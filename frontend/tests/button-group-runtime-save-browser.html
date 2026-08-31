@@ -93,6 +93,84 @@
       const serviceApi = {
         async invoke(serviceName, serviceMethod, payload = {}) {
           if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            if (payload.resource === 'lowcode_form_definitions') {
+              return [{
+                code: 'button-group-designer',
+                schema: {
+                  columns: 1,
+                  fields: [
+                    {
+                      field: 'button-group-designer-buttons-form',
+                      label: '按钮配置',
+                      component: 'lc-sub-form',
+                      showTitle: false,
+                      props: {
+                        schema: {
+                          columns: 1,
+                          fields: [{
+                            field: 'buttons',
+                            label: '按钮配置',
+                            component: 'lc-array-table',
+                            span: 24,
+                            props: {
+                              height: '100%',
+                              toolbarButtons: [
+                                { code: 'add', label: '新增按钮', status: 'primary' },
+                                { code: 'add-dropdown', label: '新增下拉按钮', status: 'primary' },
+                                { code: 'select-default', label: '选择默认按钮', status: 'primary', prefixIcon: 'ri-list-check-3' },
+                              ],
+                              toolbarAlign: 'left',
+                              rowKey: '__id',
+                              preserveRowKey: true,
+                              treeConfig: { childrenField: 'children', expandAll: true },
+                              minRows: 1,
+                              childAddable: true,
+                              movable: true,
+                              copyable: true,
+                              removable: true,
+                              columns: [
+                                { field: 'label', title: '按钮名称', component: 'vxe-input' },
+                                { field: 'code', title: '编码 code', component: 'vxe-input' },
+                                { field: 'script', title: '执行脚本', component: 'lc-monaco-editor', props: { dialog: true, language: 'javascript' } },
+                              ],
+                            },
+                          }],
+                          actions: [],
+                        },
+                      },
+                    },
+                    {
+                      field: 'button-group-designer-info-form',
+                      label: '组件信息',
+                      component: 'lc-sub-form',
+                      showTitle: false,
+                      props: {
+                        schema: {
+                          columns: 2,
+                          fields: [
+                            { field: 'blockId', label: 'Block ID', component: 'vxe-input' },
+                            { field: 'title', label: '标题', component: 'vxe-input' },
+                            { field: 'description', label: '描述', component: 'vxe-input' },
+                            { field: 'align', label: '对齐方式', component: 'vxe-input' },
+                            { field: 'gap', label: '按钮间距', component: 'vxe-input' },
+                          ],
+                          actions: [],
+                        },
+                      },
+                    },
+                  ],
+                  layout: [{
+                    kind: 'tabs',
+                    defaultKey: 'buttons',
+                    tabs: [
+                      { key: 'buttons', label: '按钮设计', blocks: [{ kind: 'field', field: 'button-group-designer-buttons-form' }] },
+                      { key: 'info', label: '组件信息', blocks: [{ kind: 'field', field: 'button-group-designer-info-form' }] },
+                    ],
+                  }],
+                  actions: [],
+                },
+              }];
+            }
             return [{
               id: 'runtime-button-save-edit-page',
               code: 'runtime-button-save-edit',

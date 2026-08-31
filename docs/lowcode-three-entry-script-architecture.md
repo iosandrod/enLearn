@@ -173,7 +173,7 @@ async function main() {
 页面函数有两个来源，按以下顺序解析：
 
 1. 页面自定义函数：`page.schema.functions`
-2. 系统内置函数：`runtime-core/page-function/index.ts`（公开路径由 `runtime/page-function/index.ts` 兼容转发）
+2. 系统内置函数：`runtime/page-function/index.ts`
 
 内置函数可以直接组合框架提供的受信任 UI 能力，例如列表页的 `designForm` 在
 `list-page-function.ts` 中打开表单设计器。脚本仍只调用 `executeFunction`；当前行校验、
@@ -361,7 +361,7 @@ Node Action 按 Node 类型全局维护在：
 lowcode_node_actions
 ```
 
-API 将启用的 Action 附加到运行页面；`runtime-core/node-action-registry.ts` 只负责筛选和查询，`runtime/lowcode-page-script-runtime.ts` 在 QuickJS 中执行 `source_code`，并通过 `$node.call` 提供通用 Host Bridge。
+API 将启用的 Action 附加到运行页面；`runtime/node-action-registry.ts` 只负责筛选和查询，`runtime/lowcode-page-script-runtime.ts` 在 QuickJS 中执行 `source_code`，并通过 `$node.call` 提供通用 Host Bridge。
 
 ### 5.3 边界
 
@@ -670,18 +670,18 @@ lowcode_page_runtime -> lowcode.executeRuntime -> backend QuickJS -> effects -> 
 | --- | --- |
 | `supabase/migrations/*lowcode_page_runtime*.sql` | 页面函数、按钮规则、指令、能力和 native handler 的数据库目录 |
 | `api/src/lowcode-service/lowcode-runtime.executor.ts` | 后端隔离执行数据库页面函数并校验 effects 白名单 |
-| `runtime-core/page-function/index.ts` | 仅保留 `designForm` 的 Vue 设计器 native 桥接和兼容类型 |
+| `runtime/page-function/index.ts` | 仅保留 `designForm` 的 Vue 设计器 native 桥接和兼容类型 |
 | `page.schema.functions` | 当前页面覆盖或新增的页面函数 |
 | `lowcode_node_actions` | 全局 Node Action 元数据、适用条件、参数和 QuickJS 源码 |
-| `runtime-core/node-action-registry.ts` | 从 API Action 集合筛选 Node Method，并提供统一查询入口 |
+| `runtime/node-action-registry.ts` | 从 API Action 集合筛选 Node Method，并提供统一查询入口 |
 | `runtime/lowcode-page-script-runtime.ts` | 调用远程页面函数并委托统一 effects 适配器；保留 Node Action 的系统桥接 |
-| `runtime-core/runtime-effects.ts` | 页面函数、按钮和 Node Action 共用的效果执行器 |
+| `runtime/runtime-effects.ts` | 页面函数、按钮和 Node Action 共用的效果执行器 |
 | `page.schema.apis` | 页面允许调用的 HTTP API 白名单 |
-| `runtime-core/script-runtime.worker.ts` | 构造精简的脚本 `this`，运行 QuickJS |
-| `runtime-core/scripts.ts` | 脚本执行限制、序列化和 Host Capability 通道 |
-| `runtime-core/button-disabled/index.ts` | 优先读取数据库按钮规则；仅保留无目录数据时的最小系统安全兜底 |
-| `runtime-core/directives.ts` | 根据数据库 directive handler 选择本地 UI/数据桥接，兼容旧别名 |
-| `runtime/*` | 页面编排核心与仍在使用的公开入口；新增业务实现进入数据库或 `runtime-core` |
+| `runtime/script-runtime.worker.ts` | 构造精简的脚本 `this`，运行 QuickJS |
+| `runtime/scripts.ts` | 脚本执行限制、序列化和 Host Capability 通道 |
+| `runtime/button-disabled/index.ts` | 优先读取数据库按钮规则；仅保留无目录数据时的最小系统安全兜底 |
+| `runtime/directives.ts` | 根据数据库 directive handler 选择本地 UI/数据桥接，兼容旧别名 |
+| `runtime/*` | 页面编排核心、系统适配器与公开入口；新增业务实现进入数据库 |
 | `components/LowCodePageRenderer.vue` | 生命周期触发、三入口分发和 Runtime 状态协调 |
 
 ### 12.1 目录验收分类
@@ -710,9 +710,9 @@ $dialog    $events
 
 当前页面初始化也仍由 `LowCodePageRenderer.loadPageData()` 直接遍历 `schema.dataSources`，而不是先调用页面函数 `loadData`。
 
-本次抽象将公开 `runtime` 目录控制在约 5,000 行以内（当前 4,949 行），页面编排核心保留在公开目录，
-编辑器、脚本沙箱和宿主适配实现统一位于 `runtime-core`；后续新能力只能进入数据库目录或
-`runtime-core` 的系统适配器，不能重新写回公开目录。审计脚本会同时报告两个边界的文件和行数。
+本次目录合并将页面编排核心、编辑器、脚本沙箱和宿主适配实现统一放在 `runtime`，不再维护
+第二套运行时目录。后续新业务能力只能进入数据库目录，审计脚本只报告单一 `runtime`
+目录的文件和行数。
 
 已完成的数据库迁移：
 
@@ -751,9 +751,9 @@ Node 状态与行为：executeAction
 ## 15. 相关文档与源码
 
 - [低代码 Node 可执行 Action 清单](./lowcode-node-actions.md)
-- [页面内置函数](../packages/lowcode-framework/src/runtime-core/page-function/index.ts)
+- [页面内置函数](../packages/lowcode-framework/src/runtime/page-function/index.ts)
 - [Node Action 数据库迁移](../supabase/migrations/20260826220000_database_node_actions.sql)
-- [Node Action Registry](../packages/lowcode-framework/src/runtime-core/node-action-registry.ts)
-- [脚本 Worker](../packages/lowcode-framework/src/runtime-core/script-runtime.worker.ts)
-- [脚本执行器](../packages/lowcode-framework/src/runtime-core/scripts.ts)
+- [Node Action Registry](../packages/lowcode-framework/src/runtime/node-action-registry.ts)
+- [脚本 Worker](../packages/lowcode-framework/src/runtime/script-runtime.worker.ts)
+- [脚本执行器](../packages/lowcode-framework/src/runtime/scripts.ts)
 - [页面运行时](../packages/lowcode-framework/src/components/LowCodePageRenderer.vue)

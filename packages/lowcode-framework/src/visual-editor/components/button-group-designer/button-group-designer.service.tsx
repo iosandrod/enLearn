@@ -2,9 +2,11 @@ import { computed, reactive } from 'vue';
 import { ElMessage } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import type {
+  LowCodeFormSchema,
   LowCodePageBlock,
   LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
+import { isLowCodeFormSchema } from '../../../lowcode/form-schema';
 import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-materials/lc-array-table/index.vue';
 import {
   createBuiltinLowCodeActionEditorRow,
@@ -22,6 +24,7 @@ import { generateNanoid } from '../../utils';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
 import { registerButtonScriptMonacoTypes } from './button-script-monaco';
+import type { LowCodeHostServiceApi } from '../../../core/host';
 
 export type ButtonGroupDesignerButton = {
   __id?: string;
@@ -55,6 +58,7 @@ type ButtonGroupDesignerServiceOption = {
   title?: string;
   business?: Partial<ButtonGroupDesignerBusinessInfo> | null;
   buttons?: ButtonGroupDesignerButton[] | null;
+  serviceApi?: LowCodeHostServiceApi;
   scriptContext?: LowCodeContextSource;
   onConfirm?: (result: ButtonGroupDesignerResult) => Promise<void> | void;
 };
@@ -79,6 +83,10 @@ type DefaultButtonPickerRow = {
 
 const BUTTONS_FORM_ID = 'button-group-designer-buttons-form';
 const INFO_FORM_ID = 'button-group-designer-info-form';
+const MASTER_FORM_ID = 'button-group-designer-form';
+const BUTTON_GROUP_DESIGNER_FORM_CODE = 'button-group-designer';
+
+declare const useServiceApi: undefined | (() => LowCodeHostServiceApi);
 
 function executeAddToolbarAction({ action, addRow }: ArrayTableToolbarExecutionContext) {
   return addRow(action.row);
@@ -275,28 +283,6 @@ async function executeSelectDefaultButtons({
   );
 }
 
-const statusOptions = [
-  { label: '默认', value: '' },
-  { label: '主要 primary', value: 'primary' },
-  { label: '成功 success', value: 'success' },
-  { label: '警告 warning', value: 'warning' },
-  { label: '危险 danger', value: 'danger' },
-  { label: '信息 info', value: 'info' },
-];
-
-const actionTypeOptions = [
-  { label: '普通按钮', value: 'button' },
-  { label: '提交 submit', value: 'submit' },
-  { label: '重置 reset', value: 'reset' },
-];
-
-const alignOptions = [
-  { label: '左对齐', value: 'left' },
-  { label: '居中', value: 'center' },
-  { label: '右对齐', value: 'right' },
-  { label: '两端分布', value: 'space-between' },
-];
-
 const defaultBusiness: ButtonGroupDesignerBusinessInfo = {
   blockId: 'button-group',
   title: '按钮组',
@@ -482,21 +468,27 @@ function createDesignerState(option: ButtonGroupDesignerServiceOption) {
 
 function createDesignerFormModels(state: ButtonGroupDesignerState) {
   return reactive<Record<string, Record<string, unknown>>>({
-    [BUTTONS_FORM_ID]: state.buttonsForm,
-    [INFO_FORM_ID]: state.business as unknown as Record<string, unknown>,
+    [MASTER_FORM_ID]: {
+      [BUTTONS_FORM_ID]: state.buttonsForm,
+      [INFO_FORM_ID]: state.business as unknown as Record<string, unknown>,
+    },
   });
 }
 
 function readButtonsModel(formModels: Record<string, Record<string, unknown>>) {
-  const model = formModels[BUTTONS_FORM_ID];
+  const master = formModels[MASTER_FORM_ID];
+  const model = (master?.[BUTTONS_FORM_ID] as Record<string, unknown> | undefined) ??
+    formModels[BUTTONS_FORM_ID];
   const buttons = Array.isArray(model?.buttons) ? model.buttons : [];
   return buttons.map((button) => ensureButtonIds(button as ButtonGroupDesignerButton));
 }
 
 function readBusinessModel(formModels: Record<string, Record<string, unknown>>) {
+  const master = formModels[MASTER_FORM_ID];
   return {
     ...defaultBusiness,
-    ...(formModels[INFO_FORM_ID] ?? {}),
+    ...((master?.[INFO_FORM_ID] as Record<string, unknown> | undefined) ??
+      formModels[INFO_FORM_ID] ?? {}),
   } as ButtonGroupDesignerBusinessInfo;
 }
 
@@ -555,233 +547,133 @@ function createButtonRow(label = '按钮'): ButtonGroupDesignerButton {
   };
 }
 
-function createButtonArrayColumns(scriptContext?: LowCodeContextSource) {
-  return [
-    {
-      field: 'label',
-      title: '按钮名称',
-      component: 'vxe-input',
-      minWidth: 150,
-      placeholder: '按钮名称',
-    },
-    {
-      field: 'code',
-      title: '编码 code',
-      component: 'vxe-input',
-      minWidth: 150,
-      placeholder: 'create',
-    },
-    {
-      field: 'script',
-      title: '执行脚本',
-      component: 'lc-monaco-editor',
-      minWidth: 260,
-      placeholder: '例如：await this.$source.refresh("records")',
-      defaultValue: '',
-      props: {
-        dialog: true,
-        dialogTitle: '编辑按钮执行脚本',
-        language: 'javascript',
-        theme: 'vs',
-        scriptThisType: 'LowCodeButtonScriptThis',
-        contextDrawer: true,
-        contextDrawerTitle: '当前页面上下文',
-        contextSource: scriptContext,
-        editorHeight: 'min(500px, calc(100vh - 250px))',
-        editorOptions: {
-          wordWrap: 'on',
-          formatOnPaste: true,
-          formatOnType: true,
-        },
-      },
-    },
-    {
-      field: 'status',
-      title: '状态',
-      component: 'vxe-select',
-      width: 140,
-      options: statusOptions,
-    },
-    {
-      field: 'type',
-      title: '类型',
-      component: 'vxe-select',
-      width: 140,
-      options: actionTypeOptions,
-    },
-    {
-      field: 'route',
-      title: '路由',
-      component: 'vxe-input',
-      minWidth: 180,
-      placeholder: '/dashboard/...',
-    },
-    {
-      field: 'eventName',
-      title: '事件名',
-      component: 'vxe-input',
-      minWidth: 180,
-      placeholder: 'buttonGroup.click',
-    },
-    {
-      field: 'disabled',
-      title: '禁用',
-      component: 'vxe-switch',
-      width: 80,
-    },
-    {
-      field: 'directivesJson',
-      title: 'directives JSON',
-      component: 'lc-json-editor',
-      minWidth: 260,
-      defaultValue: '[]',
-      props: {
-        rows: 3,
-        placeholder: '[]',
-        jsonRootType: 'array',
-        jsonValueMode: 'string',
-      },
-    },
-  ];
+function resolveServiceApi(option: ButtonGroupDesignerServiceOption) {
+  if (option.serviceApi) return option.serviceApi;
+  try {
+    return typeof useServiceApi === 'function' ? useServiceApi() : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
-function createDesignerBlocks(scriptContext?: LowCodeContextSource): LowCodePageBlock[] {
-  const pageType = resolveDesignerPageType(scriptContext);
+async function loadDesignerFormSchema(option: ButtonGroupDesignerServiceOption) {
+  const serviceApi = resolveServiceApi(option);
+  if (!serviceApi) {
+    throw new Error('按钮设计器无法连接低代码服务。');
+  }
 
-  return [
+  const rows = await serviceApi.invoke<Array<{ schema?: unknown }>>(
+    'lowcode',
+    'listItems',
     {
-      id: 'button-group-designer-tabs',
-      kind: 'tabs',
-      defaultKey: 'buttons',
-      layout: {
-        fillRemaining: true,
-      },
-      tabs: [
-        {
-          key: 'buttons',
-          label: '按钮设计',
-          blocks: [
-            {
-              id: BUTTONS_FORM_ID,
-              kind: 'form',
-              schema: {
-                fields: [
-                  {
-                    field: 'buttons',
-                    label: '按钮配置',
-                    component: 'lc-array-table',
-                    span: 24,
-                    props: {
-                      height: '100%',
-                      toolbarButtons: [
-                        {
-                          code: 'add',
-                          label: '新增按钮',
-                          status: 'primary',
-                          execute: executeAddToolbarAction,
-                        },
-                        {
-                          code: 'add-dropdown',
-                          label: '新增下拉按钮',
-                          status: 'primary',
-                          row: {
-                            ...createButtonRow('下拉按钮'),
-                            children: [createButtonRow('下拉项')],
-                          },
-                          execute: executeAddToolbarAction,
-                        },
-                        {
-                          code: 'select-default',
-                          label: '选择默认按钮',
-                          status: 'primary',
-                          prefixIcon: 'ri-list-check-3',
-                          execute: (context: ArrayTableToolbarExecutionContext) =>
-                            executeSelectDefaultButtons(context, pageType),
-                        },
-                      ],
-                      toolbarAlign: 'left',
-                      rowKey: '__id',
-                      preserveRowKey: true,
-                      treeConfig: {
-                        childrenField: 'children',
-                        expandAll: true,
-                        showLine: true,
-                        indent: 20,
-                      },
-                      minRows: 1,
-                      childAddable: true,
-                      addChildText: '新增子按钮',
-                      movable: true,
-                      copyable: true,
-                      removable: true,
-                      actionWidth: 156,
-                      defaultRow: createButtonRow(),
-                      columns: createButtonArrayColumns(scriptContext),
-                    },
-                  },
-                ],
-                actions: [],
-              },
-            },
-          ],
-        },
-        {
-          key: 'info',
-          label: '组件信息',
-          blocks: [
-            {
-              id: INFO_FORM_ID,
-              kind: 'form',
-              schema: {
-                fields: [
-                  {
-                    field: 'blockId',
-                    label: 'Block ID',
-                    component: 'vxe-input',
-                    props: { placeholder: 'button-group' },
-                  },
-                  {
-                    field: 'title',
-                    label: '标题',
-                    component: 'vxe-input',
-                    props: { placeholder: '按钮组' },
-                  },
-                  {
-                    field: 'description',
-                    label: '描述',
-                    component: 'vxe-textarea',
-                    span: 24,
-                    props: { rows: 3 },
-                  },
-                  {
-                    field: 'align',
-                    label: '对齐方式',
-                    component: 'vxe-select',
-                    options: alignOptions,
-                  },
-                  {
-                    field: 'gap',
-                    label: '按钮间距',
-                    component: 'vxe-input',
-                    props: { placeholder: '8' },
-                  },
-                ],
-                actions: [],
-              },
-            },
-          ],
-        },
-      ],
+      resource: 'lowcode_form_definitions',
+      filters: { code: BUTTON_GROUP_DESIGNER_FORM_CODE, enabled: true },
+      limit: 1,
     },
-  ];
+  );
+  const schema = Array.isArray(rows) ? rows[0]?.schema : undefined;
+  if (!isLowCodeFormSchema(schema)) {
+    throw new Error(`低代码表单“${BUTTON_GROUP_DESIGNER_FORM_CODE}”不存在、已停用或 schema 无效。`);
+  }
+  return cloneDeep(schema);
+}
+
+function resolveDesignerSubFormSchema(schema: LowCodeFormSchema, fieldCode: string) {
+  const field = schema.fields.find((item) => item.field === fieldCode);
+  const props = isRecord(field?.props) ? field.props : undefined;
+  const subSchema = props?.schema;
+  if (!isLowCodeFormSchema(subSchema)) {
+    throw new Error(`按钮设计表单缺少有效区段：${fieldCode}`);
+  }
+  return cloneDeep(subSchema);
+}
+
+function configureDesignerSchema(
+  schema: LowCodeFormSchema,
+  option: ButtonGroupDesignerServiceOption,
+): LowCodeFormSchema {
+  const next = cloneDeep(schema);
+  const pageType = resolveDesignerPageType(option.scriptContext);
+  const buttonsSchema = resolveDesignerSubFormSchema(next, BUTTONS_FORM_ID);
+  const buttonsField = buttonsSchema.fields.find((field) => field.field === 'buttons');
+  if (!buttonsField || !isRecord(buttonsField.props)) {
+    throw new Error('按钮设计表单缺少 buttons 字段。');
+  }
+
+  const fieldProps = buttonsField.props;
+  const toolbarButtons = Array.isArray(fieldProps.toolbarButtons)
+    ? fieldProps.toolbarButtons.filter(isRecord).map((button) => {
+        const code = readString(button.code);
+        if (code === 'select-default') {
+          return {
+            ...button,
+            execute: (context: ArrayTableToolbarExecutionContext) =>
+              executeSelectDefaultButtons(context, pageType),
+          };
+        }
+        if (code === 'add-dropdown' && !button.row) {
+          return {
+            ...button,
+            row: {
+              ...createButtonRow('下拉按钮'),
+              children: [createButtonRow('下拉项')],
+            },
+            execute: executeAddToolbarAction,
+          };
+        }
+        if (code === 'add') {
+          return { ...button, execute: executeAddToolbarAction };
+        }
+        return button;
+      })
+    : [];
+  const columns = Array.isArray(fieldProps.columns)
+    ? fieldProps.columns.filter(isRecord).map((column) => {
+        if (column.field !== 'script' || !isRecord(column.props)) return column;
+        return {
+          ...column,
+          props: {
+            ...column.props,
+            contextSource: option.scriptContext,
+          },
+        };
+      })
+    : [];
+
+  buttonsField.props = {
+    ...fieldProps,
+    toolbarButtons,
+    columns,
+  };
+  const nextButtonsField = next.fields.find((field) => field.field === BUTTONS_FORM_ID);
+  if (nextButtonsField && isRecord(nextButtonsField.props)) {
+    nextButtonsField.props = {
+      ...nextButtonsField.props,
+      schema: buttonsSchema,
+    };
+  }
+  return next;
+}
+
+function createDesignerBlocks(schema: LowCodeFormSchema): LowCodePageBlock[] {
+  return [{
+    id: MASTER_FORM_ID,
+    kind: 'form',
+    title: '按钮组设计',
+    className: 'button-group-designer-master-form',
+    layout: { fillRemaining: true },
+    schema,
+  }];
 }
 
 function isButtonGroupDesignerResult(value: unknown): value is ButtonGroupDesignerResult {
   return typeof value === 'object' && value !== null && 'business' in value && 'buttons' in value;
 }
 
-export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) {
+export async function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) {
   registerButtonScriptMonacoTypes();
+  const databaseSchema = await loadDesignerFormSchema(option);
+  const schema = configureDesignerSchema(databaseSchema, option);
   const state = createDesignerState(option);
   const formModels = createDesignerFormModels(state);
 
@@ -797,7 +689,7 @@ export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) 
     content: {
       type: 'lowcodeBlocks',
       lowcode: {
-        blocks: createDesignerBlocks(option.scriptContext),
+        blocks: createDesignerBlocks(schema),
         formModels,
       },
     },

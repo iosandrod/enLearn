@@ -35,7 +35,7 @@ import {
   ScriptExecutorRegistry
 } from './script-executors';
 import { appendRouteQuery, cloneRuntimeValue, isRecord, readPath, readString } from './renderer-value-utils';
-import { applyLowCodeRuntimeEffects } from '../runtime-core/runtime-effects.ts';
+import { applyLowCodeRuntimeEffects } from './runtime-effects.ts';
 
 type ValueRef<T> = { value: T };
 type DataSourceRequest = {

@@ -270,8 +270,9 @@ async function openButtonDesigner() {
     '../../../visual-editor/components/button-group-designer/button-group-designer.service'
   );
 
-  void $$buttonGroupDesigner({
+  await $$buttonGroupDesigner({
     title: '设计按钮',
+    serviceApi: runtimeBlockEditor.getServiceApi?.(),
     business: {
       blockId: props.block.id,
       title: props.block.title ?? '按钮组',
@@ -309,7 +310,10 @@ function openButtonGroupContextMenu(event: MouseEvent) {
     events: {
       optionClick({ option }) {
         if (option.code === 'design-buttons') {
-          void openButtonDesigner();
+          void openButtonDesigner().catch((error) => {
+            // The database-backed definition is required for runtime editing.
+            console.error(error);
+          });
         }
       },
     },
