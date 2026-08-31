@@ -56,7 +56,14 @@ const gridDesignerServiceSource = await readFile(
 );
 const pageRendererSource = await readFile(
   new URL(
-    '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue',
+    '../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts',
+    import.meta.url
+  ),
+  'utf8'
+);
+const pageDataControllerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/runtime/page-data-controller.ts',
     import.meta.url
   ),
   'utf8'
@@ -66,6 +73,11 @@ assert.match(
   gridSource,
   /@menu-click="handleMenuClick"/,
   'LowCodeGrid must handle VXE menu clicks.'
+);
+assert.match(
+  gridSource,
+  /<template #actions="\{ row \}">[\s\S]*schema\.rowActions\?\.edit === true[\s\S]*emit\('edit', row\)[\s\S]*schema\.rowActions\?\.delete === true[\s\S]*emit\('delete', row\)[\s\S]*visibleRowActions\(row\)[\s\S]*emitRowAction\(action, row\)/,
+  'The actions slot must render built-in and custom row actions.'
 );
 assert.doesNotMatch(
   gridSource,
@@ -190,9 +202,14 @@ assert.match(
   'Table fields must execute the configured validation and update scripts.'
 );
 assert.match(
-  pageRendererSource,
-  /resolveGridDynamicDefaults[\s\S]*grid\.fieldDefaultValue[\s\S]*executeDefaultValueProcedure[\s\S]*executeIsolatedScript[\s\S]*block\.kind === 'grid'[\s\S]*await resolveGridDynamicDefaults\(block\)/,
+  pageDataControllerSource,
+  /resolveGridDynamicDefaults[\s\S]*grid\.fieldDefaultValue[\s\S]*executeDefaultValueProcedure[\s\S]*executeIsolatedScript[\s\S]*normalizeDynamicDefaultValue/,
   'Table fields must resolve function and procedure defaults through the page runtime.'
+);
+assert.match(
+  pageDataControllerSource,
+  /for \(const block of pageBlocks\)[\s\S]*block\.kind === 'grid'[\s\S]*await this\.resolveGridDynamicDefaults\(block\)/,
+  'Grid dynamic defaults must be resolved while page data is loaded.'
 );
 assert.match(
   runtimeGridConverterSource,
@@ -245,9 +262,19 @@ assert.match(
   'Editing the current row from the body context menu must enter the grid edit flow.'
 );
 assert.match(
+  pageGridSource,
+  /function isMainGrid\(\)[\s\S]*props\.block\.tableType === 'main' \|\| !props\.block\.tableType[\s\S]*payload\.actionCode === 'editCurrentRow'[\s\S]*isMainGrid\(\)/,
+  'The automatic edit-page flow must be limited to main and legacy list grids.'
+);
+assert.match(
   pageRendererSource,
   /async function handleGridEdit\([\s\S]*resolveLinkedEditPageRoute\(block, row\)[\s\S]*host\.getRouter\(\)\.push\(linkedEditRoute\)/,
   'The grid edit flow must navigate to the linked edit page.'
+);
+assert.match(
+  pageRendererSource,
+  /async function handleGridEdit\([\s\S]*catch \(error\)[\s\S]*message\.value = error instanceof Error \? error\.message[\s\S]*messageClass\.value = 'lc-error'/,
+  'Grid edit failures must be visible instead of being silently ignored.'
 );
 assert.match(
   pageRendererSource,

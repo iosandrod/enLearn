@@ -26,6 +26,13 @@ with definitions(code, name, description, schema) as (
             "rowKey": "__id",
             "preserveRowKey": true,
             "rowDraggable": true,
+            "rowDragConfig": {
+              "trigger": "cell",
+              "showIcon": true,
+              "animation": true,
+              "showGuidesStatus": true,
+              "showDragTip": true
+            },
             "movable": false,
             "copyable": true,
             "minRows": 1,

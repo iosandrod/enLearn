@@ -260,7 +260,6 @@ export class RuntimeDirectiveController {
     ) {
       const [sourceKey] = resolveDirectiveSourceKeys(directive, event);
       if (!sourceKey) return;
-
       runtime.setSource(sourceKey, mergeDataSourceValue(
         resolvedData.value[sourceKey],
         resolveDirectiveData(directive, event),
@@ -368,91 +367,6 @@ export class RuntimeDirectiveController {
       event: LowCodeRuntimeEvent,
       executionContext: RuntimeDirectiveExecutionContext,
     ) {
-      const sourceKey = resolveDirectiveString(directive.sourceKey, event);
-      const source = getDataSource(sourceKey);
-      const directivePostData = resolveRuntimeValue(
-        directive.postData ?? source?.postData ?? {},
-        directiveScope(event)
-      ) as Record<string, unknown>;
-      const request = source
-        ? resolveDataSourceRequest(sourceKey, source, directivePostData)
-        : { serviceName: '', serviceMethod: '', postData: directivePostData };
-      const serviceName = resolveDirectiveString(directive.serviceName, event, request.serviceName);
-      const serviceMethod = resolveDirectiveString(
-        directive.serviceMethod,
-        event,
-        request.serviceMethod
-      );
-
-      if (!serviceName || !serviceMethod) return;
-
-      const normalizedRequest = normalizeLegacyAdminListRequest(
-        serviceName,
-        serviceMethod,
-        request.postData
-      );
-
-      const mesCommand = isDesktopMesCommand(
-        normalizedRequest.serviceName,
-        normalizedRequest.serviceMethod,
-      );
-      let result: unknown;
-      if (mesCommand) {
-        if (runtime.state.status.mesCommandExecuting) {
-          throw new Error('当前操作仍在处理中，请稍候。');
-        }
-        executionContext.mesCommandStarted = true;
-        runtime.state.status.mesCommandExecuting = true;
-        runtime.state.status.mesCommandActionKey = [
-          event.blockId ?? '',
-          readString(event.payload?.actionCode, normalizedRequest.serviceMethod),
-        ].join(':');
-        const commandRequest = await prepareDesktopMesCommandRequest(normalizedRequest.postData);
-        result = await invokeDesktopMesCommand(() => host
-          .getServiceApi()
-          .invoke(
-            normalizedRequest.serviceName,
-            normalizedRequest.serviceMethod,
-            commandRequest.postData,
-            { requestId: commandRequest.requestId },
-          ));
-        executionContext.mesCommandCompleted = true;
-      } else {
-        result = await host
-          .getServiceApi()
-          .invoke(
-            normalizedRequest.serviceName,
-            normalizedRequest.serviceMethod,
-            normalizedRequest.postData
-          );
-      }
-      const assignTo = resolveDirectiveString(directive.assignTo, event);
-
-      if (assignTo) {
-        runtime.setSource(assignTo, mergeDataSourceValue(
-          resolvedData.value[assignTo],
-          result,
-          directive,
-          event
-        ));
-        syncPageGridStates();
-      }
-
-      if (directive.refreshSourceKeys?.length) {
-        const sourceKeys = directive.refreshSourceKeys
-          .map((key) => resolveDirectiveString(key, event))
-          .filter(Boolean);
-        try {
-          await refreshDataSources(sourceKeys, {
-            ordered: mesCommand,
-            strict: mesCommand,
-          });
-          if (mesCommand) executionContext.mesCommandRefreshCompleted = true;
-        } catch (error) {
-          if (mesCommand) executionContext.mesCommandRefreshFailed = true;
-          throw error;
-        }
-      }
     }
 
     function resolveDialogFollowUpDirectives(
@@ -661,6 +575,7 @@ export class RuntimeDirectiveController {
         && !executionContext.mesCommandRefreshCompleted
         && !executionContext.mesCommandRefreshFailed;
       const directiveContext: LowCodeRuntimeDirectiveContext = {
+        runtimeFunctions: runtime.runtimeFunctions ?? [],
         shouldExecuteDirective,
         resolveDirectiveString,
         resolveDirectiveRecord,

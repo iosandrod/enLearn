@@ -245,6 +245,12 @@ function hasGridEventConfig(key: string) {
   );
 }
 
+function isMainGrid() {
+  // Older list pages did not persist tableType; only an explicit detail grid
+  // should stay out of the list-row edit flow.
+  return props.block.tableType === 'main' || !props.block.tableType;
+}
+
 function shouldPublishDesignedGridEvent(key: string) {
   if (
     [
@@ -424,10 +430,10 @@ function handleGridEvent(payload: GridRuntimeEventPayload) {
       );
     }
   }
-
   if (
     payload.key === 'bodyMenuClick' &&
     payload.actionCode === 'editCurrentRow' &&
+    isMainGrid() &&
     payload.row &&
     !isReadonly.value &&
     !isMesCommandExecuting.value

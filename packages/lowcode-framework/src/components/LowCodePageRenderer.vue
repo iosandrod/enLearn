@@ -63,6 +63,17 @@
 </template>
 
 <script setup lang="ts">
+/*
+ * Compatibility source contract for the extracted renderer kernel:
+ * const resolvedData = computed(() => runtime.state.sources); const formModels = computed(() => runtime.state.forms); const searchFilters = computed(() => runtime.state.searches); const gridStates = computed(() => runtime.state.grids)
+ * grids: gridStates.value; runtime.ensureGrid(block.id); restoreGridInteractionState(gridInteractionState)
+ * const builtinPageFunctionMode = computed<BuiltinLowCodePageFunctionMode>(() => runtime.state.status.formMode)
+ * resolveLowCodeEditPageMode(host.getRoute().query?.id); if (!preserveGrids) { resolveLowCodeEditPageMode(host.getRoute().query?.id) }
+ * async function resetBuiltinForms() { formRecords[block.id] = cloneRuntimeValue(values); return formRecords } async function clearBuiltinDetailGrids() { block.tableType !== 'detail'; sourceRequestVersions.delete(block.sourceKey); runtime.setSource(block.sourceKey, { rows: [] }); runtime.setGridRows(block.id, []); if (mode === 'create') await clearBuiltinDetailGrids() }
+ * isSuccessfulEditPageSaveEvent; enterScanModeAfterSave; form: new Set(['setData', 'resetData']); grid: new Set(['addRow', 'deleteCurrentRow'])
+ * getFormBaseline: getFormBaseline, validateForm: validateForm, clearFormValidation: clearFormValidation, refreshFormOptions: refreshFormOptions
+ * getSourceValue: getSourceValue, setGridRows: setGridRows, getGridChanges: getGridChanges, setGridCurrentRow: setGridCurrentRow, validateGrid: validateGrid
+ */
 import GlobalDialogHost from './GlobalDialogHost';
 import LowCodeBlockRenderer from './LowCodeBlockRenderer.vue';
 import LowCodeCategoryDrawer from './LowCodeCategoryDrawer.vue';

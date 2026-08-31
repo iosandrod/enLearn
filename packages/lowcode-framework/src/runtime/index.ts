@@ -18,7 +18,6 @@ export type {
 } from '../components/LcVxeModalRenderer';
 
 export * from './global-dialog';
-export * from './global-drawer';
 export * from './page-reference-dialog';
 export * from './lowcode-pages';
 export * from './block-editor';

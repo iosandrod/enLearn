@@ -1,3 +1,2 @@
-export type * from './types.ts';
-export * from './edit-buttons.ts';
-export * from './main-buttons.ts';
+/** Compatibility export. Database-backed button rules live in runtime-core. */
+export * from '../../runtime-core/button-disabled/index.ts';

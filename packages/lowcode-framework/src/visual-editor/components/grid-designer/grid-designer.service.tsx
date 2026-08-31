@@ -427,12 +427,17 @@ function resolveGridDesignerDataSourceTableName(source?: LowCodePageDataSource) 
 
 function createGridDesignerPageSourceOptions(
   dataSources?: Record<string, LowCodePageDataSource>,
+  excludedSourceKey = '',
 ): LowCodeOption[] {
   if (!dataSources) return [];
 
   return Object.entries(dataSources).flatMap(([key, source]) => {
     const sourceKey = readString(source?.key, key);
-    if (!sourceKey) return [];
+    if (
+      !sourceKey ||
+      sourceKey === excludedSourceKey ||
+      !resolveGridDesignerDataSourceTableName(source)
+    ) return [];
 
     const label = readString(source?.label, sourceKey);
     return [{
@@ -857,26 +862,25 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
     requestedTableType === 'view'
     ? requestedTableType
     : '';
-  const sourceType: GridDesignerSourceType = requestedSourceType === 'custom' ||
-    requestedSourceType === 'table' ||
-    requestedSourceType === 'view'
-    ? requestedSourceType
-    : legacySourceType || (explicitViewName
+  const sourceType: GridDesignerSourceType = requestedSourceType === 'custom'
+    ? 'custom'
+    : explicitViewName
       ? 'view'
-      : explicitTableName || postDataTarget
-        ? 'table'
-        : 'custom');
-  const tableName = sourceType === 'view'
+      : requestedSourceType === 'table' || requestedSourceType === 'view'
+        ? requestedSourceType
+        : legacySourceType || (explicitTableName || postDataTarget ? 'table' : 'custom');
+  const viewName = explicitViewName || (sourceType === 'view' ? postDataTarget : '');
+  // Older view-only configurations stored the view name in both fields.
+  const tableName = sourceType === 'view' && explicitTableName === viewName
     ? ''
     : explicitTableName || (sourceType === 'table' ? postDataTarget : '');
-  const viewName = sourceType === 'view' ? explicitViewName || postDataTarget : '';
   const normalizedPostDataJson = parsedPostData.ok && (
     typeof parsedPostData.value === 'undefined' || isPlainRecord(parsedPostData.value)
   )
       ? JSON.stringify(
         createSourcePostData(
           postData,
-          sourceType === 'custom' ? '' : tableName || viewName,
+          sourceType === 'custom' ? '' : viewName || tableName,
           sourceType !== 'custom',
           sourceType !== 'custom',
         ),
@@ -1391,6 +1395,21 @@ const ServiceComponent = defineComponent({
     ) => {
       gridDesignerFieldOptionSources[sourceKey] = createGridDesignerTableFieldOptions(columns);
     };
+    const syncGridDesignerCurrentTableFieldOptions = (
+      columns: readonly GridDesignerFieldOptionColumn[],
+    ) => {
+      syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.source, columns);
+      if (state.business.tableType === 'detail') {
+        syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.detail, columns);
+      }
+    };
+    const refreshGridDesignerPageSourceOptions = () => {
+      const excludedSourceKey = state.business.tableType === 'detail'
+        ? readString(state.business.sourceKey)
+        : '';
+      gridDesignerFieldOptionSources[gridDesignerFieldOptionSourceKeys.pageSources] =
+        createGridDesignerPageSourceOptions(state.option.dataSources, excludedSourceKey);
+    };
     let databaseFormSchema: LowCodeFormSchema | undefined;
     const getServiceApi = () => {
       if (state.option.serviceApi) return state.option.serviceApi;
@@ -1436,8 +1455,7 @@ const ServiceComponent = defineComponent({
         state.option = option;
         resetReactiveObject(state.business, normalizeBusiness(option.business));
         resetReactiveObject(state.detailConfig, normalizeDetailConfig(option.detailConfig));
-        gridDesignerFieldOptionSources[gridDesignerFieldOptionSourceKeys.pageSources] =
-          createGridDesignerPageSourceOptions(option.dataSources);
+        refreshGridDesignerPageSourceOptions();
         state.columns = normalizeColumns(option.columns);
         syncGridDesignerTableFieldOptions(
           gridDesignerFieldOptionSourceKeys.source,
@@ -1552,9 +1570,9 @@ const ServiceComponent = defineComponent({
       selectColumn(columns[0]);
       state.business.title = `${source.title}列表`;
       const sourceTarget = readString(source.fullName, source.code);
-      state.business.sourceType = kind === 'view' ? 'view' : 'table';
-      state.business.tableName = kind === 'entity' ? sourceTarget : '';
-      state.business.viewName = kind === 'view' ? sourceTarget : '';
+      if (kind === 'entity') state.business.tableName = sourceTarget;
+      if (kind === 'view') state.business.viewName = sourceTarget;
+      state.business.sourceType = state.business.viewName ? 'view' : 'table';
       if (!readString(state.business.sourceKey)) {
         state.business.sourceKey = createSourceKey(source);
       }
@@ -1563,7 +1581,11 @@ const ServiceComponent = defineComponent({
       state.business.saveMethod = '';
       state.business.deleteMethod = '';
       state.business.postDataJson = JSON.stringify(
-        createSourcePostData(state.business.postDataJson, sourceTarget, true),
+        createSourcePostData(
+          state.business.postDataJson,
+          readString(state.business.viewName, state.business.tableName),
+          true,
+        ),
         null,
         2,
       );
@@ -1579,11 +1601,8 @@ const ServiceComponent = defineComponent({
           readString(source.primaryKey, readString(source.columns[0]?.field, 'id')),
         ),
       };
-      syncGridDesignerTableFieldOptions(
-        gridDesignerFieldOptionSourceKeys.source,
-        source.columns,
-      );
-      if (assignedDetailResource) {
+      syncGridDesignerCurrentTableFieldOptions(source.columns);
+      if (assignedDetailResource && state.business.tableType !== 'detail') {
         syncGridDesignerTableFieldOptions(
           gridDesignerFieldOptionSourceKeys.detail,
           source.columns,
@@ -1643,35 +1662,32 @@ const ServiceComponent = defineComponent({
     };
 
     const refreshCurrentTableFieldOptions = async () => {
-      const sourceTarget = state.business.sourceType === 'table'
-        ? readString(state.business.tableName)
-        : state.business.sourceType === 'view'
-          ? readString(state.business.viewName)
-          : '';
+      const sourceTarget = readString(
+        state.business.viewName,
+        state.business.tableName,
+      );
       if (!sourceTarget) {
-        syncGridDesignerTableFieldOptions(
-          gridDesignerFieldOptionSourceKeys.source,
-          state.columns,
-        );
+        syncGridDesignerCurrentTableFieldOptions(state.columns);
         return;
       }
 
       try {
         const source = await loadPhysicalTableSource({ value: sourceTarget });
-        syncGridDesignerTableFieldOptions(
-          gridDesignerFieldOptionSourceKeys.source,
-          source.columns,
-        );
+        syncGridDesignerCurrentTableFieldOptions(source.columns);
       } catch {
         // A custom view can be configured without table-column metadata. Keep usable grid fields.
-        syncGridDesignerTableFieldOptions(
-          gridDesignerFieldOptionSourceKeys.source,
-          state.columns,
-        );
+        syncGridDesignerCurrentTableFieldOptions(state.columns);
       }
     };
 
     const refreshDetailTableFieldOptions = async () => {
+      if (state.business.tableType === 'detail') {
+        gridDesignerFieldOptionSources[gridDesignerFieldOptionSourceKeys.detail] = [
+          ...gridDesignerFieldOptionSources[gridDesignerFieldOptionSourceKeys.source],
+        ];
+        return;
+      }
+
       const resource = readString(state.detailConfig.resource);
       if (!resource) {
         syncGridDesignerTableFieldOptions(gridDesignerFieldOptionSourceKeys.detail, []);
@@ -1726,9 +1742,11 @@ const ServiceComponent = defineComponent({
         value: target,
       };
 
-      if (!preserveCustomService) state.business.sourceType = kind;
-      state.business.tableName = kind === 'table' ? target : '';
-      state.business.viewName = kind === 'view' ? target : '';
+      if (kind === 'table') state.business.tableName = target;
+      if (kind === 'view') state.business.viewName = target;
+      if (!preserveCustomService) {
+        state.business.sourceType = state.business.viewName ? 'view' : 'table';
+      }
       syncBusinessSourceTarget();
       syncActiveDesignerDialogModel();
 
@@ -1938,14 +1956,6 @@ const ServiceComponent = defineComponent({
           const postData = parseJsonObject(state.business.postDataJson, 'postDataJson');
           assertJsonParsed(postData);
 
-          if (state.business.sourceType === 'table' && !readString(state.business.tableName)) {
-            ElMessage.error('请选择关联真实表');
-            return false;
-          }
-          if (state.business.sourceType === 'view' && !readString(state.business.viewName)) {
-            ElMessage.error('请选择关联视图');
-            return false;
-          }
           if (state.detailConfig.enabled && (
             !readString(state.detailConfig.parentSourceKey) ||
             !readString(state.detailConfig.resource) ||
@@ -2318,11 +2328,9 @@ const ServiceComponent = defineComponent({
 
     const syncBusinessSourceTarget = (clearCustomTargetAliases = false) => {
       const sourceType = state.business.sourceType;
-      const sourceTarget = sourceType === 'table'
-        ? readString(state.business.tableName)
-        : sourceType === 'view'
-          ? readString(state.business.viewName)
-          : '';
+      const sourceTarget = sourceType === 'custom'
+        ? ''
+        : readString(state.business.viewName, state.business.tableName);
 
       state.business.postDataJson = JSON.stringify(
         createSourcePostData(
@@ -2464,12 +2472,6 @@ const ServiceComponent = defineComponent({
             : sourceType === 'table'
               ? 'table'
               : 'custom';
-          if (state.business.sourceType === 'table') state.business.viewName = '';
-          if (state.business.sourceType === 'view') state.business.tableName = '';
-          if (state.business.sourceType === 'custom') {
-            state.business.tableName = '';
-            state.business.viewName = '';
-          }
           syncBusinessSourceTarget(
             state.business.sourceType === 'custom' && previousSourceType !== 'custom',
           );
@@ -2478,7 +2480,9 @@ const ServiceComponent = defineComponent({
         if (readString(sectionValues.tableName) !== readString(previousBusiness.tableName)) {
           if (!readString(sectionValues.tableName)) {
             state.business.tableName = '';
-            if (state.business.sourceType === 'table') state.business.sourceType = 'custom';
+            if (state.business.sourceType === 'table') {
+              state.business.sourceType = state.business.viewName ? 'view' : 'custom';
+            }
             syncBusinessSourceTarget(previousSourceType === 'table');
           } else {
             await applyAssociationOption('table', sectionValues.tableName);
@@ -2488,7 +2492,9 @@ const ServiceComponent = defineComponent({
         if (readString(sectionValues.viewName) !== readString(previousBusiness.viewName)) {
           if (!readString(sectionValues.viewName)) {
             state.business.viewName = '';
-            if (state.business.sourceType === 'view') state.business.sourceType = 'custom';
+            if (state.business.sourceType === 'view') {
+              state.business.sourceType = state.business.tableName ? 'table' : 'custom';
+            }
             syncBusinessSourceTarget(previousSourceType === 'view');
           } else {
             await applyAssociationOption('view', sectionValues.viewName);
@@ -2498,18 +2504,30 @@ const ServiceComponent = defineComponent({
         if (Object.prototype.hasOwnProperty.call(sectionValues, 'postDataJson')) {
           normalizePostDataJsonField(sectionValues.postDataJson);
         }
+        if (
+          state.business.tableType !== previousBusiness.tableType ||
+          readString(state.business.sourceKey) !== readString(previousBusiness.sourceKey)
+        ) {
+          refreshGridDesignerPageSourceOptions();
+          await refreshDetailTableFieldOptions();
+          await refreshParentTableFieldOptions();
+        }
         syncActiveDesignerDialogModel();
         return;
       }
 
       if (sectionCode === gridDesignerFormCodes.detailConfig) {
         const previousResource = readString(state.detailConfig.resource);
+        const previousParentSourceKey = readString(state.detailConfig.parentSourceKey);
         Object.assign(state.detailConfig, normalizeDetailConfig({
           ...state.detailConfig,
           ...sectionValues,
         }));
         if (readString(state.detailConfig.resource) !== previousResource) {
           await refreshDetailTableFieldOptions();
+        }
+        if (readString(state.detailConfig.parentSourceKey) !== previousParentSourceKey) {
+          await refreshParentTableFieldOptions();
         }
         return;
       }

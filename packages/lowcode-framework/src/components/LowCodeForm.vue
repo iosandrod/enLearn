@@ -391,9 +391,11 @@ watch(
   () => props.modelValue,
   (nextValue: Record<string, unknown>) => {
     const isLocalUpdate = formValuesEqual(nextValue, formData);
+    if (isLocalUpdate) return;
+
     Object.keys(formData).forEach((key) => delete formData[key]);
     Object.assign(formData, nextValue);
-    if (!isLocalUpdate) initialModel.value = { ...nextValue };
+    initialModel.value = { ...nextValue };
   },
   { deep: true }
 );

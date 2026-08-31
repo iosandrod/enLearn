@@ -18,7 +18,6 @@ import {
 import { useLowCodeHost } from '../core/host';
 import { preloadLowCodeScriptRuntime } from './scripts';
 import {
-  hasBuiltinLowCodePageFunctions,
   type BuiltinLowCodePageFunctionMode,
 } from './page-function';
 import {
@@ -85,7 +84,10 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   }
 
   function hasRuntimePageFunctions() {
-    return hasSchemaPageFunctions() || hasBuiltinLowCodePageFunctions(props.page.page_type);
+    return hasSchemaPageFunctions() ||
+      (props.page.runtime_functions?.some((item) =>
+        item.function_type === 'page_function' && item.enabled !== false,
+      ) ?? false);
   }
 
   const host = useLowCodeHost(() => ({
@@ -97,6 +99,21 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     theme: props.theme,
   }));
   const runtime = createLowCodePageRuntime();
+  runtime.pageType = props.page.page_type;
+  runtime.runtimeFunctions = props.page.runtime_functions ?? [];
+  watch(
+    () => props.page.runtime_functions,
+    (runtimeFunctions) => {
+      runtime.runtimeFunctions = runtimeFunctions ?? [];
+    },
+    { deep: true },
+  );
+  watch(
+    () => props.page.page_type,
+    (pageType) => {
+      runtime.pageType = pageType;
+    },
+  );
   runtime.state.status.formMode =
     props.page.page_type === 'edit'
       ? resolveLowCodeEditPageMode(host.getRoute().query?.id)
@@ -366,6 +383,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
         title: props.page.title,
         page_type: props.page.page_type,
         node_actions: props.page.node_actions,
+        runtime_functions: props.page.runtime_functions,
         mode: props.page.page_type === 'edit'
           ? builtinPageFunctionMode.value
           : undefined,
@@ -633,7 +651,36 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       }
       return;
     }
+    const allBlocks = flattenPageBlocks(props.page.schema);
+    let targetBlock = allBlocks.find((block) => block.id === event.blockId);
+    if (event.name === 'tabs.activeChange' && targetBlock?.kind === 'tabs') {
+      const tabKey = readString(event.payload?.tabKey);
+      const activeTab = targetBlock.tabs.find((tab) => tab.key === tabKey);
+      const detailGrids = activeTab
+        ? flattenBlocks(activeTab.blocks).filter(
+            (block): block is LowCodePageGridBlock =>
+              block.kind === 'grid' && block.tableType === 'detail',
+          )
+        : [];
 
+      await Promise.all(
+        detailGrids.map((grid) => scriptRuntime.executeNodeAction({
+          node: grid.id,
+          method: 'loadData',
+        })),
+      );
+    }
+    if (targetBlock?.kind == 'grid') {//
+      if (targetBlock.tableType == 'main') {
+        let allDetailBlock = allBlocks.filter((block) => block.kind === 'grid' && block.tableType == 'detail');
+        allDetailBlock.forEach((block) => {
+          scriptRuntime.executeNodeAction({
+            node:block.id,
+            method: 'loadData',
+          });
+        })//
+      }
+    }
     if (isBlockedEditPageSaveEvent(event)) return;
 
     let eventSucceeded = true;
@@ -858,28 +905,36 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       props.page.page_type === 'edit' &&
       isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
     ) return;
-    const linkedEditRoute = await resolveLinkedEditPageRoute(block, row);
+    try {
+      const linkedEditRoute = await resolveLinkedEditPageRoute(block, row);
 
-    if (linkedEditRoute) {
-      await host.getRouter().push(linkedEditRoute);
-      return;
+      if (linkedEditRoute) {
+        await host.getRouter().push(linkedEditRoute);
+        return;
+      }
+
+      const editRoute = block.editRoute ?? block.schema.rowActions?.editRoute;
+
+      if (editRoute) {
+        await host.getRouter().push(resolveRuntimeRoute(editRoute, row));
+        return;
+      }
+
+      const formBlock = getFormBlockTarget(block);
+
+      if (!formBlock) {
+        message.value = '当前表格没有可用的编辑页面。';
+        messageClass.value = 'lc-error';
+        return;
+      }
+
+      runtime.replaceForm(formBlock.id, await deriveFormModel(formBlock, row));
+      message.value = '';
+    } catch (error) {
+      message.value = error instanceof Error ? error.message : '编辑当前行失败。';
+      messageClass.value = 'lc-error';
+      console.error('[LowCode Runtime] 编辑当前行失败', error);
     }
-
-    const editRoute = block.editRoute ?? block.schema.rowActions?.editRoute;
-
-    if (editRoute) {
-      await host.getRouter().push(resolveRuntimeRoute(editRoute, row));
-      return;
-    }
-
-    const formBlock = getFormBlockTarget(block);
-
-    if (!formBlock) {
-      return;
-    }
-
-    runtime.replaceForm(formBlock.id, await deriveFormModel(formBlock, row));
-    message.value = '';
   }
 
   async function handleGridDelete(
@@ -908,9 +963,16 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
         throw new Error(`Data source ${source.key} is missing delete service.`);
       }
 
+      const viewName = readString(source.viewName);
+      const writeTableName = source.sourceType === 'view'
+        ? readString(source.tableName ?? source.table_name) === viewName
+          ? ''
+          : readString(source.tableName ?? source.table_name)
+        : '';
       await host.getServiceApi().invoke(serviceName, serviceMethod, {
         ...(source.postData ?? {}),
-        ...row
+        ...row,
+        ...(writeTableName ? { tableName: writeTableName } : {}),
       });
       message.value = host.t('runtime.grid.deleted');
       messageClass.value = 'lc-help';

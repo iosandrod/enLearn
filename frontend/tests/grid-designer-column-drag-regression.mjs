@@ -46,8 +46,13 @@ assert.match(
 );
 assert.match(
   arrayTableSource,
-  /config\.rowDragConfig = \{[\s\S]*trigger: 'default'[\s\S]*showIcon: true/,
-  'Array-table dragging must use the dedicated handle as the VXE drag trigger.',
+  /const rowDragConfig = computed\(\(\) => \{[\s\S]*trigger === 'row' \? 'row' : 'cell'[\s\S]*showIcon: config\.showIcon !== false/,
+  'Array-table dragging must use the dedicated handle-compatible VXE trigger while preserving configured options.',
+);
+assert.match(
+  arrayTableSource,
+  /if \(rowDraggable\.value\) \{[\s\S]*config\.rowDragConfig = rowDragConfig\.value;/,
+  'Array-table dragging must pass its resolved configuration to VXE.',
 );
 assert.match(
   arrayTableSource,
@@ -56,8 +61,8 @@ assert.match(
 );
 assert.match(
   migrationSource,
-  /"field": "columns"[\s\S]*"component": "lc-array-table"[\s\S]*"rowDraggable": true[\s\S]*"movable": false/,
-  'The database schema must enable row dragging and replace the legacy up/down controls.',
+  /"field": "columns"[\s\S]*"component": "lc-array-table"[\s\S]*"rowDraggable": true[\s\S]*"rowDragConfig": \{[\s\S]*"trigger": "cell"[\s\S]*"movable": false/,
+  'The database schema must enable row dragging with a handle-compatible trigger and replace the legacy up/down controls.',
 );
 assert.match(
   designerSource,

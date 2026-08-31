@@ -104,17 +104,33 @@ export function normalizePageInfoDesignForm(
   const pageTypes: LowCodePageRecord['page_type'][] = ['list', 'edit', 'detail', 'custom'];
   const layouts: LowCodePageRecord['layout'][] = ['default', 'dashboard', 'blank'];
   const statuses: LowCodePageRecord['status'][] = ['draft', 'published', 'archived'];
+  const legacyValue = value as PageInfoDesignForm & {
+    table_name?: unknown;
+    page_type?: unknown;
+    keep_alive?: unknown;
+  };
+  const tableName = Object.hasOwn(legacyValue, 'table_name')
+    ? legacyValue.table_name
+    : value.tableName;
+  const pageType = Object.hasOwn(legacyValue, 'page_type')
+    ? legacyValue.page_type
+    : value.pageType;
+  const keepAlive = Object.hasOwn(legacyValue, 'keep_alive')
+    ? legacyValue.keep_alive
+    : value.keepAlive;
 
   return {
     code: page.code,
     route: page.route,
     title: String(value.title ?? '').trim(),
-    tableName: normalizePageTableName(value.tableName),
+    tableName: normalizePageTableName(tableName),
     relateConfig: normalizePageRelateConfig(value.relateConfig),
-    pageType: pageTypes.includes(value.pageType) ? value.pageType : page.page_type,
+    pageType: pageTypes.includes(pageType as LowCodePageRecord['page_type'])
+      ? pageType as LowCodePageRecord['page_type']
+      : page.page_type,
     layout: layouts.includes(value.layout) ? value.layout : page.layout,
     status: statuses.includes(value.status) ? value.status : page.status,
-    keepAlive: value.keepAlive !== false,
+    keepAlive: keepAlive !== false,
     description: String(value.description ?? '').trim(),
     functions: normalizePageFunctions(value.functions),
     apis: normalizePageApis(value.apis),

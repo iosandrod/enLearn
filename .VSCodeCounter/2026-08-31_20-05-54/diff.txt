@@ -1,0 +1,41 @@
+Date : 2026-08-31 20:05:54
+Directory : e:\enLearn\packages\lowcode-framework\src\runtime
+Total : 14 files,  -533 codes, -62 comments, -41 blanks, all -636 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| TypeScript |         14 |       -533 |        -62 |        -41 |       -636 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                  | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                     |         14 |       -533 |        -62 |        -41 |       -636 |
+| . (Files)                                                                             |          6 |        107 |          2 |          4 |        113 |
+| button-disabled                                                                       |          4 |       -182 |          0 |        -10 |       -192 |
+| page-function                                                                         |          4 |       -458 |        -64 |        -35 |       -557 |
++---------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                              | language   | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| e:\enLearn\packages\lowcode-framework\src\runtime\button-disabled\edit-buttons.ts     | TypeScript |       -121 |         -1 |         -4 |       -126 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\button-disabled\index.ts            | TypeScript |         58 |          1 |          6 |         65 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\button-disabled\main-buttons.ts     | TypeScript |       -108 |          0 |         -8 |       -116 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\button-disabled\types.ts            | TypeScript |        -11 |          0 |         -4 |        -15 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\directives.ts                       | TypeScript |         29 |          2 |          1 |         32 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\lowcode-context.ts                  | TypeScript |        -24 |          0 |          0 |        -24 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\lowcode-page-script-runtime.ts      | TypeScript |         93 |          0 |          3 |         96 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\page-function\edit-page-function.ts | TypeScript |       -135 |        -16 |         -2 |       -153 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\page-function\index.ts              | TypeScript |         95 |         -3 |          5 |         97 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\page-function\list-page-function.ts | TypeScript |       -218 |        -17 |        -14 |       -249 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\page-function\shared.ts             | TypeScript |       -200 |        -28 |        -24 |       -252 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\runtime-directive-controller.ts     | TypeScript |          1 |          0 |          0 |          1 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\scripts.ts                          | TypeScript |         10 |          0 |          0 |         10 |
+| e:\enLearn\packages\lowcode-framework\src\runtime\useLowCodePageRenderer.ts           | TypeScript |         -2 |          0 |          0 |         -2 |
+| Total                                                                                 |            |       -533 |        -62 |        -41 |       -636 |
++---------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

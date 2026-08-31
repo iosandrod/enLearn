@@ -115,16 +115,14 @@ function resolveGridSourceAssociation(
         ? 'table'
         : 'custom'
   );
-  const tableName = sourceType === 'view'
+  const viewName = explicitViewName || (sourceType === 'view' ? postDataTableName : '');
+  const tableName = sourceType === 'view' && explicitTableName === viewName
     ? ''
     : explicitTableName || (
         sourceType === 'table'
           ? postDataTableName || (entityCode === 'users' ? 'profiles' : entityCode)
           : ''
       );
-  const viewName = sourceType === 'view'
-    ? explicitViewName || postDataTableName
-    : '';
   const targetName = sourceType === 'table' ? tableName : sourceType === 'view' ? viewName : '';
   const normalizedPostData = { ...postData };
 
@@ -307,7 +305,9 @@ const converter: VisualToLowCodeConverter = {
       serviceMethod,
       ...(saveMethod ? { saveMethod } : {}),
       ...(deleteMethod ? { deleteMethod } : {}),
-      ...(association.targetName ? { tableName: association.targetName } : {}),
+      ...(association.sourceType !== 'custom' && association.tableName
+        ? { tableName: association.tableName }
+        : {}),
       ...(association.viewName ? { viewName: association.viewName } : {}),
       ...(Object.keys(association.postData).length ? { postData: association.postData } : {}),
       autoLoad: true,

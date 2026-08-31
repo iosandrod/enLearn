@@ -26,6 +26,8 @@ async function runGridLoadData({
   options = {},
   blocks = [block],
   searches = {},
+  data = {},
+  forms = {},
   grids = {},
   invokeValue = [],
 }) {
@@ -45,6 +47,8 @@ async function runGridLoadData({
         },
       },
     },
+    data,
+    forms,
     searches,
     grids,
     $node: {
@@ -93,6 +97,25 @@ const detailBlock = {
   schema: { grid: { columns: [] } },
 };
 
+const configuredDetailBlock = {
+  ...detailBlock,
+  schema: {
+    grid: { columns: [] },
+    detailConfig: {
+      // Detail data filtering depends on the relation, not the save-submission switch.
+      enabled: false,
+      parentSourceKey: 'order-form',
+      foreignKey: 'order_id',
+      parentKey: 'id',
+    },
+  },
+};
+const parentFormBlock = {
+  id: 'order-form',
+  kind: 'form',
+  schema: { fields: [] },
+};
+
 const mainResult = await runGridLoadData({
   block: mainBlock,
   source: {
@@ -137,6 +160,34 @@ assert.deepEqual(detailResult.invocations[0].postData.filters, {
   order_id: 'order-1',
 });
 assert.deepEqual(detailResult.invocations[0].postData.requiredFilters, ['order_id']);
+
+const configuredDetailResult = await runGridLoadData({
+  block: configuredDetailBlock,
+  blocks: [parentFormBlock, configuredDetailBlock],
+  source: {
+    key: 'lines',
+    postData: { tableName: 'sales_order_lines', filters: { status: 'open' } },
+  },
+  forms: {
+    'order-form': { id: 'order-from-form' },
+  },
+  options: { filters: { item_code: 'ITEM-001' } },
+  invokeValue: [{ id: 'line-configured', order_id: 'order-from-form' }],
+});
+assert.deepEqual(configuredDetailResult.invocations[0].postData.filters, {
+  status: 'open',
+  item_code: 'ITEM-001',
+  order_id: 'order-from-form',
+});
+assert.deepEqual(configuredDetailResult.invocations[0].postData.requiredFilters, ['order_id', 'item_code']);
+
+const missingConfiguredParent = await runGridLoadData({
+  block: configuredDetailBlock,
+  blocks: [parentFormBlock, configuredDetailBlock],
+  source: { key: 'lines', postData: { tableName: 'sales_order_lines' } },
+});
+assert.deepEqual(missingConfiguredParent.value, []);
+assert.deepEqual(missingConfiguredParent.invocations, []);
 
 const unresolvedDetail = await runGridLoadData({
   block: detailBlock,

@@ -887,8 +887,8 @@ function openMenuContext(payload: MenuContextPayload) {
     options: [
       [
         {
-          code: 'rename',
-          name: '修改菜单名称'
+          code: 'edit-menu',
+          name: '修改菜单'
         },
         {
           code: 'open-designer',
@@ -904,7 +904,7 @@ function openMenuContext(payload: MenuContextPayload) {
     ],
     events: {
       optionClick({ option }) {
-        if (option.code === 'rename') void renameMenuItem(item);
+        if (option.code === 'edit-menu') void renameMenuItem(item);
         if (option.code === 'open-designer') void openLowCodeDesigner(item);
         if (option.code === 'open-edit-page') void openLowCodeEditPage(item);
       }
@@ -1059,7 +1059,16 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
     if (!formBlock || formBlock.kind !== 'form') {
       throw new Error('页面信息编辑页中没有可用的表单。');
     }
-    const formSchema = hydratePageInfoDesignSchema(formBlock.schema, currentPage);
+    // The management edit page is only the dialog container. Its form can be
+    // customized independently, so always use the canonical page-info schema.
+    const pageInfoFormDefinition = await loadLowCodeFormDefinition(
+      serviceApi,
+      PAGE_INFO_DESIGN_FORM_CODE,
+    );
+    const formSchema = hydratePageInfoDesignSchema(
+      pageInfoFormDefinition.schema,
+      currentPage,
+    );
     const pageWithCurrentForm = structuredClone(editorPage);
     const runtimeForm = pageWithCurrentForm.schema.blocks.find(
       (block) => block.kind === 'form',
@@ -1215,26 +1224,9 @@ function buildRouteSavePayload(item: AdminRouteNode, title: string) {
 }
 
 async function renameMenuItem(item: AdminRouteNode) {
-  if (!item.id) {
-    routeError.value = '当前菜单没有数据库 ID，不能直接修改名称。';
-    return;
-  }
-
-  const nextTitle = window.prompt('菜单名称', item.title)?.trim();
-  if (!nextTitle || nextTitle === item.title) return;
-
-  routeError.value = '';
-
-  try {
-    await serviceApi.invoke('admin', 'saveItem', {
-      resource: 'admin_routes',
-      ...buildRouteSavePayload(item, nextTitle)
-    });
-    await reloadRoutes();
-  } catch (error) {
-    routeError.value =
-      error instanceof Error ? error.message : '菜单名称保存失败。';
-  }
+  await confirmLowCodePage({
+    
+  })
 }
 
 function resolveLowCodePageCode(item: AdminRouteNode) {

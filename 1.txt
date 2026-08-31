@@ -1623,3 +1623,268 @@ DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA
         messageClass.value = 'lc-error';
       }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     const sourceKey = resolveDirectiveString(directive.sourceKey, event);
+      const source = getDataSource(sourceKey);
+      const directivePostData = resolveRuntimeValue(
+        directive.postData ?? source?.postData ?? {},
+        directiveScope(event)
+      ) as Record<string, unknown>;
+      const request = source
+        ? resolveDataSourceRequest(sourceKey, source, directivePostData)
+        : { serviceName: '', serviceMethod: '', postData: directivePostData };
+      const serviceName = resolveDirectiveString(directive.serviceName, event, request.serviceName);
+      const serviceMethod = resolveDirectiveString(
+        directive.serviceMethod,
+        event,
+        request.serviceMethod
+      );
+
+      if (!serviceName || !serviceMethod) return;
+
+      const normalizedRequest = normalizeLegacyAdminListRequest(
+        serviceName,
+        serviceMethod,
+        request.postData
+      );
+
+      const mesCommand = isDesktopMesCommand(
+        normalizedRequest.serviceName,
+        normalizedRequest.serviceMethod,
+      );
+      let result: unknown;
+      if (mesCommand) {
+        if (runtime.state.status.mesCommandExecuting) {
+          throw new Error('当前操作仍在处理中，请稍候。');
+        }
+        executionContext.mesCommandStarted = true;
+        runtime.state.status.mesCommandExecuting = true;
+        runtime.state.status.mesCommandActionKey = [
+          event.blockId ?? '',
+          readString(event.payload?.actionCode, normalizedRequest.serviceMethod),
+        ].join(':');
+        const commandRequest = await prepareDesktopMesCommandRequest(normalizedRequest.postData);
+        result = await invokeDesktopMesCommand(() => host
+          .getServiceApi()
+          .invoke(
+            normalizedRequest.serviceName,
+            normalizedRequest.serviceMethod,
+            commandRequest.postData,
+            { requestId: commandRequest.requestId },
+          ));
+        executionContext.mesCommandCompleted = true;
+      } else {
+        result = await host
+          .getServiceApi()
+          .invoke(
+            normalizedRequest.serviceName,
+            normalizedRequest.serviceMethod,
+            normalizedRequest.postData
+          );
+      }
+      const assignTo = resolveDirectiveString(directive.assignTo, event);
+
+      if (assignTo) {
+        runtime.setSource(assignTo, mergeDataSourceValue(
+          resolvedData.value[assignTo],
+          result,
+          directive,
+          event
+        ));
+        syncPageGridStates();
+      }
+
+      if (directive.refreshSourceKeys?.length) {
+        const sourceKeys = directive.refreshSourceKeys
+          .map((key) => resolveDirectiveString(key, event))
+          .filter(Boolean);
+        try {
+          await refreshDataSources(sourceKeys, {
+            ordered: mesCommand,
+            strict: mesCommand,
+          });
+          if (mesCommand) executionContext.mesCommandRefreshCompleted = true;
+        } catch (error) {
+          if (mesCommand) executionContext.mesCommandRefreshFailed = true;
+          throw error;
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       return new ScriptCapabilityRegistry()
+      .register('api.invoke', (request, { scriptContext }) => {
+        const apiName = this.readScriptStringArg(request.args, 0, 'name');
+        return invokeRegisteredLowCodeScriptApi(apiName, this.readScriptRecordArg(request.args, 1), scriptContext);
+      })
+      .register('source.refresh', async (request) => {
+        const sourceKey = this.readScriptStringArg(request.args, 0, 'sourceKey');
+        if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+        const errors = await refreshDataSources([sourceKey]);
+        if (errors.length) throw new Error(errors[0]);
+        return cloneScriptValue(resolvedData.value[sourceKey], null);
+      })
+      .register('source.refreshAll', async () => {
+        const errors = await refreshDataSources();
+        if (errors.length) throw new Error(errors[0]);
+        return cloneScriptValue(resolvedData.value, {});
+      })
+      .register('source.set', (request) => {
+        this.assertEditPageCapabilityWritable('source.set');
+        const sourceKey = this.readScriptStringArg(request.args, 0, 'sourceKey');
+        if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+        runtime.setSource(sourceKey, cloneRuntimeValue(request.args[1]));
+        syncPageGridStates();
+        return true;
+      })
+      .register(['form.patch', 'form.replace'], async (request) => {
+        const blockId = this.readScriptStringArg(request.args, 0, 'blockId');
+        const block = findRuntimeBlock(blockId);
+        if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
+          throw new Error(`表单 "${blockId}" 不存在。`);
+        }
+        if (block.kind === 'form') this.assertEditPageCapabilityWritable(request.name);
+        const values = this.readScriptRecordArg(request.args, 1);
+        if (request.name === 'form.patch') runtime.patchForm(blockId, values);
+        else runtime.replaceForm(blockId, values);
+        await runtime.getFormController(blockId)?.setValues?.(runtime.state.forms[blockId] ?? {});
+        return cloneScriptValue(runtime.state.forms[blockId], {});
+      })
+      .register('grid.setRows', (request) => {
+        const blockId = this.readScriptStringArg(request.args, 0, 'blockId');
+        const block = findRuntimeBlock(blockId);
+        if (!block || block.kind !== 'grid') throw new Error(`表格 "${blockId}" 不存在。`);
+        const rows = this.readScriptRowsArg(request.args, 1);
+        if (block.sourceKey) runtime.setSource(block.sourceKey, rows);
+        else runtime.setGridRows(blockId, rows, { rowKey: getGridRowKey(block) });
+        syncPageGridStates();
+        return rows;
+      })
+      .register(['search.patch', 'search.replace'], (request) => {
+        const sourceKey = this.readScriptStringArg(request.args, 0, 'sourceKey');
+        if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+        const values = this.readScriptRecordArg(request.args, 1);
+        if (request.name === 'search.patch') runtime.patchSearch(sourceKey, values);
+        else runtime.replaceSearch(sourceKey, values);
+        return cloneScriptValue(runtime.state.searches[sourceKey], {});
+      })
+      .register('page.refresh', async () => {
+        const errors = await loadPageData(props.page);
+        if (errors.length) throw new Error(errors[0]);
+        return true;
+      })
+      .register('router.push', async (request) => {
+        const target = request.args[0];
+        if (typeof target !== 'string' && !isRecord(target)) {
+          throw new Error('路由参数必须是字符串或对象。');
+        }
+        await host.getRouter().push(cloneRuntimeValue(target));
+        return true;
+      })
+      .register(['message.success', 'message.info', 'message.warning', 'message.error'], (request) => {
+        message.value = this.readScriptStringArg(request.args, 0, 'message');
+        messageClass.value = request.name === 'message.error' ? 'lc-error' : 'lc-help';
+        return true;
+      })
+      .register('dialog.open', async (request) => {
+        if (!isRecord(request.args[0])) throw new Error('弹框配置必须是对象。');
+        const config = this.sanitizeScriptDialogConfig(request.args[0]);
+        if (!readString(config.title)) throw new Error('弹框标题不能为空。');
+        const result = await openLowCodeGlobalDialog(config);
+        return cloneScriptValue<Record<string, unknown>>(result as unknown as Record<string, unknown>, {
+          action: 'close',
+          values: {}
+        });
+      })
+      .register('event.emit', async (request, { event }) => {
+        const name = this.readScriptStringArg(request.args, 0, 'eventName');
+        await publishRuntimeEvent({
+          name,
+          blockId: event.blockId,
+          blockKind: event.blockKind,
+          timestamp: Date.now(),
+          payload: this.sanitizeScriptEventPayload(request.args[1])
+        });
+        return true;
+      });
+
+
+      if (!item.id) {
+    routeError.value = '当前菜单没有数据库 ID，不能直接修改名称。';
+    return;
+  }
+
+  const nextTitle = window.prompt('菜单名称', item.title)?.trim();
+  if (!nextTitle || nextTitle === item.title) return;
+
+  routeError.value = '';
+
+  try {
+    await serviceApi.invoke('admin', 'saveItem', {
+      resource: 'admin_routes',
+      ...buildRouteSavePayload(item, nextTitle)
+    });
+    await reloadRoutes();
+  } catch (error) {
+    routeError.value =
+      error instanceof Error ? error.message : '菜单名称保存失败。';
+  }

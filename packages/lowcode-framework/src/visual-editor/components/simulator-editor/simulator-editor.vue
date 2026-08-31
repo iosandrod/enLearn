@@ -103,6 +103,7 @@
   import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
   import { lowCodeScriptContextProviderKey } from '../../../runtime/script-context-provider';
   import { createDesignerScriptContextSource } from '../../designer-script-context';
+  import { collectLowCodePageDataSources } from '../../../runtime/page-data-sources';
   import {
     $$modalDesigner,
     type ModalDesignerResult,
@@ -155,6 +156,21 @@
       model,
       currentPage: page,
       converted,
+    });
+  };
+
+  const createGridDesignerDataSources = () => {
+    const converted = convertVisualEditorToLowCode({
+      model: cloneDeep(visualData.jsonData),
+      currentPage: cloneDeep(currentPage.value),
+    });
+    return collectLowCodePageDataSources({
+      dataSources: {
+        ...(props.pageRecord?.schema?.dataSources ?? {}),
+        ...converted.dataSources,
+      },
+      blocks: converted.blocks,
+      overlays: converted.overlays,
     });
   };
 
@@ -637,6 +653,7 @@
     const result = await $$gridDesigner({
       title: `${block.label || '表格'}设计`,
       serviceApi,
+      dataSources: createGridDesignerDataSources(),
       business: {
         blockId: block.props?.blockId,
         title: block.props?.title,

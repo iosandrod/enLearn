@@ -391,6 +391,47 @@ function isPlaceholder(value) {
 function currentRow(grid) {
   return grid?.currentRow ?? grid?.selectedRows?.[0] ?? grid?.contextRow ?? null;
 }
+function firstRecord(value) {
+  if (Array.isArray(value)) return value.find(isRecord);
+  if (!isRecord(value)) return undefined;
+  for (const key of ['rows', 'items', 'records', 'data', 'result']) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const record = firstRecord(value[key]);
+      if (record) return record;
+    }
+  }
+  return value;
+}
+function readDetailRelation(block) {
+  const config = isRecord(block?.schema?.detailConfig)
+    ? block.schema.detailConfig
+    : {};
+  const parentSourceKey = readString(config.parentSourceKey ?? config.parent_source_key);
+  const foreignKey = readString(config.foreignKey ?? config.foreign_key);
+  if (!parentSourceKey || !foreignKey) return undefined;
+  return {
+    parentSourceKey,
+    foreignKey,
+    parentKey: readString(config.parentKey ?? config.parent_key, 'id'),
+  };
+}
+function resolveDetailParentRecord(relation, blocks, data, forms, grids) {
+  const parentGrid = blocks.find((candidate) => candidate.kind === 'grid' && (
+    candidate.id === relation.parentSourceKey || candidate.sourceKey === relation.parentSourceKey
+  ));
+  const gridRecord = parentGrid ? currentRow(grids[parentGrid.id]) : undefined;
+  if (isRecord(gridRecord)) return gridRecord;
+
+  const parentForm = blocks.find((candidate) => candidate.kind === 'form' && (
+    candidate.id === relation.parentSourceKey || candidate.sourceKey === relation.parentSourceKey
+  ));
+  const formRecord = parentForm
+    ? firstRecord(forms[parentForm.id])
+    : firstRecord(forms[relation.parentSourceKey]);
+  if (formRecord) return formRecord;
+
+  return firstRecord(data[relation.parentSourceKey]);
+}
 function inferFilterMap(filters, requiredFilters, mainRow) {
   const relationFields = Object.entries(filters)
     .filter(([, value]) => isPlaceholder(value))
@@ -447,6 +488,13 @@ async function main() {
     const mainRow = currentRow(mainGrid ? this.grids[mainGrid.id] : undefined);
     const explicitFilters = isRecord(options.filters) ? options.filters : {};
     const searchFilters = isRecord(this.searches[sourceKey]) ? this.searches[sourceKey] : {};
+    const detailRelation = readDetailRelation(block);
+    const detailParent = detailRelation
+      ? resolveDetailParentRecord(detailRelation, blocks, this.data, this.forms, this.grids)
+      : undefined;
+    const detailRelationFilters = detailRelation && detailParent
+      ? { [detailRelation.foreignKey]: detailParent[detailRelation.parentKey] }
+      : {};
     const configuredMap = isRecord(options.filterMap)
       ? Object.fromEntries(Object.entries(options.filterMap)
           .map(([detailField, mainField]) => [detailField, readString(mainField)])
@@ -464,6 +512,7 @@ async function main() {
       ...searchFilters,
       ...relationFilters,
       ...explicitFilters,
+      ...detailRelationFilters,
     };
     const runtimeFields = Object.entries({ ...searchFilters, ...explicitFilters })
       .filter(([, value]) => hasValue(value) && !isPlaceholder(value))
@@ -471,6 +520,7 @@ async function main() {
     const nextRequired = [...new Set([
       ...requiredFilters,
       ...Object.keys(filterMap),
+      ...(detailRelation ? [detailRelation.foreignKey] : []),
       ...runtimeFields,
     ])];
     const missingRequired = nextRequired.some((field) =>

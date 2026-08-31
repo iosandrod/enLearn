@@ -190,7 +190,7 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /MAX_PAGE_FUNCTION_CALL_DEPTH = 16[\s\S]*?callStack\.length >= MAX_PAGE_FUNCTION_CALL_DEPTH[\s\S]*?callStack\.includes\(pageFunction\.name\)/,
+  /MAX_PAGE_FUNCTION_CALL_DEPTH = 16[\s\S]*?callStack\.length >= MAX_PAGE_FUNCTION_CALL_DEPTH[\s\S]*?callStack\.includes\(pageFunctionName\)/,
   'Page functions must reject excessive call chains and direct or indirect recursion.',
 );
 assert.match(

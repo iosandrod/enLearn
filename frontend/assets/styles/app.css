@@ -2773,7 +2773,14 @@ a {
   padding-top: 2px;
   padding-bottom: 3px;
 }
-
+.lc-form-tab-pane--single{
+  display: flex !important;
+  flex-direction: column;
+}
+.lc-form-tab-pane--single >:last-child{
+  flex: 1;
+  overflow: hidden;
+}
 .lc-node-container>:last-child{
   flex: 1;
   overflow: hidden;
@@ -2867,6 +2874,18 @@ a {
   height: 100%;
 }
 .vxe-tabs--default >:last-child{
+  flex: 1 !important;
+  overflow: hidden;
+}
+
+
+
+.lc-runtime-block--fill{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.lc-runtime-block--fill >:last-child{
   flex: 1 !important;
   overflow: hidden;
 }

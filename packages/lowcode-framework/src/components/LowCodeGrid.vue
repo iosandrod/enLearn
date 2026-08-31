@@ -60,9 +60,38 @@
             @patch-model="(payload) => patchBaseInfoRow(row, column, payload)"
           />
         </template>
-        <!-- <template #actions="{ row }">
-         
-        </template> -->
+        <template #actions="{ row }">
+          <span class="lc-grid-row-actions">
+            <vxe-button
+              v-if="schema.rowActions?.edit === true"
+              mode="text"
+              status="primary"
+              :disabled="readonly || executing"
+              @click="emit('edit', row)"
+            >
+              {{ schema.rowActions.editLabel || '编辑' }}
+            </vxe-button>
+            <vxe-button
+              v-if="schema.rowActions?.delete === true"
+              mode="text"
+              status="danger"
+              :disabled="readonly || executing"
+              @click="emit('delete', row)"
+            >
+              {{ schema.rowActions.deleteLabel || '删除' }}
+            </vxe-button>
+            <vxe-button
+              v-for="action in visibleRowActions(row)"
+              :key="action.code"
+              mode="text"
+              :status="action.status"
+              :disabled="readonly || executing || isRowActionDisabled(action, row)"
+              @click="emitRowAction(action, row)"
+            >
+              {{ action.label }}
+            </vxe-button>
+          </span>
+        </template>
       </vxe-grid>
     </div>
   </section>
@@ -619,5 +648,12 @@ defineExpose({
 .lc-grid__table {
   width: 100%;
   max-width: 100%;
+}
+
+.lc-grid-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
 }
 </style>

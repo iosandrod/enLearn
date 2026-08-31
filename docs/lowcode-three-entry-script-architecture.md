@@ -1,7 +1,7 @@
 # 低代码脚本三入口架构
 
 > 状态：目标架构约定  
-> 更新日期：2026-08-10  
+> 更新日期：2026-08-28
 > 核心决策：低代码脚本中的 `this` 只提供只读 `context`，以及三个可执行入口：`executeFunction`、`executeAction`、`executeHttp`。
 
 ## 1. 架构目标
@@ -170,10 +170,14 @@ async function main() {
 
 ### 4.2 函数来源
 
-页面函数有两个来源：
+页面函数有两个来源，按以下顺序解析：
 
 1. 页面自定义函数：`page.schema.functions`
-2. 系统内置函数：`runtime/page-function/*-page-function.ts`
+2. 系统内置函数：`runtime-core/page-function/index.ts`（公开路径由 `runtime/page-function/index.ts` 兼容转发）
+
+内置函数可以直接组合框架提供的受信任 UI 能力，例如列表页的 `designForm` 在
+`list-page-function.ts` 中打开表单设计器。脚本仍只调用 `executeFunction`；当前行校验、
+保存后的刷新和消息提示仍由内置页面函数完成。
 
 解析优先级：
 
@@ -357,7 +361,7 @@ Node Action 按 Node 类型全局维护在：
 lowcode_node_actions
 ```
 
-API 将启用的 Action 附加到运行页面；`runtime/node-action-registry.ts` 只负责筛选和查询，`lowcode-page-script-runtime.ts` 在 QuickJS 中执行 `source_code`，并通过 `$node.call` 提供通用 Host Bridge。
+API 将启用的 Action 附加到运行页面；`runtime-core/node-action-registry.ts` 只负责筛选和查询，`runtime/lowcode-page-script-runtime.ts` 在 QuickJS 中执行 `source_code`，并通过 `$node.call` 提供通用 Host Bridge。
 
 ### 5.3 边界
 
@@ -618,6 +622,10 @@ async function main() {
 
 ### 11.1 页面函数
 
+页面 Schema 中的 `functions` 只保存页面自定义函数。列表/编辑页的系统业务编排统一存放在
+`lowcode_page_runtime`，通过 `execution_mode = 'script'` 在后端 QuickJS 执行；数据库脚本只返回
+受 `capabilities` 白名单约束的效果，由浏览器适配器执行。
+
 ```json
 {
   "functions": [
@@ -651,6 +659,7 @@ Node Action 不存放在页面 Schema 中，也不关联页面 ID。页面只保
 
 ```text
 lowcode_node_actions -> lowcode service -> node-action-registry -> QuickJS
+lowcode_page_runtime -> lowcode.executeRuntime -> backend QuickJS -> effects -> browser adapter
 ```
 
 这样可以防止页面 Schema 声明任意可执行 Method，同时允许在不发布前端代码的情况下维护 Node Action。
@@ -659,23 +668,39 @@ lowcode_node_actions -> lowcode service -> node-action-registry -> QuickJS
 
 | 文件 | 职责 |
 | --- | --- |
-| `runtime/page-function/list-page-function.ts` | 列表页内置函数，如新增、编辑、审核、刷新、打印和退出 |
-| `runtime/page-function/edit-page-function.ts` | 编辑页内置函数，如复制、新增、修改、保存、审核和退出 |
-| `runtime/page-function/shared.ts` | 页面函数共享 Context、状态迁移和参数处理 |
-| `runtime/page-function/index.ts` | 聚合并查询各页面类型的内置函数 |
-| `runtime/builtin-page-functions.ts` | 旧公开路径的兼容转发入口 |
+| `supabase/migrations/*lowcode_page_runtime*.sql` | 页面函数、按钮规则、指令、能力和 native handler 的数据库目录 |
+| `api/src/lowcode-service/lowcode-runtime.executor.ts` | 后端隔离执行数据库页面函数并校验 effects 白名单 |
+| `runtime-core/page-function/index.ts` | 仅保留 `designForm` 的 Vue 设计器 native 桥接和兼容类型 |
 | `page.schema.functions` | 当前页面覆盖或新增的页面函数 |
 | `lowcode_node_actions` | 全局 Node Action 元数据、适用条件、参数和 QuickJS 源码 |
-| `runtime/node-action-registry.ts` | 从 API Action 集合筛选 Node Method，并提供统一查询入口 |
-| `runtime/lowcode-page-script-runtime.ts` | 隔离执行数据库源码并实现通用 `$node.call` Host Bridge |
+| `runtime-core/node-action-registry.ts` | 从 API Action 集合筛选 Node Method，并提供统一查询入口 |
+| `runtime/lowcode-page-script-runtime.ts` | 调用远程页面函数并委托统一 effects 适配器；保留 Node Action 的系统桥接 |
+| `runtime-core/runtime-effects.ts` | 页面函数、按钮和 Node Action 共用的效果执行器 |
 | `page.schema.apis` | 页面允许调用的 HTTP API 白名单 |
-| `runtime/script-runtime.worker.ts` | 构造精简的脚本 `this`，运行 QuickJS |
-| `runtime/scripts.ts` | 脚本执行限制、序列化和 Host Capability 通道 |
+| `runtime-core/script-runtime.worker.ts` | 构造精简的脚本 `this`，运行 QuickJS |
+| `runtime-core/scripts.ts` | 脚本执行限制、序列化和 Host Capability 通道 |
+| `runtime-core/button-disabled/index.ts` | 优先读取数据库按钮规则；仅保留无目录数据时的最小系统安全兜底 |
+| `runtime-core/directives.ts` | 根据数据库 directive handler 选择本地 UI/数据桥接，兼容旧别名 |
+| `runtime/*` | 页面编排核心与仍在使用的公开入口；新增业务实现进入数据库或 `runtime-core` |
 | `components/LowCodePageRenderer.vue` | 生命周期触发、三入口分发和 Runtime 状态协调 |
+
+### 12.1 目录验收分类
+
+| 类别 | 数据库目录 | 本地保留内容 |
+| --- | --- | --- |
+| 页面业务编排 | `lowcode_page_runtime`：20 条 `script` 页面函数 | 仅 `designForm` 的 Vue 设计器 native 桥接 |
+| Node Action | `lowcode_node_actions`：19 条源码定义 | `node-action-registry` 只负责节点类型/动作筛选 |
+| 按钮策略 | `lowcode_page_runtime`：52 条 `button_rule` | 无业务函数表；仅保留缺少目录时的系统安全兜底 |
+| 指令与能力 | `lowcode_page_runtime`：32 条 `directive`、31 条 `capability` | 本地只执行数据库选择的 UI/数据 handler |
+| 浏览器系统运行时 | 不迁移 | Vue 响应式、DOM、路由、打印、QuickJS Worker、MES 设备序列和弹框宿主 |
+
+验收命令为 `pnpm db:apply-lowcode-page-runtime` 和 `pnpm db:audit-lowcode-runtime`；后者还会逐条执行 20 个数据库页面脚本并报告失败项。
 
 ## 13. 当前实现与目标架构的差距
 
-当前运行时已经拥有三个入口，但仍保留了较多旧 API：
+当前运行时已经拥有三个入口。页面系统函数、按钮规则和指令目录已迁移到数据库；本地仍保留
+Vue 响应式状态、DOM/路由/打印、数据请求和 QuickJS Worker，因为这些是浏览器系统桥接而非
+可独立部署的业务函数：
 
 ```text
 $api       $form      $grid      $search
@@ -685,15 +710,18 @@ $dialog    $events
 
 当前页面初始化也仍由 `LowCodePageRenderer.loadPageData()` 直接遍历 `schema.dataSources`，而不是先调用页面函数 `loadData`。
 
-迁移目标：
+本次抽象将公开 `runtime` 目录控制在约 5,000 行以内（当前 4,949 行），页面编排核心保留在公开目录，
+编辑器、脚本沙箱和宿主适配实现统一位于 `runtime-core`；后续新能力只能进入数据库目录或
+`runtime-core` 的系统适配器，不能重新写回公开目录。审计脚本会同时报告两个边界的文件和行数。
 
-1. 在内置页面函数文件中建立标准 `loadData`、`saveData`、`refreshData`。
-2. 页面初始化统一调用 `executeFunction({ name: "loadData" })`。
-3. 查询、刷新和保存统一调用对应页面函数。
-4. 将旧 `$form/$grid/$source/...` 调用迁移到三个入口。
-5. 从 Worker 的 `scriptThis` 移除旧 API。
-6. 将允许的 Host Capability 收敛为三个。
-7. 保留明确的 Schema 版本迁移工具，不在新架构中永久保留双套公共 API。
+已完成的数据库迁移：
+
+1. 20 个列表/编辑页系统函数使用数据库 `source_code` 远程执行。
+2. `designForm` 保留为 1 个 native Vue 设计器桥接。
+3. 52 个按钮规则、32 个指令和 31 个能力定义存放在 `lowcode_page_runtime`。
+4. 19 个 Node Action 的源码存放在 `lowcode_node_actions`，由统一目录筛选。
+5. `api/scripts/apply-lowcode-page-runtime.ts` 使用 `DIRECT_URL/DATABASE_URL` 幂等迁移并验收计数。
+6. `api/scripts/audit-lowcode-runtime.ts` 输出目录代码量和数据库目录对照结果。
 
 迁移完成后，下面的约束必须成立：
 
@@ -723,9 +751,9 @@ Node 状态与行为：executeAction
 ## 15. 相关文档与源码
 
 - [低代码 Node 可执行 Action 清单](./lowcode-node-actions.md)
-- [页面内置函数](../packages/lowcode-framework/src/runtime/page-function/index.ts)
+- [页面内置函数](../packages/lowcode-framework/src/runtime-core/page-function/index.ts)
 - [Node Action 数据库迁移](../supabase/migrations/20260826220000_database_node_actions.sql)
-- [Node Action Registry](../packages/lowcode-framework/src/runtime/node-action-registry.ts)
-- [脚本 Worker](../packages/lowcode-framework/src/runtime/script-runtime.worker.ts)
-- [脚本执行器](../packages/lowcode-framework/src/runtime/scripts.ts)
+- [Node Action Registry](../packages/lowcode-framework/src/runtime-core/node-action-registry.ts)
+- [脚本 Worker](../packages/lowcode-framework/src/runtime-core/script-runtime.worker.ts)
+- [脚本执行器](../packages/lowcode-framework/src/runtime-core/scripts.ts)
 - [页面运行时](../packages/lowcode-framework/src/components/LowCodePageRenderer.vue)

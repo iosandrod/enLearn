@@ -29,6 +29,11 @@ import {
 import { lowCodeResources } from './lowcode.resources';
 import type { LowCodePageRow } from './lowcode.types';
 import {
+  executeLowCodeRemoteRuntime,
+  LOW_CODE_REMOTE_EFFECT_CAPABILITIES,
+  type LowCodeRemoteRuntimeSnapshot
+} from './lowcode-runtime.executor';
+import {
   LowCodeSchemaValidationError,
   migrateLowCodePageSchema,
   prepareLowCodePageSchema
@@ -174,9 +179,145 @@ export class LowCodeService extends BaseService {
         return this.saveGeneratedTableListPage(postData, context);
       case 'getRuntimePage':
         return this.getRuntimePage(postData, context);
+      case 'executeRuntime':
+        return this.executeRuntime(postData, context);
       default:
         return super.executeAction(method, postData, context);
     }
+  }
+
+  private async executeRuntime(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const pageId = readString(postData.pageId ?? postData.page_id ?? postData.id);
+    const pageCode = readString(postData.pageCode ?? postData.page_code ?? postData.code);
+    const pageRoute = readString(postData.pageRoute ?? postData.page_route ?? postData.route);
+    const runtimeKey = readString(postData.runtimeKey ?? postData.runtime_key);
+    const functionName = readString(postData.functionName ?? postData.function_name);
+    if (!pageId && !pageCode && !pageRoute) {
+      throw new BadRequestException('pageId, pageCode, or pageRoute is required.');
+    }
+    if (!runtimeKey && !functionName) {
+      throw new BadRequestException('runtimeKey or functionName is required.');
+    }
+
+    const page = await this.getRuntimePage({
+      ...(pageId ? { id: pageId } : {}),
+      ...(pageCode ? { code: pageCode } : {}),
+      ...(pageRoute ? { route: pageRoute } : {}),
+      fromPage: postData.fromPage ?? postData.from_page
+    }, context) as Record<string, unknown>;
+    const runtimeFunctionsValue = page.runtime_functions;
+    const runtimeFunctions = Array.isArray(runtimeFunctionsValue)
+      ? runtimeFunctionsValue.filter((item): item is Record<string, unknown> => this.isRecord(item))
+      : [];
+    const runtimeFunction = runtimeFunctions
+      .filter((item) =>
+        (runtimeKey ? readString(item.runtime_key) === runtimeKey : true) &&
+        (functionName ? readString(item.function_name) === functionName : true) &&
+        readString(item.function_type) === 'page_function'
+      )
+      .sort((left, right) => {
+        const pageId = readString(page.id);
+        const leftPage = readString(left.page_id) === pageId ? 1 : 0;
+        const rightPage = readString(right.page_id) === pageId ? 1 : 0;
+        return rightPage - leftPage || Number(left.sort_order ?? 0) - Number(right.sort_order ?? 0);
+      })[0];
+    if (!runtimeFunction) {
+      throw new NotFoundException('Published runtime function was not found for this page.');
+    }
+    if (readString(runtimeFunction.execution_mode) !== 'script') {
+      throw new BadRequestException({
+        code: 'LOW_CODE_RUNTIME_NOT_REMOTE',
+        message: 'This runtime function still requires a native browser adapter.'
+      });
+    }
+    const capabilities = Array.isArray(runtimeFunction.capabilities)
+      ? runtimeFunction.capabilities.filter(
+          (item): item is string => typeof item === 'string' && Boolean(item.trim())
+        )
+      : [];
+    const activeCapabilities = new Set(
+      runtimeFunctions
+        .filter((item) =>
+          readString(item.function_type) === 'capability' &&
+          item.enabled !== false &&
+          readString(item.status) === 'published'
+        )
+        .map((item) => readString(item.function_name))
+        .filter(Boolean)
+    );
+    const unavailableCapabilities = capabilities.filter((capability) =>
+      !activeCapabilities.has(capability)
+    );
+    if (unavailableCapabilities.length) {
+      throw new BadRequestException({
+        code: 'LOW_CODE_REMOTE_CAPABILITY_DISABLED',
+        message: `数据库运行时能力未启用：${unavailableCapabilities.join(', ')}`
+      });
+    }
+    const unsupportedCapabilities = capabilities.filter((capability) =>
+      !LOW_CODE_REMOTE_EFFECT_CAPABILITIES.includes(
+        capability as typeof LOW_CODE_REMOTE_EFFECT_CAPABILITIES[number]
+      )
+    );
+    if (unsupportedCapabilities.length) {
+      throw new BadRequestException({
+        code: 'LOW_CODE_REMOTE_CAPABILITY_UNSUPPORTED',
+        message: `远程页面函数暂不支持这些能力：${unsupportedCapabilities.join(', ')}`
+      });
+    }
+
+    const args = this.isRecord(postData.args) ? postData.args : {};
+    const requestedSnapshot = this.isRecord(postData.context) ? postData.context : {};
+    const snapshot: LowCodeRemoteRuntimeSnapshot = {
+      page: {
+        id: readString(page.id),
+        code: readString(page.code),
+        route: readString(page.route),
+        title: readString(page.title),
+        pageType: readString(page.page_type),
+        version: Number(page.version) || 0
+      },
+      route: this.readRuntimeSnapshotRecord(requestedSnapshot.route),
+      data: this.readRuntimeSnapshotRecord(requestedSnapshot.data),
+      forms: this.readRuntimeSnapshotRecord(requestedSnapshot.forms),
+      searches: this.readRuntimeSnapshotRecord(requestedSnapshot.searches),
+      grids: this.readRuntimeSnapshotRecord(requestedSnapshot.grids),
+      event: this.readRuntimeSnapshotRecord(requestedSnapshot.event),
+      runtimeSpec: this.readRuntimeSnapshotRecord(runtimeFunction.runtime_spec)
+    };
+    const startedAt = Date.now();
+    try {
+      const execution = await executeLowCodeRemoteRuntime({
+        sourceCode: readString(runtimeFunction.source_code),
+        args,
+        snapshot,
+        limits: this.isRecord(runtimeFunction.limits) ? runtimeFunction.limits : {},
+        allowedEffects: capabilities
+      });
+      return {
+        runtimeKey: readString(runtimeFunction.runtime_key),
+        functionName: readString(runtimeFunction.function_name),
+        executionMode: 'remote',
+        durationMs: Date.now() - startedAt,
+        value: execution.value,
+        effects: execution.effects,
+        ...(typeof execution.resultEffect === 'number'
+          ? { resultEffect: execution.resultEffect }
+          : {})
+      };
+    } catch (error) {
+      throw new BadRequestException({
+        code: 'LOW_CODE_REMOTE_RUNTIME_FAILED',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  private readRuntimeSnapshotRecord(value: unknown) {
+    return this.isRecord(value) ? value : {};
   }
 
   private async getRuntimePage(
@@ -274,7 +415,8 @@ export class LowCodeService extends BaseService {
     return this.prepareRuntimePage(
       page,
       authorization,
-      await this.readActiveNodeActions(adminClient)
+      await this.readActiveNodeActions(adminClient),
+      await this.readActiveRuntimeFunctions(adminClient, String(page.id ?? ''), page.page_type)
     );
   }
 
@@ -291,10 +433,31 @@ export class LowCodeService extends BaseService {
     return data ?? [];
   }
 
+  private async readActiveRuntimeFunctions(
+    client: ReturnType<typeof createSupabaseClient>,
+    pageId: string,
+    pageType: string | null | undefined
+  ) {
+    let query = client
+      .from('lowcode_page_runtime')
+      .select('*')
+      .eq('enabled', true)
+      .eq('status', 'published')
+      .order('sort_order', { ascending: true });
+    query = query.or(`page_id.is.null,page_id.eq.${pageId}`);
+    const { data, error } = await query;
+    if (error) throw new BadRequestException(error.message);
+    return (data ?? []).filter((item) => {
+      if (!pageType) return true;
+      return item.page_type === null || item.page_type === pageType;
+    });
+  }
+
   protected prepareRuntimePage(
     page: Record<string, unknown>,
     authorization: Awaited<ReturnType<typeof getUserAuthorization>>,
-    nodeActions: Array<Record<string, unknown>> = []
+    nodeActions: Array<Record<string, unknown>> = [],
+    runtimeFunctions: Array<Record<string, unknown>> = []
   ) {
     const schema = page.schema && typeof page.schema === 'object' && !Array.isArray(page.schema)
       ? migrateLowCodePageSchema(structuredClone(page.schema as Record<string, unknown>))
@@ -302,7 +465,12 @@ export class LowCodeService extends BaseService {
     const moduleName = schema && typeof schema === 'object'
       ? readString((schema as Record<string, unknown>).code).split('_')[0]
       : '';
-    const runtimePage = { ...page, schema, node_actions: nodeActions };
+    const runtimePage = {
+      ...page,
+      schema,
+      node_actions: nodeActions,
+      runtime_functions: runtimeFunctions
+    };
     if (moduleName === 'mes') {
       const canManageMes = hasRequiredPermission(
         authorization,

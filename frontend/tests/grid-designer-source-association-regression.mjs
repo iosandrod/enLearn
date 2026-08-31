@@ -15,6 +15,20 @@ const pageGridSource = await readFile(
   ),
   'utf8',
 );
+const runtimeGridDesignerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/block-materials/grid/runtime-grid-designer.ts',
+    import.meta.url,
+  ),
+  'utf8',
+);
+const pageDataSourcesSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/runtime/page-data-sources.ts',
+    import.meta.url,
+  ),
+  'utf8',
+);
 const simulatorSource = await readFile(
   new URL(
     '../../packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue',
@@ -126,6 +140,21 @@ assert.match(
   pageGridSource,
   /serviceApi = host\.getServiceApi\(\)[\s\S]*openRuntimeGridDesigner\(props\.block, runtimeBlockEditor, serviceApi\)/,
   'Runtime page grids must pass the host service API into the shared table designer.',
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /pageSchema = runtimeBlockEditor\.getPageSchema\?\.\(\)[\s\S]*?dataSources: pageSchema \? collectLowCodePageDataSources\(pageSchema\) : undefined/,
+  'Runtime grid design must provide page data sources so parent fields can resolve dynamically.',
+);
+assert.match(
+  pageDataSourcesSource,
+  /collectLowCodePageDataSources[\s\S]*?block\.kind === 'form' && block\.dataSource[\s\S]*?dataSources\[block\.id\][\s\S]*?key: block\.id/,
+  'Page data-source collection must include form-owned sources used by main tables.',
+);
+assert.match(
+  simulatorSource,
+  /const createGridDesignerDataSources[\s\S]*?collectLowCodePageDataSources\([\s\S]*?props\.pageRecord\?\.schema\?\.dataSources[\s\S]*?converted\.dataSources[\s\S]*?blocks: converted\.blocks[\s\S]*?dataSources: createGridDesignerDataSources\(\)/,
+  'Visual grid design must merge saved and canvas page sources for parent-field selection.',
 );
 assert.match(
   simulatorSource,

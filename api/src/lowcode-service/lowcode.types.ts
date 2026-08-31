@@ -1,5 +1,37 @@
 import type { LowCodePageSchema } from './lowcode.schema';
 
+export type LowCodeRuntimeFunctionRow = {
+  id: string;
+  page_id: string | null;
+  runtime_key: string;
+  function_name: string;
+  function_type: 'page_function' | 'button_rule' | 'directive' | 'capability' | 'integration';
+  category: 'page_flow' | 'crud' | 'document_status' | 'data' | 'ui' | 'validation' | 'integration';
+  page_type: 'list' | 'edit' | 'detail' | 'custom' | null;
+  node_type: string | null;
+  label: string;
+  description: string;
+  execution_mode: 'script' | 'native' | 'rule';
+  source_code: string;
+  native_handler: string | null;
+  runtime_spec: Record<string, unknown>;
+  parameters: Array<Record<string, unknown>>;
+  result_schema: Record<string, unknown>;
+  capabilities: string[];
+  applicable_when: Record<string, unknown>;
+  limits: Record<string, unknown>;
+  version: number;
+  status: 'draft' | 'published' | 'archived';
+  enabled: boolean;
+  is_system: boolean;
+  sort_order: number;
+  source_hash: string;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type LowCodePageRow = {
   id: string;
   code: string;
@@ -16,6 +48,7 @@ export type LowCodePageRow = {
   relate_config: Record<string, unknown>;
   schema: LowCodePageSchema;
   node_actions?: Array<Record<string, unknown>>;
+  runtime_functions?: LowCodeRuntimeFunctionRow[];
   version: number;
   published_at: string | null;
   created_at: string;

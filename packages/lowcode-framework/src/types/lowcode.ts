@@ -485,7 +485,7 @@ export type LowCodePageDataSource = {
   /** `tableName` 的 snake_case 兼容字段，新配置优先使用 `tableName`。 */
   table_name?: string;
 
-  /** 关联的数据库视图名；实际查询仍通过 `tableName` 传给列表服务。 */
+  /** 关联的数据库视图名；存在时作为列表读取目标，真实表仍保留在 `tableName`。 */
   viewName?: string;
 
   /**
@@ -552,6 +552,51 @@ export type LowCodeNodeActionDefinition = {
   is_system: boolean;
   sort_order: number;
   limits: import('../runtime/scripts').LowCodeScriptExecutionLimits;
+};
+
+/** Database-owned page function, rule, directive, or integration definition. */
+export type LowCodeRuntimeFunctionDefinition = {
+  id: string;
+  page_id: string | null;
+  runtime_key: string;
+  function_name: string;
+  function_type: 'page_function' | 'button_rule' | 'directive' | 'capability' | 'integration';
+  category: 'page_flow' | 'crud' | 'document_status' | 'data' | 'ui' | 'validation' | 'integration';
+  page_type: LowCodePageType | null;
+  node_type: string | null;
+  label: string;
+  description: string;
+  execution_mode: 'script' | 'native' | 'rule';
+  source_code: string;
+  native_handler: string | null;
+  runtime_spec: Record<string, unknown>;
+  parameters: LowCodeNodeActionParameter[];
+  result_schema: Record<string, unknown>;
+  capabilities: import('../runtime/scripts').LowCodeScriptCapabilityName[];
+  applicable_when: Record<string, unknown>;
+  limits: import('../runtime/scripts').LowCodeScriptExecutionLimits;
+  version: number;
+  status: 'draft' | 'published' | 'archived';
+  enabled: boolean;
+  is_system: boolean;
+  sort_order: number;
+  source_hash: string;
+};
+
+/** Result returned by the backend lowcode.executeRuntime endpoint. */
+export type LowCodeRemoteRuntimeEffect = {
+  type: import('../runtime/scripts').LowCodeScriptCapabilityName;
+  [key: string]: unknown;
+};
+
+export type LowCodeRemoteRuntimeResult = {
+  runtimeKey: string;
+  functionName: string;
+  executionMode: 'remote';
+  durationMs: number;
+  value: unknown;
+  effects: LowCodeRemoteRuntimeEffect[];
+  resultEffect?: number;
 };
 
 export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
@@ -877,6 +922,8 @@ export type LowCodePageRecord = {
   schema: LowCodePageSchema;
   /** Active global node actions resolved by the low-code service. */
   node_actions?: LowCodeNodeActionDefinition[];
+  /** Active page-scoped and system runtime functions resolved by the low-code service. */
+  runtime_functions?: LowCodeRuntimeFunctionDefinition[];
   version: number;
   published_at: string | null;
   created_at: string;

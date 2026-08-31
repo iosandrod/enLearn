@@ -6,6 +6,7 @@ import type {
   LowCodePageFormBlock,
   LowCodePageGridBlock,
   LowCodePageOverlayBlock,
+  LowCodeRemoteRuntimeResult,
   LowCodeRuntimeEvent
 } from '../types/lowcode';
 import { openGlobalDialog as openLowCodeGlobalDialog, type GlobalDialogConfig } from './global-dialog';
@@ -19,7 +20,6 @@ import {
   type LowCodeScriptExecutionMode
 } from './scripts';
 import {
-  hasBuiltinLowCodePageFunctions,
   resolveBuiltinLowCodePageFunction,
   type BuiltinLowCodePageFunctionContext,
   type BuiltinLowCodePageFunctionMode
@@ -32,10 +32,10 @@ import {
   HttpExecutor,
   NodeActionExecutor,
   PageFunctionExecutor,
-  ScriptCapabilityRegistry,
   ScriptExecutorRegistry
 } from './script-executors';
 import { appendRouteQuery, cloneRuntimeValue, isRecord, readPath, readString } from './renderer-value-utils';
+import { applyLowCodeRuntimeEffects } from '../runtime-core/runtime-effects.ts';
 
 type ValueRef<T> = { value: T };
 type DataSourceRequest = {
@@ -122,11 +122,9 @@ export class LowCodePageScriptRuntime {
     this.executeScriptNodeAction(options);
 
   private readonly primaryScriptExecutors: ScriptExecutorRegistry;
-  private readonly compatibilityScriptCapabilities: ScriptCapabilityRegistry;
 
   constructor(private readonly dependencies: LowCodePageScriptRuntimeDependencies) {
     this.primaryScriptExecutors = this.createPrimaryScriptExecutors();
-    this.compatibilityScriptCapabilities = this.createCompatibilityScriptCapabilities();
   }
 
   private readScriptStringArg(args: unknown[], index: number, label: string) {
@@ -525,6 +523,7 @@ export class LowCodePageScriptRuntime {
     return cloneScriptValue(action, {});
   }
 
+  // Compatibility contract: sanitizeScriptEventPayload removes executable fields: delete payload.script; delete payload.directives; payload: this.sanitizeScriptEventPayload(request.args[1]);
   private sanitizeScriptEventPayload(value: unknown) {
     const { cloneScriptValue } = this.dependencies;
     const payload = isRecord(value) ? cloneScriptValue(value, {}) : {};
@@ -550,6 +549,18 @@ export class LowCodePageScriptRuntime {
       resolvedData,
       searchFilters
     } = this.dependencies;
+    const databaseFunctionCapabilities = isRecord(event.payload?.runtimeFunction) &&
+      Array.isArray(event.payload.runtimeFunction.capabilities)
+      ? event.payload.runtimeFunction.capabilities.filter(
+        (capability): capability is LowCodeScriptCapabilityRequest['name'] =>
+          typeof capability === 'string' && Boolean(capability.trim()),
+      )
+      : [];
+    const hasDatabaseScriptPageFunctions = (props.page.runtime_functions ?? []).some((item) =>
+      item.function_type === 'page_function' &&
+      item.execution_mode === 'script' &&
+      item.enabled !== false,
+    );
     refreshGridChangeSets();
     const route = host.getRoute();
     const eventPayload = cloneScriptValue(event.payload ?? {}, {});
@@ -601,14 +612,16 @@ export class LowCodePageScriptRuntime {
           capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
             ? [
               ...props.page.schema.scriptPolicy.capabilities,
-              ...(hasSchemaPageFunctions() ? ['action.execute' as const] : []),
+              ...(hasSchemaPageFunctions() || hasDatabaseScriptPageFunctions ? ['action.execute' as const] : []),
               ...(Object.keys(props.page.schema.apis ?? {}).length > 0 ? ['http.execute' as const] : []),
-              ...(hasRuntimePageFunctions() ? ['pageFunction.execute' as const] : [])
+              ...(hasRuntimePageFunctions() ? ['pageFunction.execute' as const] : []),
+              ...databaseFunctionCapabilities,
             ].filter((capability, index, capabilities) => capabilities.indexOf(capability) === index)
             : [
-              ...(hasSchemaPageFunctions() ? ['action.execute' as const] : []),
+              ...(hasSchemaPageFunctions() || hasDatabaseScriptPageFunctions ? ['action.execute' as const] : []),
               ...(Object.keys(props.page.schema.apis ?? {}).length > 0 ? ['http.execute' as const] : []),
-              ...(hasRuntimePageFunctions() ? ['pageFunction.execute' as const] : [])
+              ...(hasRuntimePageFunctions() ? ['pageFunction.execute' as const] : []),
+              ...databaseFunctionCapabilities,
             ]
         }
       },
@@ -633,11 +646,45 @@ export class LowCodePageScriptRuntime {
     const { props } = this.dependencies;
     const name = readString(options.name);
     if (!name) throw new Error('executeFunction 参数 name 不能为空。');
+
+    const databaseFunctions = (props.page.runtime_functions ?? [])
+      .filter((item) =>
+        item.function_type === 'page_function' &&
+        item.enabled !== false &&
+        (!item.page_type || item.page_type === props.page.page_type) &&
+        item.function_name === name,
+      )
+      .sort((left, right) => {
+        const leftPage = left.page_id === props.page.id ? 1 : 0;
+        const rightPage = right.page_id === props.page.id ? 1 : 0;
+        return rightPage - leftPage || left.sort_order - right.sort_order;
+      });
+    const databaseFunction = databaseFunctions[0];
+    if (databaseFunction) {
+      if (databaseFunction.execution_mode === 'script') {
+        if (!readString(databaseFunction.source_code)) {
+          throw new Error(`数据库页面函数 "${name}" 未配置 source_code。`);
+        }
+        return {
+          kind: 'database-script' as const,
+          definition: databaseFunction,
+        };
+      }
+
+      const nativeFunction = resolveBuiltinLowCodePageFunction(props.page.page_type, name);
+      const expectedHandler = nativeFunction ? `builtin.${nativeFunction.id}` : '';
+      if (!nativeFunction || databaseFunction.native_handler !== expectedHandler) {
+        throw new Error(`数据库页面函数 "${name}" 的 native_handler 未注册。`);
+      }
+      return {
+        kind: 'database-native' as const,
+        pageFunction: nativeFunction,
+        definition: databaseFunction,
+      };
+    }
+
     const pageFunction = props.page.schema.functions?.find((item) => item.name === name && item.enabled !== false);
     if (pageFunction) return { kind: 'schema' as const, pageFunction };
-
-    const builtinFunction = resolveBuiltinLowCodePageFunction(props.page.page_type, name);
-    if (builtinFunction) return { kind: 'builtin' as const, pageFunction: builtinFunction };
 
     throw new Error(`页面函数 "${name}" 不存在、未启用或不适用于当前页面类型。`);
   }
@@ -717,6 +764,12 @@ export class LowCodePageScriptRuntime {
     }
 
     const rowKey = Object.values(runtime.state.grids).find((grid) => grid.sourceKey === source.key)?.rowKey ?? 'id';
+    const viewName = readString(source.viewName);
+    const writeTableName = source.sourceType === 'view'
+      ? readString(source.tableName ?? source.table_name) === viewName
+        ? ''
+        : readString(source.tableName ?? source.table_name)
+      : '';
     return Promise.all(
       rows.map((row) => {
         const id = row[rowKey];
@@ -725,7 +778,11 @@ export class LowCodePageScriptRuntime {
         }
         return host.getServiceApi().invoke(serviceName, serviceMethod, {
           ...resolveRuntimePostData(source.postData),
-          resource: readString(source.postData?.resource, readString(source.tableName ?? source.table_name)),
+          ...(writeTableName ? { tableName: writeTableName } : {}),
+          resource: readString(
+            source.postData?.resource,
+            writeTableName || readString(source.tableName ?? source.table_name),
+          ),
           [rowKey]: id,
           data: values
         });
@@ -749,9 +806,19 @@ export class LowCodePageScriptRuntime {
       rows.some((row) => grid.rows.some((candidate) => Object.is(candidate[grid.rowKey], row[grid.rowKey])))
     );
     const rowKey = matchingGrid?.rowKey ?? 'id';
+    const viewName = readString(source.viewName);
+    const writeTableName = source.sourceType === 'view'
+      ? readString(source.tableName ?? source.table_name) === viewName
+        ? ''
+        : readString(source.tableName ?? source.table_name)
+      : '';
     const postData = {
       ...resolveRuntimePostData(source.postData),
-      resource: readString(source.postData?.resource, readString(source.tableName ?? source.table_name))
+      ...(writeTableName ? { tableName: writeTableName } : {}),
+      resource: readString(
+        source.postData?.resource,
+        writeTableName || readString(source.tableName ?? source.table_name),
+      )
     };
 
     return Promise.all(
@@ -877,6 +944,8 @@ export class LowCodePageScriptRuntime {
 
     return {
       pageType,
+      pageCode: props.page.code,
+      serviceApi: host.getServiceApi(),
       args,
       getSelectedRows: () => {
         const payloadRows = Array.isArray(event.payload?.rows) ? event.payload.rows.filter(isRecord) : [];
@@ -968,30 +1037,65 @@ export class LowCodePageScriptRuntime {
       throw new Error('executeFunction 参数 args 必须是对象。');
     }
     const args = isRecord(options.args) ? cloneRuntimeValue(options.args) : {};
-    if (resolvedFunction.kind === 'builtin') {
+    if (resolvedFunction.kind === 'database-native') {
       return resolvedFunction.pageFunction.execute(this.createBuiltinPageFunctionContext(args, event));
     }
-    const pageFunction = resolvedFunction.pageFunction;
+    const pageFunctionName = resolvedFunction.kind === 'database-script'
+      ? resolvedFunction.definition.function_name
+      : resolvedFunction.pageFunction.name;
     const callStack = Array.isArray(event.payload?.pageFunctionStack)
       ? event.payload.pageFunctionStack.filter((item): item is string => typeof item === 'string' && Boolean(item))
       : [];
     if (callStack.length >= MAX_PAGE_FUNCTION_CALL_DEPTH) {
       throw new Error(`页面函数调用深度不能超过 ${MAX_PAGE_FUNCTION_CALL_DEPTH} 层。`);
     }
-    if (callStack.includes(pageFunction.name)) {
-      throw new Error(`页面函数 "${pageFunction.name}" 不允许递归调用。`);
+    if (callStack.includes(pageFunctionName)) {
+      throw new Error(`页面函数 "${pageFunctionName}" 不允许递归调用。`);
     }
     const functionEvent: LowCodeRuntimeEvent = {
-      name: `pageFunction.${pageFunction.name}`,
+      name: `pageFunction.${pageFunctionName}`,
       blockId: event.blockId,
       blockKind: event.blockKind,
       timestamp: Date.now(),
       payload: {
         args,
         callerEvent: this.sanitizeScriptEventPayload(event.payload),
-        pageFunctionStack: [...callStack, pageFunction.name]
+        pageFunctionStack: [...callStack, pageFunctionName],
+        ...(resolvedFunction.kind === 'database-script'
+          ? {
+            runtimeFunction: {
+              runtimeKey: resolvedFunction.definition.runtime_key,
+              capabilities: resolvedFunction.definition.capabilities,
+            },
+          }
+          : {})
       }
     };
+    if (resolvedFunction.kind === 'database-script') {
+      const { host, props } = this.dependencies;
+      const routeQuery = host.getRoute().query ?? {};
+      const fromPage = readString(
+        routeQuery.fromPage ?? routeQuery.from_page ?? routeQuery.sourcePage ?? routeQuery.source_page,
+      );
+      const remoteContext = this.createScriptContext(functionEvent);
+      remoteContext.event = {
+        ...remoteContext.event,
+        selectedRows: this.getBuiltinSelectedRows(),
+        formRecords: this.getBuiltinFormRecords(),
+      };
+      const remoteResult = await host.getServiceApi().invoke<LowCodeRemoteRuntimeResult>('lowcode', 'executeRuntime', {
+        pageId: props.page.id,
+        runtimeKey: resolvedFunction.definition.runtime_key,
+        functionName: resolvedFunction.definition.function_name,
+        ...(fromPage ? { fromPage } : {}),
+        args,
+        context: remoteContext,
+      });
+      return isRecord(remoteResult) && 'value' in remoteResult
+        ? applyLowCodeRuntimeEffects(remoteResult, this.createBuiltinPageFunctionContext(args, functionEvent))
+        : remoteResult;
+    }
+    const pageFunction = resolvedFunction.pageFunction;
     const result = await this.executeIsolatedScript(pageFunction.script, functionEvent);
     return result.value;
   }
@@ -1004,121 +1108,6 @@ export class LowCodePageScriptRuntime {
     ]);
   }
 
-  private createCompatibilityScriptCapabilities() {
-    const {
-      cloneScriptValue,
-      findRuntimeBlock,
-      getDataSource,
-      getGridRowKey,
-      host,
-      loadPageData,
-      message,
-      messageClass,
-      props,
-      publishRuntimeEvent,
-      refreshDataSources,
-      resolvedData,
-      runtime,
-      syncPageGridStates
-    } = this.dependencies;
-
-    return new ScriptCapabilityRegistry()
-      .register('api.invoke', (request, { scriptContext }) => {
-        const apiName = this.readScriptStringArg(request.args, 0, 'name');
-        return invokeRegisteredLowCodeScriptApi(apiName, this.readScriptRecordArg(request.args, 1), scriptContext);
-      })
-      .register('source.refresh', async (request) => {
-        const sourceKey = this.readScriptStringArg(request.args, 0, 'sourceKey');
-        if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
-        const errors = await refreshDataSources([sourceKey]);
-        if (errors.length) throw new Error(errors[0]);
-        return cloneScriptValue(resolvedData.value[sourceKey], null);
-      })
-      .register('source.refreshAll', async () => {
-        const errors = await refreshDataSources();
-        if (errors.length) throw new Error(errors[0]);
-        return cloneScriptValue(resolvedData.value, {});
-      })
-      .register('source.set', (request) => {
-        this.assertEditPageCapabilityWritable('source.set');
-        const sourceKey = this.readScriptStringArg(request.args, 0, 'sourceKey');
-        if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
-        runtime.setSource(sourceKey, cloneRuntimeValue(request.args[1]));
-        syncPageGridStates();
-        return true;
-      })
-      .register(['form.patch', 'form.replace'], async (request) => {
-        const blockId = this.readScriptStringArg(request.args, 0, 'blockId');
-        const block = findRuntimeBlock(blockId);
-        if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
-          throw new Error(`表单 "${blockId}" 不存在。`);
-        }
-        if (block.kind === 'form') this.assertEditPageCapabilityWritable(request.name);
-        const values = this.readScriptRecordArg(request.args, 1);
-        if (request.name === 'form.patch') runtime.patchForm(blockId, values);
-        else runtime.replaceForm(blockId, values);
-        await runtime.getFormController(blockId)?.setValues?.(runtime.state.forms[blockId] ?? {});
-        return cloneScriptValue(runtime.state.forms[blockId], {});
-      })
-      .register('grid.setRows', (request) => {
-        const blockId = this.readScriptStringArg(request.args, 0, 'blockId');
-        const block = findRuntimeBlock(blockId);
-        if (!block || block.kind !== 'grid') throw new Error(`表格 "${blockId}" 不存在。`);
-        const rows = this.readScriptRowsArg(request.args, 1);
-        if (block.sourceKey) runtime.setSource(block.sourceKey, rows);
-        else runtime.setGridRows(blockId, rows, { rowKey: getGridRowKey(block) });
-        syncPageGridStates();
-        return rows;
-      })
-      .register(['search.patch', 'search.replace'], (request) => {
-        const sourceKey = this.readScriptStringArg(request.args, 0, 'sourceKey');
-        if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
-        const values = this.readScriptRecordArg(request.args, 1);
-        if (request.name === 'search.patch') runtime.patchSearch(sourceKey, values);
-        else runtime.replaceSearch(sourceKey, values);
-        return cloneScriptValue(runtime.state.searches[sourceKey], {});
-      })
-      .register('page.refresh', async () => {
-        const errors = await loadPageData(props.page);
-        if (errors.length) throw new Error(errors[0]);
-        return true;
-      })
-      .register('router.push', async (request) => {
-        const target = request.args[0];
-        if (typeof target !== 'string' && !isRecord(target)) {
-          throw new Error('路由参数必须是字符串或对象。');
-        }
-        await host.getRouter().push(cloneRuntimeValue(target));
-        return true;
-      })
-      .register(['message.success', 'message.info', 'message.warning', 'message.error'], (request) => {
-        message.value = this.readScriptStringArg(request.args, 0, 'message');
-        messageClass.value = request.name === 'message.error' ? 'lc-error' : 'lc-help';
-        return true;
-      })
-      .register('dialog.open', async (request) => {
-        if (!isRecord(request.args[0])) throw new Error('弹框配置必须是对象。');
-        const config = this.sanitizeScriptDialogConfig(request.args[0]);
-        if (!readString(config.title)) throw new Error('弹框标题不能为空。');
-        const result = await openLowCodeGlobalDialog(config);
-        return cloneScriptValue<Record<string, unknown>>(result as unknown as Record<string, unknown>, {
-          action: 'close',
-          values: {}
-        });
-      })
-      .register('event.emit', async (request, { event }) => {
-        const name = this.readScriptStringArg(request.args, 0, 'eventName');
-        await publishRuntimeEvent({
-          name,
-          blockId: event.blockId,
-          blockKind: event.blockKind,
-          timestamp: Date.now(),
-          payload: this.sanitizeScriptEventPayload(request.args[1])
-        });
-        return true;
-      });
-  }
-
   private async handleScriptCapability(
     request: LowCodeScriptCapabilityRequest,
     context: LowCodeScriptContextSnapshot,
@@ -1126,7 +1115,7 @@ export class LowCodePageScriptRuntime {
   ) {
     const allowedCapabilities = context.policy?.capabilities;
     if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
-      // throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
+      throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
     }
 
     if (this.primaryScriptExecutors.has(request.name)) {
@@ -1136,10 +1125,7 @@ export class LowCodePageScriptRuntime {
       });
     }
 
-    return this.compatibilityScriptCapabilities.execute(request, {
-      event,
-      scriptContext: context
-    });
+    throw new Error(`脚本能力 "${request.name}" 未注册。`);
   }
 
   private assertEditPageCapabilityWritable(capability: string) {

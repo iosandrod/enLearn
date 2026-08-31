@@ -47,7 +47,10 @@ const hasOwnedFormModel = computed(() =>
   Object.prototype.hasOwnProperty.call(props.formModels, props.block.id)
 );
 const resolvedData = computed(
-  () => pageRuntime?.state.sources ?? props.resolvedData
+  () => ({
+    ...(pageRuntime?.state.sources ?? {}),
+    ...props.resolvedData,
+  })
 );
 const formModel = computed(
   () => hasOwnedFormModel.value

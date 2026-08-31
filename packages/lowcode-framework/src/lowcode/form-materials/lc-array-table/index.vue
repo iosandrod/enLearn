@@ -430,6 +430,22 @@ const rowConfig = computed(() => {
     ...(rowDraggable.value ? { drag: true } : {}),
   };
 });
+const rowDragConfig = computed(() => {
+  const config = isRecord(explicitTableConfig.value.rowDragConfig)
+    ? explicitTableConfig.value.rowDragConfig
+    : {};
+  const trigger = readString(config.trigger, 'cell');
+
+  return {
+    ...config,
+    // `drag-sort` is a dedicated cell. VXE only enables that handle for the cell trigger.
+    trigger: trigger === 'row' ? 'row' : 'cell',
+    showIcon: config.showIcon !== false,
+    animation: config.animation !== false,
+    showGuidesStatus: config.showGuidesStatus !== false,
+    showDragTip: config.showDragTip !== false,
+  };
+});
 const tableConfig = computed(() => {
   const explicitConfig = explicitTableConfig.value;
   const config = mergeSystemTableOptions(
@@ -441,13 +457,7 @@ const tableConfig = computed(() => {
   );
 
   if (rowDraggable.value) {
-    const dragConfig = isRecord(config.rowDragConfig) ? config.rowDragConfig : {};
-    config.rowDragConfig = {
-      ...dragConfig,
-      trigger: 'default',
-      showIcon: true,
-      animation: dragConfig.animation !== false,
-    };
+    config.rowDragConfig = rowDragConfig.value;
   }
 
   if (isFillHeight(config.height)) {
@@ -527,10 +537,11 @@ const actionWidth = computed(() => {
 watch(
   () => props.modelValue,
   (value) => {
+    if (isSameValue(serializeRows(), normalizeModelValue(value))) return;
     rows.value = normalizeRows(value);
-    resizeTable();
+    recalculateTable();
   },
-  { immediate: true, deep: true }
+  { immediate: true, }
 );
 
 watch(
@@ -543,8 +554,8 @@ watch(
     rowActions.value,
     tableConfig.value,
   ],
-  () => resizeTable(),
-  { deep: true }
+  () => refreshTableColumns(),
+  {  }
 );
 
 let unsubscribeOptionSources: (() => void) | undefined;
@@ -577,10 +588,16 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => resizeTable());
+onMounted(() => recalculateTable());
 onBeforeUnmount(() => unsubscribeOptionSources?.());
 
-function resizeTable() {
+function recalculateTable() {
+  nextTick(() => {
+    tableRef.value?.recalculate?.(true);
+  });
+}
+
+function refreshTableColumns() {
   nextTick(() => {
     tableRef.value?.refreshColumn?.();
     tableRef.value?.recalculate?.(true);
@@ -619,8 +636,12 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
     });
 }
 
+function normalizeModelValue(value: unknown) {
+  return Array.isArray(value) ? value : [];
+}
+
 function normalizeRows(value: unknown) {
-  const source = Array.isArray(value) ? value : [];
+  const source = normalizeModelValue(value);
   return source.map((item, index) => normalizeRow(item, index));
 }
 
@@ -843,17 +864,20 @@ function canRemoveRow(row: Record<string, unknown>) {
 
 function commitRows() {
   if (isReadonly.value) return;
-  const key = rowKey.value;
-  const value =
-    valueMode.value === 'primitive'
-      ? rows.value.map((row) => cloneValue(row[valueField.value]))
-      : rows.value.map((row) => serializeRow(row, key));
+  const value = serializeRows();
 
   emit('update:modelValue', value);
   emitConfiguredEvent('onRowsChange', {
     rows: cloneValue(value),
     field: props.field,
   });
+}
+
+function serializeRows() {
+  const key = rowKey.value;
+  return valueMode.value === 'primitive'
+    ? rows.value.map((row) => cloneValue(row[valueField.value]))
+    : rows.value.map((row) => serializeRow(row, key));
 }
 
 function ensureRowKey(row: Record<string, unknown>, index: number) {

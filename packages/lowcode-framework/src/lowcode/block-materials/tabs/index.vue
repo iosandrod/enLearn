@@ -54,6 +54,13 @@ const activeTabKey = computed(() => {
 async function setActiveTab(key: string) {
   localActiveKey.value = key;
   await nextTick();
+  emit('runtimeEvent', {
+    name: 'tabs.activeChange',
+    blockId: props.block.id,
+    blockKind: props.block.kind,
+    timestamp: Date.now(),
+    payload: { tabKey: key },
+  });
   window.dispatchEvent(new CustomEvent('lowcode:tab-activated', {
     detail: { blockId: props.block.id, tabKey: key },
   }));

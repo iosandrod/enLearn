@@ -4,7 +4,11 @@ import {
   reactive,
   type InjectionKey,
 } from 'vue';
-import type { LowCodeEditPageMode } from '../types/lowcode';
+import type {
+  LowCodeEditPageMode,
+  LowCodePageType,
+  LowCodeRuntimeFunctionDefinition,
+} from '../types/lowcode';
 
 export type LowCodeRuntimeRecord = Record<string, unknown>;
 
@@ -93,6 +97,8 @@ export type LowCodePageRuntimeGridController = {
 
 export type LowCodePageRuntimeContext = {
   state: LowCodePageRuntimeState;
+  pageType?: LowCodePageType;
+  runtimeFunctions?: LowCodeRuntimeFunctionDefinition[];
   registerFormController(
     blockId: string,
     controller: LowCodePageRuntimeFormController,
@@ -452,13 +458,13 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
       : null;
   }
 
-  function applyGridEvent(blockId: string, event: LowCodeGridRuntimeEvent) {
+ async  function applyGridEvent(blockId: string, event: LowCodeGridRuntimeEvent) {
     const rawEvent = isRecord(event.rawEvent) ? event.rawEvent : {};
     const row = readEventRow(event, rawEvent);
     const key = event.key;
 
     if (key === 'rowCurrentChange') {
-      setGridCurrentRow(blockId, row);
+      await setGridCurrentRow(blockId, row);//
     }
 
     if (key === 'radioChange') {
@@ -534,6 +540,8 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
 
   return {
     state,
+    pageType: undefined,
+    runtimeFunctions: [],
     registerFormController,
     getFormController: (blockId) => formControllers.get(blockId),
     registerGridController,

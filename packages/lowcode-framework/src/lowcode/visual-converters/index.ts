@@ -676,8 +676,6 @@ function convertRuntimeBlockToVisual(
     const source = getDataSource(context.dataSources, block.sourceKey);
     const tableType = readGridTableType(block, source);
     const sourceType = readGridSourceType(block, source);
-    const sourceTarget = readDataSourceTableName(source);
-
     return createVisualBlock({
       block,
       componentKey: 'lowcode-grid',
@@ -689,12 +687,8 @@ function convertRuntimeBlockToVisual(
         title: readString(block.title, readString(schema.title, source?.label ?? '数据表格')),
         tableType,
         sourceType,
-        tableName: sourceType === 'view'
-          ? ''
-          : readString(block.tableName, sourceType === 'table' ? sourceTarget : ''),
-        viewName: sourceType === 'view'
-          ? readString(block.viewName, readString(source?.viewName, sourceTarget))
-          : '',
+        tableName: readString(block.tableName, source?.tableName),
+        viewName: readString(block.viewName, source?.viewName),
         categoryField: readString(block.categoryField),
         sourceKey: readString(block.sourceKey, source?.key ?? 'records'),
         serviceName: source?.serviceName ?? 'admin',

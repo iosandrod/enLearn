@@ -170,23 +170,25 @@ function normalizeDataSource(
   const viewName = readString(source.viewName ?? source.view_name);
   const sourceType: NonNullable<LowCodePageDataSource['sourceType']> | '' = requestedSourceType === 'custom'
     ? 'custom'
-    : requestedSourceType === 'table'
-      ? 'table'
-      : requestedSourceType === 'view'
-        ? 'view'
     : viewName
       ? 'view'
-      : rawTableName
-        ? 'table'
-        : '';
-  const normalizedViewName = sourceType === 'view' ? viewName || rawTableName : '';
-  const tableName = sourceType === 'custom'
+      : requestedSourceType === 'table' || requestedSourceType === 'view'
+        ? requestedSourceType
+        : rawTableName
+          ? 'table'
+          : '';
+  const normalizedViewName = sourceType === 'custom'
     ? ''
-    : sourceType === 'view'
-      ? normalizedViewName
-      : rawTableName;
+    : viewName || (sourceType === 'view' ? rawTableName : '');
+  // Legacy view sources used tableName as the read target. Do not treat it as a write table.
+  const tableName = sourceType === 'custom' || rawTableName === normalizedViewName
+    ? ''
+    : rawTableName;
+  const readTarget = sourceType === 'view'
+    ? normalizedViewName || tableName
+    : tableName;
   const entityCode = sourceType === 'custom' ? '' : rawEntityCode;
-  const usesListItems = Boolean(entityCode || tableName);
+  const usesListItems = Boolean(entityCode || readTarget);
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
   const postData = { ...sourcePostData };
@@ -198,7 +200,7 @@ function normalizeDataSource(
     delete postData.viewName;
     delete postData.view_name;
     if (usesListItems) delete postData.resource;
-    if (tableName) postData.tableName = tableName;
+    if (readTarget) postData.tableName = readTarget;
   }
 
   return {

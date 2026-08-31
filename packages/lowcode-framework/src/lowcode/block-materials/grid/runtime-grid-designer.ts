@@ -6,6 +6,7 @@ import type {
   LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
 import type { LowCodeRuntimeBlockEditor } from '../../../runtime/block-editor';
+import { collectLowCodePageDataSources } from '../../../runtime/page-data-sources';
 import type { LowCodeHostServiceApi } from '../../../core/host';
 import type {
   GridDesignerEvent,
@@ -205,11 +206,8 @@ function createRuntimeGridSchema(
   else delete schema.events;
   if (Object.keys(eventNames).length) schema.eventNames = eventNames;
   else delete schema.eventNames;
-  if (result.detailConfig.enabled) {
-    schema.detailConfig = cloneValue(result.detailConfig);
-  } else {
-    delete schema.detailConfig;
-  }
+
+  schema.detailConfig = cloneValue(result.detailConfig);
 
   return schema;
 }
@@ -221,9 +219,11 @@ function createRuntimeDataSource(
   const sourceKey = readString(result.business.sourceKey, original?.key ?? 'records');
   const postData = parseJsonObject(result.business.postDataJson);
   const sourceType = result.business.sourceType;
-  const linkedTableName = sourceType === 'table' ? readString(result.business.tableName) : '';
-  const linkedViewName = sourceType === 'view' ? readString(result.business.viewName) : '';
-  const tableName = linkedTableName || linkedViewName;
+  const linkedTableName = readString(result.business.tableName);
+  const linkedViewName = readString(result.business.viewName);
+  const readTarget = sourceType === 'view'
+    ? linkedViewName || linkedTableName
+    : linkedTableName;
   if (sourceType !== 'custom') {
     delete postData.tableName;
     delete postData.table_name;
@@ -231,8 +231,8 @@ function createRuntimeDataSource(
     delete postData.entity_code;
     delete postData.viewName;
     delete postData.view_name;
-    if (tableName) delete postData.resource;
-    if (tableName) postData.tableName = tableName;
+    if (readTarget) delete postData.resource;
+    if (readTarget) postData.tableName = readTarget;
   }
   const source: LowCodePageDataSource = {
     ...cloneValue(original ?? { key: sourceKey }),
@@ -260,7 +260,7 @@ function createRuntimeDataSource(
   const deleteMethod = readString(result.business.deleteMethod);
   if (saveMethod) source.saveMethod = saveMethod;
   if (deleteMethod) source.deleteMethod = deleteMethod;
-  if (tableName && sourceType !== 'custom') source.tableName = tableName;
+  if (linkedTableName && sourceType !== 'custom') source.tableName = linkedTableName;
   if (linkedViewName) source.viewName = linkedViewName;
 
   return source;
@@ -286,17 +286,19 @@ export async function openRuntimeGridDesigner(
   );
   const tableType = readGridTableType(block, source);
   const sourceType = readGridSourceType(block, source);
+  const pageSchema = runtimeBlockEditor.getPageSchema?.();
 
   void $$gridDesigner({
     title: `${block.title || block.schema.title || '表格'}设计`,
     serviceApi,
+    dataSources: pageSchema ? collectLowCodePageDataSources(pageSchema) : undefined,
     business: {
       blockId: block.id,
       title: block.title ?? block.schema.title ?? source?.label ?? '数据表格',
       tableType,
       sourceType,
-      tableName: readString(block.tableName, sourceType === 'table' ? source?.tableName : ''),
-      viewName: readString(block.viewName, sourceType === 'view' ? readString(source?.viewName, source?.tableName) : ''),
+      tableName: readString(block.tableName, source?.tableName),
+      viewName: readString(block.viewName, source?.viewName),
       categoryField: readString(block.categoryField),
       sourceKey: block.sourceKey ?? source?.key ?? 'records',
       serviceName: source?.serviceName ?? 'admin',
@@ -323,12 +325,8 @@ export async function openRuntimeGridDesigner(
           sourceKey,
           tableType: result.business.tableType,
           sourceType: result.business.sourceType,
-          tableName: result.business.sourceType === 'view'
-            ? ''
-            : readString(result.business.tableName),
-          viewName: result.business.sourceType === 'view'
-            ? readString(result.business.viewName)
-            : '',
+          tableName: readString(result.business.tableName),
+          viewName: readString(result.business.viewName),
           categoryField: readString(result.business.categoryField),
           schema: createRuntimeGridSchema(block, result),
           gridDesignerUpdatedAt: Date.now(),

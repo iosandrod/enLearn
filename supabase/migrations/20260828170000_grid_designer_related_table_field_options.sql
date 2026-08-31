@@ -2,7 +2,7 @@
 
 begin;
 
-create or replace function pg_temp.lowcode_configure_grid_field_pickers(node jsonb)
+create function public._migrate_20260828170000_grid_field_pickers(node jsonb)
 returns jsonb
 language plpgsql
 immutable
@@ -14,7 +14,7 @@ declare
 begin
   if jsonb_typeof(node) = 'array' then
     select coalesce(jsonb_agg(
-      pg_temp.lowcode_configure_grid_field_pickers(value)
+      public._migrate_20260828170000_grid_field_pickers(value)
       order by ordinality
     ), '[]'::jsonb)
     into result
@@ -28,7 +28,7 @@ begin
 
   select coalesce(jsonb_object_agg(
     key,
-    pg_temp.lowcode_configure_grid_field_pickers(value)
+    public._migrate_20260828170000_grid_field_pickers(value)
   ), '{}'::jsonb)
   into result
   from jsonb_each(node);
@@ -36,8 +36,60 @@ begin
   field_name := result ->> 'field';
   source_key := case
     when field_name = 'foreignKey' then 'grid-designer-detail-fields'
+    when field_name = any (array['parentKey', 'inheritFields'])
+      then 'grid-designer-parent-fields'
     else 'grid-designer-source-fields'
   end;
+
+  if field_name = 'parentSourceKey' and result ->> 'component' = 'vxe-input' then
+    result := jsonb_set(
+      result,
+      '{component}',
+      to_jsonb('vxe-select'::text),
+      true
+    );
+    result := jsonb_set(
+      result,
+      '{optionsSourceKey}',
+      to_jsonb('grid-designer-page-sources'::text),
+      true
+    );
+    result := jsonb_set(
+      result,
+      '{props}',
+      coalesce(result -> 'props', '{}'::jsonb) || jsonb_build_object(
+        'filterable', true,
+        'clearable', true,
+        'placeholder', '请选择主表数据源'
+      ),
+      true
+    );
+  end if;
+
+  if field_name = 'field' and result ->> 'title' = '字段名' and not (result ? 'component') then
+    result := jsonb_set(
+      result,
+      '{component}',
+      to_jsonb('vxe-select'::text),
+      true
+    );
+    result := jsonb_set(
+      result,
+      '{optionsSourceKey}',
+      to_jsonb('grid-designer-source-fields'::text),
+      true
+    );
+    result := jsonb_set(
+      result,
+      '{props}',
+      coalesce(result -> 'props', '{}'::jsonb) || jsonb_build_object(
+        'filterable', true,
+        'clearable', true,
+        'placeholder', '请选择关联表字段'
+      ),
+      true
+    );
+  end if;
 
   if (
     field_name = any (array[
@@ -92,7 +144,7 @@ begin
           'field', 'value',
           'title', '字段名',
           'component', 'vxe-select',
-          'optionsSourceKey', 'grid-designer-source-fields',
+          'optionsSourceKey', source_key,
           'props', jsonb_build_object(
             'filterable', true,
             'clearable', true,
@@ -110,22 +162,22 @@ $$;
 
 do $update_grid_designer$
 declare
-  current_schema jsonb;
+  current_form_schema jsonb;
   next_schema jsonb;
 begin
   select schema
-  into current_schema
+  into current_form_schema
   from public.lowcode_form_definitions
   where code = 'grid-designer'
   for update;
 
-  if current_schema is null then
+  if current_form_schema is null then
     raise exception 'Low-code form grid-designer does not exist.';
   end if;
 
-  next_schema := pg_temp.lowcode_configure_grid_field_pickers(current_schema);
+  next_schema := public._migrate_20260828170000_grid_field_pickers(current_form_schema);
 
-  if current_schema is distinct from next_schema then
+  if current_form_schema is distinct from next_schema then
     update public.lowcode_form_definitions
     set
       schema = next_schema,
@@ -135,11 +187,15 @@ begin
 
   if next_schema::text not like '%"optionsSourceKey": "grid-designer-source-fields"%'
     or next_schema::text not like '%"optionsSourceKey": "grid-designer-detail-fields"%'
+    or next_schema::text not like '%"optionsSourceKey": "grid-designer-parent-fields"%'
+    or next_schema::text not like '%"optionsSourceKey": "grid-designer-page-sources"%'
   then
     raise exception 'Grid designer related-table field option migration validation failed.';
   end if;
 end;
 $update_grid_designer$;
+
+drop function public._migrate_20260828170000_grid_field_pickers(jsonb);
 
 select pg_notify('pgrst', 'reload schema');
 

@@ -2,7 +2,8 @@ import type {
   LowCodeNodeActionDefinition,
   LowCodePageRelateConfig,
   LowCodePageSchema,
-  LowCodePageType
+  LowCodePageType,
+  LowCodeRuntimeFunctionDefinition
 } from '@enlearn/lowcode-framework/types/lowcode';
 
 export type Json =
@@ -291,6 +292,13 @@ export type LowCodeNodeActionRow = LowCodeNodeActionDefinition & {
   updated_at: string;
 };
 
+export type LowCodeRuntimeFunctionRow = LowCodeRuntimeFunctionDefinition & {
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type LowCodeFormDefinitionRow = {
   id: string;
   code: string;
@@ -375,6 +383,7 @@ export interface Database {
       lowcode_pages: TableDefinition<LowCodePageRow>;
       lowcode_page_versions: TableDefinition<LowCodePageVersionRow>;
       lowcode_node_actions: TableDefinition<LowCodeNodeActionRow>;
+      lowcode_page_runtime: TableDefinition<LowCodeRuntimeFunctionRow>;
       lowcode_form_definitions: TableDefinition<LowCodeFormDefinitionRow>;
     };
     Views: Record<string, never>;

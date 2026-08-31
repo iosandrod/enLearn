@@ -69,8 +69,13 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /state\.business\.tableName = kind === 'entity' \? sourceTarget : ''[/\s\S]*state\.business\.viewName = kind === 'view' \? sourceTarget : ''/,
-  'Selecting one source type must clear the opposite association.',
+  /if \(kind === 'entity'\) state\.business\.tableName = sourceTarget;[\s\S]*if \(kind === 'view'\) state\.business\.viewName = sourceTarget;/,
+  'Selecting a source must preserve the other association.',
+);
+assert.doesNotMatch(
+  designerSource,
+  /state\.business\.sourceType === 'table' && !readString\(state\.business\.tableName\)[\s\S]*请选择关联真实表/,
+  'The grid designer must not require a source-type-specific association before saving.',
 );
 assert.match(
   designerSource,
@@ -79,7 +84,7 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /state\.business\.sourceType = kind[/\s\S]*syncBusinessSourceTarget\(\)[/\s\S]*syncActiveDesignerDialogModel\(\)[/\s\S]*loadPhysicalTableSource/,
+  /state\.business\.sourceType = state\.business\.viewName \? 'view' : 'table';[\s\S]*syncBusinessSourceTarget\(\)[/\s\S]*syncActiveDesignerDialogModel\(\)[/\s\S]*loadPhysicalTableSource/,
   'Selecting an association must update the visible source metadata before column metadata finishes loading.',
 );
 assert.match(
@@ -94,8 +99,8 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /sourceType === 'custom' \? '' : tableName \|\| viewName[/\s\S]*sourceType !== 'custom',[/\s\S]*sourceType !== 'custom'/,
-  'A custom-source association must not leak into the service postData.',
+  /sourceType === 'custom' \? '' : viewName \|\| tableName[/\s\S]*sourceType !== 'custom',[/\s\S]*sourceType !== 'custom'/,
+  'A configured view must be the read target while custom sources remain isolated.',
 );
 assert.match(
   designerSource,
@@ -108,12 +113,6 @@ assert.doesNotMatch(
   'Source changes must not replace all unrelated query parameters.',
 );
 assert.match(
-  designerSource,
-  /state\.business\.sourceType === 'table' && !readString\(state\.business\.tableName\)[/\s\S]*请选择关联真实表[/\s\S]*state\.business\.sourceType === 'view' && !readString\(state\.business\.viewName\)[/\s\S]*请选择关联视图/,
-  'Concrete table types must not save without their required association.',
-);
-
-assert.match(
   simulatorSource,
   /business: \{[/\s\S]*tableType: block\.props\?\.tableType[/\s\S]*sourceType: block\.props\?\.sourceType[/\s\S]*tableName: block\.props\?\.tableName[/\s\S]*viewName: block\.props\?\.viewName/,
   'The visual designer must pass all association fields back into the shared grid designer.',
@@ -125,27 +124,27 @@ assert.match(
 );
 assert.match(
   visualConverterSource,
-  /const tableType = readGridTableType\(block, source\)[/\s\S]*const sourceType = readGridSourceType\(block, source\)[/\s\S]*tableName: sourceType === 'view'[/\s\S]*readString\(block\.tableName[/\s\S]*viewName: sourceType === 'view'/,
+  /const tableType = readGridTableType\(block, source\)[/\s\S]*const sourceType = readGridSourceType\(block, source\)[/\s\S]*tableName: readString\(block\.tableName, source\?\.tableName\)[/\s\S]*viewName: readString\(block\.viewName, source\?\.viewName\)/,
   'Runtime-to-visual conversion must restore the association metadata.',
 );
 assert.match(
   runtimeDesignerSource,
-  /tableName: readString\(block\.tableName, sourceType === 'table' \? source\?\.tableName : ''\)/,
+  /tableName: readString\(block\.tableName, source\?\.tableName\)/,
   'Runtime grid edits must restore a block-owned custom association.',
 );
 assert.match(
   runtimeDesignerSource,
-  /tableName: result\.business\.sourceType === 'view'[/\s\S]*readString\(result\.business\.tableName\)/,
+  /tableName: readString\(result\.business\.tableName\)[/\s\S]*viewName: readString\(result\.business\.viewName\)/,
   'Runtime grid edits must persist a custom table association on the block.',
 );
 assert.match(
   runtimeDesignerSource,
-  /if \(tableName && sourceType !== 'custom'\) source\.tableName = tableName/,
+  /if \(linkedTableName && sourceType !== 'custom'\) source\.tableName = linkedTableName/,
   'A custom block association must not turn the aggregate data source into a direct table source.',
 );
 assert.match(
   runtimeMapperSource,
-  /visualProps\.tableType = tableType[/\s\S]*visualProps\.sourceType = sourceType[/\s\S]*visualProps\.tableName = sourceType === 'view'[/\s\S]*readString\(targetBlock\.tableName[/\s\S]*visualProps\.viewName = sourceType === 'view'/,
+  /visualProps\.tableType = tableType[/\s\S]*visualProps\.sourceType = sourceType[/\s\S]*visualProps\.tableName = readString\([\s\S]*targetBlock\.tableName[\s\S]*visualProps\.viewName = readString\([\s\S]*targetBlock\.viewName/,
   'Runtime edits must synchronize association fields into the embedded visual model.',
 );
 assert.match(
@@ -244,10 +243,10 @@ const viewConversion = convertGrid({
 });
 assert.equal(viewConversion.block.tableType, 'detail');
 assert.equal(viewConversion.block.sourceType, 'view');
-assert.equal(viewConversion.block.tableName, '');
+assert.equal(viewConversion.block.tableName, 'public.stale_table');
 assert.equal(viewConversion.block.viewName, 'public.sales_summary');
 assert.equal(viewConversion.source.sourceType, 'view');
-assert.equal(viewConversion.source.tableName, 'public.sales_summary');
+assert.equal(viewConversion.source.tableName, 'public.stale_table');
 assert.equal(viewConversion.source.viewName, 'public.sales_summary');
 assert.deepEqual(viewConversion.source.postData, {
   filters: { status: 'active' },
@@ -319,8 +318,9 @@ assert.equal(apiNormalized.dataSources.custom.tableName, undefined);
 assert.equal(apiNormalized.dataSources.custom.viewName, undefined);
 assert.deepEqual(apiNormalized.dataSources.custom.postData, customConversion.source.postData);
 assert.equal(apiNormalized.dataSources.view.sourceType, 'view');
-assert.equal(apiNormalized.dataSources.view.tableName, 'public.sales_summary');
+assert.equal(apiNormalized.dataSources.view.tableName, 'public.stale_table');
 assert.equal(apiNormalized.dataSources.view.viewName, 'public.sales_summary');
+assert.equal(apiNormalized.dataSources.view.postData.tableName, 'public.sales_summary');
 const inferredViewNormalized = apiSchemaModule.normalizeLowCodePageSchema({
   ...schemaFixture,
   dataSources: {

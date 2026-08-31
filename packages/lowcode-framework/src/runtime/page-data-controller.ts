@@ -248,17 +248,19 @@ export class PageDataController {
   readonly refreshDataSources = async (
     sourceKeys: string[] = [],
     options: RefreshDataSourceOptions = {},
-  ) => {//
-    
+  ): Promise<string[]> => {
+    void options;
     let pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
-    for(let key of sourceKeys) {
-      if(pageBlocks.find((block) => block.id == key)) {
-        await this.dependencies.executeNodeAction({
-          node: key,
-          method: 'loadData',
-        })
+    const errors: string[] = [];
+    for (const key of sourceKeys) {
+      if (!pageBlocks.find((block) => block.id === key)) continue;
+      try {
+        await this.dependencies.executeNodeAction({ node: key, method: 'loadData' });
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : String(error));
       }
-    }//
+    }
+    return errors;
   }
 
   private readonly uniqueStrings = (values: unknown[]) => {

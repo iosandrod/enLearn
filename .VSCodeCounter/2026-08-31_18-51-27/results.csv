@@ -1,0 +1,32 @@
+"filename", "language", "TypeScript JSX", "SCSS", "TypeScript", "comment", "blank", "total"
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\button\index.tsx", "TypeScript JSX", 25, 0, 0, 0, 3, 28
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\divider\index.tsx", "TypeScript JSX", 8, 0, 0, 0, 1, 9
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\image\index.tsx", "TypeScript JSX", 35, 0, 0, 3, 3, 41
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\index.ts", "TypeScript", 0, 0, 16, 0, 6, 22
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\nav-bar\index.tsx", "TypeScript JSX", 52, 0, 0, 0, 5, 57
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\notice-bar\index.tsx", "TypeScript JSX", 26, 0, 0, 0, 2, 28
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\process\index.tsx", "TypeScript JSX", 3, 0, 0, 0, 1, 4
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\swipe\index.tsx", "TypeScript JSX", 34, 0, 0, 0, 3, 37
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\tabbar\index.tsx", "TypeScript JSX", 64, 0, 0, 0, 3, 67
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\tabbar\tabbar-item.tsx", "TypeScript JSX", 5, 0, 0, 0, 1, 6
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\text\fontArr.ts", "TypeScript", 0, 0, 46, 8, 1, 55
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\text\index.tsx", "TypeScript JSX", 6, 0, 0, 0, 1, 7
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\index.ts", "TypeScript", 0, 0, 18, 0, 5, 23
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-button-group\index.tsx", "TypeScript JSX", 84, 0, 0, 0, 9, 93
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-edit-form\index.tsx", "TypeScript JSX", 51, 0, 0, 0, 4, 55
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-grid\index.tsx", "TypeScript JSX", 112, 0, 0, 0, 11, 123
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-modal\index.tsx", "TypeScript JSX", 56, 0, 0, 0, 4, 60
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-search-form\index.tsx", "TypeScript JSX", 65, 0, 0, 0, 8, 73
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-bom\index.tsx", "TypeScript JSX", 33, 0, 0, 0, 2, 35
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-flow\index.tsx", "TypeScript JSX", 24, 0, 0, 0, 3, 27
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-gantt\index.tsx", "TypeScript JSX", 26, 0, 0, 0, 2, 28
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-visual-designer.tsx", "TypeScript JSX", 107, 0, 0, 0, 7, 114
+"e:\enLearn\packages\lowcode-framework\src\packages\chart-component\index.tsx", "TypeScript JSX", 139, 0, 0, 0, 9, 148
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\form\index.module.scss", "SCSS", 0, 3, 0, 7, 1, 11
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\form\index.tsx", "TypeScript JSX", 56, 0, 0, 0, 6, 62
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\index.ts", "TypeScript", 0, 0, 19, 0, 5, 24
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\layout\index.module.scss", "SCSS", 0, 114, 0, 7, 13, 134
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\layout\index.tsx", "TypeScript JSX", 170, 0, 0, 0, 7, 177
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\vxe-tabs\index.module.scss", "SCSS", 0, 69, 0, 0, 12, 81
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\vxe-tabs\index.tsx", "TypeScript JSX", 122, 0, 0, 0, 5, 127
+"Total", "-", 1303, 186, 99, 25, 143, 1756

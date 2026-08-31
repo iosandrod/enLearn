@@ -11,7 +11,7 @@ const editFunctions = getBuiltinLowCodePageFunctions('edit');
 
 assert.deepEqual(
   listFunctions.map((item) => item.name),
-  ['create', 'edit', 'delete', 'approve', 'unapprove', 'close', 'open', 'refresh', 'print', 'exit'],
+  ['create', 'edit', 'delete', 'approve', 'unapprove', 'close', 'open', 'refresh', 'designForm', 'print', 'exit'],
 );
 assert.deepEqual(
   editFunctions.map((item) => item.name),
@@ -28,6 +28,8 @@ assert.equal(
 const calls = [];
 const baseContext = {
   pageType: 'list',
+  pageCode: 'records',
+  serviceApi: { invoke: async () => [] },
   args: {},
   getSelectedRows: () => [{ id: 'row-1', status: 'draft' }],
   getFormRecords: () => [],
@@ -81,6 +83,19 @@ assert.deepEqual(calls.shift(), [
 ]);
 assert.deepEqual(calls.shift(), ['refresh']);
 assert.deepEqual(calls.shift(), ['notify', '审核成功。', 'success']);
+
+assert.equal(
+  resolveBuiltinLowCodePageFunction('list', 'designForm')?.id,
+  'list.design-form',
+  'designForm must resolve from the list-page built-in registry.',
+);
+await assert.rejects(
+  resolveBuiltinLowCodePageFunction('list', 'designForm').execute({
+    ...baseContext,
+    args: { id: 'form-definition-1' },
+  }),
+  /仅适用于系统表单定义页面/,
+);
 
 await resolveBuiltinLowCodePageFunction('list', 'approve').execute({
   ...baseContext,
@@ -164,8 +179,11 @@ assert.equal(await resolveBuiltinLowCodePageFunction('edit', 'save').execute({
 }), false);
 assert.deepEqual(editCalls, []);
 
-const rendererSource = await readFile(
-  new URL('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue', import.meta.url),
+const pageScriptRuntimeSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/runtime/lowcode-page-script-runtime.ts',
+    import.meta.url,
+  ),
   'utf8',
 );
 const contextSource = await readFile(
@@ -199,7 +217,7 @@ const [listPageFunctionSource, editPageFunctionSource, pageFunctionIndexSource] 
 
 assert.match(
   listPageFunctionSource,
-  /BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS[\s\S]*?id: 'list\.create'[\s\S]*?id: 'list\.delete'[\s\S]*?id: 'list\.exit'/,
+  /BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS[\s\S]*?id: 'list\.create'[\s\S]*?id: 'list\.design-form'[\s\S]*?name: 'designForm'[\s\S]*?id: 'list\.exit'/,
   'List-page executable functions must live in list-page-function.ts.',
 );
 assert.match(
@@ -214,7 +232,7 @@ assert.match(
 );
 
 assert.match(
-  rendererSource,
+  pageScriptRuntimeSource,
   /resolveBuiltinLowCodePageFunction[\s\S]*?createBuiltinPageFunctionContext[\s\S]*?resolvedFunction\.pageFunction\.execute/,
   'executeFunction must fall back to the page-type-specific built-in registry.',
 );

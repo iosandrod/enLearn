@@ -247,6 +247,61 @@ function asRows(value: unknown): Record<string, unknown>[] {
 
 @Injectable()
 export class AdminService extends BaseService {
+  protected override async saveItem(
+    postData: Parameters<BaseService['execute']>[1],
+    context: ServiceContext
+  ) {
+    if (this.tryResolveResource(postData)) {
+      return super.saveItem(postData, context);
+    }
+
+    const tableName = readOptionalString(postData.tableName ?? postData.table_name);
+    if (!tableName) {
+      return super.saveItem(postData, context);
+    }
+
+    return this.saveGenericTableItem(tableName, postData, context);
+  }
+
+  protected async saveGenericTableItem(
+    tableName: string,
+    postData: Parameters<BaseService['execute']>[1],
+    context: ServiceContext
+  ) {
+    const primaryKey = readOptionalString(postData.primaryKey ?? postData.primary_key) || 'id';
+    this.assertIdentifier(primaryKey, 'primaryKey');
+
+    const payload = { ...this.readDataPayload(postData) };
+    const id = postData.id ?? postData[primaryKey] ?? payload[primaryKey];
+    const hasId =
+      (typeof id === 'string' && Boolean(id.trim())) ||
+      (typeof id === 'number' && Number.isFinite(id));
+
+    delete payload.primaryKey;
+    delete payload.primary_key;
+    if (hasId) delete payload[primaryKey];
+    if (!Object.keys(payload).length) {
+      throw new BadRequestException('Save data is required.');
+    }
+
+    // Generic admin CRUD still uses the authenticated client so table RLS remains authoritative.
+    const client = await this.createCrudClient({ tableName }, context);
+    const table = this.fromTable(client, tableName);
+    const query = hasId
+      ? table.update(payload).eq(primaryKey, id)
+      : table.insert(payload);
+    const { data, error } = await query.select('*').maybeSingle();
+
+    if (error) throw new BadRequestException(error.message);
+    if (!data && hasId) {
+      throw new NotFoundException(`${tableName} record was not found.`);
+    }
+    if (!data) {
+      throw new BadRequestException(`${tableName} record could not be created.`);
+    }
+    return data;
+  }
+
   protected async resolveNavigationAuthorization(context: ServiceContext) {
     const activeAccount = await requireActiveAccount(context);
     const { client, user } = await getCurrentUser(activeAccount.context);

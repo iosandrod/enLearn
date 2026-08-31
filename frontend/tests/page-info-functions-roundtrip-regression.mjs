@@ -151,6 +151,32 @@ assert.deepEqual(buildPageInfoSaveData(page, reactiveNormalized).relate_config, 
   parentCategory: 'reactive-parent',
 });
 
+// Previously, the shared management-edit form used snake_case bindings while
+// the page-information save model used camelCase. A changed page_type was
+// silently replaced by the stale pageType initial value during normalization.
+const legacyNormalized = normalizePageInfoDesignForm({
+  ...opened,
+  tableName: 'stale_table_name',
+  pageType: 'edit',
+  table_name: ' public.page_info_legacy ',
+  page_type: 'list',
+}, page);
+const legacySaved = buildPageInfoSaveData(page, legacyNormalized);
+assert.equal(legacyNormalized.pageType, 'list');
+assert.equal(legacyNormalized.tableName, 'page_info_legacy');
+assert.equal(legacySaved.page_type, 'list');
+assert.equal(legacySaved.schema.pageType, 'list');
+
+const dashboardSource = await readFile(
+  new URL('../layouts/dashboard.vue', import.meta.url),
+  'utf8',
+);
+assert.match(
+  dashboardSource,
+  /loadLowCodeFormDefinition\([\s\S]*?PAGE_INFO_DESIGN_FORM_CODE[\s\S]*?hydratePageInfoDesignSchema\([\s\S]*?pageInfoFormDefinition\.schema/,
+  'The page-information dialog must use its dedicated schema instead of the mutable management edit form.',
+);
+
 const designerSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue', import.meta.url),
   'utf8',

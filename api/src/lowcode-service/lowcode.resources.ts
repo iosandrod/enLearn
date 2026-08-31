@@ -122,6 +122,59 @@ export const lowCodeResources: ResourceConfigMap = {
       userFields: { updatedBy: 'updated_by' }
     }
   },
+  lowcode_page_runtime: {
+    tableName: 'lowcode_page_runtime',
+    clientMode: 'user',
+    permissions: {
+      create: 'lowcode.pages.manage',
+      update: 'lowcode.pages.manage',
+      delete: 'lowcode.pages.manage'
+    },
+    defaults: {
+      function_type: 'page_function',
+      category: 'page_flow',
+      execution_mode: 'script',
+      parameters: [],
+      runtime_spec: {},
+      result_schema: {},
+      capabilities: [],
+      applicable_when: {},
+      limits: { timeoutMs: 2000, maxApiCalls: 50, maxPayloadBytes: 26214400 },
+      version: 1,
+      status: 'draft',
+      enabled: true,
+      is_system: false,
+      sort_order: 0
+    },
+    list: {
+      defaultSorts: [
+        { field: 'category', direction: 'asc' },
+        { field: 'page_type', direction: 'asc' },
+        { field: 'sort_order', direction: 'asc' }
+      ]
+    },
+    create: {
+      allowedFields: [
+        'page_id', 'runtime_key', 'function_name', 'function_type', 'category',
+        'page_type', 'node_type', 'label', 'description', 'execution_mode',
+        'source_code', 'native_handler', 'runtime_spec', 'parameters',
+        'result_schema', 'capabilities', 'applicable_when', 'limits',
+        'version', 'status', 'enabled', 'is_system', 'sort_order'
+      ],
+      requiredFields: ['runtime_key', 'function_name', 'function_type', 'category', 'label'],
+      userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+    },
+    update: {
+      allowedFields: [
+        'page_id', 'function_name', 'function_type', 'category', 'page_type',
+        'node_type', 'label', 'description', 'execution_mode', 'source_code',
+        'native_handler', 'runtime_spec', 'parameters', 'result_schema',
+        'capabilities', 'applicable_when', 'limits', 'version', 'status',
+        'enabled', 'is_system', 'sort_order'
+      ],
+      userFields: { updatedBy: 'updated_by' }
+    }
+  },
   lowcode_form_definitions: {
     tableName: 'lowcode_form_definitions',
     clientMode: 'user',

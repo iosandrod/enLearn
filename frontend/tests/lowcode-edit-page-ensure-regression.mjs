@@ -2,13 +2,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
-const [source, rendererSource, dashboardSource] = await Promise.all([
+const [source, pageDataControllerSource, scriptRuntimeSource, dashboardSource] = await Promise.all([
   readFile(
     new URL('../../packages/lowcode-framework/src/runtime/lowcode-pages.ts', import.meta.url),
     'utf8',
   ),
   readFile(
-    new URL('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue', import.meta.url),
+    new URL('../../packages/lowcode-framework/src/runtime/page-data-controller.ts', import.meta.url),
+    'utf8',
+  ),
+  readFile(
+    new URL('../../packages/lowcode-framework/src/runtime/lowcode-page-script-runtime.ts', import.meta.url),
     'utf8',
   ),
   readFile(new URL('../layouts/dashboard.vue', import.meta.url), 'utf8'),
@@ -144,12 +148,12 @@ assert.deepEqual(
 );
 
 assert.match(
-  rendererSource,
-  /async function resolveAssociatedEditPage\(\)[\s\S]*props\.page\.page_type === 'list'[\s\S]*ensureLowCodeEditPage\(host\.getServiceApi\(\), props\.page\)/,
+  pageDataControllerSource,
+  /private readonly resolveAssociatedEditPage = async \(\)[\s\S]*this\.dependencies\.props\.page\.page_type === 'list'[\s\S]*ensureLowCodeEditPage\(this\.dependencies\.host\.getServiceApi\(\), this\.dependencies\.props\.page\)/,
   'Grid edit navigation must ensure the associated edit-page record exists.',
 );
 assert.match(
-  rendererSource,
+  scriptRuntimeSource,
   /navigateToEdit: async \(row = \{\}\)[\s\S]*resolveEditPageRoute/,
   'The built-in create and edit functions must share the ensured edit-page route.',
 );
