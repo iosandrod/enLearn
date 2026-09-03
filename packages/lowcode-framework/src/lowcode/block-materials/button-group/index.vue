@@ -162,12 +162,12 @@ function resolveButtonProps(action: LowCodeButtonGroupAction): VxeButtonProps {
 
 function handleRootClick(action: LowCodeButtonGroupAction) {
   if (hasChildren(action)) return;
-  handleAction(action);
+  void handleAction(action);
 }
 
 function handleDropdownClick(params: { option?: Record<string, unknown> }) {
   const action = (params.option as { action?: LowCodeButtonGroupAction } | undefined)?.action;
-  if (action) handleAction(action);
+  if (action) void handleAction(action);
 }
 
 function normalizeActionCode(value: unknown) {
@@ -311,8 +311,15 @@ function openButtonGroupContextMenu(event: MouseEvent) {
       optionClick({ option }) {
         if (option.code === 'design-buttons') {
           void openButtonDesigner().catch((error) => {
-            // The database-backed definition is required for runtime editing.
-            console.error(error);
+            const content = error instanceof Error ? error.message : '按钮设计器打开失败。';
+            const modal = (VxeUI as unknown as {
+              modal?: { message?: (options: Record<string, unknown>) => unknown };
+            }).modal;
+            if (modal?.message) {
+              void modal.message({ content, status: 'error' });
+              return;
+            }
+            console.error(content);
           });
         }
       },
@@ -320,10 +327,31 @@ function openButtonGroupContextMenu(event: MouseEvent) {
   });
 }
 
-function handleAction(action: LowCodeButtonGroupAction) {
+function reportButtonError(error: unknown) {
+  runtimeBlockEditor?.reportRuntimeError?.(error);
+  if (runtimeBlockEditor?.reportRuntimeError) return;
+
+  const content = error instanceof Error ? error.message : String(error);
+  const modal = (VxeUI as unknown as {
+    modal?: { message?: (options: Record<string, unknown>) => unknown };
+  }).modal;
+  if (modal?.message) {
+    void modal.message({ content, status: 'error' });
+    return;
+  }
+  console.error(content);
+}
+
+async function handleAction(action: LowCodeButtonGroupAction) {
   if (isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value)) return;
 
-  emit('runtimeEvent', {
+  const script = typeof action.script === 'string' ? action.script.trim() : '';
+  if (!script) {
+    reportButtonError(new Error(`按钮“${readButtonContent(action)}”未配置脚本。`));
+    return;
+  }
+
+  const event = {
     name: action.eventName ?? 'buttonGroup.click',
     blockId: props.block.id,
     blockKind: props.block.kind,
@@ -334,6 +362,28 @@ function handleAction(action: LowCodeButtonGroupAction) {
       script: action.script ?? '',
       directives: action.directives ?? [],
     },
+  } as const;
+
+  if (runtimeBlockEditor?.executeButtonScript) {
+    try {
+      const result = await runtimeBlockEditor.executeButtonScript(script, event);
+      if (result === false) return;
+    } catch (error) {
+      reportButtonError(error);
+      return;
+    }
+
+    // The script has already run; the marker lets the event bus process directives without rerunning it.
+    emit('runtimeEvent', {
+      ...event,
+      payload: { ...event.payload, scriptExecuted: true },
+    });
+    emit('toolbarAction', { block: props.block, action });
+    return;
+  }
+
+  emit('runtimeEvent', {
+    ...event,
   });
   emit('toolbarAction', { block: props.block, action });
 }

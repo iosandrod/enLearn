@@ -6,7 +6,7 @@ import type {
   LowCodePageFormBlock,
   LowCodePageGridBlock,
   LowCodePageOverlayBlock,
-  LowCodeRemoteRuntimeResult,
+  LowCodeRuntimeResult,
   LowCodeRuntimeEvent
 } from '../types/lowcode';
 import { openGlobalDialog as openLowCodeGlobalDialog, type GlobalDialogConfig } from './global-dialog';
@@ -107,7 +107,7 @@ export type LowCodePageScriptRuntimeDependencies = {
   publishRuntimeEvent(event: LowCodeRuntimeEvent): Promise<void>;
 };
 
-/** Executes isolated page scripts through action, function, and HTTP strategies. */
+/** Executes isolated page scripts through registered host APIs and execution strategies. */
 export class LowCodePageScriptRuntime {
   readonly executeIsolatedScript = (
     script: string,
@@ -1072,32 +1072,67 @@ export class LowCodePageScriptRuntime {
       }
     };
     if (resolvedFunction.kind === 'database-script') {
-      const { host, props } = this.dependencies;
-      const routeQuery = host.getRoute().query ?? {};
-      const fromPage = readString(
-        routeQuery.fromPage ?? routeQuery.from_page ?? routeQuery.sourcePage ?? routeQuery.source_page,
-      );
-      const remoteContext = this.createScriptContext(functionEvent);
-      remoteContext.event = {
-        ...remoteContext.event,
-        selectedRows: this.getBuiltinSelectedRows(),
-        formRecords: this.getBuiltinFormRecords(),
+      const selectedRows = this.getBuiltinSelectedRows();
+      const formRecords = this.getBuiltinFormRecords();
+      const databaseFunctionEvent: LowCodeRuntimeEvent = {
+        ...functionEvent,
+        payload: {
+          ...(functionEvent.payload ?? {}),
+          selectedRows,
+          formRecords,
+          runtimeSpec: cloneRuntimeValue(resolvedFunction.definition.runtime_spec ?? {}),
+        },
       };
-      const remoteResult = await host.getServiceApi().invoke<LowCodeRemoteRuntimeResult>('lowcode', 'executeRuntime', {
-        pageId: props.page.id,
-        runtimeKey: resolvedFunction.definition.runtime_key,
-        functionName: resolvedFunction.definition.function_name,
-        ...(fromPage ? { fromPage } : {}),
-        args,
-        context: remoteContext,
-      });
-      return isRecord(remoteResult) && 'value' in remoteResult
-        ? applyLowCodeRuntimeEffects(remoteResult, this.createBuiltinPageFunctionContext(args, functionEvent))
-        : remoteResult;
+      const scriptResult = await this.executeIsolatedScript(
+        this.createDatabasePageFunctionScript(resolvedFunction.definition.source_code),
+        databaseFunctionEvent,
+        'function',
+      );
+      const runtimeValue = scriptResult.value;
+      if (!isRecord(runtimeValue)) return runtimeValue;
+      if (
+        !('effects' in runtimeValue) &&
+        !('resultEffect' in runtimeValue) &&
+        !('value' in runtimeValue)
+      ) {
+        return runtimeValue;
+      }
+      const runtimeResult: LowCodeRuntimeResult = {
+        value: 'value' in runtimeValue ? runtimeValue.value : undefined,
+        effects: Array.isArray(runtimeValue.effects)
+          ? runtimeValue.effects.filter(isRecord).map((effect) => ({
+            ...effect,
+            type: typeof effect.type === 'string' ? effect.type : '',
+          })) as LowCodeRuntimeResult['effects']
+          : [],
+        ...(typeof runtimeValue.resultEffect === 'number'
+          ? { resultEffect: runtimeValue.resultEffect }
+          : {}),
+      };
+      return applyLowCodeRuntimeEffects(
+        runtimeResult,
+        this.createBuiltinPageFunctionContext(args, databaseFunctionEvent),
+      );
     }
     const pageFunction = resolvedFunction.pageFunction;
     const result = await this.executeIsolatedScript(pageFunction.script, functionEvent);
     return result.value;
+  }
+
+  private createDatabasePageFunctionScript(sourceCode: string) {
+    return `(async function executeDatabasePageFunction() {
+  "use strict";
+  ${sourceCode}
+  if (typeof main !== "function") {
+    throw new TypeError("数据库页面函数 source_code 必须定义 main。");
+  }
+  return await main.call(this, {
+    args: this.event.args || {},
+    context: this.context,
+    event: this.event,
+    runtimeSpec: this.event.runtimeSpec || {},
+  });
+})`;
   }
 
   private createPrimaryScriptExecutors() {
@@ -1113,11 +1148,7 @@ export class LowCodePageScriptRuntime {
     context: LowCodeScriptContextSnapshot,
     event: LowCodeRuntimeEvent
   ) {
-    const allowedCapabilities = context.policy?.capabilities;
-    if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
-      throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
-    }
-
+    
     if (this.primaryScriptExecutors.has(request.name)) {
       return this.primaryScriptExecutors.execute(request, {
         event,

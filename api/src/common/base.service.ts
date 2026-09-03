@@ -520,8 +520,10 @@ export abstract class BaseService implements ServiceExecutor {
   protected async saveItem(postData: ServicePostData, context: ServiceContext) {
     const resource = this.tryResolveResource(postData);
     const primaryKey = resource ? this.primaryKey(resource.config) : 'id';
-    const data = this.readRecord(postData.data);
-    return this.readOptionalString(postData.id ?? postData[primaryKey] ?? data.id ?? data[primaryKey])
+    const id = resource
+      ? this.readId(postData, resource.config)
+      : this.readOptionalString(postData.id ?? postData[primaryKey]);
+    return id
       ? this.updateItem(postData, context)
       : this.createItem(postData, context);
   }
@@ -1267,7 +1269,29 @@ export abstract class BaseService implements ServiceExecutor {
           throw new BadRequestException(`__details[${detailIndex}] must be an object.`);
         }
 
-        const mode = this.readOptionalString(rawDetail.mode) || 'replace';
+        const requestedMode = this.readOptionalString(
+          rawDetail.mode ?? rawDetail.update_mode
+        );
+        // Pre-change clients used updateMode: "changes" together with a
+        // complete rows array. That payload is a replace submission (there
+        // are no created/updated/deleted sets to apply), so preserve the
+        // historical behavior while the explicit mode contract remains
+        // strict for new callers.
+        const legacyRowsSubmission =
+          !requestedMode &&
+          Array.isArray(rawDetail.rows) &&
+          rawDetail.created === undefined &&
+          rawDetail.updated === undefined &&
+          rawDetail.deleted === undefined;
+        const mode = requestedMode || 'replace';
+        const relationInput = legacyRowsSubmission &&
+          this.readOptionalString(rawDetail.updateMode ?? rawDetail.update_mode) === 'changes'
+          ? Object.fromEntries(
+              Object.entries(rawDetail).filter(([field]) =>
+                field !== 'updateMode' && field !== 'update_mode'
+              )
+            )
+          : rawDetail;
         if (mode !== 'replace' && mode !== 'changes') {
           throw new BadRequestException(
             `Unsupported __details[${detailIndex}].mode: ${mode}.`
@@ -1280,7 +1304,7 @@ export abstract class BaseService implements ServiceExecutor {
           foreignKey,
           parentKey,
           inheritFields
-        } = this.resolveRequestDetailRelation(ctx, rawDetail, detailIndex, mode);
+        } = this.resolveRequestDetailRelation(ctx, relationInput, detailIndex, mode);
 
         const targetKey = `${resolved.name}:${foreignKey}:${parentKey}`;
         if (targets.has(targetKey)) {
@@ -2160,7 +2184,16 @@ export abstract class BaseService implements ServiceExecutor {
   protected readId(postData: ServicePostData, resource: ResourceConfig) {
     const primaryKey = this.primaryKey(resource);
     const data = this.readRecord(postData.data);
-    return this.readOptionalString(postData.id ?? postData[primaryKey] ?? data.id ?? data[primaryKey]);
+    const directId = this.readOptionalString(
+      postData.id ?? postData[primaryKey] ?? data.id ?? data[primaryKey]
+    );
+    if (directId) return directId;
+
+    // Older low-code clients sent the record identity as filters: { id: ... }
+    // while leaving the top-level id empty. Treat that identity as the save
+    // target so saveItem performs an update instead of an accidental insert.
+    const filters = this.readRecord(postData.filters);
+    return this.readOptionalString(filters[primaryKey] ?? filters.id);
   }
 
   protected readIds(postData: ServicePostData, resource: ResourceConfig) {

@@ -25,7 +25,7 @@ async function freePort() {
   });
 }
 
-async function waitForUrl(url, timeoutMs = 20_000) {
+async function waitForUrl(url, timeoutMs = 60_000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
   while (Date.now() < deadline) {

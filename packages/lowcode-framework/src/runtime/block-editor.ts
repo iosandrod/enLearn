@@ -24,6 +24,11 @@ export type LowCodeRuntimeBlockEditor = {
     script: string,
     event: import('../types/lowcode').LowCodeRuntimeEvent,
   ): Promise<unknown>;
+  executeButtonScript?(
+    script: string,
+    event: import('../types/lowcode').LowCodeRuntimeEvent,
+  ): Promise<unknown>;
+  reportRuntimeError?(error: unknown): void;
 };
 
 export const lowCodeRuntimeBlockEditorKey: InjectionKey<LowCodeRuntimeBlockEditor> =

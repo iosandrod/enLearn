@@ -12,9 +12,13 @@ export default createPlanningVisualDesigner({
   dataset: 'flow',
   sampleData: {
     nodes: [
-      { id: 'cut', label: '下料切割', type: 'fixed_time', itemName: '切割件', resourceSummary: '切割线', position: { x: 40, y: 80 } },
-      { id: 'assembly', label: '组件装配', type: 'fixed_time', itemName: '装配件', resourceSummary: '装配线', position: { x: 330, y: 80 } },
-      { id: 'pack', label: '终检包装', type: 'fixed_time', itemName: '产成品', resourceSummary: '包装线', position: { x: 620, y: 80 } },
+      { id: 'route', label: '成品主路线', type: 'routing', itemName: '成品', position: { x: 16, y: 16 } },
+      { id: 'cut', label: '下料切割', type: 'fixed_time', parentOperationPath: '成品主路线', itemName: '切割件', resourceSummary: '切割线', position: { x: 48, y: 72 } },
+      { id: 'assembly', label: '组件装配', type: 'fixed_time', parentOperationPath: '成品主路线', itemName: '装配件', resourceSummary: '装配线', position: { x: 408, y: 72 } },
+      { id: 'pack', label: '终检包装', type: 'fixed_time', parentOperationPath: '成品主路线', itemName: '产成品', resourceSummary: '包装线', position: { x: 768, y: 72 } },
+    ],
+    containers: [
+      { id: 'container:route', operationId: 'route', type: 'routing', label: '成品主路线', itemName: '成品', x: 20, y: 28, width: 1028, height: 196, nodeIds: ['cut', 'assembly', 'pack'] },
     ],
     edges: [
       { id: 'cut-assembly', source: 'cut', target: 'assembly', relation: 'dependency', label: '前置约束' },
@@ -23,4 +27,3 @@ export default createPlanningVisualDesigner({
   },
   createRuntimeProps: (props) => ({ fitViewOnInit: props.fitViewOnInit !== false }),
 });
-

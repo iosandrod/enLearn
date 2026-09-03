@@ -5,6 +5,7 @@ import {
   createBuiltinLowCodeAction,
   createBuiltinLowCodeActionEditorRow,
   createBuiltinLowCodePageFunctionScript,
+  createBuiltinLowCodeNoopScript,
   createDefaultButtonGroupActions,
   createDefaultButtonGroupEditorRows,
   getBuiltinLowCodeActionPresets,
@@ -115,7 +116,34 @@ const importAction = createBuiltinLowCodeAction(
   {},
   { pageType: 'list' },
 );
-assert.equal(importAction.script, undefined, 'Unmapped extension buttons must not get a fake function call.');
+assert.equal(
+  importAction.script,
+  createBuiltinLowCodeNoopScript(),
+  'Default extension buttons must remain executable without a fake page-function call.',
+);
+assert.match(
+  createBuiltinLowCodeActionEditorRow(BUILTIN_LOW_CODE_ACTION_KEYS.CREATE, { pageType: 'list' }).script,
+  /name: "create"/,
+  'Page-aware default actions must replace the fallback script with their built-in function.',
+);
+
+for (const pageType of ['list', 'edit']) {
+  for (const preset of getBuiltinLowCodeActionPresetsForPage(pageType)) {
+    const action = createBuiltinLowCodeActionEditorRow(preset.key, { pageType });
+    assert.match(
+      action.script,
+      /async function main\(\)/,
+      `${pageType} default action ${preset.action.code} must include an executable script.`,
+    );
+    for (const child of action.children) {
+      assert.match(
+        child.script,
+        /async function main\(\)/,
+        `${pageType} default child action ${child.code} must include an executable script.`,
+      );
+    }
+  }
+}
 
 const firstDefaults = createDefaultButtonGroupActions();
 firstDefaults[0].label = 'changed';
@@ -127,8 +155,11 @@ assert.equal(secondDefaults[1].children[0].label, '导入');
 const jsonRows = createDefaultButtonGroupEditorRows();
 const arrayRows = createDefaultButtonGroupEditorRows({ directivesJson: 'array' });
 assert.equal(jsonRows[0].directivesJson, '[]');
+assert.match(jsonRows[0].script, /async function main\(\)/);
+assert.match(jsonRows[1].script, /async function main\(\)/);
 assert.deepEqual(arrayRows[0].directivesJson, []);
 assert.equal(jsonRows[1].children[0].directivesJson, '[]');
+assert.match(jsonRows[1].children[0].script, /async function main\(\)/);
 
 const editEditorRow = createBuiltinLowCodeActionEditorRow(
   BUILTIN_LOW_CODE_ACTION_KEYS.EDIT,

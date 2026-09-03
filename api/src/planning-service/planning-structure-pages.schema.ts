@@ -1,7 +1,9 @@
-import type { LowCodePageSchema } from '../lowcode-service/lowcode.schema';
+import { isRecord, type LowCodePageSchema } from '../lowcode-service/lowcode.schema';
 
 export const PLANNING_ROUTING_PAGE_CODE = 'planning_routing_view';
 export const PLANNING_ROUTING_ROUTE = '/dashboard/planning/routing-view';
+export const PLANNING_ROUTE_DESIGNER_PAGE_CODE = 'planning_route_designer';
+export const PLANNING_ROUTE_DESIGNER_ROUTE = '/dashboard/planning/route-designer';
 export const PLANNING_BOM_PAGE_CODE = 'planning_bom_view';
 export const PLANNING_BOM_ROUTE = '/dashboard/planning/bom-view';
 
@@ -24,7 +26,7 @@ export const PLANNING_STRUCTURE_ROUTES = [
   }
 ] as const;
 
-function optionSource(optionType: 'item' | 'operation' | 'resource', label: string) {
+function optionSource(optionType: 'item' | 'operation' | 'resource' | 'route', label: string) {
   return {
     key: `${optionType}Options`,
     label,
@@ -187,7 +189,8 @@ export function buildPlanningRoutingPageSchema(): LowCodePageSchema {
         false
       ),
       itemOptions: optionSource('item', '物料选项'),
-      resourceOptions: optionSource('resource', '资源选项')
+      resourceOptions: optionSource('resource', '资源选项'),
+      routeOptions: optionSource('route', '工艺路线选项')
     },
     eventHandlers: [{
       event: 'planningFlow.nodeSelect',
@@ -440,5 +443,93 @@ export function buildPlanningBomPageSchema(): LowCodePageSchema {
   };
 }
 
+export function buildPlanningRouteDesignerPageSchema(): LowCodePageSchema {
+  const base = buildPlanningRoutingPageSchema();
+  const detailSourceKeys = [
+    'routingSuboperations',
+    'routingMaterials',
+    'routingResources',
+    'routingDependencies'
+  ];
+  const detailTabsBlock = base.blocks.find((block) => block.id === 'planning_routing_detail_tabs');
+  const tabs = Array.isArray(detailTabsBlock?.tabs)
+    ? detailTabsBlock.tabs.filter(isRecord)
+    : [];
+  const flowTab = tabs.find((tab) => tab.key === 'flow');
+  const flowBlock = Array.isArray(flowTab?.blocks)
+    ? flowTab.blocks.find(isRecord)
+    : undefined;
+  if (!detailTabsBlock || !flowBlock) {
+    throw new Error('The planning routing page must define its flow and detail tabs.');
+  }
+
+  const flowSource = base.dataSources?.flow;
+  const flowPostData = flowSource?.postData ?? {};
+  const { requiredFilters: _requiredFilters, ...flowPostDataWithoutRequiredFilters } = flowPostData;
+  const dataSources = Object.fromEntries(
+    Object.entries(base.dataSources ?? {})
+      .filter(([key]) => key === 'flow' || key === 'routeOptions' || detailSourceKeys.includes(key))
+      .map(([key, source]) => key === 'flow'
+        ? [key, {
+            ...source,
+            postData: {
+              ...flowPostDataWithoutRequiredFilters,
+              filters: { operationId: '{{ forms.planning_route_designer_filter.operationId }}' },
+              requiredFilters: ['operationId']
+            },
+            autoLoad: false
+          }]
+        : [key, source])
+  );
+
+  return {
+    ...base,
+    code: PLANNING_ROUTE_DESIGNER_PAGE_CODE,
+    route: PLANNING_ROUTE_DESIGNER_ROUTE,
+    title: '工艺路线设计',
+    description: '查看工艺路线，并在选中工序后查看其物料、资源、子工序和前置依赖。',
+    dataSources,
+    eventHandlers: [{
+      event: 'planningFlow.nodeSelect',
+      blockId: 'planning_route_designer_flow',
+      directives: detailSourceKeys.map((sourceKey) => ({
+        type: 'setSearchFilters',
+        sourceKey,
+        mode: 'replace',
+        values: { operation_id: '{{ event.row.id }}' }
+      }))
+    }],
+    blocks: [
+      {
+        id: 'planning_route_designer_filter',
+        kind: 'searchForm',
+        title: '工艺路线查询',
+        targetSourceKey: 'flow',
+        initialValues: { operationId: '' },
+        schema: {
+          columns: 1,
+          fields: [
+            selectField('operationId', '工艺路线', 'routeOptions', '请选择工艺路线', 'flow')
+          ],
+          actions: searchActions()
+        }
+      },
+      {
+        ...flowBlock,
+        id: 'planning_route_designer_flow',
+        title: '工艺路线',
+        description: '选择工序后，关联信息将在下方子表中更新。',
+        height: 560
+      },
+      {
+        ...detailTabsBlock,
+        id: 'planning_route_designer_detail_tabs',
+        tabs: tabs.filter((tab) => tab.key !== 'flow')
+      }
+    ]
+  } as LowCodePageSchema;
+}
+
 export const PLANNING_ROUTING_PAGE_SCHEMA = buildPlanningRoutingPageSchema();
+export const PLANNING_ROUTE_DESIGNER_PAGE_SCHEMA = buildPlanningRouteDesignerPageSchema();
 export const PLANNING_BOM_PAGE_SCHEMA = buildPlanningBomPageSchema();

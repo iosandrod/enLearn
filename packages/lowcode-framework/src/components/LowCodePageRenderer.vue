@@ -56,7 +56,15 @@
         @runtime-event="publishRuntimeEvent"
       />
 
-      <p v-if="message" :class="messageClass">{{ message }}</p>
+      <p
+        v-if="message"
+        class="lc-runtime-feedback"
+        :class="messageClass"
+        :role="messageClass === 'lc-error' ? 'alert' : 'status'"
+        aria-live="polite"
+      >
+        {{ message }}
+      </p>
       <GlobalDialogHost v-if="showGlobalDialogHost" />
     </div>
   </div>
@@ -157,6 +165,27 @@ defineExpose(renderer.exposed);
   font-size: 12px;
   line-height: 18px;
   padding: 4px 10px;
+}
+
+.lc-runtime-feedback {
+  position: absolute;
+  top: 44px;
+  right: 12px;
+  z-index: 21;
+  max-width: min(520px, calc(100% - 24px));
+  margin: 0;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 6px 18px rgb(15 23 42 / 10%);
+  padding: 7px 10px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lc-runtime-feedback.lc-error {
+  border-color: #f1b8b3;
+  background: #fff7f6;
 }
 
 @media (max-width: 820px) {

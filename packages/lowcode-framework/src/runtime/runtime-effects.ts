@@ -1,6 +1,6 @@
 import type {
-  LowCodeRemoteRuntimeEffect,
-  LowCodeRemoteRuntimeResult,
+  LowCodeRuntimeEffect,
+  LowCodeRuntimeResult,
 } from '../types/lowcode';
 
 export type LowCodeRuntimeEffectContext = {
@@ -25,20 +25,20 @@ function record(value: unknown, label: string) {
   return value as Record<string, unknown>;
 }
 
-function rows(effect: LowCodeRemoteRuntimeEffect) {
+function rows(effect: LowCodeRuntimeEffect) {
   return Array.isArray(effect.rows)
     ? effect.rows.filter((row): row is Record<string, unknown> =>
       !!row && typeof row === 'object' && !Array.isArray(row))
     : [];
 }
 
-/** Applies database-produced effects in one place for page, button and node entries. */
+/** Applies script-produced effects in one place for page, button and node entries. */
 export async function applyLowCodeRuntimeEffects(
-  remoteResult: LowCodeRemoteRuntimeResult,
+  runtimeResult: LowCodeRuntimeResult,
   context: LowCodeRuntimeEffectContext,
 ) {
-  const effects = Array.isArray(remoteResult.effects) ? remoteResult.effects : [];
-  if (!effects.length) return remoteResult.value;
+  const effects = Array.isArray(runtimeResult.effects) ? runtimeResult.effects : [];
+  if (!effects.length) return runtimeResult.value;
 
   const results: unknown[] = [];
   for (const effect of effects) {
@@ -97,10 +97,10 @@ export async function applyLowCodeRuntimeEffects(
         break;
       }
       default:
-        throw new Error(`数据库运行时效果 "${effect.type}" 没有本地适配器。`);
+        throw new Error(`脚本运行时效果 "${effect.type}" 没有本地适配器。`);
     }
   }
-  return typeof remoteResult.resultEffect === 'number'
-    ? results[remoteResult.resultEffect]
-    : remoteResult.value;
+  return typeof runtimeResult.resultEffect === 'number'
+    ? results[runtimeResult.resultEffect]
+    : runtimeResult.value;
 }

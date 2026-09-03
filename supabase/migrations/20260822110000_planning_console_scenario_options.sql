@@ -15,7 +15,7 @@ insert into public.system_option_sources (
 ) values (
   'planning_console_scenario',
   U&'\6392\4EA7\573A\666F',
-  U&'\6392\4EA7\63A7\5236\53F0\573A\666F\4E0B\62C9\FF0C\5305\542B\6B63\5F0F\7248\3001\6D4B\8BD5\7248\3001\PMC\7248\672C\3002',
+  U&'\6392\4EA7\63A7\5236\53F0\573A\666F\4E0B\62C9\FF0C\5305\542B\6B63\5F0F\7248\3001\6D4B\8BD5\7248\3001\0050\004D\0043\7248\672C\3002',
   'dict',
   '{}'::jsonb,
   0,
@@ -63,7 +63,7 @@ insert into public.system_option_items (
   ),
   (
     'planning_console_scenario',
-    U&'PMC\7248\672C',
+    U&'\0050\004D\0043\7248\672C',
     'pmc',
     'active',
     30,

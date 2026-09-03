@@ -192,11 +192,6 @@ watch(
   }
 );
 
-onActivated(async () => {
-  await refreshTemplates({ quiet: true });
-  await loadRouteTemplate();
-});
-
 onBeforeUnmount(() => {
   if (messageTimer) clearTimeout(messageTimer);
 });

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   BaseService,
   type HookContext,
@@ -272,6 +272,8 @@ export class AdminService extends BaseService {
     this.assertIdentifier(primaryKey, 'primaryKey');
 
     const payload = { ...this.readDataPayload(postData) };
+    // __details is a low-code transport envelope, never a generic table field.
+    delete payload.__details;
     const id = postData.id ?? postData[primaryKey] ?? payload[primaryKey];
     const hasId =
       (typeof id === 'string' && Boolean(id.trim())) ||
@@ -280,6 +282,19 @@ export class AdminService extends BaseService {
     delete payload.primaryKey;
     delete payload.primary_key;
     if (hasId) delete payload[primaryKey];
+
+    // Generic requests do not have a resource-level allowedFields list. Resolve
+    // the physical schema first so transport-only and stale form fields are
+    // removed before the Supabase insert/update call.
+    const tableColumns = await this.resolveGenericTableColumns(tableName, context);
+    if (hasId && !tableColumns.has(primaryKey)) {
+      throw new BadRequestException(
+        `Primary key ${primaryKey} was not found on table ${tableName}.`
+      );
+    }
+    for (const field of Object.keys(payload)) {
+      if (!tableColumns.has(field)) delete payload[field];
+    }
     if (!Object.keys(payload).length) {
       throw new BadRequestException('Save data is required.');
     }
@@ -300,6 +315,38 @@ export class AdminService extends BaseService {
       throw new BadRequestException(`${tableName} record could not be created.`);
     }
     return data;
+  }
+
+  protected async resolveGenericTableColumns(
+    tableName: string,
+    context: ServiceContext
+  ) {
+    const table = readRelationIdentifier(tableName, 'tableName');
+    const metadataClient = createSupabaseClient('admin', context);
+    const { data, error } = await metadataClient.rpc('read_lowcode_table_metadata', {
+      p_action: 'inspect_table',
+      p_payload: { schema_name: table.schema, table_name: table.name }
+    });
+
+    if (error) {
+      throw new BadRequestException(
+        `Could not inspect table ${table.schema}.${table.name}: ${error.message}`
+      );
+    }
+
+    const columns = isRecord(data) && Array.isArray(data.columns)
+      ? data.columns
+      : [];
+    const names = columns
+      .map((column) => isRecord(column) ? readOptionalString(column.name) : '')
+      .filter(Boolean);
+    if (!names.length) {
+      throw new BadRequestException(
+        `Could not resolve columns for table ${table.schema}.${table.name}.`
+      );
+    }
+
+    return new Set(names);
   }
 
   protected async resolveNavigationAuthorization(context: ServiceContext) {
@@ -562,8 +609,8 @@ export class AdminService extends BaseService {
         permissions: this.adminCrudPermissions('admin.options.manage'),
         transactionalHooks: true,
         databaseHooks: {
-          beforeCreate: 'public.dynamic_crud_normalize_option_source',
-          beforeUpdate: 'public.dynamic_crud_normalize_option_source'
+          // beforeCreate: 'public.dynamic_crud_normalize_option_source',
+          // beforeUpdate: 'public.dynamic_crud_normalize_option_source'
         },
         databaseHookInputFields: [
           'sourceType', 'source_config_json', 'source_config', 'sourceConfig'
@@ -974,7 +1021,8 @@ export class AdminService extends BaseService {
       source as Record<string, unknown>,
       sourceCode,
       canManage,
-      postData
+      postData,
+      context
     );
   }
 
@@ -1024,7 +1072,8 @@ export class AdminService extends BaseService {
         source,
         sourceCode,
         canManage,
-        postData
+        postData,
+        context
       );
       return [sourceCode, {
         options,
@@ -1040,7 +1089,8 @@ export class AdminService extends BaseService {
     sourceRecord: Record<string, unknown>,
     sourceCode: string,
     canManage: boolean,
-    postData: Record<string, unknown>
+    postData: Record<string, unknown>,
+    context: ServiceContext
   ) {
 
     const sourceType = normalizeOptionSourceType(sourceRecord.source_type);
@@ -1055,7 +1105,8 @@ export class AdminService extends BaseService {
         client,
         sourceType,
         sourceConfig,
-        postData
+        postData,
+        context
       );
     } else if (sourceType === 'rpc') {
       rows = await this.resolveRpcOptionItems(client, sourceConfig, postData);
@@ -1091,7 +1142,8 @@ export class AdminService extends BaseService {
     client: ReturnType<typeof createSupabaseClient>,
     sourceType: 'table' | 'view',
     sourceConfig: Record<string, unknown>,
-    postData: Record<string, unknown>
+    postData: Record<string, unknown>,
+    context: ServiceContext
   ) {
     const relationName = readConfigString(
       sourceConfig,
@@ -1110,6 +1162,12 @@ export class AdminService extends BaseService {
       ...readJsonObject(sourceConfig.filters),
       ...readJsonObject(postData.filters)
     };
+    if (sourceConfig.accountScoped === true || sourceConfig.account_scoped === true) {
+      if (!context.accountId) {
+        throw new ForbiddenException('An active account set is required.');
+      }
+      filters.account_id = context.accountId;
+    }
 
     [labelField, valueField, disabledField, parentField, colorField, orderBy, ...Object.keys(filters)]
       .filter(Boolean)

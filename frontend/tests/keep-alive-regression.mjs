@@ -94,8 +94,8 @@ assert.match(
 );
 assert.match(
   outletSource,
-  /if \(keepAlive\) cachedRouteComponent\.value = routeComponent/,
-  'The cached route vnode must be retained while an uncached route is active.'
+  /cachedRouteComponents\.set\(cacheKey, routeComponent\)/,
+  'Each cache key must retain its own route vnode while other routes are active.'
 );
 assert.match(
   outletSource,
@@ -114,10 +114,49 @@ assert.match(
   /return `\$\{accountCacheScope\.value\}:\$\{path\}:v\$\{version\}`/,
   'Cached route keys must include their invalidation version.'
 );
+
+const dynamicPageSource = await readFile(
+  new URL('../pages/dashboard/[...slug].vue', import.meta.url),
+  'utf8',
+);
+assert.match(
+  dynamicPageSource,
+  /onMounted\(async \(\) => \{[\s\S]*?await loadPage\(\);/,
+  'A database page must load its schema and runtime definitions on initial mount.',
+);
+assert.doesNotMatch(
+  dynamicPageSource,
+  /onActivated\([\s\S]*?loadPage\(\)/,
+  'A cached database page must not reload and show a loading state when reactivated.',
+);
+const printDesignerSource = await readFile(
+  new URL('../pages/dashboard/advanced/print-designer.vue', import.meta.url),
+  'utf8',
+);
+assert.doesNotMatch(
+  printDesignerSource,
+  /onActivated\([\s\S]*?(refreshTemplates|loadRouteTemplate)\(/,
+  'The cached print designer must not refresh its data when reactivated.',
+);
+assert.match(
+  dynamicPageSource,
+  /const currentLoad = \+\+loadSequence[\s\S]*?currentLoad !== loadSequence/,
+  'Overlapping cached-page reloads must ignore stale responses.',
+);
 assert.match(
   appSource,
   /:cache-invalidation="routeCacheInvalidation"/,
   'The cache outlet must receive targeted invalidation requests.'
+);
+assert.match(
+  appSource,
+  /function shouldKeepAliveRoute\(viewRoute: RouteLocationNormalizedLoaded\) \{\s*return viewRoute\.meta\.keepAlive !== false;/,
+  'Routes must be cached by default, with an explicit opt-out for one-shot pages.'
+);
+assert.match(
+  appSource,
+  /const dashboardKeepAliveMax = 0;/,
+  'The route cache must not evict pages after a fixed number of visits.'
 );
 
 const routerSource = await readFile(new URL('../src/router.ts', import.meta.url), 'utf8');
@@ -130,6 +169,12 @@ const advancedCachedRoutes = [
   '/dashboard/entity-design',
   '/dashboard/files',
 ];
+
+assert.match(
+  routerSource,
+  /const dashboardRouteMeta = \{ layout: 'dashboard', auth: true, keepAlive: true \};/,
+  'Dashboard routes must opt into KeepAlive by default.'
+);
 
 for (const routePath of advancedCachedRoutes) {
   const routeLine = routerSource

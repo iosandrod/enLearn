@@ -725,6 +725,7 @@
     selectComp(block);
     const result = await $$buttonGroupDesigner({
       title: `${block.label || '按钮组'}设计`,
+      serviceApi: getOptionalServiceApi(),
       business: {
         blockId: block.props?.blockId,
         title: block.props?.title,

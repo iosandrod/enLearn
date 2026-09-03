@@ -20,6 +20,8 @@ const migrationPaths = [
   resolve(repoRoot, 'supabase/migrations/20260831140000_lowcode_page_runtime.sql'),
   resolve(repoRoot, 'supabase/migrations/20260831150000_lowcode_page_runtime_schema_functions.sql'),
   resolve(repoRoot, 'supabase/migrations/20260831160000_lowcode_page_runtime_remote_effects.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260901090000_restore_sales_order_print_designer_button.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260903090000_planning_flow_node_action.sql'),
 ];
 const MAX_MIGRATION_ATTEMPTS = 3;
 
@@ -126,7 +128,7 @@ async function applyMigrations(migrations: string[]) {
       result.configured_directive_count !== 32 ||
       result.remote_effect_capability_count !== 10 ||
       result.invalid_script_count !== 0 ||
-      result.node_action_count !== 19 ||
+      result.node_action_count !== 20 ||
       result.invalid_node_action_count !== 0 ||
       result.total_count < 150 ||
       result.published_count < 150

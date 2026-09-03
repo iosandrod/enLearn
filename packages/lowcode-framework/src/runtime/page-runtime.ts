@@ -459,10 +459,9 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
   }
 
  async  function applyGridEvent(blockId: string, event: LowCodeGridRuntimeEvent) {
-    const rawEvent = isRecord(event.rawEvent) ? event.rawEvent : {};
+  const rawEvent = isRecord(event.rawEvent) ? event.rawEvent : {};
     const row = readEventRow(event, rawEvent);
     const key = event.key;
-
     if (key === 'rowCurrentChange') {
       await setGridCurrentRow(blockId, row);//
     }

@@ -329,10 +329,13 @@ export function resolveBuiltinLowCodeActionPresetForButton(
   pageType: LowCodeBuiltinActionPageType,
   action: Pick<LowCodeButtonGroupAction, 'code' | 'eventName'>,
 ) {
+  const matches = (candidate: LowCodeButtonGroupAction): boolean =>
+    candidate.code === action.code && candidate.eventName === action.eventName;
+  const contains = (candidate: LowCodeButtonGroupAction): boolean =>
+    matches(candidate) || (candidate.children ?? []).some(contains);
+
   return getBuiltinLowCodeActionPresetsForPage(pageType).find((preset) =>
-    Boolean(preset.functionName) &&
-    preset.action.code === action.code &&
-    preset.action.eventName === action.eventName,
+    contains(preset.action),
   );
 }
 
@@ -356,21 +359,40 @@ export function createBuiltinLowCodePageFunctionScript(functionName: string) {
   ].join('\n');
 }
 
+/** Keeps default actions executable so their directives/event handlers can still run. */
+export function createBuiltinLowCodeNoopScript() {
+  return [
+    'async function main() {',
+    '  return true;',
+    '}',
+  ].join('\n');
+}
+
 export function createBuiltinLowCodeAction(
   key: BuiltinLowCodeActionKey,
   overrides: Partial<LowCodeButtonGroupAction> = {},
   options: CreateBuiltinLowCodeActionOptions = {},
 ): LowCodeButtonGroupAction {
   const preset = getBuiltinLowCodeActionPreset(key);
+  const action = clonePresetValue(preset.action);
+  const addFallbackScripts = (value: LowCodeButtonGroupAction): LowCodeButtonGroupAction => ({
+    ...value,
+    script: typeof value.script === 'string' && value.script.trim()
+      ? value.script
+      : createBuiltinLowCodeNoopScript(),
+    ...(Array.isArray(value.children)
+      ? { children: value.children.map(addFallbackScripts) }
+      : {}),
+  });
   const pageFunctionScript = options.pageType &&
     preset.pageTypes.includes(options.pageType) &&
     preset.functionName
     ? createBuiltinLowCodePageFunctionScript(preset.functionName)
-    : undefined;
+    : createBuiltinLowCodeNoopScript();
 
   return {
-    ...preset.action,
-    ...(pageFunctionScript ? { script: pageFunctionScript } : {}),
+    ...addFallbackScripts(action),
+    script: pageFunctionScript,
     ...clonePresetValue(overrides),
   };
 }

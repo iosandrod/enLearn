@@ -52,6 +52,7 @@ const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } 
 const loading = ref(true);
 const errorMessage = ref('');
 const rendererRef = ref<{ getSnapshot?: () => unknown } | null>(null);
+let loadSequence = 0;
 
 function createPageRoute(): LowCodeHostRoute {
   return {
@@ -94,19 +95,23 @@ function handleRuntimeEvent(event: LowCodeRuntimeEvent) {
 }
 
 async function loadPage() {
+  const currentLoad = ++loadSequence;
   loading.value = true;
   errorMessage.value = '';
 
   try {
-    page.value = await getLowCodePage(serviceApi, {
+    const nextPage = await getLowCodePage(serviceApi, {
       route: props.routePath,
       includeData: true
     });
+    if (currentLoad !== loadSequence) return;
+    page.value = nextPage;
     await nextTick();
     if (page.value) {
       setAiPageContext(page.value, () => rendererRef.value?.getSnapshot?.());
     }
   } catch (error) {
+    if (currentLoad !== loadSequence) return;
     const builtinPage = getBuiltinLowCodePageByRoute(props.routePath);
     if (builtinPage && isMissingLowCodePageError(error)) {
       page.value = builtinPage;
@@ -121,7 +126,9 @@ async function loadPage() {
     errorMessage.value =
       error instanceof Error ? error.message : 'Could not load the page.';
   } finally {
-    loading.value = false;
+    if (currentLoad === loadSequence) {
+      loading.value = false;
+    }
   }
 }
 
@@ -136,7 +143,9 @@ watch(() => currentRoute.fullPath, () => {
   }
 });
 
-onMounted(loadPage);
+onMounted(async () => {
+  await loadPage();
+});
 
 function handleAiPageApplied(event: Event) {
   const detail = (event as CustomEvent<Record<string, unknown> | undefined>).detail;

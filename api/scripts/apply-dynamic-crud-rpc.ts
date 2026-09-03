@@ -20,7 +20,8 @@ const repoRoot = resolve(
 const migrationPaths = [
   '20260806120000_dynamic_crud_rpc.sql',
   '20260813120000_dynamic_crud_incremental_details.sql',
-  '20260827130000_dynamic_crud_detail_update_foreign_key.sql'
+  '20260827130000_dynamic_crud_detail_update_foreign_key.sql',
+  '20260901113000_dynamic_crud_normalize_empty_typed_values.sql'
 ].map((name) => resolve(repoRoot, 'supabase', 'migrations', name));
 
 function directProjectConnectionString(value: string) {

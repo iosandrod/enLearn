@@ -193,6 +193,37 @@ async function main() {
   assert.equal(optionUpdatedDetails[0].updated[0].data.source_code, undefined);
   assert.equal(optionUpdatedDetails[0].updated[0].data.label, '更新后的生产单');
 
+  // Compatibility with the payload emitted by older low-code clients:
+  // identity in filters.id and a full rows array alongside updateMode=changes.
+  // This must still update the header and replace its detail rows.
+  const legacyService = new TestAdminService();
+  await legacyService.execute('saveItem', {
+    tableName: 'sales_orders',
+    id: '',
+    filters: { id: orderId },
+    doc_no: 'SO-LEGACY',
+    business_date: '',
+    __details: [{
+      resource: 'sales_order_lines',
+      foreignKey: 'order_id',
+      parentKey: 'id',
+      inheritFields: ['account_id'],
+      updateMode: 'changes',
+      rows: [{
+        line_no: 1,
+        item_code: 'ITEM-LEGACY',
+        item_name: 'Legacy row',
+        delivery_date: '',
+      }],
+    }],
+  }, context);
+  assert.equal(legacyService.preparedCall?.action, 'update');
+  const legacyDetails = legacyService.preparedCall?.operation.details as Array<Record<string, unknown>>;
+  assert.equal(legacyService.preparedCall?.operation.data.business_date, '');
+  assert.equal(legacyDetails[0].mode, 'replace');
+  assert.equal((legacyDetails[0].rows as Array<Record<string, unknown>>)[0].item_code, 'ITEM-LEGACY');
+  assert.equal((legacyDetails[0].rows as Array<Record<string, unknown>>)[0].delivery_date, '');
+
   await assert.rejects(
     () => new TestAdminService().execute('updateItem', {
       resource: 'sales_orders',

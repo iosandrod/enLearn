@@ -121,6 +121,7 @@
     "db:generate-planning-console-grid-tables": "tsx scripts/generate-planning-console-grid-tables-migration.ts",
     "db:apply-planning-console-grid-tables": "tsx scripts/apply-planning-console-grid-tables.ts",
     "db:generate-planning-structure-pages": "tsx scripts/generate-planning-structure-pages-migration.ts",
+    "db:generate-planning-route-designer": "tsx scripts/generate-planning-route-designer-migration.ts",
     "db:apply-planning-structure-pages": "tsx scripts/apply-planning-structure-pages.ts",
     "db:verify-planning-migration": "tsx scripts/verify-planning-migration.ts",
     "db:apply-planning-service": "tsx scripts/apply-planning-service.ts",

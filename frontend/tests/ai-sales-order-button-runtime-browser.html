@@ -56,6 +56,41 @@
           '}',
         ].join('\n'),
       };
+      const editRuntimeFunction = {
+        id: 'system-page-list-edit-v1',
+        page_id: null,
+        runtime_key: 'system:page:list.edit',
+        function_name: 'edit',
+        function_type: 'page_function',
+        category: 'crud',
+        page_type: 'list',
+        node_type: null,
+        label: '编辑',
+        description: '编辑当前选中记录。',
+        execution_mode: 'script',
+        source_code: [
+          'function main(input) {',
+          '  const rows = input.context?.event?.selectedRows || [];',
+          '  return {',
+          '    effects: [{ type: "page.navigateToEdit", row: rows[0] }],',
+          '    resultEffect: 0,',
+          '  };',
+          '}',
+        ].join('\n'),
+        native_handler: null,
+        runtime_spec: { operation: 'navigateToEdit', singleSelection: true },
+        parameters: [],
+        result_schema: {},
+        capabilities: ['page.navigateToEdit'],
+        applicable_when: {},
+        limits: {},
+        version: 1,
+        status: 'published',
+        enabled: true,
+        is_system: true,
+        sort_order: 20,
+        source_hash: 'test-edit-runtime',
+      };
       const pageRecord = {
         id: 'ai-sales-order-candidate-page',
         code: 'sales-orders',
@@ -66,7 +101,7 @@
         status: 'published',
         keep_alive: false,
         page_type: 'list',
-        edit_page_id: null,
+        edit_page_id: 'sales-orders-edit-page',
         schema: {
           schemaVersion: 3,
           code: 'sales-orders',
@@ -134,12 +169,24 @@
             serviceMethod,
             payload: structuredClone(payload),
           });
+          if (serviceName === 'lowcode' && serviceMethod === 'getRuntimePage') {
+            return {
+              ...pageRecord,
+              runtime_functions: [editRuntimeFunction],
+            };
+          }
           if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
             return [{
               id: 'sales-orders-edit-page',
               code: 'sales-orders-edit',
               route: '/dashboard/sales/orders/edit',
             }];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'saveItem') {
+            return {
+              ...pageRecord,
+              ...payload.data,
+            };
           }
           throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
         },
@@ -176,6 +223,7 @@
 
       window.__aiSalesOrderButtonRuntimeSmoke = {
         candidateAction,
+        editRuntimeFunction,
         pageRecord,
         serviceCalls,
         routerPushes,

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
 
-const dashboardRouteMeta = { layout: 'dashboard', auth: true };
+const dashboardRouteMeta = { layout: 'dashboard', auth: true, keepAlive: true };
 const dashboardCachedRouteMeta = { ...dashboardRouteMeta, keepAlive: true };
 
 function resolveDashboardLowCodeRouteProps(route: { params: Record<string, unknown> }) {

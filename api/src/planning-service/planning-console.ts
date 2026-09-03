@@ -51,12 +51,13 @@ type PlanningFlowData = {
   nodes: PlanningRow[];
   edges: PlanningRow[];
   lanes: PlanningRow[];
+  containers: PlanningRow[];
 };
 
 const CONSOLE_LIMIT = 1000;
 
-function readString(value: unknown) {
-  return typeof value === 'string' && value.trim() ? value.trim() : '';
+function readString(value: unknown, fallback = '') {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
 function readNumber(value: unknown, fallback = 0) {
@@ -118,7 +119,7 @@ function toIso(value: unknown) {
 }
 
 function uniqueStrings(values: unknown[]) {
-  return [...new Set(values.map(readString).filter(Boolean))];
+  return [...new Set(values.map((value) => readString(value)).filter(Boolean))];
 }
 
 function rowIndex(rows: PlanningRow[], labelField = 'name') {
@@ -728,44 +729,132 @@ async function loadRuns(
   return result;
 }
 
+type FlowChild = { id: string; priority: number; index: number };
+
+type OperationFlowStructure = {
+  operationById: Map<string, PlanningRow>;
+  sourceIndex: Map<string, number>;
+  containerIds: Set<string>;
+  childrenByContainer: Map<string, FlowChild[]>;
+  parentById: Map<string, string>;
+};
+
+function isFlowContainer(operation: PlanningRow | undefined) {
+  const type = readString(operation?.type);
+  return type === 'routing' || type === 'route' || type === 'alternate' || type === 'split';
+}
+
+function buildOperationFlowStructure(operations: PlanningRow[], suboperations: PlanningRow[]): OperationFlowStructure {
+  const operationById = new Map(operations.map((row) => [readString(row.id), row]));
+  const sourceIndex = new Map(operations.map((row, index) => [readString(row.id), index]));
+  const containerIds = new Set(
+    operations.filter((operation) => isFlowContainer(operation)).map((operation) => readString(operation.id))
+  );
+  const childrenByContainer = new Map<string, FlowChild[]>();
+  const parentById = new Map<string, string>();
+  const addChild = (parentId: string, childId: string, priority: number, index: number) => {
+    if (!containerIds.has(parentId) || !operationById.has(childId) || parentId === childId) return;
+    const children = childrenByContainer.get(parentId) ?? [];
+    if (children.some((child) => child.id === childId)) return;
+    childrenByContainer.set(parentId, [...children, { id: childId, priority, index }]);
+    if (!parentById.has(childId)) parentById.set(childId, parentId);
+  };
+
+  suboperations.forEach((relation, index) => {
+    const parentId = readString(relation.operation_id);
+    const childId = readString(relation.suboperation_id);
+    const fallbackPriority = readNumber(operationById.get(childId)?.priority);
+    const priority = relation.priority === null || relation.priority === undefined
+      ? fallbackPriority
+      : readNumber(relation.priority, fallbackPriority);
+    addChild(parentId, childId, priority, index);
+  });
+  operations.forEach((operation, index) => {
+    const parentId = readString(operation.owner_id);
+    const childId = readString(operation.id);
+    addChild(parentId, childId, readNumber(operation.priority), suboperations.length + index);
+  });
+
+  for (const [containerId, children] of childrenByContainer) {
+    children.sort((left, right) => left.priority - right.priority || left.index - right.index);
+    childrenByContainer.set(containerId, children);
+  }
+  return { operationById, sourceIndex, containerIds, childrenByContainer, parentById };
+}
+
+function orderedChildren(children: FlowChild[]) {
+  return [...children].sort((left, right) => left.priority - right.priority || left.index - right.index);
+}
+
+function containerBranchMode(operation: PlanningRow | undefined) {
+  const type = readString(operation?.type);
+  if (type === 'split') return 'parallel';
+  if (type === 'alternate') return 'alternate';
+  return 'sequential';
+}
+
+function groupedContainerChildren(id: string, structure: OperationFlowStructure) {
+  const children = orderedChildren(structure.childrenByContainer.get(id) ?? []);
+  return containerBranchMode(structure.operationById.get(id)) === 'sequential'
+    ? children.map((child) => [child])
+    : children.length ? [children] : [];
+}
+
 function collectFlowEdges(
   operations: PlanningRow[],
   dependencies: PlanningRow[],
-  suboperations: PlanningRow[]
+  structure: OperationFlowStructure
 ) {
-  const operationIds = new Set(operations.map((row) => readString(row.id)).filter(Boolean));
+  const visibleIds = new Set(
+    operations
+      .map((operation) => readString(operation.id))
+      .filter((id) => id && !structure.containerIds.has(id))
+  );
+  const leafCache = new Map<string, { first: string[]; last: string[] }>();
+  const leavesFor = (id: string, visiting = new Set<string>()): { first: string[]; last: string[] } => {
+    if (leafCache.has(id)) return leafCache.get(id)!;
+    if (!structure.containerIds.has(id)) {
+      const leaves = visibleIds.has(id) ? { first: [id], last: [id] } : { first: [], last: [] };
+      leafCache.set(id, leaves);
+      return leaves;
+    }
+    if (visiting.has(id)) return { first: [], last: [] };
+    const nextVisiting = new Set(visiting).add(id);
+    const groups = groupedContainerChildren(id, structure);
+    const first = groups[0]?.flatMap((child) => leavesFor(child.id, nextVisiting).first) ?? [];
+    const last = groups.at(-1)?.flatMap((child) => leavesFor(child.id, nextVisiting).last) ?? [];
+    const leaves = { first, last };
+    leaves.first = [...new Set(leaves.first)];
+    leaves.last = [...new Set(leaves.last)];
+    leafCache.set(id, leaves);
+    return leaves;
+  };
   const edges: PlanningRow[] = [];
   const edgeKeys = new Set<string>();
-  const addEdge = (source: unknown, target: unknown, relation: string, label: string) => {
-    const sourceId = readString(source);
-    const targetId = readString(target);
-    const key = `${sourceId}:${targetId}:${relation}`;
-    if (!sourceId || !targetId || sourceId === targetId || !operationIds.has(sourceId) || !operationIds.has(targetId) || edgeKeys.has(key)) return;
+  const addEdge = (source: string, target: string, relation: string, label: string) => {
+    const key = `${source}:${target}:${relation}`;
+    if (!source || !target || source === target || !visibleIds.has(source) || !visibleIds.has(target) || edgeKeys.has(key)) return;
     edgeKeys.add(key);
-    edges.push({ id: key, source: sourceId, target: targetId, relation, label });
+    edges.push({ id: key, source, target, relation, label });
+  };
+  const addResolvedEdges = (sources: string[], targets: string[], relation: string, label: string) => {
+    sources.forEach((source) => targets.forEach((target) => addEdge(source, target, relation, label)));
   };
 
-  for (const dependency of dependencies) {
-    addEdge(dependency.blockedby_id, dependency.operation_id, 'dependency', '前置约束');
-  }
-
-  const byParent = new Map<string, PlanningRow[]>();
-  for (const relation of suboperations) {
-    const parent = readString(relation.operation_id);
-    if (parent) byParent.set(parent, [...(byParent.get(parent) ?? []), relation]);
-  }
-  for (const [parent, children] of byParent) {
-    const ordered = [...children].sort((left, right) => readNumber(left.priority) - readNumber(right.priority));
-    if (ordered[0]) addEdge(parent, ordered[0].suboperation_id, 'routing', '首道工序');
-    for (let index = 1; index < ordered.length; index += 1) {
-      addEdge(ordered[index - 1].suboperation_id, ordered[index].suboperation_id, 'routing', '顺序');
+  dependencies.forEach((dependency) => {
+    const sourceId = readString(dependency.blockedby_id);
+    const targetId = readString(dependency.operation_id);
+    addResolvedEdges(leavesFor(sourceId).last, leavesFor(targetId).first, 'dependency', '前置约束');
+  });
+  for (const [containerId] of structure.childrenByContainer) {
+    if (containerBranchMode(structure.operationById.get(containerId)) !== 'sequential') continue;
+    const groups = groupedContainerChildren(containerId, structure);
+    for (let index = 1; index < groups.length; index += 1) {
+      const previousLeaves = groups[index - 1].flatMap((child) => leavesFor(child.id).last);
+      const currentLeaves = groups[index].flatMap((child) => leavesFor(child.id).first);
+      addResolvedEdges(previousLeaves, currentLeaves, 'routing', '顺序');
     }
   }
-
-  for (const operation of operations) {
-    addEdge(operation.owner_id, operation.id, 'owner', '包含');
-  }
-
   return edges;
 }
 
@@ -813,126 +902,166 @@ function orderFlowOperations(
 function layoutFlowNodes(
   operations: PlanningRow[],
   edges: PlanningRow[],
-  suboperations: PlanningRow[]
+  structure: OperationFlowStructure
 ) {
   const columnStep = 360;
-  const laneStep = 196;
-  const laneHeight = 184;
-  const ids = operations.map((row) => readString(row.id)).filter(Boolean);
-  const operationById = new Map(operations.map((row) => [readString(row.id), row]));
-  const sourceIndex = new Map(ids.map((id, index) => [id, index]));
-  const routeChildren = new Map<string, { id: string; priority: number }[]>();
-  const claimedIds = new Set<string>();
-
-  for (const relation of suboperations) {
-    const routeId = readString(relation.operation_id);
-    const childId = readString(relation.suboperation_id);
-    if (!operationById.has(routeId) || !operationById.has(childId)) continue;
-    routeChildren.set(routeId, [
-      ...(routeChildren.get(routeId) ?? []),
-      { id: childId, priority: readNumber(relation.priority) }
-    ]);
-  }
-  for (const operation of operations) {
-    const routeId = readString(operation.owner_id);
-    const childId = readString(operation.id);
-    if (!operationById.has(routeId) || !childId) continue;
-    const children = routeChildren.get(routeId) ?? [];
-    if (!children.some((entry) => entry.id === childId)) {
-      routeChildren.set(routeId, [
-        ...children,
-        { id: childId, priority: readNumber(operation.priority) }
-      ]);
-    }
-  }
-
-  const routeIds = ids.filter((id) => {
-    const operation = operationById.get(id);
-    return readString(operation?.type) === 'routing' || (routeChildren.get(id)?.length ?? 0) > 0;
-  }).sort((left, right) => {
-    const priorityDifference = readNumber(operationById.get(left)?.priority) -
-      readNumber(operationById.get(right)?.priority);
-    return priorityDifference || (sourceIndex.get(left) ?? 0) - (sourceIndex.get(right) ?? 0);
-  });
-
-  const laneEntries: { id: string; label: string; itemName: string; nodeIds: string[]; operationCount: number }[] = [];
-  for (const routeId of routeIds) {
-    if (claimedIds.has(routeId)) continue;
-    const route = operationById.get(routeId);
-    if (!route) continue;
-    const childIds = [...(routeChildren.get(routeId) ?? [])]
-      .sort((left, right) => left.priority - right.priority ||
-        (sourceIndex.get(left.id) ?? 0) - (sourceIndex.get(right.id) ?? 0))
-      .map((entry) => entry.id)
-      .filter((id, index, values) => id !== routeId && values.indexOf(id) === index && !claimedIds.has(id));
-    const nodeIds = [routeId, ...childIds];
-    nodeIds.forEach((id) => claimedIds.add(id));
-    laneEntries.push({
-      id: `lane:${routeId}`,
-      label: readString(route.category) || readString(route.name) || routeId,
-      itemName: readString(route.item_name),
-      nodeIds,
-      operationCount: childIds.length
-    });
-  }
-
-  const unclaimedIds = ids.filter((id) => !claimedIds.has(id));
-  const neighbors = new Map(unclaimedIds.map((id) => [id, new Set<string>()]));
-  for (const edge of edges) {
-    const source = readString(edge.source);
-    const target = readString(edge.target);
-    if (!neighbors.has(source) || !neighbors.has(target)) continue;
-    neighbors.get(source)?.add(target);
-    neighbors.get(target)?.add(source);
-  }
-  const visited = new Set<string>();
-  for (const firstId of unclaimedIds) {
-    if (visited.has(firstId)) continue;
-    const pending = [firstId];
-    const componentIds: string[] = [];
-    while (pending.length) {
-      const id = pending.shift();
-      if (!id || visited.has(id)) continue;
-      visited.add(id);
-      componentIds.push(id);
-      pending.push(...(neighbors.get(id) ?? []));
-    }
-    const orderedIds = orderFlowOperations(componentIds, operationById, edges, sourceIndex);
-    const firstOperation = operationById.get(orderedIds[0]);
-    laneEntries.push({
-      id: `lane:standalone:${orderedIds[0]}`,
-      label: readString(firstOperation?.category) || readString(firstOperation?.item_name) || '独立工序',
-      itemName: readString(firstOperation?.item_name),
-      nodeIds: orderedIds,
-      operationCount: orderedIds.length
-    });
-  }
-
+  const rowStep = 160;
+  const nodeWidth = 252;
+  const nodeHeight = 128;
   const positions = new Map<string, { x: number; y: number }>();
   const nodeMeta = new Map<string, { laneId: string; laneSequence: string | number }>();
-  const lanes = laneEntries.map((lane, laneIndex) => {
-    const y = 16 + laneIndex * laneStep;
-    lane.nodeIds.forEach((id, index) => {
-      positions.set(id, { x: 40 + index * columnStep, y: y + 40 });
-      nodeMeta.set(id, {
-        laneId: lane.id,
-        laneSequence: readString(operationById.get(id)?.type) === 'routing'
-          ? 'RT'
-          : lane.nodeIds
-            .slice(0, index + 1)
-            .filter((nodeId) => readString(operationById.get(nodeId)?.type) !== 'routing')
-            .length
-      });
-    });
+  const frames = new Map<string, PlanningRow>();
+  const spanCache = new Map<string, number>();
+  const rowCache = new Map<string, number>();
+  const leafCache = new Map<string, string[]>();
+  const leafIdsFor = (id: string, visiting = new Set<string>()): string[] => {
+    if (leafCache.has(id)) return leafCache.get(id)!;
+    if (!structure.containerIds.has(id)) return [id];
+    if (visiting.has(id)) return [];
+    const leaves = (structure.childrenByContainer.get(id) ?? [])
+      .flatMap((child) => leafIdsFor(child.id, new Set(visiting).add(id)));
+    const result = [...new Set(leaves)];
+    leafCache.set(id, result);
+    return result;
+  };
+  const spanFor = (id: string, visiting = new Set<string>()): number => {
+    if (!structure.containerIds.has(id)) return 1;
+    if (spanCache.has(id)) return spanCache.get(id)!;
+    if (visiting.has(id)) return 1;
+    const groups = groupedContainerChildren(id, structure);
+    const span = Math.max(1, groups.reduce((total, group) => total +
+      Math.max(1, ...group.map((child) => spanFor(child.id, new Set(visiting).add(id)))), 0));
+    spanCache.set(id, span);
+    return span;
+  };
+  const rowsFor = (id: string, visiting = new Set<string>()): number => {
+    if (!structure.containerIds.has(id)) return 1;
+    if (rowCache.has(id)) return rowCache.get(id)!;
+    if (visiting.has(id)) return 1;
+    const groups = groupedContainerChildren(id, structure);
+    const rows = Math.max(1, ...groups.map((group) => group.reduce((total, child) =>
+      total + rowsFor(child.id, new Set(visiting).add(id)), 0)));
+    rowCache.set(id, rows);
+    return rows;
+  };
+  const createFrame = (id: string) => {
+    const childIds = leafIdsFor(id);
+    const childPositions = childIds.map((childId) => positions.get(childId)).filter((position): position is { x: number; y: number } => Boolean(position));
+    const operation = structure.operationById.get(id);
+    let depth = 0;
+    let parentId = structure.parentById.get(id) ?? '';
+    const visitedParents = new Set<string>();
+    while (parentId && !visitedParents.has(parentId)) {
+      visitedParents.add(parentId);
+      depth += 1;
+      parentId = structure.parentById.get(parentId) ?? '';
+    }
+    if (!childPositions.length) {
+      return {
+        id: `container:${id}`,
+        operationId: id,
+        itemId: readString(operation?.item_id),
+        locationId: readString(operation?.location_id),
+        parentOperationId: structure.parentById.get(id) ?? '',
+        type: readString(operation?.type),
+        label: readString(operation?.name) || id,
+        itemName: readString(operation?.item_name),
+        nodeIds: childIds,
+        x: 16,
+        y: 16 + depth * 24,
+        width: 300,
+        height: 180
+      };
+    }
+    const left = Math.min(...childPositions.map((position) => position.x));
+    const top = Math.min(...childPositions.map((position) => position.y));
+    const right = Math.max(...childPositions.map((position) => position.x + nodeWidth));
+    const bottom = Math.max(...childPositions.map((position) => position.y + nodeHeight));
     return {
-      ...lane,
-      x: 16,
-      y,
-      width: 316 + Math.max(0, lane.nodeIds.length - 1) * columnStep,
-      height: laneHeight
+      id: `container:${id}`,
+      operationId: id,
+      itemId: readString(operation?.item_id),
+      locationId: readString(operation?.location_id),
+      parentOperationId: structure.parentById.get(id) ?? '',
+      type: readString(operation?.type),
+      label: readString(operation?.name) || id,
+      itemName: readString(operation?.item_name),
+      nodeIds: childIds,
+      x: left - 28 + depth * 24,
+      y: top - 40 + depth * 24,
+      width: right - left + 56,
+      height: bottom - top + 68
     };
+  };
+  const layoutItem = (id: string, column: number, row: number, laneId: string, sequence: number, visiting = new Set<string>()) => {
+    if (!structure.containerIds.has(id)) {
+      positions.set(id, { x: 48 + column * columnStep, y: 56 + row * rowStep });
+      nodeMeta.set(id, { laneId, laneSequence: sequence });
+      return;
+    }
+    if (visiting.has(id)) return;
+    let nextColumn = column;
+    for (const group of groupedContainerChildren(id, structure)) {
+      let nextRow = row;
+      const groupSpan = Math.max(1, ...group.map((child) => spanFor(child.id, new Set(visiting).add(id))));
+      for (const child of group) {
+        layoutItem(child.id, nextColumn, nextRow, laneId, sequence + nextColumn - column, new Set(visiting).add(id));
+        nextRow += rowsFor(child.id, new Set(visiting).add(id));
+      }
+      nextColumn += groupSpan;
+    }
+    frames.set(id, createFrame(id));
+  };
+
+  const rootContainerIds = [...structure.containerIds]
+    .filter((id) => !structure.containerIds.has(structure.parentById.get(id) ?? ''))
+    .sort((left, right) => readNumber(structure.operationById.get(left)?.priority) - readNumber(structure.operationById.get(right)?.priority) ||
+      (structure.sourceIndex.get(left) ?? 0) - (structure.sourceIndex.get(right) ?? 0));
+  let nextRootRow = 0;
+  const lanes: PlanningRow[] = [];
+  rootContainerIds.forEach((id) => {
+    const laneId = `lane:${id}`;
+    layoutItem(id, 0, nextRootRow, laneId, 1);
+    positions.set(id, { x: 16, y: 16 + nextRootRow * rowStep });
+    nodeMeta.set(id, { laneId, laneSequence: 'RT' });
+    const operation = structure.operationById.get(id);
+    const nodeIds = leafIdsFor(id);
+    lanes.push({
+      ...frames.get(id),
+      id: laneId,
+      routeId: id,
+      label: readString(operation?.name) || id,
+      itemName: readString(operation?.item_name),
+      operationCount: nodeIds.length,
+      nodeIds,
+    });
+    nextRootRow += rowsFor(id) + 1;
   });
-  return { positions, lanes, nodeMeta };
+
+  const standaloneIds = operations
+    .map((operation) => readString(operation.id))
+    .filter((id) => id && !structure.containerIds.has(id) && !structure.parentById.has(id));
+  if (standaloneIds.length) {
+    const ordered = orderFlowOperations(standaloneIds, structure.operationById, edges, structure.sourceIndex);
+    const laneId = `standalone:${ordered[0]}`;
+    ordered.forEach((id, index) => {
+      positions.set(id, { x: 48 + index * columnStep, y: 56 + nextRootRow * rowStep });
+      nodeMeta.set(id, { laneId, laneSequence: index + 1 });
+    });
+    lanes.push({
+      id: laneId,
+      routeId: '',
+      label: '独立工序',
+      itemName: '',
+      operationCount: ordered.length,
+      nodeIds: ordered,
+      x: 20,
+      y: 16 + nextRootRow * rowStep - 40,
+      width: Math.max(300, ordered.length * columnStep),
+      height: nodeHeight + 68
+    });
+  }
+  return { positions, lanes, nodeMeta, containers: [...frames.values()] };
 }
 
 export function buildPlanningFlowData(
@@ -942,8 +1071,10 @@ export function buildPlanningFlowData(
   operationMaterials: PlanningRow[] = [],
   operationResources: PlanningRow[] = []
 ): PlanningFlowData {
-  const edges = collectFlowEdges(operations, dependencies, suboperations);
-  const { positions, lanes, nodeMeta } = layoutFlowNodes(operations, edges, suboperations);
+  const structure = buildOperationFlowStructure(operations, suboperations);
+  const edges = collectFlowEdges(operations, dependencies, structure);
+  const { positions, lanes, nodeMeta, containers } = layoutFlowNodes(operations, edges, structure);
+  const operationById = new Map(operations.map((operation) => [readString(operation.id), operation]));
   const materialsByOperation = new Map<string, PlanningRow[]>();
   const resourcesByOperation = new Map<string, PlanningRow[]>();
   for (const row of operationMaterials) {
@@ -960,10 +1091,34 @@ export function buildPlanningFlowData(
       const id = readString(operation.id);
       const materials = materialsByOperation.get(id) ?? [];
       const resources = resourcesByOperation.get(id) ?? [];
+      const parentIds: string[] = [];
+      const visitedParents = new Set<string>();
+      let parentId = structure.parentById.get(id) ?? '';
+      while (parentId && !visitedParents.has(parentId)) {
+        visitedParents.add(parentId);
+        parentIds.unshift(parentId);
+        parentId = structure.parentById.get(parentId) ?? '';
+      }
+      const parentOperationPath = parentIds
+        .map((candidate) => readString(operationById.get(candidate)?.name, candidate))
+        .filter(Boolean)
+        .join(' / ');
+      const directParentId = structure.parentById.get(id) ?? '';
       return {
         id,
         label: readString(operation.name) || id,
         type: readString(operation.type) || 'fixed_time',
+        priority: readNumber(operation.priority),
+        ownerId: readString(operation.owner_id),
+        locationId: readString(operation.location_id),
+        routeName: readString(operationById.get(parentIds[0])?.name),
+        parentOperationId: directParentId,
+        parentOperationName: readString(operationById.get(directParentId)?.name),
+        parentOperationType: readString(operationById.get(directParentId)?.type),
+        parentOperationPath,
+        isContainer: structure.containerIds.has(id),
+        parentBranchMode: containerBranchMode(operationById.get(directParentId)),
+        isParallel: containerBranchMode(operationById.get(directParentId)) === 'parallel',
         itemId: readString(operation.item_id),
         itemName: readString(operation.item_name),
         locationName: readString(operation.location_name),
@@ -983,7 +1138,8 @@ export function buildPlanningFlowData(
       };
     }),
     edges,
-    lanes
+    lanes,
+    containers
   };
 }
 

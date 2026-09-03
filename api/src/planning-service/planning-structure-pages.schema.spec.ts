@@ -7,6 +7,9 @@ import {
   PLANNING_ROUTING_PAGE_CODE,
   PLANNING_ROUTING_PAGE_SCHEMA,
   PLANNING_ROUTING_ROUTE,
+  PLANNING_ROUTE_DESIGNER_PAGE_CODE,
+  PLANNING_ROUTE_DESIGNER_PAGE_SCHEMA,
+  PLANNING_ROUTE_DESIGNER_ROUTE,
   PLANNING_STRUCTURE_ROUTES
 } from './planning-structure-pages.schema';
 import {
@@ -132,6 +135,68 @@ for (const [sourceKey, resource, gridId] of [
 assert.equal(routingSchema.dataSources?.routingOperations?.autoLoad, true);
 assert.equal(routingSchema.dataSources?.routingOperations?.postData?.resource, 'planning_operation');
 assert.ok(routingBlocks.some((block) => block.id === 'planning_routing_flow'));
+
+const routeDesignerSchema = normalizeLowCodePageSchema(PLANNING_ROUTE_DESIGNER_PAGE_SCHEMA);
+assert.equal(
+  assertValidLowCodePageSchema(routeDesignerSchema).filter((issue) => issue.level === 'error').length,
+  0
+);
+assert.equal(routeDesignerSchema.code, PLANNING_ROUTE_DESIGNER_PAGE_CODE);
+assert.equal(routeDesignerSchema.route, PLANNING_ROUTE_DESIGNER_ROUTE);
+assert.deepEqual(routeDesignerSchema.blocks.map((block) => block.kind), ['searchForm', 'planningFlow', 'tabs']);
+assert.equal(routeDesignerSchema.blocks[0]?.id, 'planning_route_designer_filter');
+assert.equal(routeDesignerSchema.blocks[1]?.id, 'planning_route_designer_flow');
+assert.equal(routeDesignerSchema.blocks[1]?.sourceKey, 'flow');
+assert.equal(routeDesignerSchema.blocks[1]?.height, 560);
+assert.equal(routeDesignerSchema.blocks[2]?.id, 'planning_route_designer_detail_tabs');
+assert.equal(routeDesignerSchema.dataSources?.flow?.autoLoad, false);
+assert.deepEqual(routeDesignerSchema.dataSources?.flow?.postData?.filters, {
+  operationId: '{{ forms.planning_route_designer_filter.operationId }}'
+});
+assert.deepEqual(routeDesignerSchema.dataSources?.flow?.postData?.requiredFilters, ['operationId']);
+assert.equal(routeDesignerSchema.dataSources?.routeOptions?.postData?.optionType, 'route');
+const routeDesignerFilter = routeDesignerSchema.blocks[0];
+assert.deepEqual(routeDesignerFilter?.initialValues, { operationId: '' });
+assert.equal(routeDesignerSchema.dataSources?.routingOperations, undefined);
+assert.equal(routeDesignerSchema.dataSources?.itemOptions, undefined);
+assert.equal(routeDesignerSchema.dataSources?.resourceOptions, undefined);
+
+const routeDesignerTabs = routeDesignerSchema.blocks[2]?.tabs;
+assert.ok(Array.isArray(routeDesignerTabs));
+assert.deepEqual(routeDesignerTabs?.map((tab: any) => tab.key), [
+  'suboperations',
+  'materials',
+  'resources',
+  'dependencies'
+]);
+const routeDesignerBlocks = flattenBlocks(routeDesignerSchema.blocks);
+assert.equal(routeDesignerBlocks.some((block) => block.id === 'planning_route_designer_filter'), true);
+assert.equal(routeDesignerBlocks.some((block) => block.id === 'planning_routing_grid'), false);
+
+for (const sourceKey of [
+  'routingSuboperations',
+  'routingMaterials',
+  'routingResources',
+  'routingDependencies'
+]) {
+  assert.equal(routeDesignerSchema.dataSources?.[sourceKey]?.autoLoad, false);
+  assert.deepEqual(routeDesignerSchema.dataSources?.[sourceKey]?.postData?.filters, {
+    operation_id: '__none__'
+  });
+}
+
+const routeDesignerHandler = routeDesignerSchema.eventHandlers?.[0];
+assert.equal(routeDesignerHandler?.event, 'planningFlow.nodeSelect');
+assert.equal(routeDesignerHandler?.blockId, 'planning_route_designer_flow');
+assert.deepEqual(
+  routeDesignerHandler?.directives.map((directive) => directive.sourceKey),
+  ['routingSuboperations', 'routingMaterials', 'routingResources', 'routingDependencies']
+);
+assert.ok(routeDesignerHandler?.directives.every((directive) =>
+  directive.type === 'setSearchFilters' &&
+  isRecord(directive.values) &&
+  directive.values.operation_id === '{{ event.row.id }}'
+));
 
 const routingHandler = PLANNING_ROUTING_PAGE_SCHEMA.eventHandlers?.[0];
 assert.equal(routingHandler?.event, 'planningFlow.nodeSelect');

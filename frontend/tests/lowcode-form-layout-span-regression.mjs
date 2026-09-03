@@ -97,6 +97,11 @@ assert.match(
   'The default array-table viewport must not claim 100% height outside fill mode.'
 );
 assert.match(
+  layoutSource,
+  /\.lc-form-tabs--fill \.lc-form-tab-pane--single > \.lc-form-layout \.lc-field > \.lc-sub-form,[\s\S]*?\.lc-sub-form > \.lc-form > \.vxe-form--wrapper > \.lc-form-grid[\s\S]*?height: 100%;[\s\S]*?min-height: 0;/,
+  'A single sub-form inside a fill tab must propagate the available height to its inner form grid.'
+);
+assert.match(
   legacyWidgetsSource,
   /name: 'LcRow'[\s\S]*?display: 'grid'[\s\S]*?gridTemplateColumns: 'repeat\(24, minmax\(0, 1fr\)\)'/,
   'Designer layout rows must use a 24-track grid so column gaps cannot wrap the final column.'

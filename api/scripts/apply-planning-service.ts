@@ -27,7 +27,10 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260810210000_planning_master_categories.sql',
   'supabase/migrations/20260811120000_planning_structure_pages.sql',
   'supabase/migrations/20260813090000_planning_item_display_name.sql',
-  'supabase/migrations/20260828140000_translate_planning_parameter_descriptions.sql'
+  'supabase/migrations/20260828140000_translate_planning_parameter_descriptions.sql',
+  'supabase/migrations/20260902090000_planning_route_designer_lowcode_page.sql',
+  'supabase/migrations/20260903130000_planning_route_operation_insert.sql',
+  'supabase/migrations/20260903140000_move_planning_route_designer_to_advanced.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -88,18 +91,24 @@ async function main() {
       console_page: string;
       console_version: string;
       console_route: string;
+      route_designer_page: string;
+      route_designer_version: string;
+      route_designer_route: string;
     }>(`
       select
         (select count(*)::text from pg_catalog.pg_tables where schemaname = 'public' and tablename like 'planning_%') as tables,
-        (select count(*)::text from public.lowcode_pages where code like 'planning\\_%\\-%' escape '\\') as pages,
-        (select count(*)::text from public.admin_entities where code like 'planning\\_%' escape '\\') as entities,
+        (select count(*)::text from public.lowcode_pages where code like 'planning!_%!-%' escape '!') as pages,
+        (select count(*)::text from public.admin_entities where code like 'planning!_%' escape '!') as entities,
         (select count(*)::text from public.admin_routes where (code = 'planning-root' or code like 'planning-%') and status = 'active') as routes,
-        (select count(*)::text from public.dynamic_crud_resource_registry where resource_name like 'planning\\_%' escape '\\') as registry,
+        (select count(*)::text from public.dynamic_crud_resource_registry where resource_name like 'planning!_%' escape '!') as registry,
         (select count(*)::text from public.admin_routes where code = 'planning-root' and metadata->>'navigation' = 'sidebar') as root_sidebar,
         (select count(*)::text from public.admin_routes where code like 'planning-%' and code not in ('planning-root', 'planning-console') and metadata ? 'navigation') as descendant_navigation_overrides,
         (select count(*)::text from public.lowcode_pages where code = 'planning_console' and page_type = 'custom' and status = 'published') as console_page,
         (select count(*)::text from public.lowcode_page_versions version join public.lowcode_pages page on page.id = version.page_id where page.code = 'planning_console' and version.version = page.version) as console_version,
-        (select count(*)::text from public.admin_routes route join public.admin_routes parent on parent.id = route.parent_id where route.code = 'planning-console' and route.page_code = 'planning_console' and route.permission_code = 'planning.models.view' and route.status = 'active' and parent.code = 'advanced-root') as console_route
+        (select count(*)::text from public.admin_routes route join public.admin_routes parent on parent.id = route.parent_id where route.code = 'planning-console' and route.page_code = 'planning_console' and route.permission_code = 'planning.models.view' and route.status = 'active' and parent.code = 'advanced-root') as console_route,
+        (select count(*)::text from public.lowcode_pages where code = 'planning_route_designer' and route = '/dashboard/planning/route-designer' and page_type = 'custom' and status = 'published' and jsonb_array_length(schema->'blocks') = 3) as route_designer_page,
+        (select count(*)::text from public.lowcode_page_versions version join public.lowcode_pages page on page.id = version.page_id where page.code = 'planning_route_designer' and version.version = page.version and version.schema = page.schema) as route_designer_version,
+        (select count(*)::text from public.admin_routes route join public.admin_routes parent on parent.id = route.parent_id where route.code = 'planning-route-designer' and route.page_code = 'planning_route_designer' and route.path = '/dashboard/planning/route-designer' and route.permission_code = 'planning.models.view' and route.status = 'active' and parent.code = 'advanced-root') as route_designer_route
     `);
     const installed = rows[0];
     const expectedModels = PLANNING_MODEL_DEFINITIONS.length;
@@ -108,14 +117,17 @@ async function main() {
       installed.pages !== String(expectedModels * 2) ||
       installed.entities !== String(expectedModels) ||
       installed.routes !== String(
-        expectedModels + new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 4
+        expectedModels + new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 5
       ) ||
       installed.registry !== String(expectedModels) ||
       installed.root_sidebar !== '1' ||
       installed.descendant_navigation_overrides !== '0' ||
       installed.console_page !== '1' ||
       installed.console_version !== '1' ||
-      installed.console_route !== '1'
+      installed.console_route !== '1' ||
+      installed.route_designer_page !== '1' ||
+      installed.route_designer_version !== '1' ||
+      installed.route_designer_route !== '1'
     ) {
       throw new Error(`Planning service verification failed after commit: ${JSON.stringify(installed)}`);
     }

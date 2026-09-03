@@ -1,0 +1,1148 @@
+"filename", "language", "TypeScript", "JSON with Comments", "YAML", "JSON", "Vue", "Markdown", "CSS", "HTML", "JavaScript", "TypeScript JSX", "Skill", "SCSS", "JavaScript JSX", "comment", "blank", "total"
+"e:\enLearn\packages\approval-workflow\package.json", "JSON", 0, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 46
+"e:\enLearn\packages\approval-workflow\pnpm-lock.yaml", "YAML", 0, 0, 831, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 1055
+"e:\enLearn\packages\approval-workflow\src\components\ApprovalDesigner.vue", "Vue", 0, 0, 0, 0, 2979, 0, 0, 0, 0, 0, 0, 0, 0, 0, 436, 3415
+"e:\enLearn\packages\approval-workflow\src\components\ApprovalFlowNode.vue", "Vue", 0, 0, 0, 0, 264, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 295
+"e:\enLearn\packages\approval-workflow\src\components\ApprovalFlowViewer.vue", "Vue", 0, 0, 0, 0, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 76
+"e:\enLearn\packages\approval-workflow\src\components\ApprovalRuntimeViewer.vue", "Vue", 0, 0, 0, 0, 360, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 400
+"e:\enLearn\packages\approval-workflow\src\components\ApprovalTaskPanel.vue", "Vue", 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 94
+"e:\enLearn\packages\approval-workflow\src\components\ApprovalTimeline.vue", "Vue", 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 58
+"e:\enLearn\packages\approval-workflow\src\flow-adapter.ts", "TypeScript", 601, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 687
+"e:\enLearn\packages\approval-workflow\src\hooks\useWorkflowValidation.ts", "TypeScript", 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 21
+"e:\enLearn\packages\approval-workflow\src\index.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"e:\enLearn\packages\approval-workflow\src\types\task.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 24
+"e:\enLearn\packages\approval-workflow\src\types\vue-shim.d.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"e:\enLearn\packages\approval-workflow\src\utils.ts", "TypeScript", 440, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 455
+"e:\enLearn\packages\approval-workflow\tsconfig.json", "JSON with Comments", 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 44
+"e:\enLearn\packages\area-plugin\DEVELOPMENT_PLAN.md", "Markdown", 0, 0, 0, 0, 0, 252, 0, 0, 0, 0, 0, 0, 0, 0, 83, 335
+"e:\enLearn\packages\area-plugin\TESTING.md", "Markdown", 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 16, 51
+"e:\enLearn\packages\area-plugin\package.json", "JSON", 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 36
+"e:\enLearn\packages\area-plugin\scripts\copy-style.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 3, 11
+"e:\enLearn\packages\area-plugin\src\core\guards.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 16
+"e:\enLearn\packages\area-plugin\src\core\merge.ts", "TypeScript", 131, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 147
+"e:\enLearn\packages\area-plugin\src\core\resize.ts", "TypeScript", 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 135
+"e:\enLearn\packages\area-plugin\src\core\selection.ts", "TypeScript", 1490, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 172, 1662
+"e:\enLearn\packages\area-plugin\src\core\store.ts", "TypeScript", 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 34
+"e:\enLearn\packages\area-plugin\src\core\structure.ts", "TypeScript", 370, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 420
+"e:\enLearn\packages\area-plugin\src\dom\context-menu.ts", "TypeScript", 208, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 233
+"e:\enLearn\packages\area-plugin\src\dom\overlay.ts", "TypeScript", 213, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 251
+"e:\enLearn\packages\area-plugin\src\dom\traversal.ts", "TypeScript", 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 68
+"e:\enLearn\packages\area-plugin\src\hook.ts", "TypeScript", 179, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 185
+"e:\enLearn\packages\area-plugin\src\index.ts", "TypeScript", 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 15
+"e:\enLearn\packages\area-plugin\src\style\index.css", "CSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2
+"e:\enLearn\packages\area-plugin\src\types.ts", "TypeScript", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 162
+"e:\enLearn\packages\area-plugin\tsconfig.json", "JSON with Comments", 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 23
+"e:\enLearn\packages\chat-widget\package.json", "JSON", 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 37
+"e:\enLearn\packages\chat-widget\src\components\ChatPopupWidget.vue", "Vue", 0, 0, 0, 0, 1010, 0, 0, 0, 0, 0, 0, 0, 0, 0, 130, 1140
+"e:\enLearn\packages\chat-widget\src\index.ts", "TypeScript", 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4
+"e:\enLearn\packages\chat-widget\src\types\chat.ts", "TypeScript", 79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 88
+"e:\enLearn\packages\chat-widget\tsconfig.json", "JSON with Comments", 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 31
+"e:\enLearn\packages\gantt-main\.prettierrc", "JSON", 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 18
+"e:\enLearn\packages\gantt-main\docs\.skill\SKILL.md", "Skill", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 694, 0, 0, 1, 140, 835
+"e:\enLearn\packages\gantt-main\docs\vue3-refactor.md", "Markdown", 0, 0, 0, 0, 0, 33, 0, 0, 0, 0, 0, 0, 0, 0, 9, 42
+"e:\enLearn\packages\gantt-main\eslint.config.ts", "TypeScript", 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 47
+"e:\enLearn\packages\gantt-main\locales\index.ts", "TypeScript", 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3
+"e:\enLearn\packages\gantt-main\locales\locales\cn.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 75
+"e:\enLearn\packages\gantt-main\locales\locales\en.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 75
+"e:\enLearn\packages\gantt-main\locales\package.json", "JSON", 0, 0, 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 22
+"e:\enLearn\packages\gantt-main\locales\readme.md", "Markdown", 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3, 6
+"e:\enLearn\packages\gantt-main\locales\tsconfig.json", "JSON with Comments", 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 16
+"e:\enLearn\packages\gantt-main\package.json", "JSON", 0, 0, 0, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 73
+"e:\enLearn\packages\gantt-main\provider\package.json", "JSON", 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 25
+"e:\enLearn\packages\gantt-main\provider\readme.md", "Markdown", 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3, 6
+"e:\enLearn\packages\gantt-main\provider\src\RestDataProvider.ts", "TypeScript", 257, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 279
+"e:\enLearn\packages\gantt-main\provider\src\index.ts", "TypeScript", 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4
+"e:\enLearn\packages\gantt-main\provider\test\provider-contract.spec.ts", "TypeScript", 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 80
+"e:\enLearn\packages\gantt-main\provider\test\provider.spec.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"e:\enLearn\packages\gantt-main\provider\tsconfig.json", "JSON with Comments", 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 23
+"e:\enLearn\packages\gantt-main\provider\vite.config.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 46
+"e:\enLearn\packages\gantt-main\readme.md", "Markdown", 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 17, 73
+"e:\enLearn\packages\gantt-main\scripts\run-eslint.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 22
+"e:\enLearn\packages\gantt-main\store\package.json", "JSON", 0, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 29
+"e:\enLearn\packages\gantt-main\store\readme.md", "Markdown", 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3, 6
+"e:\enLearn\packages\gantt-main\store\src\DataStore.ts", "TypeScript", 2012, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 207, 2278
+"e:\enLearn\packages\gantt-main\store\src\GanttDataTree.ts", "TypeScript", 176, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 188
+"e:\enLearn\packages\gantt-main\store\src\columns.ts", "TypeScript", 136, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 160
+"e:\enLearn\packages\gantt-main\store\src\dom\formPost.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 22
+"e:\enLearn\packages\gantt-main\store\src\dom\scales.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8, 52
+"e:\enLearn\packages\gantt-main\store\src\helpers\actionHandlers.ts", "TypeScript", 198, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 21, 230
+"e:\enLearn\packages\gantt-main\store\src\helpers\area.ts", "TypeScript", 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 23
+"e:\enLearn\packages\gantt-main\store\src\helpers\editorItems.ts", "TypeScript", 169, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 179
+"e:\enLearn\packages\gantt-main\store\src\helpers\filter.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 49
+"e:\enLearn\packages\gantt-main\store\src\helpers\getCircularLinks.ts", "TypeScript", 38, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 47
+"e:\enLearn\packages\gantt-main\store\src\helpers\menuOptions.ts", "TypeScript", 180, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 196
+"e:\enLearn\packages\gantt-main\store\src\helpers\sort.ts", "TypeScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 67
+"e:\enLearn\packages\gantt-main\store\src\helpers\toolbarButtons.ts", "TypeScript", 112, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 118
+"e:\enLearn\packages\gantt-main\store\src\index.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 70
+"e:\enLearn\packages\gantt-main\store\src\links.ts", "TypeScript", 166, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 189
+"e:\enLearn\packages\gantt-main\store\src\normalizeDates.ts", "TypeScript", 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 9, 109
+"e:\enLearn\packages\gantt-main\store\src\package.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 10
+"e:\enLearn\packages\gantt-main\store\src\scales.ts", "TypeScript", 353, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 44, 398
+"e:\enLearn\packages\gantt-main\store\src\schedule-types.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\gantt-main\store\src\taskTypes.ts", "TypeScript", 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 8
+"e:\enLearn\packages\gantt-main\store\src\tasks.ts", "TypeScript", 218, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 27, 247
+"e:\enLearn\packages\gantt-main\store\src\time.ts", "TypeScript", 394, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 31, 429
+"e:\enLearn\packages\gantt-main\store\src\types.ts", "TypeScript", 573, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 69, 643
+"e:\enLearn\packages\gantt-main\store\test\calendars.spec.ts", "TypeScript", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 28, 180
+"e:\enLearn\packages\gantt-main\store\test\columns.spec.ts", "TypeScript", 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 9, 45
+"e:\enLearn\packages\gantt-main\store\test\datastore.spec.ts", "TypeScript", 2232, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 582, 2852
+"e:\enLearn\packages\gantt-main\store\test\group.spec.ts", "TypeScript", 321, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 37, 361
+"e:\enLearn\packages\gantt-main\store\test\history.spec.ts", "TypeScript", 1724, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 314, 2044
+"e:\enLearn\packages\gantt-main\store\test\links.spec.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 26
+"e:\enLearn\packages\gantt-main\store\test\public-api.spec.ts", "TypeScript", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 67
+"e:\enLearn\packages\gantt-main\store\test\resources.spec.ts", "TypeScript", 1221, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 143, 1386
+"e:\enLearn\packages\gantt-main\store\test\scales.spec.ts", "TypeScript", 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 46
+"e:\enLearn\packages\gantt-main\store\test\scroll.spec.ts", "TypeScript", 56, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 71
+"e:\enLearn\packages\gantt-main\store\test\sidebar.spec.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 16
+"e:\enLearn\packages\gantt-main\store\test\split.spec.ts", "TypeScript", 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 125
+"e:\enLearn\packages\gantt-main\store\test\stubs\data.ts", "TypeScript", 1169, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 34, 1219
+"e:\enLearn\packages\gantt-main\store\test\stubs\writable.ts", "TypeScript", 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 26
+"e:\enLearn\packages\gantt-main\store\test\summaries.spec.ts", "TypeScript", 575, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 130, 741
+"e:\enLearn\packages\gantt-main\store\test\tasks.spec.ts", "TypeScript", 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 119
+"e:\enLearn\packages\gantt-main\store\test\time.spec.ts", "TypeScript", 163, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 190
+"e:\enLearn\packages\gantt-main\store\test\wbs.spec.ts", "TypeScript", 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 21, 103
+"e:\enLearn\packages\gantt-main\store\test\zoom.spec.ts", "TypeScript", 209, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 37, 251
+"e:\enLearn\packages\gantt-main\store\tsconfig.json", "JSON with Comments", 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 25
+"e:\enLearn\packages\gantt-main\store\vite.config.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 98
+"e:\enLearn\packages\gantt-main\tsconfig.tools.json", "JSON", 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 21
+"e:\enLearn\packages\gantt-main\vitest.workspace.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"e:\enLearn\packages\gantt-main\vue\demo\App.vue", "Vue", 0, 0, 0, 0, 119, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 132
+"e:\enLearn\packages\gantt-main\vue\demo\main.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 11
+"e:\enLearn\packages\gantt-main\vue\eslint.config.ts", "TypeScript", 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 50
+"e:\enLearn\packages\gantt-main\vue\index.html", "HTML", 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 1, 14
+"e:\enLearn\packages\gantt-main\vue\package.json", "JSON", 0, 0, 0, 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 71
+"e:\enLearn\packages\gantt-main\vue\readme.md", "Markdown", 0, 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 6, 35
+"e:\enLearn\packages\gantt-main\vue\scripts\run-eslint.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"e:\enLearn\packages\gantt-main\vue\src\components\ContextMenu.vue", "Vue", 0, 0, 0, 0, 186, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 215
+"e:\enLearn\packages\gantt-main\vue\src\components\Editor.vue", "Vue", 0, 0, 0, 0, 405, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 458
+"e:\enLearn\packages\gantt-main\vue\src\components\Export.vue", "Vue", 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 22
+"e:\enLearn\packages\gantt-main\vue\src\components\Gantt.vue", "Vue", 0, 0, 0, 0, 269, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 293
+"e:\enLearn\packages\gantt-main\vue\src\components\Layout.vue", "Vue", 0, 0, 0, 0, 208, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 231
+"e:\enLearn\packages\gantt-main\vue\src\components\Resizer.vue", "Vue", 0, 0, 0, 0, 244, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 293
+"e:\enLearn\packages\gantt-main\vue\src\components\Toolbar.vue", "Vue", 0, 0, 0, 0, 95, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 106
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\BarSegments.vue", "Vue", 0, 0, 0, 0, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 78
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\Bars.vue", "Vue", 0, 0, 0, 0, 1008, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 1107
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\CellGrid.vue", "Vue", 0, 0, 0, 0, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 37
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\Chart.vue", "Vue", 0, 0, 0, 0, 309, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 359
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\Links.vue", "Vue", 0, 0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 107
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\Rollups.vue", "Vue", 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 42
+"e:\enLearn\packages\gantt-main\vue\src\components\chart\TimeScale.vue", "Vue", 0, 0, 0, 0, 109, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 121
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\DateTimePicker.vue", "Vue", 0, 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 50
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\GridSection.vue", "Vue", 0, 0, 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 58
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\LinkTypeCell.vue", "Vue", 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 37
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\Links.vue", "Vue", 0, 0, 0, 0, 220, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 244
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\Resources.vue", "Vue", 0, 0, 0, 0, 257, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 289
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\ResourcesEditorCell.vue", "Vue", 0, 0, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 33
+"e:\enLearn\packages\gantt-main\vue\src\components\editor\Segments.vue", "Vue", 0, 0, 0, 0, 162, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 183
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\ActionCell.vue", "Vue", 0, 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 62
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\EditorResourcesCell.vue", "Vue", 0, 0, 0, 0, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 38
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\Grid.vue", "Vue", 0, 0, 0, 0, 549, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 608
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\GroupCellText.vue", "Vue", 0, 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 64
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\HeaderMenu.vue", "Vue", 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 18
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\ResourcesCell.vue", "Vue", 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 33
+"e:\enLearn\packages\gantt-main\vue\src\components\grid\TextCell.vue", "Vue", 0, 0, 0, 0, 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 73
+"e:\enLearn\packages\gantt-main\vue\src\components\resource\LoadCell.vue", "Vue", 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 18
+"e:\enLearn\packages\gantt-main\vue\src\components\resource\NameCell.vue", "Vue", 0, 0, 0, 0, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 86
+"e:\enLearn\packages\gantt-main\vue\src\components\resource\NameCellCompact.vue", "Vue", 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 46
+"e:\enLearn\packages\gantt-main\vue\src\components\resource\ResourceLoad.vue", "Vue", 0, 0, 0, 0, 540, 0, 0, 0, 0, 0, 0, 0, 0, 1, 51, 592
+"e:\enLearn\packages\gantt-main\vue\src\export.ts", "TypeScript", 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 13
+"e:\enLearn\packages\gantt-main\vue\src\full-css.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 15
+"e:\enLearn\packages\gantt-main\vue\src\helpers\grid.ts", "TypeScript", 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 135
+"e:\enLearn\packages\gantt-main\vue\src\helpers\modeResizeObserver.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 31
+"e:\enLearn\packages\gantt-main\vue\src\helpers\prepareConfig.ts", "TypeScript", 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 10, 74
+"e:\enLearn\packages\gantt-main\vue\src\helpers\reorder.ts", "TypeScript", 164, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 40, 208
+"e:\enLearn\packages\gantt-main\vue\src\helpers\setTaskResources.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 28
+"e:\enLearn\packages\gantt-main\vue\src\helpers\zoom.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 45
+"e:\enLearn\packages\gantt-main\vue\src\index.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 48
+"e:\enLearn\packages\gantt-main\vue\src\runtime-style.ts", "TypeScript", 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3
+"e:\enLearn\packages\gantt-main\vue\src\themes\Material.vue", "Vue", 0, 0, 0, 0, 79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 84
+"e:\enLearn\packages\gantt-main\vue\src\themes\Willow.vue", "Vue", 0, 0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 110
+"e:\enLearn\packages\gantt-main\vue\src\themes\WillowDark.vue", "Vue", 0, 0, 0, 0, 92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 113
+"e:\enLearn\packages\gantt-main\vue\src\widgets\Tooltip.vue", "Vue", 0, 0, 0, 0, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 92
+"e:\enLearn\packages\gantt-main\vue\test\demo.spec.ts", "TypeScript", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 22
+"e:\enLearn\packages\gantt-main\vue\test\gantt-api.spec.ts", "TypeScript", 85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 95
+"e:\enLearn\packages\gantt-main\vue\test\setup.ts", "TypeScript", 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 52
+"e:\enLearn\packages\gantt-main\vue\tsconfig.json", "JSON with Comments", 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 25
+"e:\enLearn\packages\gantt-main\vue\types\index.d.ts", "TypeScript", 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 19, 130
+"e:\enLearn\packages\gantt-main\vue\vite.config.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 48
+"e:\enLearn\packages\lowcode-framework\README.md", "Markdown", 0, 0, 0, 0, 0, 1686, 0, 0, 0, 0, 0, 0, 0, 0, 419, 2105
+"e:\enLearn\packages\lowcode-framework\package.json", "JSON", 0, 0, 0, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 82
+"e:\enLearn\packages\lowcode-framework\src\components\GlobalDialogHost.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 648, 0, 0, 0, 1, 84, 733
+"e:\enLearn\packages\lowcode-framework\src\components\GlobalDrawerHost.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 85, 0, 0, 0, 0, 8, 93
+"e:\enLearn\packages\lowcode-framework\src\components\JsonDialogInput.vue", "Vue", 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 70
+"e:\enLearn\packages\lowcode-framework\src\components\JsonDialogInput.vue.d.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 36
+"e:\enLearn\packages\lowcode-framework\src\components\LcVxeModalRenderer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 0, 0, 0, 0, 6, 52
+"e:\enLearn\packages\lowcode-framework\src\components\LegacyWidgets.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 691, 0, 0, 0, 0, 35, 726
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeBlockChildren.vue", "Vue", 0, 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 61
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeBlockRenderer.vue", "Vue", 0, 0, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 50
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeCategoryDrawer.vue", "Vue", 0, 0, 0, 0, 419, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 465
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeCategoryTreeNode.vue", "Vue", 0, 0, 0, 0, 195, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 221
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeContextDrawerPanel.vue", "Vue", 0, 0, 0, 0, 793, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 883
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeForm.vue", "Vue", 0, 0, 0, 0, 994, 0, 0, 0, 0, 0, 0, 0, 0, 14, 124, 1132
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeForm.vue.d.ts", "TypeScript", 87, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 88
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeFormField.vue", "Vue", 0, 0, 0, 0, 131, 0, 0, 0, 0, 0, 0, 0, 0, 2, 20, 153
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeFormField.vue.d.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 41
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeFormLayout.vue", "Vue", 0, 0, 0, 0, 215, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 249
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeFormLayout.vue.d.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 20
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeGrid.vue", "Vue", 0, 0, 0, 0, 591, 0, 0, 0, 0, 0, 0, 0, 0, 0, 69, 660
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeGrid.vue.d.ts", "TypeScript", 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 60
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeOverlayHost.vue", "Vue", 0, 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 61
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodePageRenderer.vue", "Vue", 0, 0, 0, 0, 161, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 175
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeTreeItem.vue", "Vue", 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 31
+"e:\enLearn\packages\lowcode-framework\src\components\LowCodeVisualDesigner.vue", "Vue", 0, 0, 0, 0, 1406, 0, 0, 0, 0, 0, 0, 0, 0, 0, 154, 1560
+"e:\enLearn\packages\lowcode-framework\src\components\SystemMenuTreeNode.vue", "Vue", 0, 0, 0, 0, 187, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 203
+"e:\enLearn\packages\lowcode-framework\src\components\VisualEditorProvider.vue", "Vue", 0, 0, 0, 0, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 150
+"e:\enLearn\packages\lowcode-framework\src\components\json-dialog-input.d.ts", "TypeScript", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 31
+"e:\enLearn\packages\lowcode-framework\src\components\low-code-form.d.ts", "TypeScript", 125, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 135
+"e:\enLearn\packages\lowcode-framework\src\core\host.ts", "TypeScript", 282, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 318
+"e:\enLearn\packages\lowcode-framework\src\core\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9
+"e:\enLearn\packages\lowcode-framework\src\core\system-settings.ts", "TypeScript", 440, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 31, 475
+"e:\enLearn\packages\lowcode-framework\src\designer\design-dialog.ts", "TypeScript", 131, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 140
+"e:\enLearn\packages\lowcode-framework\src\designer\index.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 37
+"e:\enLearn\packages\lowcode-framework\src\enums\httpEnum.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 3, 35
+"e:\enLearn\packages\lowcode-framework\src\enums\index.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 2, 15
+"e:\enLearn\packages\lowcode-framework\src\hooks\useAnimate.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 10, 62
+"e:\enLearn\packages\lowcode-framework\src\hooks\useGlobalProperties.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 5, 28
+"e:\enLearn\packages\lowcode-framework\src\index.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"e:\enLearn\packages\lowcode-framework\src\lowcode\actions\builtins.ts", "TypeScript", 423, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 450
+"e:\enLearn\packages\lowcode-framework\src\lowcode\actions\index.ts", "TypeScript", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\button-group\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\button-group\index.vue", "Vue", 0, 0, 0, 0, 318, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 354
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\container\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\container\index.vue", "Vue", 0, 0, 0, 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 34
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\defaults.ts", "TypeScript", 306, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 325
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\detail\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\detail\index.vue", "Vue", 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 21
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\drawer\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\drawer\index.vue", "Vue", 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 37
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\form\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\form\index.vue", "Vue", 0, 0, 0, 0, 192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 207
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\index.vue", "Vue", 0, 0, 0, 0, 469, 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 513
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\page-grid-menu.ts", "TypeScript", 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 88
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\runtime-grid-designer.ts", "TypeScript", 308, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 342
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\runtime-grid-field-editor.ts", "TypeScript", 318, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 33, 354
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\helpers.ts", "TypeScript", 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 126
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\index.ts", "TypeScript", 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 71
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\modal\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\modal\index.vue", "Vue", 0, 0, 0, 0, 125, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 137
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-bom\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-bom\index.vue", "Vue", 0, 0, 0, 0, 597, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 657
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-flow\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-flow\index.vue", "Vue", 0, 0, 0, 0, 839, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 903
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-gantt\GanttDisplaySettings.vue", "Vue", 0, 0, 0, 0, 91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 99
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-gantt\display-settings.ts", "TypeScript", 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8, 82
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-gantt\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-gantt\index.vue", "Vue", 0, 0, 0, 0, 502, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 540
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\runtime-form-designer.ts", "TypeScript", 309, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 33, 345
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\runtime-form-field-editor.ts", "TypeScript", 436, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 471
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\runtime-form-relation-options.ts", "TypeScript", 422, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 464
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\search-form\index.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 18
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\search-form\index.vue", "Vue", 0, 0, 0, 0, 170, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 183
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\section\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\section\index.vue", "Vue", 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 32
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\stat-card\index.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 14
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\stat-card\index.vue", "Vue", 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 22
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\tabs\index.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 17
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\tabs\index.vue", "Vue", 0, 0, 0, 0, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 77
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\text\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\text\index.vue", "Vue", 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\toolbar\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\toolbar\index.vue", "Vue", 0, 0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 100
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\tree\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\tree\index.vue", "Vue", 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 23
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\types.ts", "TypeScript", 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 90
+"e:\enLearn\packages\lowcode-framework\src\lowcode\builtin-pages\index.ts", "TypeScript", 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 23
+"e:\enLearn\packages\lowcode-framework\src\lowcode\event-system.ts", "TypeScript", 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 82
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-definition-loader.ts", "TypeScript", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 36
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\base-info\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\base-info\index.vue", "Vue", 0, 0, 0, 0, 746, 0, 0, 0, 0, 0, 0, 0, 0, 0, 68, 814
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\base-info\relate-info.ts", "TypeScript", 286, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 330
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\index.d.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 9
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\index.ts", "TypeScript", 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 66
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-array-table\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-array-table\index.vue", "Vue", 0, 0, 0, 0, 1398, 0, 0, 0, 0, 0, 0, 0, 0, 0, 189, 1587
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-basic-control\control.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 3, 28
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-basic-control\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-cascader\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-cascader\index.vue", "Vue", 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 38
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-color-picker\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-color-picker\index.vue", "Vue", 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 43
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-json-editor\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-json-editor\index.vue", "Vue", 0, 0, 0, 0, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 346
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-json-editor\index.vue.d.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-monaco-editor\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-monaco-editor\index.vue", "Vue", 0, 0, 0, 0, 640, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 702
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-number-input\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-number-input\index.vue", "Vue", 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 28
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-option-select\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-option-select\index.vue", "Vue", 0, 0, 0, 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 94
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-sub-form\index.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\lc-sub-form\index.vue", "Vue", 0, 0, 0, 0, 165, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 193
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\types.d.ts", "TypeScript", 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 25
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\types.ts", "TypeScript", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 37
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\useLowCodeFormMaterialModel.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-checkbox-group\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-checkbox-group\index.vue", "Vue", 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 24
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-input\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-input\index.vue", "Vue", 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-password-input\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-password-input\index.vue", "Vue", 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-radio-group\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-radio-group\index.vue", "Vue", 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 24
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-select\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-select\index.vue", "Vue", 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 29
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-switch\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-switch\index.vue", "Vue", 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-textarea\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-textarea\index.vue", "Vue", 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-tree-select\index.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-materials\vxe-tree-select\index.vue", "Vue", 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 24
+"e:\enLearn\packages\lowcode-framework\src\lowcode\form-schema.ts", "TypeScript", 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 94
+"e:\enLearn\packages\lowcode-framework\src\lowcode\metadata-options.ts", "TypeScript", 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 42
+"e:\enLearn\packages\lowcode-framework\src\lowcode\schema.ts", "TypeScript", 912, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 127, 1040
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\helpers.ts", "TypeScript", 537, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 602
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\index.ts", "TypeScript", 955, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 72, 1029
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\layout\index.ts", "TypeScript", 115, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 127
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\lowcode-button-group\index.ts", "TypeScript", 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 147
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\lowcode-edit-form\index.ts", "TypeScript", 145, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 159
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\lowcode-grid\index.ts", "TypeScript", 353, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 383
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\lowcode-modal\index.ts", "TypeScript", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 68
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\lowcode-search-form\index.ts", "TypeScript", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 70
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\planning-visual\index.ts", "TypeScript", 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 97
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\types.ts", "TypeScript", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 52
+"e:\enLearn\packages\lowcode-framework\src\lowcode\visual-converters\vxe-tabs\index.ts", "TypeScript", 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 70
+"e:\enLearn\packages\lowcode-framework\src\materials\index.ts", "TypeScript", 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 54
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\button\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 3, 28
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\divider\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 1, 9
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\image\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 0, 0, 0, 3, 3, 41
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\index.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 22
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\nav-bar\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 52, 0, 0, 0, 0, 5, 57
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\notice-bar\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 2, 28
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\process\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 4
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\swipe\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 3, 37
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\tabbar\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 3, 67
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\tabbar\tabbar-item.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\text\fontArr.ts", "TypeScript", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 55
+"e:\enLearn\packages\lowcode-framework\src\packages\base-widgets\text\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 1, 7
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\index.ts", "TypeScript", 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 23
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-button-group\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 0, 0, 0, 0, 9, 93
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-edit-form\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 0, 0, 0, 0, 4, 55
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-grid\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 0, 0, 0, 0, 11, 123
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-modal\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 4, 60
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\lowcode-search-form\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 0, 0, 0, 0, 8, 73
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-bom\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 0, 0, 0, 2, 35
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-flow\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 3, 27
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-gantt\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 2, 28
+"e:\enLearn\packages\lowcode-framework\src\packages\business-component\planning-visual-designer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 107, 0, 0, 0, 0, 7, 114
+"e:\enLearn\packages\lowcode-framework\src\packages\chart-component\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 139, 0, 0, 0, 0, 9, 148
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\form\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 7, 1, 11
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\form\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 6, 62
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\index.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 24
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\layout\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 114, 0, 7, 13, 134
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\layout\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 170, 0, 0, 0, 0, 7, 177
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\vxe-tabs\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 69, 0, 0, 12, 81
+"e:\enLearn\packages\lowcode-framework\src\packages\container-component\vxe-tabs\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 0, 0, 0, 0, 5, 127
+"e:\enLearn\packages\lowcode-framework\src\styles\global-dialog.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 0, 0, 23, 143
+"e:\enLearn\packages\lowcode-framework\src\styles\visual-editor-utilities.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1588, 0, 0, 297, 1885
+"e:\enLearn\packages\lowcode-framework\src\types\framework-env.d.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 43
+"e:\enLearn\packages\lowcode-framework\src\types\lowcode.d.ts", "TypeScript", 662, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 1, 723
+"e:\enLearn\packages\lowcode-framework\src\types\lowcode.ts", "TypeScript", 778, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 81, 937
+"e:\enLearn\packages\lowcode-framework\src\types\visual-editor-jsx.d.ts", "TypeScript", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 34
+"e:\enLearn\packages\lowcode-framework\src\types\vue-shim.d.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"e:\enLearn\packages\lowcode-framework\src\utils\admin-navigation.ts", "TypeScript", 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 150
+"e:\enLearn\packages\lowcode-framework\src\utils\lowcode.ts", "TypeScript", 135, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 21, 157
+"e:\enLearn\packages\lowcode-framework\src\utils\visual-to-lowcode.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 24
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\button-group-designer\button-group-designer.service.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 656, 0, 0, 0, 1, 77, 734
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\button-group-designer\button-script-monaco.ts", "TypeScript", 415, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 444
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\designer-ui\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 634, 0, 0, 0, 0, 43, 677
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\format-input-number\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 1, 8
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\format-input-number\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 0, 0, 0, 9, 6, 85
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\monaco-editor\MonacoEditor.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 7, 1, 21
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\monaco-editor\MonacoEditor.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 109, 0, 0, 0, 27, 11, 147
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\monaco-editor\monaco.ts", "TypeScript", 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6, 25
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\common\remix-icons.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 0, 0, 0, 0, 3, 50
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\form-designer\form-designer.service.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 1141, 0, 0, 0, 1, 143, 1285
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\grid-designer\grid-designer.service.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 2406, 0, 0, 0, 2, 224, 2632
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\header\index.vue", "Vue", 0, 0, 0, 0, 289, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 329
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\header\preview.vue", "Vue", 0, 0, 0, 0, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 57
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\header\useTools.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 273, 0, 0, 0, 7, 21, 301
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\base-widgets\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 134, 0, 0, 16, 150
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\base-widgets\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 9, 5, 54
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\business-component\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 55, 0, 0, 5, 60
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\business-component\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 4, 44
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\chart-component\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 7, 57
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\column-components\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 137, 0, 0, 0, 0, 18, 155
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\container-component\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 55, 0, 0, 5, 60
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\container-component\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 0, 0, 0, 9, 4, 55
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\custom-component\index.vue", "Vue", 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 16
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\data-source\data-fetch.vue", "Vue", 0, 0, 0, 0, 242, 0, 0, 0, 0, 0, 0, 0, 0, 8, 20, 270
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\data-source\data-model.vue", "Vue", 0, 0, 0, 0, 260, 0, 0, 0, 0, 0, 0, 0, 0, 8, 21, 289
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\data-source\entity-data-source.vue", "Vue", 0, 0, 0, 0, 577, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 647
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\data-source\index.vue", "Vue", 0, 0, 0, 0, 33, 0, 0, 0, 0, 0, 0, 0, 0, 8, 5, 46
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\data-source\utils.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 0, 0, 0, 16, 4, 113
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\form-components\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0, 0, 0, 0, 5, 49
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\index.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 16
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\outline-tree\LayerBlockList.vue", "Vue", 0, 0, 0, 0, 565, 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 658
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\outline-tree\index.vue", "Vue", 0, 0, 0, 0, 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 116
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\components\page-tree\index.vue", "Vue", 0, 0, 0, 0, 213, 0, 0, 0, 0, 0, 0, 0, 0, 1, 21, 235
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\left-aside\index.vue", "Vue", 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 8, 22, 180
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\modal-designer\modal-designer.service.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 183, 0, 0, 0, 0, 18, 201
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\animate\Animate.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 156, 0, 0, 0, 25, 15, 196
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\animate\animate.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 10, 70
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\animate\animateConfig.ts", "TypeScript", 452, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 18, 474
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\attr-editor\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 478, 0, 0, 0, 9, 45, 532
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\event-action\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 254, 0, 0, 0, 41, 14, 309
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\form-rule\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0, 0, 0, 8, 2, 54
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\hooks-editor\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 226, 0, 0, 0, 0, 14, 240
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\index.ts", "TypeScript", 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 2, 16
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\page-setting\pageSetting.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 43, 0, 0, 0, 8, 5, 56
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\components\page-setting\styles.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 2, 21
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\index.module.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 369, 0, 17, 58, 444
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\right-attribute-panel\index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 89, 0, 0, 0, 9, 6, 104
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\simulator-editor\comp-render.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 0, 0, 0, 8, 7, 64
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue", "Vue", 0, 0, 0, 0, 108, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 123
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\simulator-editor\func.scss", "SCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 0, 15, 13, 73
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue", "Vue", 0, 0, 0, 0, 1016, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 1122
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue", "Vue", 0, 0, 0, 0, 134, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 150
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\designer-script-context.ts", "TypeScript", 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 106
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\form-designer-context.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 17
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\form-material-visual-components.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 132, 0, 0, 0, 0, 11, 143
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\hooks\useDotProp.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 1, 19
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\hooks\useModal.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 7, 9, 113
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\hooks\useModel.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 0, 0, 0, 0, 5, 43
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\hooks\useSandbox.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\hooks\useVisualData.ts", "TypeScript", 464, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48, 84, 596
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\hooks\useVisualPersistence.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 18
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\index.vue", "Vue", 0, 0, 0, 0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 14, 14, 148
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\database.ts", "TypeScript", 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 126
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\helpers.ts", "TypeScript", 153, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 166
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\index.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 27
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\registry.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 27
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\table-field-options.ts", "TypeScript", 402, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 65, 471
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\types.ts", "TypeScript", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 37
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\material-prop-forms\visual-props.ts", "TypeScript", 194, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 230
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\plugins\command.plugin.ts", "TypeScript", 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 11, 157
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\plugins\event.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 18
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\plugins\keyboard-code.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 72
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\types\index.d.ts", "TypeScript", 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 8, 53
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\utils\defer.ts", "TypeScript", 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 23
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\utils\dialog-service.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 0, 0, 0, 0, 12, 138
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\utils\index.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 3, 20
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\utils\is.ts", "TypeScript", 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 100
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\visual-editor.utils.ts", "TypeScript", 291, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 103, 23, 417
+"e:\enLearn\packages\lowcode-framework\src\visual-editor\visual.command.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 1, 233
+"e:\enLearn\packages\lowcode-framework\src\visual.config.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 3, 2, 35
+"e:\enLearn\packages\lowcode-framework\tsconfig.json", "JSON with Comments", 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 50
+"e:\enLearn\packages\table-advanced-filter-plugin\README.md", "Markdown", 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 10, 45
+"e:\enLearn\packages\table-advanced-filter-plugin\package.json", "JSON", 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 44
+"e:\enLearn\packages\table-advanced-filter-plugin\scripts\copy-style.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 5
+"e:\enLearn\packages\table-advanced-filter-plugin\src\augmentations.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 12
+"e:\enLearn\packages\table-advanced-filter-plugin\src\column-adapter.ts", "TypeScript", 194, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 18, 215
+"e:\enLearn\packages\table-advanced-filter-plugin\src\filter-engine.ts", "TypeScript", 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 268
+"e:\enLearn\packages\table-advanced-filter-plugin\src\hook.ts", "TypeScript", 206, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 219
+"e:\enLearn\packages\table-advanced-filter-plugin\src\index.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 33
+"e:\enLearn\packages\table-advanced-filter-plugin\src\options.ts", "TypeScript", 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 78
+"e:\enLearn\packages\table-advanced-filter-plugin\src\renderer.ts", "TypeScript", 947, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 58, 1006
+"e:\enLearn\packages\table-advanced-filter-plugin\src\runtime.ts", "TypeScript", 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 42
+"e:\enLearn\packages\table-advanced-filter-plugin\src\style\index.css", "CSS", 0, 0, 0, 0, 0, 0, 405, 0, 0, 0, 0, 0, 0, 0, 61, 466
+"e:\enLearn\packages\table-advanced-filter-plugin\src\types.ts", "TypeScript", 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13, 128
+"e:\enLearn\packages\table-advanced-filter-plugin\tests\filter-engine.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 129, 0, 0, 0, 0, 0, 13, 142
+"e:\enLearn\packages\table-advanced-filter-plugin\tests\plugin-contract.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 203, 0, 0, 0, 0, 0, 19, 222
+"e:\enLearn\packages\table-advanced-filter-plugin\tsconfig.json", "JSON with Comments", 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 23
+"e:\enLearn\packages\table-search-plugin\README.md", "Markdown", 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 8, 32
+"e:\enLearn\packages\table-search-plugin\package.json", "JSON", 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 42
+"e:\enLearn\packages\table-search-plugin\scripts\copy-style.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 5
+"e:\enLearn\packages\table-search-plugin\src\augmentations.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 19
+"e:\enLearn\packages\table-search-plugin\src\hook.ts", "TypeScript", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 72
+"e:\enLearn\packages\table-search-plugin\src\index.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 29
+"e:\enLearn\packages\table-search-plugin\src\panel.ts", "TypeScript", 1050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 94, 1144
+"e:\enLearn\packages\table-search-plugin\src\search.ts", "TypeScript", 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 74
+"e:\enLearn\packages\table-search-plugin\src\style\index.css", "CSS", 0, 0, 0, 0, 0, 0, 235, 0, 0, 0, 0, 0, 0, 0, 39, 274
+"e:\enLearn\packages\table-search-plugin\src\types.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 46
+"e:\enLearn\packages\table-search-plugin\tests\plugin-contract.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0, 0, 0, 11, 91
+"e:\enLearn\packages\table-search-plugin\tsconfig.json", "JSON with Comments", 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 23
+"e:\enLearn\packages\tldraw-vue\.yarnrc.yml", "YAML", 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4
+"e:\enLearn\packages\tldraw-vue\PLUGIN_DEVELOPMENT_PLAN.md", "Markdown", 0, 0, 0, 0, 0, 130, 0, 0, 0, 0, 0, 0, 0, 0, 41, 171
+"e:\enLearn\packages\tldraw-vue\README.md", "Markdown", 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 17, 73
+"e:\enLearn\packages\tldraw-vue\USAGE_API.md", "Markdown", 0, 0, 0, 0, 0, 2188, 0, 0, 0, 0, 0, 0, 0, 0, 414, 2602
+"e:\enLearn\packages\tldraw-vue\index.html", "HTML", 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 1, 13
+"e:\enLearn\packages\tldraw-vue\internal\config\tsconfig.base.json", "JSON", 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 37
+"e:\enLearn\packages\tldraw-vue\package.json", "JSON", 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 84
+"e:\enLearn\packages\tldraw-vue\packages\editor\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2
+"e:\enLearn\packages\tldraw-vue\packages\editor\README.md", "Markdown", 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 19, 38
+"e:\enLearn\packages\tldraw-vue\packages\editor\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\editor\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 5001, 0, 0, 0, 0, 0, 0, 0, 0, 433, 5434
+"e:\enLearn\packages\tldraw-vue\packages\editor\editor.css", "CSS", 0, 0, 0, 0, 0, 0, 1266, 0, 0, 0, 0, 0, 0, 128, 185, 1579
+"e:\enLearn\packages\tldraw-vue\packages\editor\modules.d.ts", "TypeScript", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\editor\package.json", "JSON", 0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 91
+"e:\enLearn\packages\tldraw-vue\packages\editor\setupTests.js", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 1, 5, 29
+"e:\enLearn\packages\tldraw-vue\packages\editor\setupVitest.js", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 10, 10, 67
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\index.ts", "TypeScript", 493, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 5, 505
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\TldrawEditor.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 0, 0, 0, 194, 89, 820
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\ErrorBoundary.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0, 0, 0, 3, 11, 58
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\HTMLContainer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 2, 3, 15
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\MenuClickCapture.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 162, 0, 0, 0, 27, 19, 208
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\SVGContainer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 2, 3, 15
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\Shape.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 197, 0, 0, 0, 54, 33, 284
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\CanvasOverlays.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 170, 0, 0, 0, 13, 26, 209
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultBackground.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultCanvas.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 307, 0, 0, 0, 14, 44, 365
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultErrorFallback.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 197, 0, 0, 0, 21, 15, 233
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultGrid.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 0, 0, 0, 2, 4, 48
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultLoadingScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 1, 2, 12
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultShapeErrorFallback.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 2, 3, 11
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultShapeWrapper.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 5, 4, 36
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultSpinner.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 1, 2, 21
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\components\default-components\DefaultSvgDefs.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\TLEditorSnapshot.test.ts", "TypeScript", 187, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 54, 245
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\TLEditorSnapshot.ts", "TypeScript", 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 12, 108
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\TLSessionStateSnapshot.ts", "TypeScript", 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 27, 333
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\TLUserPreferences.test.ts", "TypeScript", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 42
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\TLUserPreferences.ts", "TypeScript", 230, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 36, 283
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\createTLCurrentUser.ts", "TypeScript", 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 6, 58
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\createTLStore.ts", "TypeScript", 154, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 22, 209
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\defaultAssets.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 20
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\defaultBindings.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 20
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\config\defaultShapes.ts", "TypeScript", 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 7, 34
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\constants.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 6, 34
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\Editor.test.ts", "TypeScript", 1011, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 233, 1372
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\Editor.ts", "TypeScript", 6698, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3759, 1343, 11800
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\assets\AssetUtil.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 11, 86
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\bindings\BindingUtil.ts", "TypeScript", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 195, 23, 279
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\derivations\bindingsIndex.ts", "TypeScript", 87, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 20, 108
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\derivations\notVisibleShapes.ts", "TypeScript", 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 11, 73
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\derivations\parentsToChildren.ts", "TypeScript", 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 22, 124
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\derivations\shapeIdsInCurrentPage.ts", "TypeScript", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 14, 99
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\ClickManager\ClickManager.test.ts", "TypeScript", 310, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 92, 410
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\ClickManager\ClickManager.ts", "TypeScript", 126, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 25, 174
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\CollaboratorsManager\CollaboratorsManager.test.ts", "TypeScript", 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 28, 160
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\CollaboratorsManager\CollaboratorsManager.ts", "TypeScript", 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 18, 130
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\EdgeScrollManager\EdgeScrollManager.test.ts", "TypeScript", 305, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 69, 391
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\EdgeScrollManager\EdgeScrollManager.ts", "TypeScript", 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 17, 142
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\EditorManager.test.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 52
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\EditorManager.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 6, 61
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\FocusManager\FocusManager.test.ts", "TypeScript", 339, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 107, 466
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\FocusManager\FocusManager.ts", "TypeScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 11, 90
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\FontManager\FontManager.test.ts", "TypeScript", 324, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 74, 407
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\FontManager\FontManager.ts", "TypeScript", 212, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 31, 267
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\HistoryManager\HistoryManager.test.ts", "TypeScript", 715, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 173, 911
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\HistoryManager\HistoryManager.ts", "TypeScript", 341, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 69, 433
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\InputsManager\InputsManager.test.ts", "TypeScript", 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 62
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\InputsManager\InputsManager.ts", "TypeScript", 327, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 225, 45, 597
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\PerformanceManager\PerformanceApiAdapter.ts", "TypeScript", 56, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 8, 83
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\PerformanceManager\PerformanceManager.test.ts", "TypeScript", 413, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 94, 523
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\PerformanceManager\PerformanceManager.ts", "TypeScript", 463, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 62, 584
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\PerformanceManager\perf-types.ts", "TypeScript", 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 11, 197
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\ScribbleManager\ScribbleManager.ts", "TypeScript", 378, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 65, 571
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\SnapManager\BoundsSnaps.ts", "TypeScript", 965, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 178, 128, 1271
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\SnapManager\HandleSnaps.ts", "TypeScript", 204, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 42, 288
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\SnapManager\SnapManager.test.ts", "TypeScript", 419, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 88, 516
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\SnapManager\SnapManager.ts", "TypeScript", 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 18, 110
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\SpatialIndexManager\RBushIndex.ts", "TypeScript", 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 14, 130
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\SpatialIndexManager\SpatialIndexManager.ts", "TypeScript", 202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 33, 336
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\TextManager\TextManager.test.ts", "TypeScript", 424, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 70, 508
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\TextManager\TextManager.ts", "TypeScript", 340, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 69, 65, 474
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\ThemeManager\ThemeManager.ts", "TypeScript", 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 14, 117
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\ThemeManager\defaultThemes.ts", "TypeScript", 584, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 4, 620
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\TickManager\TickManager.test.ts", "TypeScript", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 44, 199
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\TickManager\TickManager.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 9, 55
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\UserPreferencesManager\UserPreferencesManager.test.ts", "TypeScript", 519, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 137, 671
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\managers\UserPreferencesManager\UserPreferencesManager.ts", "TypeScript", 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 21, 171
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\overlays\OverlayManager.ts", "TypeScript", 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 17, 190
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\overlays\OverlayUtil.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 91, 15, 149
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\overlays\getOverlayDisplayValues.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4, 52
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\overlays\strokeShapeIndicators.ts", "TypeScript", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 12, 87
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\BaseBoxShapeUtil.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 2, 6, 40
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\BaseFrameLikeShapeUtil.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 71, 0, 0, 0, 48, 15, 134
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\ShapeUtil.ts", "TypeScript", 284, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 769, 105, 1158
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\group\DashedOutlineBox.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 0, 0, 0, 5, 38
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\group\GroupShapeUtil.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 114, 0, 0, 0, 3, 25, 142
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\shared\getPerfectDashProps.ts", "TypeScript", 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13, 116
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\shared\resizeBox.ts", "TypeScript", 117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11, 130
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\shapes\shared\resizeScaled.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 6, 62
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\tools\BaseBoxShapeTool\BaseBoxShapeTool.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 19
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\tools\BaseBoxShapeTool\children\Idle.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 19
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\tools\BaseBoxShapeTool\children\Pointing.ts", "TypeScript", 124, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 28, 162
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\tools\RootState.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\tools\StateNode.test.ts", "TypeScript", 193, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 62, 286
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\tools\StateNode.ts", "TypeScript", 195, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 38, 284
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\SvgExportContext.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 0, 0, 56, 16, 131
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\SvgExportNode.ts", "TypeScript", 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 75
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\clipboard-types.ts", "TypeScript", 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 13
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\emit-types.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 32
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\event-types.ts", "TypeScript", 156, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 39, 21, 216
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\external-content.ts", "TypeScript", 86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 19, 124
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\history-types.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5, 28
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\misc-types.ts", "TypeScript", 92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 15, 262
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\editor\types\selection-types.ts", "TypeScript", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 11
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\ExportDelay.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 0, 0, 9, 9, 51
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\FontEmbedder.ts", "TypeScript", 85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 23, 131
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\StyleEmbedder.ts", "TypeScript", 282, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 55, 356
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\cssRules.ts", "TypeScript", 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 9, 127
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\domUtils.ts", "TypeScript", 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 12, 72
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\embedMedia.ts", "TypeScript", 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13, 95
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\exportToSvg.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 0, 0, 0, 42, 19, 138
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\fetchCache.ts", "TypeScript", 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 28
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\getSvgAsImage.ts", "TypeScript", 250, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 52, 353
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\getSvgJsx.test.ts", "TypeScript", 660, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 66, 138, 864
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\getSvgJsx.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 447, 0, 0, 0, 50, 52, 549
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\parseCss.test.ts", "TypeScript", 362, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 369
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\parseCss.ts", "TypeScript", 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 21, 113
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\exports\svgExportNodeToReact.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 0, 0, 0, 0, 7, 45
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\globals\environment.ts", "TypeScript", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 11, 110
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\globals\menus.ts", "TypeScript", 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 13, 197
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\globals\time.ts", "TypeScript", 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 2, 9
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\EditorComponentsContext.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 3, 5, 35
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useCanvasEvents.ts", "TypeScript", 191, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 36, 260
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useCoarsePointer.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 24
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useColorMode.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 18
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useContainer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 7, 6, 29
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useCursor.ts", "TypeScript", 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 12, 86
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useDarkMode.ts", "TypeScript", 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 31
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useDocumentEvents.ts", "TypeScript", 212, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 36, 308
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useEditor.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 5, 6, 38
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useEditorComponents.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 0, 0, 0, 0, 7, 52
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useEvent.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 31, 9, 74
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useFixSafariDoubleTapZoomPencilEvents.ts", "TypeScript", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 8, 43
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useForceUpdate.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 8
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useGestureEvents.ts", "TypeScript", 274, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 68, 402
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useGlobalMenuIsOpen.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 12, 64
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useIdentity.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0, 0, 0, 2, 6, 52
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useIsCropping.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 10
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useIsEditing.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 10
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useLocalStore.ts", "TypeScript", 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14, 86
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\usePassThroughMouseOverEvents.ts", "TypeScript", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 33
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\usePassThroughWheelEvents.ts", "TypeScript", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 8, 42
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\usePeerIds.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 4, 26
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\usePresence.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 4, 23
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useRefState.ts", "TypeScript", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 6, 56
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useSafeId.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 0, 0, 0, 26, 8, 63
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useScreenBounds.ts", "TypeScript", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 10, 83
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useShapeCulling.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 0, 0, 0, 13, 14, 101
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useStateAttribute.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 19
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useTLStore.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 7, 35
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useViewportHeight.ts", "TypeScript", 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 5, 40
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\hooks\useZoomCss.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 28
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\license\LicenseManager.test.ts", "TypeScript", 894, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 79, 124, 1097
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\license\LicenseManager.ts", "TypeScript", 424, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 75, 563
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\license\LicenseProvider.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 0, 0, 0, 15, 15, 95
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\license\Watermark.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 7, 33
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\license\Watermark.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 241, 0, 0, 0, 1, 17, 259
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\license\useLicenseManagerState.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 8
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\options.ts", "TypeScript", 168, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 5, 357
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\Box.test.ts", "TypeScript", 631, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 116, 762
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\Box.ts", "TypeScript", 555, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 98, 702
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\Mat.test.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 47
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\Mat.ts", "TypeScript", 258, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 51, 317
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\Vec.test.ts", "TypeScript", 295, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 52, 388
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\Vec.ts", "TypeScript", 459, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 124, 657
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\easings.ts", "TypeScript", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 34
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Arc2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Arc2d.ts", "TypeScript", 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 13, 115
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Circle2d.test.ts", "TypeScript", 185, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 22, 208
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Circle2d.ts", "TypeScript", 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 10, 100
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\CubicBezier2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\CubicBezier2d.ts", "TypeScript", 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11, 113
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\CubicSpline2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\CubicSpline2d.ts", "TypeScript", 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 18, 104
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Edge2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Edge2d.ts", "TypeScript", 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 12, 74
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Ellipse2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Ellipse2d.ts", "TypeScript", 109, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 17, 131
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Geometry2d.test.ts", "TypeScript", 388, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 77, 484
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Geometry2d.ts", "TypeScript", 442, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 89, 580
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Group2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Group2d.ts", "TypeScript", 207, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 39, 249
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Point2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Point2d.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8, 34
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Polygon2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Polygon2d.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 16
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Polyline.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Polyline2d.ts", "TypeScript", 109, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 18, 132
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Rectangle2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Rectangle2d.ts", "TypeScript", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7, 59
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Stadium2d.test.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\Stadium2d.ts", "TypeScript", 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 12, 127
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\geometry-constants.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 8
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\geometry\geometry.bench.ts", "TypeScript", 131, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 41, 180
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\intersect.test.ts", "TypeScript", 809, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 132, 947
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\intersect.ts", "TypeScript", 227, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 57, 383
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\utils.test.ts", "TypeScript", 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 60
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\primitives\utils.ts", "TypeScript", 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 226, 43, 493
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\test\ContentElementSlot.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 159, 0, 0, 0, 8, 35, 202
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\test\InFrontOfTheCanvas.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 133, 0, 0, 0, 20, 35, 188
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\test\TestEditor.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 32
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\test\user.test.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 26
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\EditorAtom.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 7, 38
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\SharedStylesMap.ts", "TypeScript", 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 19, 123
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\areShapesContentEqual.ts", "TypeScript", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 2, 12
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\assets.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 4, 27
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\browserCanvasMaxSize.ts", "TypeScript", 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48, 22, 172
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\debug-flags.ts", "TypeScript", 144, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 19, 196
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\deepLinks.test.ts", "TypeScript", 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 73
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\deepLinks.ts", "TypeScript", 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48, 6, 123
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\dom.test.ts", "TypeScript", 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 23, 104
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\dom.ts", "TypeScript", 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 15, 188
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\getIncrementedName.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 3, 23
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\getPointerInfo.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 26
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\getSvgPathFromPoints.ts", "TypeScript", 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 8, 50
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\keyboard.ts", "TypeScript", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 2, 11
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\licensing.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 3, 31
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\normalizeWheel.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 5, 26
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\pointer.test.ts", "TypeScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 16, 77
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\pointer.ts", "TypeScript", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 5, 43
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\reorderShapes.ts", "TypeScript", 192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 33, 298
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\reparenting.ts", "TypeScript", 231, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 52, 336
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\richText.ts", "TypeScript", 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 16, 79
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\rotation.ts", "TypeScript", 95, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 20, 129
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\runtime.ts", "TypeScript", 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 6, 49
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\LocalIndexedDb.test.ts", "TypeScript", 206, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 32, 243
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\LocalIndexedDb.ts", "TypeScript", 276, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 40, 331
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\StoreWithStatus.ts", "TypeScript", 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 31
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\TLLocalSyncClient.test.ts", "TypeScript", 143, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 24, 175
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\TLLocalSyncClient.ts", "TypeScript", 280, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 42, 395
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\alerts.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 32
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\sync\hardReset.ts", "TypeScript", 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 22
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\utils\uniq.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 15
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\lib\watermarks.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 9
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\version.ts", "TypeScript", 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 10
+"e:\enLearn\packages\tldraw-vue\packages\editor\src\vue-core.ts", "TypeScript", 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 132
+"e:\enLearn\packages\tldraw-vue\packages\editor\tsconfig.json", "JSON with Comments", 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 27
+"e:\enLearn\packages\tldraw-vue\packages\editor\vitest.config.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 27
+"e:\enLearn\packages\tldraw-vue\packages\pro\README.md", "Markdown", 0, 0, 0, 0, 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 9, 30
+"e:\enLearn\packages\tldraw-vue\packages\pro\package.json", "JSON", 0, 0, 0, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 34
+"e:\enLearn\packages\tldraw-vue\packages\state-react\DOCS.md", "Markdown", 0, 0, 0, 0, 0, 602, 0, 0, 0, 0, 0, 0, 0, 0, 218, 820
+"e:\enLearn\packages\tldraw-vue\packages\state-react\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10
+"e:\enLearn\packages\tldraw-vue\packages\state-react\README.md", "Markdown", 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0, 0, 17, 34
+"e:\enLearn\packages\tldraw-vue\packages\state-react\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\state-react\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 15, 45
+"e:\enLearn\packages\tldraw-vue\packages\state-react\package.json", "JSON", 0, 0, 0, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 72
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\index.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\track.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 1, 46, 193
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\track.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 6, 124
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useAtom.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 0, 0, 0, 1, 9, 52
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useAtom.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 3, 36
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useComputed.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 0, 0, 0, 0, 22, 118
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useComputed.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 3, 92
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useQuickReactor.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 311, 0, 0, 0, 17, 78, 406
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useQuickReactor.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 2, 55
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useReactor.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 6, 26, 129
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useReactor.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 2, 94
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useStateTracking.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 0, 0, 3, 33, 159
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useStateTracking.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 10, 86
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useValue.test.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 174, 0, 0, 0, 5, 31, 210
+"e:\enLearn\packages\tldraw-vue\packages\state-react\src\lib\useValue.ts", "TypeScript", 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 7, 109
+"e:\enLearn\packages\tldraw-vue\packages\state-react\tsconfig.json", "JSON with Comments", 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8
+"e:\enLearn\packages\tldraw-vue\packages\state-react\vitest.config.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 7
+"e:\enLearn\packages\tldraw-vue\packages\state\ARCHITECTURE.md", "Markdown", 0, 0, 0, 0, 0, 211, 0, 0, 0, 0, 0, 0, 0, 0, 72, 283
+"e:\enLearn\packages\tldraw-vue\packages\state\DOCS.md", "Markdown", 0, 0, 0, 0, 0, 382, 0, 0, 0, 0, 0, 0, 0, 0, 182, 564
+"e:\enLearn\packages\tldraw-vue\packages\state\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10
+"e:\enLearn\packages\tldraw-vue\packages\state\README.md", "Markdown", 0, 0, 0, 0, 0, 202, 0, 0, 0, 0, 0, 0, 0, 0, 95, 297
+"e:\enLearn\packages\tldraw-vue\packages\state\SPEC.md", "Markdown", 0, 0, 0, 0, 0, 130, 0, 0, 0, 0, 0, 0, 0, 0, 39, 169
+"e:\enLearn\packages\tldraw-vue\packages\state\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\state\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 166, 0, 0, 0, 0, 0, 0, 0, 0, 42, 208
+"e:\enLearn\packages\tldraw-vue\packages\state\docs-ordering.json", "JSON", 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\tldraw-vue\packages\state\package.json", "JSON", 0, 0, 0, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 63
+"e:\enLearn\packages\tldraw-vue\packages\state\src\index.ts", "TypeScript", 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 42
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\ArraySet.ts", "TypeScript", 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 130, 36, 282
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\Atom.ts", "TypeScript", 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 180, 29, 292
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\Computed.ts", "TypeScript", 295, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 338, 50, 683
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\EffectScheduler.ts", "TypeScript", 143, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 31, 366
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\HistoryBuffer.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 20, 162
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\ArraySet.test.ts", "TypeScript", 157, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 51, 215
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\EffectScheduler.test.ts", "TypeScript", 309, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 91, 404
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\HistoryBuffer.test.ts", "TypeScript", 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15, 74
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\atom.test.ts", "TypeScript", 149, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 51, 204
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\capture.test.ts", "TypeScript", 265, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 80, 360
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\computed.test.ts", "TypeScript", 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 86, 337
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\debug.test.ts", "TypeScript", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 22, 85
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\deferAsyncEffects.test.ts", "TypeScript", 183, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 44, 233
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\errors.test.ts", "TypeScript", 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 38, 194
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\fuzz.tlstate.test.ts", "TypeScript", 336, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 36, 376
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\guards.test.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 8, 50
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\helpers.test.ts", "TypeScript", 117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 36, 157
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\history.test.ts", "TypeScript", 390, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 122, 525
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\localStorageAtom.test.ts", "TypeScript", 195, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 59, 264
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\propagation.test.ts", "TypeScript", 212, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 59, 280
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\__tests__\transactions.test.ts", "TypeScript", 197, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 41, 243
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\capture.ts", "TypeScript", 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 105, 25, 277
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\constants.ts", "TypeScript", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 1, 27
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\helpers.ts", "TypeScript", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 167, 15, 236
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\isComputed.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 1, 21
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\isSignal.ts", "TypeScript", 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 2, 35
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\localStorageAtom.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 11, 88
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\transactions.ts", "TypeScript", 191, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 215, 46, 452
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\types.ts", "TypeScript", 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 190, 13, 229
+"e:\enLearn\packages\tldraw-vue\packages\state\src\lib\warnings.ts", "TypeScript", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 2, 59
+"e:\enLearn\packages\tldraw-vue\packages\state\tsconfig.json", "JSON with Comments", 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8
+"e:\enLearn\packages\tldraw-vue\packages\state\vitest.config.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 7
+"e:\enLearn\packages\tldraw-vue\packages\store\DOCS.md", "Markdown", 0, 0, 0, 0, 0, 579, 0, 0, 0, 0, 0, 0, 0, 0, 212, 791
+"e:\enLearn\packages\tldraw-vue\packages\store\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10
+"e:\enLearn\packages\tldraw-vue\packages\store\README.md", "Markdown", 0, 0, 0, 0, 0, 231, 0, 0, 0, 0, 0, 0, 0, 0, 136, 367
+"e:\enLearn\packages\tldraw-vue\packages\store\SPEC.md", "Markdown", 0, 0, 0, 0, 0, 180, 0, 0, 0, 0, 0, 0, 0, 0, 60, 240
+"e:\enLearn\packages\tldraw-vue\packages\store\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\store\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 627, 0, 0, 0, 0, 0, 0, 0, 0, 79, 706
+"e:\enLearn\packages\tldraw-vue\packages\store\package.json", "JSON", 0, 0, 0, 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 62
+"e:\enLearn\packages\tldraw-vue\packages\store\setupTests.js", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 2
+"e:\enLearn\packages\tldraw-vue\packages\store\src\index.ts", "TypeScript", 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 78
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\AtomMap.test.ts", "TypeScript", 492, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 97, 595
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\AtomMap.ts", "TypeScript", 145, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 247, 25, 417
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\AtomSet.test.ts", "TypeScript", 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 21, 117
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\AtomSet.ts", "TypeScript", 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 53
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\BaseRecord.test.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 33
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\BaseRecord.ts", "TypeScript", 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 5, 137
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\ImmutableMap.test.ts", "TypeScript", 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 147
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\ImmutableMap.ts", "TypeScript", 787, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 243, 130, 1160
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\IncrementalSetConstructor.test.ts", "TypeScript", 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 22, 107
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\IncrementalSetConstructor.ts", "TypeScript", 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 117, 11, 188
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\RecordType.test.ts", "TypeScript", 179, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 36, 217
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\RecordType.ts", "TypeScript", 115, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 25, 380
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\RecordsDiff.test.ts", "TypeScript", 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 27, 151
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\RecordsDiff.ts", "TypeScript", 86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 174, 14, 274
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\Store.test.ts", "TypeScript", 618, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 136, 768
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\Store.ts", "TypeScript", 609, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 738, 119, 1466
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreListeners.test.ts", "TypeScript", 365, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 83, 463
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreQueries.test.ts", "TypeScript", 582, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 184, 780
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreQueries.ts", "TypeScript", 369, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 251, 58, 678
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreSchema.test.ts", "TypeScript", 918, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 125, 1065
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreSchema.ts", "TypeScript", 363, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 419, 33, 815
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreSideEffects.test.ts", "TypeScript", 494, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 113, 629
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\StoreSideEffects.ts", "TypeScript", 214, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 446, 31, 691
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\devFreeze.test.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 21, 112
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\devFreeze.ts", "TypeScript", 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 8, 53
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\executeQuery.test.ts", "TypeScript", 1145, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 210, 1452
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\executeQuery.ts", "TypeScript", 86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 18, 190
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\isDev.ts", "TypeScript", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 21
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\migrate.test.ts", "TypeScript", 326, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 48, 378
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\migrate.ts", "TypeScript", 263, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 253, 42, 558
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\setUtils.test.ts", "TypeScript", 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14, 65
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\setUtils.ts", "TypeScript", 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 8, 88
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\test\recordStoreFuzzing.test.ts", "TypeScript", 467, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 37, 512
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\test\testSchema.v0.ts", "TypeScript", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10, 84
+"e:\enLearn\packages\tldraw-vue\packages\store\src\lib\test\testSchema.v1.ts", "TypeScript", 204, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 19, 226
+"e:\enLearn\packages\tldraw-vue\packages\store\tsconfig.json", "JSON with Comments", 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8
+"e:\enLearn\packages\tldraw-vue\packages\store\vitest.config.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 15
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\DOCS.md", "Markdown", 0, 0, 0, 0, 0, 530, 0, 0, 0, 0, 0, 0, 0, 0, 153, 683
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\README.md", "Markdown", 0, 0, 0, 0, 0, 62, 0, 0, 0, 0, 0, 0, 0, 0, 38, 100
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 1622, 0, 0, 0, 0, 0, 0, 0, 0, 276, 1898
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\package.json", "JSON", 0, 0, 0, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 66
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\TLStore.test.ts", "TypeScript", 530, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 98, 650
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\TLStore.ts", "TypeScript", 203, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 340, 29, 572
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\__tests__\migrationTestUtils.ts", "TypeScript", 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 47
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\assets\TLBaseAsset.ts", "TypeScript", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 5, 125
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\assets\TLBookmarkAsset.ts", "TypeScript", 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 7, 100
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\assets\TLImageAsset.ts", "TypeScript", 111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 7, 156
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\assets\TLVideoAsset.ts", "TypeScript", 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 69, 7, 176
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\bindings\TLArrowBinding.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 7, 186
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\bindings\TLBaseBinding.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 5, 190
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\createPresenceStateDerivation.test.ts", "TypeScript", 144, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 25, 172
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\createPresenceStateDerivation.ts", "TypeScript", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 8, 155
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\createTLSchema.test.ts", "TypeScript", 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 31, 182
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\createTLSchema.ts", "TypeScript", 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 17, 438
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\index.ts", "TypeScript", 330, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 4, 365
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\migrations.test.ts", "TypeScript", 2475, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 302, 2798
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLColor.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 56, 4, 73
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLCursor.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 116, 6, 157
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLHandle.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 4, 114
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLOpacity.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 3, 57
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLRichText.test.ts", "TypeScript", 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 57
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLRichText.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 56, 7, 88
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\TLScribble.ts", "TypeScript", 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 4, 147
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\b64Vecs.test.ts", "TypeScript", 433, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 98, 593
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\b64Vecs.ts", "TypeScript", 349, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 89, 646
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\geometry-types.ts", "TypeScript", 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 5, 66
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\misc\id-validator.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 2, 34
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\recordsWithProps.test.ts", "TypeScript", 157, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 29, 189
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\recordsWithProps.ts", "TypeScript", 119, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 149, 9, 277
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLAsset.ts", "TypeScript", 89, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 187, 15, 291
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLBinding.ts", "TypeScript", 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 315, 17, 435
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLCamera.ts", "TypeScript", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 124, 7, 185
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLCustomRecord.ts", "TypeScript", 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 183, 15, 298
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLDocument.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 152, 8, 225
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLInstance.ts", "TypeScript", 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 136, 21, 657
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLPage.ts", "TypeScript", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 9, 170
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLPageState.ts", "TypeScript", 147, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 8, 256
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLPointer.ts", "TypeScript", 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 109, 8, 172
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLPresence.ts", "TypeScript", 151, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 7, 259
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLRecord.ts", "TypeScript", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 6, 137
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLShape.ts", "TypeScript", 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 366, 20, 587
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\records\TLUser.ts", "TypeScript", 86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 14, 149
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\ShapeWithCrop.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 3, 75
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLArrowShape.ts", "TypeScript", 253, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 198, 22, 473
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLBaseShape.ts", "TypeScript", 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 6, 182
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLBookmarkShape.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 7, 113
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLDrawShape.ts", "TypeScript", 152, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 15, 292
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLEmbedShape.ts", "TypeScript", 312, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 15, 387
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLFrameShape.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 7, 107
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLGeoShape.ts", "TypeScript", 199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 113, 11, 323
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLGroupShape.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 5, 65
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLHighlightShape.ts", "TypeScript", 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 91, 8, 205
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLImageShape.ts", "TypeScript", 94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 8, 208
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLLineShape.ts", "TypeScript", 163, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 15, 306
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLNoteShape.ts", "TypeScript", 192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 7, 309
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLTextShape.ts", "TypeScript", 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 7, 186
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\shapes\TLVideoShape.ts", "TypeScript", 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 7, 180
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\store-migrations.test.ts", "TypeScript", 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17, 89
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\store-migrations.ts", "TypeScript", 94, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 6, 157
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\StyleProp.ts", "TypeScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 12, 164
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLColorStyle.ts", "TypeScript", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 8, 102
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLDashStyle.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 3, 64
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLFillStyle.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 3, 64
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLFontFace.ts", "TypeScript", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 2, 66
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLFontStyle.ts", "TypeScript", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 9, 138
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLHorizontalAlignStyle.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 55, 3, 65
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLSizeStyle.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 3, 64
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLTextAlignStyle.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52, 3, 62
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLTheme.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 163, 11, 262
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\styles\TLVerticalAlignStyle.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52, 3, 62
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\translations\languages.ts", "TypeScript", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 56
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\translations\translations.test.ts", "TypeScript", 288, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 59, 387
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\translations\translations.ts", "TypeScript", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 168, 11, 221
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\src\util-types.ts", "TypeScript", 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 1, 53
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\tsconfig.json", "JSON with Comments", 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13
+"e:\enLearn\packages\tldraw-vue\packages\tlschema\vitest.config.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 7
+"e:\enLearn\packages\tldraw-vue\packages\utils\DOCS.md", "Markdown", 0, 0, 0, 0, 0, 639, 0, 0, 0, 0, 0, 0, 0, 0, 292, 931
+"e:\enLearn\packages\tldraw-vue\packages\utils\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10
+"e:\enLearn\packages\tldraw-vue\packages\utils\README.md", "Markdown", 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 16, 32
+"e:\enLearn\packages\tldraw-vue\packages\utils\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\utils\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 434, 0, 0, 0, 0, 0, 0, 0, 0, 126, 560
+"e:\enLearn\packages\tldraw-vue\packages\utils\package.json", "JSON", 0, 0, 0, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 63
+"e:\enLearn\packages\tldraw-vue\packages\utils\setupTests.js", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 4
+"e:\enLearn\packages\tldraw-vue\packages\utils\setupVitest.js", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 4
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\index.ts", "TypeScript", 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 121
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\ExecutionQueue.test.ts", "TypeScript", 137, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 54, 221
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\ExecutionQueue.ts", "TypeScript", 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 7, 152
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\LruCache.test.ts", "TypeScript", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 14, 90
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\LruCache.ts", "TypeScript", 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 33
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\PerformanceTracker.test.ts", "TypeScript", 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 24, 124
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\PerformanceTracker.ts", "TypeScript", 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 6, 118
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\array.test.ts", "TypeScript", 271, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 64, 340
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\array.ts", "TypeScript", 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 191, 14, 289
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\bind.test.ts", "TypeScript", 38, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 48
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\bind.ts", "TypeScript", 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 6, 137
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\cache.test.ts", "TypeScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 74
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\cache.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 3, 65
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\control.test.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 51
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\control.ts", "TypeScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 9, 276
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\debounce.test.ts", "TypeScript", 105, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 129
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\debounce.ts", "TypeScript", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 4, 104
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\error.test.ts", "TypeScript", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 61
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\error.ts", "TypeScript", 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 6, 68
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\file.test.ts", "TypeScript", 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 50
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\file.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 135, 7, 189
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\fractionalIndexing.test.ts", "TypeScript", 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 14, 139
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\fractionalIndexing.ts", "TypeScript", 205, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 14, 276
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\function.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 3, 44
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\hash.test.ts", "TypeScript", 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 100
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\hash.ts", "TypeScript", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 4, 118
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\id.test.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 33
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\id.ts", "TypeScript", 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 88, 9, 130
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\iterable.test.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 26
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\iterable.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 1, 21
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\json-value.ts", "TypeScript", 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 68, 4, 78
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\apng.test.ts", "TypeScript", 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 18, 68
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\apng.ts", "TypeScript", 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 69, 23, 168
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\avif.test.ts", "TypeScript", 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6, 27
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\avif.ts", "TypeScript", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 1, 39
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\gif.test.ts", "TypeScript", 38, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 12, 53
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\gif.ts", "TypeScript", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 20, 122
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\media.test.ts", "TypeScript", 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 9, 59
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\media.ts", "TypeScript", 212, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 252, 25, 489
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\png.ts", "TypeScript", 143, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 167, 29, 339
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\webp.test.ts", "TypeScript", 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 15, 82
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\media\webp.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 7, 58
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\network.test.ts", "TypeScript", 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 39
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\network.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 2, 33
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\number.test.ts", "TypeScript", 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 75
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\number.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 66, 8, 109
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\object.test.ts", "TypeScript", 203, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 32, 237
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\object.ts", "TypeScript", 125, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 230, 15, 370
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\perf.ts", "TypeScript", 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 6, 142
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\reordering.test.ts", "TypeScript", 143, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 169
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\reordering.ts", "TypeScript", 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 14, 200
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\retry.test.ts", "TypeScript", 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 78
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\retry.ts", "TypeScript", 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48, 2, 78
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\sort.test.ts", "TypeScript", 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 37
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\sort.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 1, 26
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\storage.test.ts", "TypeScript", 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 24, 131
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\storage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 107, 9, 166
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\stringEnum.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 1, 28
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\throttle.test.ts", "TypeScript", 288, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 107, 444
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\throttle.ts", "TypeScript", 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 18, 228
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\timers.test.ts", "TypeScript", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 18, 76
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\timers.ts", "TypeScript", 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 10, 188
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\types.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 132, 5, 150
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\url.test.ts", "TypeScript", 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 45
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\url.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 1, 48
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\value.test.ts", "TypeScript", 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 20, 103
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\value.ts", "TypeScript", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 11, 138
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\version.test.ts", "TypeScript", 377, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 134, 538
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\version.ts", "TypeScript", 173, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 29, 248
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\warn.test.ts", "TypeScript", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 65
+"e:\enLearn\packages\tldraw-vue\packages\utils\src\lib\warn.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 43, 4, 60
+"e:\enLearn\packages\tldraw-vue\packages\utils\tsconfig.json", "JSON with Comments", 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7
+"e:\enLearn\packages\tldraw-vue\packages\utils\vitest.config.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 11
+"e:\enLearn\packages\tldraw-vue\packages\validate\DOCS.md", "Markdown", 0, 0, 0, 0, 0, 694, 0, 0, 0, 0, 0, 0, 0, 0, 195, 889
+"e:\enLearn\packages\tldraw-vue\packages\validate\LICENSE.md", "Markdown", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 10
+"e:\enLearn\packages\tldraw-vue\packages\validate\README.md", "Markdown", 0, 0, 0, 0, 0, 38, 0, 0, 0, 0, 0, 0, 0, 0, 22, 60
+"e:\enLearn\packages\tldraw-vue\packages\validate\SPEC.md", "Markdown", 0, 0, 0, 0, 0, 104, 0, 0, 0, 0, 0, 0, 0, 0, 37, 141
+"e:\enLearn\packages\tldraw-vue\packages\validate\api-extractor.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5
+"e:\enLearn\packages\tldraw-vue\packages\validate\api-report.api.md", "Markdown", 0, 0, 0, 0, 0, 210, 0, 0, 0, 0, 0, 0, 0, 0, 51, 261
+"e:\enLearn\packages\tldraw-vue\packages\validate\package.json", "JSON", 0, 0, 0, 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 55
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\index.ts", "TypeScript", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 19
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\lib\validation.ts", "TypeScript", 912, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 99, 2004
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\arrays.test.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 15, 104
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\dicts.test.ts", "TypeScript", 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 15, 87
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\enums.test.ts", "TypeScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 29
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\errors.test.ts", "TypeScript", 105, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 125
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\index-key.test.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 16
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\json.test.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 20, 109
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\model.test.ts", "TypeScript", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 35
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\nullable-optional.test.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 76
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\numbers.test.ts", "TypeScript", 95, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 115
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\objects.test.ts", "TypeScript", 109, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 26, 138
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\or.test.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\primitives.test.ts", "TypeScript", 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 68
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\refine-check.test.ts", "TypeScript", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17, 83
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\unions.test.ts", "TypeScript", 124, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 22, 148
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\urls.test.ts", "TypeScript", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 60
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\validation.fuzz.test.ts", "TypeScript", 345, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 32, 379
+"e:\enLearn\packages\tldraw-vue\packages\validate\src\test\validator.test.ts", "TypeScript", 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 61
+"e:\enLearn\packages\tldraw-vue\packages\validate\tsconfig.json", "JSON with Comments", 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8
+"e:\enLearn\packages\tldraw-vue\packages\validate\vitest.config.ts", "TypeScript", 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 7
+"e:\enLearn\packages\tldraw-vue\scripts\rewrite-type-imports.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 47, 0, 0, 0, 0, 0, 10, 57
+"e:\enLearn\packages\tldraw-vue\src\App.vue", "Vue", 0, 0, 0, 0, 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 59
+"e:\enLearn\packages\tldraw-vue\src\TldrawVue.vue", "Vue", 0, 0, 0, 0, 253, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 280
+"e:\enLearn\packages\tldraw-vue\src\components\LowCodeFormPanel.vue", "Vue", 0, 0, 0, 0, 953, 0, 0, 0, 0, 0, 0, 0, 0, 0, 92, 1045
+"e:\enLearn\packages\tldraw-vue\src\components\VueBottomToolbar.vue", "Vue", 0, 0, 0, 0, 270, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 304
+"e:\enLearn\packages\tldraw-vue\src\components\VueCanvas.vue", "Vue", 0, 0, 0, 0, 897, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 995
+"e:\enLearn\packages\tldraw-vue\src\components\VueComponentPalette.vue", "Vue", 0, 0, 0, 0, 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 254
+"e:\enLearn\packages\tldraw-vue\src\components\VueContextMenu.vue", "Vue", 0, 0, 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 66
+"e:\enLearn\packages\tldraw-vue\src\components\VueMinimap.vue", "Vue", 0, 0, 0, 0, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 197
+"e:\enLearn\packages\tldraw-vue\src\components\VueNavigationPanel.vue", "Vue", 0, 0, 0, 0, 313, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 358
+"e:\enLearn\packages\tldraw-vue\src\components\VueRulerOverlay.vue", "Vue", 0, 0, 0, 0, 108, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 116
+"e:\enLearn\packages\tldraw-vue\src\components\VueShapeWrapper.vue", "Vue", 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 31
+"e:\enLearn\packages\tldraw-vue\src\components\VueStylePanel.vue", "Vue", 0, 0, 0, 0, 250, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 278
+"e:\enLearn\packages\tldraw-vue\src\components\VueTopLeftMenu.vue", "Vue", 0, 0, 0, 0, 911, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 1006
+"e:\enLearn\packages\tldraw-vue\src\components\VueWorkspaceToolbar.vue", "Vue", 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 109
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueArrowShapeNode.vue", "Vue", 0, 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 58
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueBoxShapeNode.vue", "Vue", 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 38
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueDrawShapeNode.vue", "Vue", 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 41
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueFrameShapeNode.vue", "Vue", 0, 0, 0, 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 24
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueImageShapeNode.vue", "Vue", 0, 0, 0, 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 35
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueLineShapeNode.vue", "Vue", 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 40
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueMaterialSectionShapeNode.vue", "Vue", 0, 0, 0, 0, 144, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 166
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueMaterialShapeNode.vue", "Vue", 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 22
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueQrShapeNode.vue", "Vue", 0, 0, 0, 0, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 143
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueTableShapeNode.vue", "Vue", 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 158
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\VueTextShapeNode.vue", "Vue", 0, 0, 0, 0, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 148
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\shapeComponentRegistry.ts", "TypeScript", 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 18
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\types.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\tldraw-vue\src\components\shapes\useVueShapeTheme.ts", "TypeScript", 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 68
+"e:\enLearn\packages\tldraw-vue\src\editor\createVueEditor.ts", "TypeScript", 140, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 148
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\coreExtension.ts", "TypeScript", 389, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 401
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\defaultExtensions.ts", "TypeScript", 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 9
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\frame\frameExtension.ts", "TypeScript", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 54
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\frame\vueFrameShape.ts", "TypeScript", 105, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 126
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\material\materialExtension.ts", "TypeScript", 119, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 130
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\material\vueMaterialShape.ts", "TypeScript", 648, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 748
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\qr\qrExtension.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 50
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\qr\vueQrShape.ts", "TypeScript", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 85
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\qr\vueQrSvgExport.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 92
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\table\tableExtension.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 50
+"e:\enLearn\packages\tldraw-vue\src\editor\extensions\table\vueTableShape.ts", "TypeScript", 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 171
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\BrushingState.ts", "TypeScript", 303, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 361
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\ContextMenuState.ts", "TypeScript", 587, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 56, 644
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\CreatingBoxState.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 99
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\CreatingLineShapeState.ts", "TypeScript", 144, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 160
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\CreatingSizedShapeState.ts", "TypeScript", 126, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 145
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\DraggingArrowHandleState.ts", "TypeScript", 113, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 132
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\DraggingCreatedShapeState.ts", "TypeScript", 115, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 138
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\DrawingState.ts", "TypeScript", 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 113
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\ErasingState.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 49
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\MinimapManager.ts", "TypeScript", 220, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 264
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\NavigationController.ts", "TypeScript", 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 123
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\PanningState.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 58
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\ResizingState.ts", "TypeScript", 360, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 61, 421
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\StylePanelController.ts", "TypeScript", 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 93
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\ToolbarController.ts", "TypeScript", 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 83
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\TopMenuController.ts", "TypeScript", 323, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 39, 362
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\TranslatingState.ts", "TypeScript", 488, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 94, 582
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\VueArrowBindingUtil.ts", "TypeScript", 207, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 240
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\VueAssetManager.ts", "TypeScript", 88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 99
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\VueEditorController.ts", "TypeScript", 1395, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 227, 1623
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\VueSelectTool.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 16
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\WorkspaceBoundsManager.ts", "TypeScript", 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 269
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\guides.ts", "TypeScript", 436, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 48, 484
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\selectionActions.ts", "TypeScript", 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 38
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\snapIndicatorSegments.ts", "TypeScript", 153, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 168
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\types.ts", "TypeScript", 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 119
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\vueArrowTargetState.ts", "TypeScript", 123, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 134
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\vueLineGeometry.ts", "TypeScript", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 53
+"e:\enLearn\packages\tldraw-vue\src\editor\interactions\vueTextSizing.ts", "TypeScript", 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 52
+"e:\enLearn\packages\tldraw-vue\src\editor\templateStore.ts", "TypeScript", 172, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 200
+"e:\enLearn\packages\tldraw-vue\src\editor\vueBoxShape.ts", "TypeScript", 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 92
+"e:\enLearn\packages\tldraw-vue\src\editor\vueDefaultShapes.ts", "TypeScript", 285, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 327
+"e:\enLearn\packages\tldraw-vue\src\editor\vueEditorExtensions.ts", "TypeScript", 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 107
+"e:\enLearn\packages\tldraw-vue\src\editor\vuePlugins.ts", "TypeScript", 207, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 241
+"e:\enLearn\packages\tldraw-vue\src\editor\vueStyleDefs.ts", "TypeScript", 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 48
+"e:\enLearn\packages\tldraw-vue\src\editor\vueSvgExport.ts", "TypeScript", 883, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 953
+"e:\enLearn\packages\tldraw-vue\src\index.ts", "TypeScript", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 68
+"e:\enLearn\packages\tldraw-vue\src\main.ts", "TypeScript", 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 11
+"e:\enLearn\packages\tldraw-vue\src\plugins\historyValidationPlugin.ts", "TypeScript", 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 45
+"e:\enLearn\packages\tldraw-vue\src\print\PrintManager.ts", "TypeScript", 178, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 200
+"e:\enLearn\packages\tldraw-vue\src\print\adapters\BluetoothPrintAdapter.ts", "TypeScript", 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10
+"e:\enLearn\packages\tldraw-vue\src\print\adapters\BrowserPrintAdapter.ts", "TypeScript", 142, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 152
+"e:\enLearn\packages\tldraw-vue\src\print\adapters\NetworkPrintAdapter.ts", "TypeScript", 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 53
+"e:\enLearn\packages\tldraw-vue\src\print\dataSource.ts", "TypeScript", 167, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 199
+"e:\enLearn\packages\tldraw-vue\src\print\expression.ts", "TypeScript", 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 122
+"e:\enLearn\packages\tldraw-vue\src\print\index.ts", "TypeScript", 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 42
+"e:\enLearn\packages\tldraw-vue\src\print\materialGrid.ts", "TypeScript", 491, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 66, 557
+"e:\enLearn\packages\tldraw-vue\src\print\queue.ts", "TypeScript", 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 62
+"e:\enLearn\packages\tldraw-vue\src\print\renderer.ts", "TypeScript", 155, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 185
+"e:\enLearn\packages\tldraw-vue\src\print\types.ts", "TypeScript", 168, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 195
+"e:\enLearn\packages\tldraw-vue\src\styles.css", "CSS", 0, 0, 0, 0, 0, 0, 2184, 0, 0, 0, 0, 0, 0, 0, 310, 2494
+"e:\enLearn\packages\tldraw-vue\src\vite-env.d.ts", "TypeScript", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 20
+"e:\enLearn\packages\tldraw-vue\src\vue\editorContext.ts", "TypeScript", 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 13
+"e:\enLearn\packages\tldraw-vue\src\vue\useEditorValue.ts", "TypeScript", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 16
+"e:\enLearn\packages\tldraw-vue\tsconfig.build.json", "JSON", 0, 0, 0, 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 38
+"e:\enLearn\packages\tldraw-vue\tsconfig.json", "JSON with Comments", 0, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 58
+"e:\enLearn\packages\tldraw-vue\vite.config.ts", "TypeScript", 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 136
+"e:\enLearn\packages\trigger-workflow-editor\README.md", "Markdown", 0, 0, 0, 0, 0, 84, 0, 0, 0, 0, 0, 0, 0, 0, 29, 113
+"e:\enLearn\packages\trigger-workflow-editor\package.json", "JSON", 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 54
+"e:\enLearn\packages\trigger-workflow-editor\src\compiler\trigger.ts", "TypeScript", 157, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 171
+"e:\enLearn\packages\trigger-workflow-editor\src\components\TriggerFlowNode.vue", "Vue", 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 162
+"e:\enLearn\packages\trigger-workflow-editor\src\components\TriggerWorkflowEditor.vue", "Vue", 0, 0, 0, 0, 1576, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 1760
+"e:\enLearn\packages\trigger-workflow-editor\src\examples\task-examples.ts", "TypeScript", 252, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 261
+"e:\enLearn\packages\trigger-workflow-editor\src\flow-adapter.ts", "TypeScript", 305, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 333
+"e:\enLearn\packages\trigger-workflow-editor\src\index.ts", "TypeScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"e:\enLearn\packages\trigger-workflow-editor\src\inspector-form.ts", "TypeScript", 1213, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 90, 1305
+"e:\enLearn\packages\trigger-workflow-editor\src\job-adapters.ts", "TypeScript", 303, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 338
+"e:\enLearn\packages\trigger-workflow-editor\src\runtime-catalog.ts", "TypeScript", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 22
+"e:\enLearn\packages\trigger-workflow-editor\src\schema\normalize.ts", "TypeScript", 164, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 183
+"e:\enLearn\packages\trigger-workflow-editor\src\schema\registry.ts", "TypeScript", 111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14, 126
+"e:\enLearn\packages\trigger-workflow-editor\src\schema\types.ts", "TypeScript", 171, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 189
+"e:\enLearn\packages\trigger-workflow-editor\src\schema\validate.ts", "TypeScript", 265, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 285
+"e:\enLearn\packages\trigger-workflow-editor\src\templates\index.ts", "TypeScript", 156, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 163
+"e:\enLearn\packages\trigger-workflow-editor\tests\canvas-tools.spec.ts", "TypeScript", 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 85
+"e:\enLearn\packages\trigger-workflow-editor\tests\inspector-form.spec.ts", "TypeScript", 357, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 387
+"e:\enLearn\packages\trigger-workflow-editor\tests\job-adapters.spec.ts", "TypeScript", 196, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 209
+"e:\enLearn\packages\trigger-workflow-editor\tests\task-examples.spec.ts", "TypeScript", 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 91
+"e:\enLearn\packages\trigger-workflow-editor\tests\templates.spec.ts", "TypeScript", 178, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 192
+"e:\enLearn\packages\trigger-workflow-editor\tsconfig.build.json", "JSON", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13
+"e:\enLearn\packages\trigger-workflow-editor\tsconfig.json", "JSON with Comments", 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 42
+"e:\enLearn\packages\trigger-workflow-editor\vite.config.ts", "TypeScript", 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 24
+"e:\enLearn\packages\workflow-schema\package.json", "JSON", 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 30
+"e:\enLearn\packages\workflow-schema\pnpm-lock.yaml", "YAML", 0, 0, 260, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 330
+"e:\enLearn\packages\workflow-schema\src\compiler\index.ts", "TypeScript", 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 44
+"e:\enLearn\packages\workflow-schema\src\index.ts", "TypeScript", 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"e:\enLearn\packages\workflow-schema\src\node-registry\index.ts", "TypeScript", 117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 123
+"e:\enLearn\packages\workflow-schema\src\schema\normalize.ts", "TypeScript", 153, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 179
+"e:\enLearn\packages\workflow-schema\src\schema\types.ts", "TypeScript", 136, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 156
+"e:\enLearn\packages\workflow-schema\src\validator\validate.spec.ts", "TypeScript", 250, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 267
+"e:\enLearn\packages\workflow-schema\src\validator\validate.ts", "TypeScript", 429, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 512
+"e:\enLearn\packages\workflow-schema\tsconfig.json", "JSON with Comments", 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 32
+"Total", "-", 118125, 469, 1093, 1313, 34233, 17395, 4090, 25, 473, 15130, 694, 2651, 75, 28387, 30109, 254262

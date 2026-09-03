@@ -149,8 +149,8 @@ assert.deepEqual(
 
 assert.match(
   pageDataControllerSource,
-  /private readonly resolveAssociatedEditPage = async \(\)[\s\S]*this\.dependencies\.props\.page\.page_type === 'list'[\s\S]*ensureLowCodeEditPage\(this\.dependencies\.host\.getServiceApi\(\), this\.dependencies\.props\.page\)/,
-  'Grid edit navigation must ensure the associated edit-page record exists.',
+  /private readonly resolveAssociatedEditPage = async \(\)[\s\S]*this\.dependencies\.props\.page\.page_type !== 'edit'[\s\S]*ensureLowCodeEditPage\(this\.dependencies\.host\.getServiceApi\(\), this\.dependencies\.props\.page\)/,
+  'Grid edit navigation from every non-edit page must ensure the associated edit-page record exists.',
 );
 assert.match(
   scriptRuntimeSource,

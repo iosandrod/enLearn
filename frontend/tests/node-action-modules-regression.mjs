@@ -124,6 +124,13 @@ assert.match(
   /node: "records"/,
 );
 assert.equal(
+  getLowCodeNodeActionMethods('form', { id: 'edit', kind: 'form' }, [action({
+    insert_text_template: 'await this.executeAction({\\n  node: {{nodeId}},\\n  method: "setData"\\n});',
+  })])[0].createInsertText('edit'),
+  'await this.executeAction({\n  node: "edit",\n  method: "setData"\n});',
+  'Database action templates must insert real line breaks instead of literal \\n sequences.',
+);
+assert.equal(
   resolveLowCodeDataSourceNodeAction(
     [{ id: 'edit', kind: 'form', formType: 'edit' }],
     'edit',

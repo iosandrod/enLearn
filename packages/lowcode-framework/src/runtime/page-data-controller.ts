@@ -134,7 +134,7 @@ export class PageDataController {
   }
 
   private readonly resolveAssociatedEditPage = async () => {
-    if (this.dependencies.props.page.page_type === 'list') {
+    if (this.dependencies.props.page.page_type !== 'edit') {
       return ensureLowCodeEditPage(this.dependencies.host.getServiceApi(), this.dependencies.props.page);
     }
 
@@ -253,9 +253,13 @@ export class PageDataController {
     let pageBlocks = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema);
     const errors: string[] = [];
     for (const key of sourceKeys) {
-      if (!pageBlocks.find((block) => block.id === key)) continue;
+      const block = pageBlocks.find((candidate) =>
+        candidate.id === key ||
+        ('sourceKey' in candidate && candidate.sourceKey === key),
+      );
+      if (!block) continue;
       try {
-        await this.dependencies.executeNodeAction({ node: key, method: 'loadData' });
+        await this.dependencies.executeNodeAction({ node: block.id, method: 'loadData' });
       } catch (error) {
         errors.push(error instanceof Error ? error.message : String(error));
       }
@@ -392,7 +396,24 @@ export class PageDataController {
     block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
     row?: Record<string, unknown>
   ) => {
-    return this.mergeFormModelValues(block.initialValues ?? {}, row ?? {});
+    const model = this.mergeFormModelValues(block.initialValues ?? {}, row ?? {});
+    if (this.hasPersistedFormRecord(row)) return model;
+
+    const rawPrefill = this.dependencies.host.getRoute().query?.prefill;
+    const prefillText = Array.isArray(rawPrefill) ? rawPrefill[0] : rawPrefill;
+    if (typeof prefillText !== 'string' || !prefillText.trim()) return model;
+
+    try {
+      const parsed = JSON.parse(prefillText);
+      if (!isRecord(parsed)) return model;
+      const formFields = new Set(block.schema.fields.map((field) => field.field));
+      const allowedValues = Object.fromEntries(
+        Object.entries(parsed).filter(([field]) => formFields.has(field))
+      );
+      return this.mergeFormModelValues(model, allowedValues);
+    } catch {
+      return model;
+    }
   }
 
   private readonly hasPersistedFormRecord = (row?: Record<string, unknown>) => {
@@ -733,10 +754,12 @@ export class PageDataController {
     const isCreating =
       this.dependencies.props.page.page_type === 'edit' && this.dependencies.builtinPageFunctionMode.value === 'add';
     if (isCreating) {
-      return blocks.reduce<Record<string, unknown>>((values, block) => ({
+      const values = blocks.reduce<Record<string, unknown>>((values, block) => ({
         ...values,
         ...cloneRuntimeValue(this.dependencies.formModels.value[block.id] ?? block.initialValues ?? {}),
       }), {});
+      delete values.__details;
+      return values;
     }
 
     const sourceRecord = this.readDataSourceRecord(sourceKey);
@@ -769,6 +792,11 @@ export class PageDataController {
         if (merged.changed) values[fieldName] = merged.value;
       }
     }
+
+    // `__details` is a transport-only field for configured grid detail
+    // submissions. It must never be copied from a resolved record into the
+    // main entity payload (for example planning_operation has no such column).
+    delete values.__details;
 
     return values;
   }

@@ -4,7 +4,6 @@
       :is="activeCachedRouteComponent"
       v-if="activeCachedRouteComponent"
       :key="cacheKey"
-      :route-component="cachedRouteComponent"
     />
   </KeepAlive>
   <component
@@ -22,9 +21,8 @@ import {
   markRaw,
   nextTick,
   reactive,
-  shallowRef,
+  shallowReactive,
   type Component,
-  type PropType,
   type VNode,
   watch,
 } from 'vue';
@@ -41,7 +39,7 @@ const props = defineProps<{
 const cacheEntryComponents = new Map<string, Component>();
 const cacheEntryKeys = new Set<string>();
 const excludedCacheEntryNameSet = reactive(new Set<string>());
-const cachedRouteComponent = shallowRef<VNode>();
+const cachedRouteComponents = shallowReactive(new Map<string, VNode>());
 let cacheEntryId = 0;
 
 const excludedCacheEntryNames = computed(() => [...excludedCacheEntryNameSet]);
@@ -50,9 +48,9 @@ const activeCachedRouteComponent = computed(() =>
 );
 
 watch(
-  () => [props.keepAlive, props.routeComponent] as const,
-  ([keepAlive, routeComponent]) => {
-    if (keepAlive) cachedRouteComponent.value = routeComponent;
+  () => [props.keepAlive, props.cacheKey, props.routeComponent] as const,
+  ([keepAlive, cacheKey, routeComponent]) => {
+    if (keepAlive && routeComponent) cachedRouteComponents.set(cacheKey, routeComponent);
   },
   { immediate: true }
 );
@@ -69,6 +67,7 @@ watch(
     await nextTick();
     cacheEntryComponents.delete(request.cacheKey);
     cacheEntryKeys.delete(request.cacheKey);
+    cachedRouteComponents.delete(request.cacheKey);
     excludedCacheEntryNameSet.delete(cacheEntryName);
   }
 );
@@ -78,14 +77,11 @@ function resolveCacheEntryComponent(cacheKey: string) {
   if (!cacheEntry) {
     cacheEntry = markRaw(defineComponent({
       name: `RouteCacheEntry${++cacheEntryId}`,
-      props: {
-        routeComponent: {
-          type: Object as PropType<VNode>,
-          required: true,
-        },
-      },
-      setup(entryProps) {
-        return () => cloneVNode(entryProps.routeComponent);
+      setup() {
+        return () => {
+          const routeComponent = cachedRouteComponents.get(cacheKey);
+          return routeComponent ? cloneVNode(routeComponent) : null;
+        };
       },
     }));
     cacheEntryComponents.set(cacheKey, cacheEntry);
@@ -98,6 +94,7 @@ function resolveCacheEntryComponent(cacheKey: string) {
     if (oldestKey) {
       cacheEntryKeys.delete(oldestKey);
       cacheEntryComponents.delete(oldestKey);
+      cachedRouteComponents.delete(oldestKey);
     }
   }
 

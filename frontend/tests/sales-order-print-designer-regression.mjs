@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [apiSource, designerSource, migrationSource] = await Promise.all([
+const [apiSource, designerSource, migrationSource, restoreMigrationSource] = await Promise.all([
   readFile(new URL('../src/lowcode-script-apis.ts', import.meta.url), 'utf8'),
   readFile(new URL('../pages/dashboard/advanced/print-designer.vue', import.meta.url), 'utf8'),
   readFile(
     new URL('../../supabase/migrations/20260814130000_sales_order_print_designer_dialog.sql', import.meta.url),
+    'utf8',
+  ),
+  readFile(
+    new URL('../../supabase/migrations/20260901090000_restore_sales_order_print_designer_button.sql', import.meta.url),
     'utf8',
   ),
 ]);
@@ -34,6 +38,11 @@ assert.match(
   migrationSource,
   /'sales-order-actions'[\s\S]*?'print'[\s\S]*?this\.\$api\.invoke\("print\.designer\.open"[\s\S]*?'apiNames'[\s\S]*?api\.invoke/,
   'The sales-order print button must invoke the authorized print designer API.',
+);
+assert.match(
+  restoreMigrationSource,
+  /'sales-order-actions'[\s\S]*?'print'[\s\S]*?this\.\$api\.invoke\("print\.designer\.open"[\s\S]*?'apiNames'[\s\S]*?api\.invoke/,
+  'The post-runtime migration must preserve the sales-order print designer action.',
 );
 
 console.log('Sales-order print designer regression test passed.');

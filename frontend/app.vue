@@ -19,7 +19,14 @@
   <RouterView v-else v-slot="{ Component, route: viewRoute }">
     <Suspense>
       <template #default>
-        <component :is="Component" :key="viewRoute.fullPath" />
+        <RouteCacheOutlet
+          :route-component="Component"
+          :keep-alive="shouldKeepAliveRoute(viewRoute)"
+          :cache-key="resolveRouteCacheKey(viewRoute)"
+          :cache-invalidation="routeCacheInvalidation"
+          :route-key="resolveRouteKey(viewRoute)"
+          :max="dashboardKeepAliveMax"
+        />
       </template>
     </Suspense>
   </RouterView>
@@ -58,7 +65,9 @@ watch(
   },
 );
 
-const dashboardKeepAliveMax = 8;
+// Keep every visited route instance alive. A value of 0 disables KeepAlive's
+// eviction limit, so switching between pages never remounts an earlier page.
+const dashboardKeepAliveMax = 0;
 const accountCacheScope = computed(() =>
   `${auth.activeAccount.value?.account_id ?? 'public'}:${auth.accountEpoch.value}`
 );
@@ -82,7 +91,7 @@ const layoutComponent = computed(() => {
 });
 
 function shouldKeepAliveRoute(viewRoute: RouteLocationNormalizedLoaded) {
-  return viewRoute.meta.keepAlive === true;
+  return viewRoute.meta.keepAlive !== false;
 }
 
 function buildRouteCacheKey(path: string, version = routeCache.getVersion(path)) {

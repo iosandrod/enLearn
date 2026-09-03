@@ -48,6 +48,9 @@ async function main() {
         name text not null,
         status text not null default 'draft',
         linked_id uuid,
+        business_on date,
+        amount numeric,
+        note text,
         created_at timestamptz not null default now(),
         updated_at timestamptz not null default now()
       );
@@ -56,6 +59,7 @@ async function main() {
         parent_id uuid not null references public.${quote(parentTable)}(id) on delete cascade,
         line_no integer not null check (line_no > 0),
         label text not null,
+        delivery_on date,
         created_at timestamptz not null default now()
       );
       grant select, insert, update, delete on public.${quote(parentTable)} to service_role;
@@ -80,12 +84,17 @@ async function main() {
           beforeUpdate: [{ function: hookFunction, args: { status: 'updated-by-hook' } }]
         },
         create: {
-          allowed_fields: ['id', 'name', 'status', 'linked_id', 'created_at', 'updated_at'],
+          allowed_fields: [
+            'id', 'name', 'status', 'linked_id', 'business_on', 'amount', 'note',
+            'created_at', 'updated_at'
+          ],
           hook_input_fields: [],
           required_fields: ['id', 'name']
         },
         update: {
-          allowed_fields: ['name', 'status', 'linked_id', 'updated_at'],
+          allowed_fields: [
+            'name', 'status', 'linked_id', 'business_on', 'amount', 'note', 'updated_at'
+          ],
           hook_input_fields: [],
           required_fields: []
         }
@@ -95,7 +104,7 @@ async function main() {
         primary_key: 'id',
         hooks: {},
         create: {
-          allowed_fields: ['parent_id', 'line_no', 'label', 'created_at'],
+          allowed_fields: ['parent_id', 'line_no', 'label', 'delivery_on', 'created_at'],
           hook_input_fields: [],
           required_fields: ['parent_id', 'line_no', 'label']
         },
@@ -146,10 +155,16 @@ async function main() {
       p_config: config,
       p_operation: {
         items: [{
-          data: { id: firstId, name: 'first' },
+          data: {
+            id: firstId,
+            name: 'first',
+            business_on: '',
+            amount: '',
+            note: '',
+          },
           details: [{
             resource: childTable,
-            rows: [{ line_no: 1, label: 'line-one' }]
+            rows: [{ line_no: 1, label: 'line-one', delivery_on: '' }]
           }]
         }],
         after_save: [{
@@ -173,14 +188,22 @@ async function main() {
       [firstId]
     );
     assert.equal(created.rows[0].linked_id, firstId);
+    assert.equal(created.rows[0].business_on, null);
+    assert.equal(created.rows[0].amount, null);
+    assert.equal(created.rows[0].note, '');
     assert.equal(created.rows[0].child_count, 1);
+    const createdChild = await client.query(
+      `select delivery_on from public.${quote(childTable)} where parent_id = $1`,
+      [firstId]
+    );
+    assert.equal(createdChild.rows[0].delivery_on, null);
 
     const update = await supabase.rpc('execute_dynamic_crud', {
       p_action: 'update',
       p_table_name: parentTable,
       p_config: config,
       p_operation: {
-        data: { name: 'updated' },
+        data: { name: 'updated', business_on: '', amount: '', note: '' },
         selector: { id: firstId, ids: [], filters: {} },
         details: [{
           resource: childTable,

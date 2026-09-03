@@ -31,6 +31,26 @@ assert.match(
   /executeLowCodeScript\([\s\S]*?handleScriptCapability/,
   'Published button scripts must execute through the registered safe script runtime.',
 );
+assert.doesNotMatch(
+  rendererSource,
+  /getServiceApi\(\)\.invoke[\s\S]*?['"]executeRuntime['"]|['"]executeRuntime['"][\s\S]*?getServiceApi\(\)\.invoke/,
+  'Page functions must execute their source locally instead of calling lowcode.executeRuntime.',
+);
+assert.match(
+  rendererSource,
+  /createDatabasePageFunctionScript[\s\S]*?executeIsolatedScript\([\s\S]*?['"]function['"]/,
+  'Database page functions must execute their source through the local isolated script runtime.',
+);
+assert.match(
+  rendererSource,
+  /request\.name === 'api\.invoke'[\s\S]*?invokeRegisteredLowCodeScriptApi\([\s\S]*?apiName[\s\S]*?payload[\s\S]*?context/,
+  'Button scripts must dispatch api.invoke through the registered host API registry.',
+);
+assert.match(
+  rendererInteractionsSource,
+  /isButtonActionEvent[\s\S]*?eventAction[\s\S]*?!actionScript[\s\S]*?未配置脚本/,
+  'Button actions without scripts must report an explicit runtime error.',
+);
 assert.match(
   rendererSource,
   /compactLowCodeScriptContext\([\s\S]*?scriptPolicy\?\.limits\?\.maxPayloadBytes/,
@@ -115,6 +135,11 @@ assert.match(
   buttonMaterialSource,
   /script: action\.script \?\? ''/,
   'Button events must carry their configured script.',
+);
+assert.match(
+  buttonMaterialSource,
+  /const script = typeof action\.script === 'string'[\s\S]*?if \(!script\)[\s\S]*?未配置脚本[\s\S]*?executeButtonScript/,
+  'Buttons must execute their configured script directly and reject missing scripts.',
 );
 assert.match(
   converterSource,

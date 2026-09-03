@@ -16,10 +16,10 @@ if (!rawConnectionString) {
 const repoRoot = process.cwd().toLowerCase().endsWith('api')
   ? resolve(process.cwd(), '..')
   : process.cwd();
-const migrationPath = resolve(
-  repoRoot,
+const migrationPaths = [
   'supabase/migrations/20260826220000_database_node_actions.sql',
-);
+  'supabase/migrations/20260903090000_planning_flow_node_action.sql',
+].map((file) => resolve(repoRoot, file));
 
 function connectionString(value: string) {
   const url = new URL(normalizePostgresConnectionString(value));
@@ -54,8 +54,31 @@ async function main() {
     await client.query(`set local statement_timeout = '60s'`);
 
     stage = 'execute migration';
-    const migration = unwrapMigration(await readFile(migrationPath, 'utf8'));
-    await client.query(migration);
+    const { rows: actionTableRows } = await client.query<{ exists: boolean }>(`
+      select exists (
+        select 1
+        from information_schema.tables
+        where table_schema = 'public' and table_name = 'lowcode_node_actions'
+      ) as exists
+    `);
+    let hasPlanningFlowAction = false;
+    if (actionTableRows[0]?.exists) {
+      const { rows } = await client.query<{ exists: boolean }>(`
+        select exists (
+          select 1
+          from public.lowcode_node_actions
+          where node_type = 'planningFlow' and action_code = 'loadData'
+        ) as exists
+      `);
+      hasPlanningFlowAction = rows[0]?.exists === true;
+    }
+    const migrationsToApply = hasPlanningFlowAction
+      ? migrationPaths.slice(1)
+      : migrationPaths;
+    for (const migrationPath of migrationsToApply) {
+      const migration = unwrapMigration(await readFile(migrationPath, 'utf8'));
+      await client.query(migration);
+    }
 
     stage = 'verify migration';
     const { rows } = await client.query<{
@@ -100,8 +123,8 @@ async function main() {
     const result = rows[0];
     if (
       !result
-      || result.action_count !== 19
-      || result.node_type_count !== 5
+      || result.action_count !== 20
+      || result.node_type_count !== 6
       || result.page_scoped_column_count !== 0
       || result.legacy_option_source_count !== 0
     ) {

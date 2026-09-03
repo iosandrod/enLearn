@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
+import { VxeUI } from 'vxe-pc-ui';
 import type { LowCodeAction, LowCodePageToolbarBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
@@ -80,9 +81,30 @@ function isSaveAction(action: LowCodeAction) {
   return isLowCodeEditPageSaveAction(action);
 }
 
-function handleAction(action: LowCodeAction) {
+function reportButtonError(error: unknown) {
+  runtimeBlockEditor?.reportRuntimeError?.(error);
+  if (runtimeBlockEditor?.reportRuntimeError) return;
+  const content = error instanceof Error ? error.message : String(error);
+  const modal = (VxeUI as unknown as {
+    modal?: { message?: (options: Record<string, unknown>) => unknown };
+  }).modal;
+  if (modal?.message) {
+    void modal.message({ content, status: 'error' });
+    return;
+  }
+  console.error(content);
+}
+
+async function handleAction(action: LowCodeAction) {
   if (isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value)) return;
-  emit('runtimeEvent', {
+
+  const script = typeof action.script === 'string' ? action.script.trim() : '';
+  if (!script) {
+    reportButtonError(new Error(`按钮“${action.label || action.code}”未配置脚本。`));
+    return;
+  }
+
+  const event = {
     name: action.eventName ?? 'toolbar.click',
     blockId: props.block.id,
     blockKind: props.block.kind,
@@ -93,7 +115,27 @@ function handleAction(action: LowCodeAction) {
       script: action.script ?? '',
       directives: action.directives ?? [],
     },
-  });
+  } as const;
+
+  if (runtimeBlockEditor?.executeButtonScript) {
+    try {
+      const result = await runtimeBlockEditor.executeButtonScript(script, event);
+      if (result === false) return;
+    } catch (error) {
+      reportButtonError(error);
+      return;
+    }
+
+    // The script has already run; the marker lets the event bus process directives without rerunning it.
+    emit('runtimeEvent', {
+      ...event,
+      payload: { ...event.payload, scriptExecuted: true },
+    });
+    emit('toolbarAction', { block: props.block, action });
+    return;
+  }
+
+  emit('runtimeEvent', event);
   emit('toolbarAction', { block: props.block, action });
 }
 </script>

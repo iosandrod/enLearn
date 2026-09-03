@@ -157,6 +157,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   });
   const runtimeEventBus = createLowCodeEventBus();
   const pendingActionEvents = new WeakMap<object, Promise<void>>();
+  let runtimeDefinitionsRequest: Promise<void> | undefined;
   const formBaselines: Record<string, Record<string, unknown>> = {};
   const selectedCategoryId = ref('');
   const runtimeBlockRenderRevision = ref(0);
@@ -315,6 +316,11 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     executeFieldScript: async (script, event) => (
       await executeIsolatedScript(script, event)
     ).value,
+    executeButtonScript: async (script, event) => {
+      await ensureRuntimeDefinitions(event);
+      return executeButtonScript(script, event);
+    },
+    reportRuntimeError: reportButtonRuntimeError,
   });
   provide(lowCodeScriptContextProviderKey, {
     getSource: createScriptContextSource,
@@ -602,6 +608,9 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   onBeforeUnmount(unsubscribeRuntimeEvents);
 
   async function publishRuntimeEvent(event: LowCodeRuntimeEvent) {
+    if(1==1){
+      // return //
+    }
     const action = isRecord(event.payload?.action) ? event.payload.action : undefined;
     const actionEvent = Boolean(action || readString(event.payload?.actionCode));
     if (actionEvent && runtime.state.status.mesCommandExecuting) {
@@ -623,6 +632,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
 
   async function publishRuntimeEventNow(event: LowCodeRuntimeEvent) {
     try {
+      await ensureRuntimeDefinitions(event);
       await runtimeEventBus.publish(event);
       await props.onRuntimeEvent?.(event);
     } catch (error) {
@@ -631,12 +641,43 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     }
   }
 
+  async function ensureRuntimeDefinitions(event: LowCodeRuntimeEvent) {
+    const action = isRecord(event.payload?.action) ? event.payload.action : undefined;
+    const actionScript = readString(event.payload?.script ?? action?.script);
+    if (!/\bexecuteFunction\s*\(/.test(actionScript) || hasRuntimePageFunctions()) return;
+
+    if (!runtimeDefinitionsRequest) {
+      runtimeDefinitionsRequest = host.getServiceApi()
+        .invoke<LowCodePageRecord>('lowcode', 'getRuntimePage', { id: props.page.id })
+        .then((runtimePage) => {
+          if (!runtimePage || runtimePage.id !== props.page.id) {
+            throw new Error('页面运行时定义加载失败。');
+          }
+          props.page.node_actions = runtimePage.node_actions ?? [];
+          props.page.runtime_functions = runtimePage.runtime_functions ?? [];
+          runtime.runtimeFunctions = props.page.runtime_functions;
+          if (!hasRuntimePageFunctions()) {
+            throw new Error('当前页面没有可执行的页面函数，请刷新页面后重试。');
+          }
+        })
+        .finally(() => {
+          runtimeDefinitionsRequest = undefined;
+        });
+    }
+
+    await runtimeDefinitionsRequest;
+  }
+
   async function waitForActionEvent(action?: LowCodeAction | LowCodeButtonGroupAction) {
     if (!action) return;
     await pendingActionEvents.get(action as object);
   }
 
   async function handlePublishedRuntimeEvent(event: LowCodeRuntimeEvent) {
+    console.log(event,'test_events')//
+    // if(1==1){
+    //   return //
+    // }
     if (isRuntimeEditPageModifyEvent(event)) {
       const modeChanged = builtinPageFunctionMode.value !== 'edit';
       builtinPageFunctionMode.value = 'edit';
@@ -672,16 +713,27 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     }
     if (targetBlock?.kind == 'grid') {//
       if (targetBlock.tableType == 'main') {
-        let allDetailBlock = allBlocks.filter((block) => block.kind === 'grid' && block.tableType == 'detail');
-        allDetailBlock.forEach((block) => {
-          scriptRuntime.executeNodeAction({
-            node:block.id,
-            method: 'loadData',
-          });
-        })//
+        if(event.name == 'grid.rowCurrentChange'){ 
+          let allDetailBlock = allBlocks.filter((block) => block.kind === 'grid' && block.tableType == 'detail');
+          allDetailBlock.forEach((block) => {
+            scriptRuntime.executeNodeAction({
+              node:block.id,
+              method: 'loadData',
+            });
+          })//
+        }
       }
     }
     if (isBlockedEditPageSaveEvent(event)) return;
+
+    const eventAction = isRecord(event.payload?.action) ? event.payload.action : undefined;
+    const actionScript = readString(event.payload?.script ?? eventAction?.script);
+    const isButtonActionEvent = event.blockKind === 'buttonGroup' || event.blockKind === 'toolbar';
+    if (isButtonActionEvent && eventAction && !actionScript && event.payload?.scriptExecuted !== true) {
+      const label = readString(eventAction.label ?? eventAction.code) || '当前按钮';
+      reportButtonRuntimeError(new Error(`按钮“${label}”未配置脚本。`));
+      return;
+    }
 
     let eventSucceeded = true;
     const directives = resolveEventDirectives(event, props.page.schema.eventHandlers);
@@ -704,9 +756,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
         }
       }
 
-      const eventAction = isRecord(event.payload?.action) ? event.payload.action : undefined;
-      const actionScript = readString(event.payload?.script ?? eventAction?.script);
-      if (actionScript) {
+      if (actionScript && event.payload?.scriptExecuted !== true) {
         try {
           const result = await executeButtonScript(actionScript, event);
           if (result === false) eventSucceeded = false;
@@ -772,6 +822,12 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     reportRuntimeError('运行时指令执行失败', error);
     message.value =
       error instanceof Error ? error.message : host.t('runtime.errors.directive');
+    messageClass.value = 'lc-error';
+  }
+
+  function reportButtonRuntimeError(error: unknown) {
+    reportRuntimeError('按钮脚本执行失败', error);
+    message.value = error instanceof Error ? error.message : String(error);
     messageClass.value = 'lc-error';
   }
 
@@ -862,8 +918,11 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     }
 
     if (action.code === 'refresh') {
-      if (readString(action.script) || hasEnabledRefreshDirective(action)) return;
-      await loadPageData(props.page);
+      if (!readString(action.script) && !hasEnabledRefreshDirective(action)) {
+        await loadPageData(props.page);
+      }
+      message.value = '数据已刷新。';
+      messageClass.value = 'lc-help';
     }
   }
 

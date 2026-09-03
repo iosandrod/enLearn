@@ -24,7 +24,12 @@ function matchesApplicability(
 }
 
 function createInsertText(template: string, nodeId: string) {
-  return template.replaceAll('{{nodeId}}', JSON.stringify(nodeId));
+  // Database-seeded templates use escaped line breaks in SQL string literals.
+  return template
+    .replaceAll('{{nodeId}}', JSON.stringify(nodeId))
+    .replaceAll('\\r\\n', '\n')
+    .replaceAll('\\n', '\n')
+    .replaceAll('\\r', '\n');
 }
 
 export function getLowCodeNodeTypeDefinition(

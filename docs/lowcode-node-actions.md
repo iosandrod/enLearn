@@ -47,7 +47,7 @@ async function main() {
 | `drawer` | 抽屉 | `open` | 透传子节点动作和事件 |
 | `statCard` | 指标卡 | 无 | 无 |
 | `tree` | 树 | 无 | 当前通用树仅展示，不发布节点选择事件 |
-| `planningFlow` | 工艺路线 | 无 | 工序节点选择；适应视图、缩放仅为组件本地操作 |
+| `planningFlow` | 工艺路线 | `loadData` | 工序节点选择；适应视图、缩放仅为组件本地操作 |
 | `planningGantt` | 排产甘特图 | 无 | 计划任务选择 |
 | `planningBom` | 工艺 BOM | 无 | BOM 节点选择 |
 
@@ -209,6 +209,20 @@ if (result) {
 | `resultNode` | `string` | 否 | 结果表单节点 ID；默认读取节点的 `resultNode` 配置 |
 
 确认时返回表单对象，取消或关闭时返回 `null`。结果节点必须是 `form`。
+
+### 3.6 `planningFlow`: `loadData`
+
+按照流程图数据源配置请求路线数据，并更新流程图的节点、连线和容器。
+
+```js
+const flow = await this.executeAction({
+  node: "planning-route-flow",
+  method: "loadData",
+  filters: { operationId: "route-id" },
+});
+```
+
+动作返回服务端流程图对象，通常包含 `nodes`、`edges` 和 `containers`；`filters` 与 `postData` 可用于覆盖本次请求参数。
 
 ## 4. 各 Node 的交互动作
 

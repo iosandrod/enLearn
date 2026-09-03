@@ -117,5 +117,10 @@ assert.match(
   /validateSubmissionBlocks[\s\S]*getGridController[\s\S]*controller\.validate/,
   'Child rows must be validated before the generic save request is sent.',
 );
+assert.match(
+  controllerSource,
+  /delete values\.__details;/,
+  'Transport-only __details must not leak into the main entity payload.',
+);
 
 console.log('Grid detail schema save regression test passed.');

@@ -583,19 +583,16 @@ export type LowCodeRuntimeFunctionDefinition = {
   source_hash: string;
 };
 
-/** Result returned by the backend lowcode.executeRuntime endpoint. */
-export type LowCodeRemoteRuntimeEffect = {
+/** Effect emitted by a local page-function script. */
+export type LowCodeRuntimeEffect = {
   type: import('../runtime/scripts').LowCodeScriptCapabilityName;
   [key: string]: unknown;
 };
 
-export type LowCodeRemoteRuntimeResult = {
-  runtimeKey: string;
-  functionName: string;
-  executionMode: 'remote';
-  durationMs: number;
+/** Result returned by a page-function script before local effect adaptation. */
+export type LowCodeRuntimeResult = {
   value: unknown;
-  effects: LowCodeRemoteRuntimeEffect[];
+  effects?: LowCodeRuntimeEffect[];
   resultEffect?: number;
 };
 

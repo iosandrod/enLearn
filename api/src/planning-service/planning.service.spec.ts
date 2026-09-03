@@ -344,13 +344,48 @@ async function testCategoryDeleteRejectsChildren() {
   );
 }
 
+async function testRouteOperationInsertUsesOneTransactionalRpc() {
+  let capturedMethod = '';
+  let capturedPayload: Record<string, unknown> | undefined;
+  const insertService = new PlanningService() as unknown as {
+    executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
+    authorizeExecution(context: unknown): Promise<{ client: { rpc: (method: string, payload: Record<string, unknown>) => Promise<unknown> } }>;
+    accountValue(context: unknown, field: string): string;
+  };
+  insertService.authorizeExecution = async () => ({
+    client: {
+      rpc(method, payload) {
+        capturedMethod = method;
+        capturedPayload = payload;
+        return Promise.resolve({ data: { operation: { id: 'created-operation' } }, error: null });
+      }
+    }
+  });
+  insertService.accountValue = () => '11111111-1111-4111-8111-111111111111';
+
+  const result = await insertService.executeAction('insertRouteOperation', {
+    targetOperationId: '22222222-2222-4222-8222-222222222222',
+    position: 'before',
+    operation: { name: '新增工序', type: 'fixed_time' }
+  }, { accountId: 'account-1' });
+  assert.deepEqual(result, { operation: { id: 'created-operation' } });
+  assert.equal(capturedMethod, 'planning_insert_route_operation');
+  assert.deepEqual(capturedPayload, {
+    p_account_id: '11111111-1111-4111-8111-111111111111',
+    p_target_id: '22222222-2222-4222-8222-222222222222',
+    p_position: 'before',
+    p_operation: { name: '新增工序', type: 'fixed_time' }
+  });
+}
+
 void Promise.all([
   testPlanningPayloadNormalization(),
   testConsoleOptionBoundary(),
   testConsoleScenarioOptionsUseSystemDropdownSource(),
   testConsoleReadRequiresTheExactInternalCapability(),
   testCategoryRelationOptions(),
-  testCategoryDeleteRejectsChildren()
+  testCategoryDeleteRejectsChildren(),
+  testRouteOperationInsertUsesOneTransactionalRpc()
 ]).then(() => {
   console.log('planning service configuration tests passed');
 });

@@ -94,20 +94,82 @@ const routeLaneFlow = buildPlanningFlowData(
   ]
 );
 assert.equal(routeLaneFlow.lanes.length, 2);
-assert.deepEqual(routeLaneFlow.lanes[0].nodeIds, ['route-a', 'route-a-10', 'route-a-20']);
-assert.deepEqual(routeLaneFlow.lanes[1].nodeIds, ['route-b', 'route-b-10']);
+assert.equal(routeLaneFlow.lanes[0].routeId, 'route-a');
+assert.equal(routeLaneFlow.lanes[0].label, '产品 A 路线');
+assert.deepEqual(routeLaneFlow.lanes[0].nodeIds, ['route-a-10', 'route-a-20']);
+assert.equal(routeLaneFlow.lanes[1].routeId, 'route-b');
+assert.deepEqual(routeLaneFlow.lanes[1].nodeIds, ['route-b-10']);
 assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a')?.sequence, 'RT');
 assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.sequence, 1);
 assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.sequence, 2);
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.routeName, '产品 A 路线');
 assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.laneId, 'lane:route-a');
 assert.equal(
   (routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.position as { y: number }).y,
   (routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.position as { y: number }).y
 );
+assert.equal(
+  (routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.position as { x: number }).x,
+  (routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.position as { x: number }).x + 360
+);
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.isParallel, false);
+assert.ok(routeLaneFlow.edges.some((edge) => edge.source === 'route-a-10' && edge.target === 'route-a-20' && edge.relation === 'routing'));
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.parentOperationType, 'routing');
 assert.ok(
   Number((routeLaneFlow.nodes.find((node) => node.id === 'route-b')?.position as { y: number }).y) >
     Number((routeLaneFlow.nodes.find((node) => node.id === 'route-a')?.position as { y: number }).y)
 );
+
+const ownerOnlyRouteFlow = buildPlanningFlowData(
+  [
+    { id: 'owner-route', name: '仅上级关系路线', type: 'routing' },
+    { id: 'owner-step-20', name: '第二步', type: 'fixed_time', owner_id: 'owner-route', priority: 20 },
+    { id: 'owner-step-10', name: '第一步', type: 'fixed_time', owner_id: 'owner-route', priority: 10 }
+  ],
+  [],
+  []
+);
+assert.deepEqual(ownerOnlyRouteFlow.lanes[0].nodeIds, ['owner-step-10', 'owner-step-20']);
+assert.equal(ownerOnlyRouteFlow.nodes.find((node) => node.id === 'owner-step-10')?.isParallel, false);
+assert.equal(ownerOnlyRouteFlow.nodes.find((node) => node.id === 'owner-step-20')?.isParallel, false);
+assert.ok(ownerOnlyRouteFlow.edges.some((edge) => edge.source === 'owner-step-10' && edge.target === 'owner-step-20' && edge.relation === 'routing'));
+
+const parallelFlow = buildPlanningFlowData(
+  [
+    { id: 'parallel-route', name: '并行路线', type: 'split' },
+    { id: 'parallel-a', name: '并行 A', type: 'fixed_time', owner_id: 'parallel-route', priority: 10 },
+    { id: 'parallel-b', name: '并行 B', type: 'fixed_time', owner_id: 'parallel-route', priority: 10 },
+    { id: 'parallel-next', name: '汇合工序', type: 'fixed_time', owner_id: 'parallel-route', priority: 20 }
+  ],
+  [],
+  []
+);
+assert.equal((parallelFlow.nodes.find((node) => node.id === 'parallel-a')?.position as { y: number }).y !==
+  (parallelFlow.nodes.find((node) => node.id === 'parallel-b')?.position as { y: number }).y, true);
+assert.equal(parallelFlow.nodes.find((node) => node.id === 'parallel-a')?.isParallel, true);
+assert.equal(parallelFlow.nodes.find((node) => node.id === 'parallel-b')?.isParallel, true);
+assert.equal(parallelFlow.nodes.find((node) => node.id === 'parallel-next')?.isParallel, true);
+assert.equal(parallelFlow.edges.filter((edge) => edge.label === '并行汇合').length, 0);
+
+const nestedContainerFlow = buildPlanningFlowData(
+  [
+    { id: 'route-root', name: '主路线', type: 'routing' },
+    { id: 'alternate', name: '备选工艺', type: 'alternate', owner_id: 'route-root', priority: 10 },
+    { id: 'alternate-a', name: '备选 A', type: 'fixed_time', owner_id: 'alternate', priority: 10 },
+    { id: 'alternate-b', name: '备选 B', type: 'fixed_time', owner_id: 'alternate', priority: 20 },
+    { id: 'route-next', name: '后续工序', type: 'fixed_time', owner_id: 'route-root', priority: 20 }
+  ],
+  [],
+  []
+);
+assert.deepEqual(nestedContainerFlow.containers.map((container) => [container.operationId, container.type]), [
+  ['alternate', 'alternate'],
+  ['route-root', 'routing']
+]);
+assert.equal(nestedContainerFlow.nodes.find((node) => node.id === 'alternate-a')?.parentOperationPath, '主路线 / 备选工艺');
+assert.equal(nestedContainerFlow.nodes.find((node) => node.id === 'alternate-a')?.isParallel, false);
+assert.equal(nestedContainerFlow.nodes.find((node) => node.id === 'route-next')?.isParallel, false);
+assert.ok(nestedContainerFlow.edges.some((edge) => edge.source === 'alternate-b' && edge.target === 'route-next' && edge.relation === 'routing'));
 
 const bom = buildPlanningBomTree(
   [

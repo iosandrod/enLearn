@@ -43,6 +43,37 @@
       const recordId = new URLSearchParams(location.search).get('recordId') || '';
       const saveCalls = [];
       const routerPushes = [];
+      const createRuntimeFunction = {
+        id: 'system-page-list-create-v1',
+        page_id: null,
+        runtime_key: 'system:page:list.create',
+        function_name: 'create',
+        function_type: 'page_function',
+        category: 'crud',
+        page_type: 'list',
+        node_type: null,
+        label: '新增',
+        description: '打开新增页面。',
+        execution_mode: 'script',
+        source_code: [
+          'function main() {',
+          '  return { effects: [{ type: "page.navigateToEdit" }], resultEffect: 0 };',
+          '}',
+        ].join('\n'),
+        native_handler: null,
+        runtime_spec: { operation: 'navigateToEdit' },
+        parameters: [],
+        result_schema: {},
+        capabilities: ['page.navigateToEdit'],
+        applicable_when: {},
+        limits: {},
+        version: 1,
+        status: 'published',
+        enabled: true,
+        is_system: true,
+        sort_order: 10,
+        source_hash: 'test-create-runtime',
+      };
       const pageRecord = reactive({
         id: 'runtime-button-save-page',
         code: 'runtime-button-save',
@@ -92,6 +123,12 @@
       });
       const serviceApi = {
         async invoke(serviceName, serviceMethod, payload = {}) {
+          if (serviceName === 'lowcode' && serviceMethod === 'getRuntimePage') {
+            return {
+              ...pageRecord,
+              runtime_functions: [createRuntimeFunction],
+            };
+          }
           if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
             if (payload.resource === 'lowcode_form_definitions') {
               return [{
@@ -162,6 +199,7 @@
                   layout: [{
                     kind: 'tabs',
                     defaultKey: 'buttons',
+                    fillRemaining: true,
                     tabs: [
                       { key: 'buttons', label: '按钮设计', blocks: [{ kind: 'field', field: 'button-group-designer-buttons-form' }] },
                       { key: 'info', label: '组件信息', blocks: [{ kind: 'field', field: 'button-group-designer-info-form' }] },

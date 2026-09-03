@@ -11,6 +11,7 @@ import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-ma
 import {
   createBuiltinLowCodeActionEditorRow,
   createBuiltinLowCodePageFunctionScript,
+  createBuiltinLowCodeNoopScript,
   createDefaultButtonGroupEditorRows,
   getBuiltinLowCodeActionPresets,
   getBuiltinLowCodeActionPresetsForPage,
@@ -326,8 +327,12 @@ function attachMissingBuiltinFunctionScripts(
       })
     : undefined;
 
-  if (!readString(button.script) && preset?.functionName) {
-    next.script = createBuiltinLowCodePageFunctionScript(preset.functionName);
+  const script = readString(button.script);
+  const isFallbackScript = script === createBuiltinLowCodeNoopScript();
+  if ((!script || isFallbackScript) && preset) {
+    next.script = preset.functionName
+      ? createBuiltinLowCodePageFunctionScript(preset.functionName)
+      : createBuiltinLowCodeNoopScript();
   }
 
   const children = normalizeChildrenSource(button.children);
@@ -611,13 +616,16 @@ function configureDesignerSchema(
               executeSelectDefaultButtons(context, pageType),
           };
         }
-        if (code === 'add-dropdown' && !button.row) {
+        if (code === 'add-dropdown') {
+          const row = isRecord(button.row)
+            ? button.row
+            : {
+                ...createButtonRow('下拉按钮'),
+                children: [createButtonRow('下拉项')],
+              };
           return {
             ...button,
-            row: {
-              ...createButtonRow('下拉按钮'),
-              children: [createButtonRow('下拉项')],
-            },
+            row,
             execute: executeAddToolbarAction,
           };
         }

@@ -1888,3 +1888,120 @@ DEFAULT_GANTT_DISPLAY_SETTINGS_SCHEMA
     routeError.value =
       error instanceof Error ? error.message : '菜单名称保存失败。';
   }
+
+   Object.entries(schema.dataSources ?? {}).forEach(([key, source]) => {
+    const path = `dataSources.${key}`;
+    const hasTableTarget = hasDataSourceTableTarget(source);
+
+    if (!source.key) {
+      pushIssue(issues, 'error', `${path}.key`, 'Data source key is required.');
+    }
+
+    if (!source.serviceName && !hasTableTarget) {
+      pushIssue(issues, 'error', `${path}.serviceName`, 'Service name is required.');
+    }
+
+    if (!source.serviceMethod && !hasTableTarget) {
+      pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
+    }
+
+    for (const dependencyKey of source.loadAfterSourceKeys ?? []) {
+      if (dependencyKey === key) {
+        pushIssue(issues, 'error', `${path}.loadAfterSourceKeys`, 'A data source cannot depend on itself.');
+      } else if (!schema.dataSources?.[dependencyKey]) {
+        pushIssue(
+          issues,
+          'error',
+          `${path}.loadAfterSourceKeys`,
+          `Data source dependency "${dependencyKey}" does not exist.`
+        );
+      }
+    }
+  });
+
+
+const sources = schema.dataSources ?? {};
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  function visit(key: string) {
+    if (visited.has(key)) return;
+    if (visiting.has(key)) {
+      pushIssue(
+        issues,
+        'error',
+        `dataSources.${key}.loadAfterSourceKeys`,
+        `Data source dependency cycle includes "${key}".`
+      );
+      return;
+    }
+
+    visiting.add(key);
+    for (const dependencyKey of sources[key]?.loadAfterSourceKeys ?? []) {
+      if (sources[dependencyKey]) visit(dependencyKey);
+    }
+    visiting.delete(key);
+    visited.add(key);
+  }
+
+  Object.keys(sources).forEach(visit);
+
+
+  if (visited.has(key)) return;
+    if (visiting.has(key)) {
+      pushIssue(
+        issues,
+        'error',
+        `dataSources.${key}.loadAfterSourceKeys`,
+        `Data source dependency cycle includes "${key}".`
+      );
+      return;
+    }
+
+    visiting.add(key);
+    for (const dependencyKey of sources[key]?.loadAfterSourceKeys ?? []) {
+      if (sources[dependencyKey]) visit(dependencyKey);
+    }
+    visiting.delete(key);
+    visited.add(key);
+  }
+
+  Object.keys(sources).forEach(visit);
+
+  const sources = schema.dataSources ?? {};
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  function visit(key: string) {
+    if (visited.has(key)) return;
+    if (visiting.has(key)) {
+      pushIssue(
+        issues,
+        'error',
+        `dataSources.${key}.loadAfterSourceKeys`,
+        `Data source dependency cycle includes "${key}".`
+      );
+      return;
+    }
+
+    visiting.add(key);
+    for (const dependencyKey of sources[key]?.loadAfterSourceKeys ?? []) {
+      if (sources[dependencyKey]) visit(dependencyKey);
+    }
+    visiting.delete(key);
+    visited.add(key);
+  }
+
+  Object.keys(sources).forEach(visit);
+
+
+  const allowedCapabilities = context.policy?.capabilities;
+    if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
+      throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
+    }
+
+    if (request.name === 'api.invoke') {
+      const apiName = this.readScriptStringArg(request.args, 0, 'name');
+      const payload = this.readScriptRecordArg(request.args, 1);
+      return invokeRegisteredLowCodeScriptApi(apiName, payload, context);
+    }

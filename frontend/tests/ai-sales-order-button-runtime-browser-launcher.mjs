@@ -33,7 +33,7 @@ async function freePort() {
   });
 }
 
-async function waitForUrl(url, timeoutMs = 20_000) {
+async function waitForUrl(url, timeoutMs = 60_000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
   while (Date.now() < deadline) {
@@ -147,10 +147,14 @@ try {
       serviceName,
       serviceMethod,
     })),
-    [{ serviceName: 'lowcode', serviceMethod: 'listItems' }],
+    [
+      { serviceName: 'lowcode', serviceMethod: 'getRuntimePage' },
+      { serviceName: 'lowcode', serviceMethod: 'listItems' },
+    ],
   );
+  assert.equal(result.serviceCalls[0].payload.id, 'ai-sales-order-candidate-page');
   assert.equal(
-    result.serviceCalls.some(({ serviceMethod }) => serviceMethod === 'saveItem'),
+    result.serviceCalls.some(({ serviceMethod }) => serviceMethod === 'executeRuntime'),
     false,
   );
   assert.deepEqual(pageErrors, []);

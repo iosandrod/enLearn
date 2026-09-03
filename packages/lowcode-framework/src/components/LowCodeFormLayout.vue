@@ -232,6 +232,10 @@ function rowStyle(node: Extract<LowCodeFormLayoutNode, { kind: 'row' }>) {
 .lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout > .vxe-form--item > .vxe-form--item-content,
 .lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout > .vxe-form--item > .vxe-form--item-content > .vxe-form--item-inner,
 .lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-field,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-field > .lc-sub-form,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-sub-form > .lc-form,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-sub-form > .lc-form > .vxe-form--wrapper,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-sub-form > .lc-form > .vxe-form--wrapper > .lc-form-grid,
 .lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-field > .lc-array-table,
 .lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-array-table__viewport {
   height: 100%;

@@ -509,8 +509,7 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
   )
 );
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
-// const tableHeight = computed(() => readSize(tableConfig.value.height));
-const tableHeight = computed(() => '100%');//
+const tableHeight = computed(() => readSize(tableConfig.value.height));
 const showSeq = computed(() => fieldProps.value.showSeq !== false);
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
 const showActions = computed(() => fieldProps.value.showActions !== false);
@@ -588,7 +587,10 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => recalculateTable());
+onMounted(() => {
+  //
+  setTimeout(() => recalculateTable(), 10);//
+});
 onBeforeUnmount(() => unsubscribeOptionSources?.());
 
 function recalculateTable() {

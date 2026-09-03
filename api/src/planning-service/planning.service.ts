@@ -129,6 +129,9 @@ export class PlanningService extends BaseService {
 
     const source = sourceOverride ?? ctx.data;
     const normalized = { ...source };
+    // __details is handled by BaseService as a transport envelope. Never let
+    // it reach the dynamic CRUD payload for planning tables.
+    delete normalized.__details;
     for (const field of model.fields) {
       if (field.required || normalized[field.name] !== '') continue;
       if (field.kind !== 'text') normalized[field.name] = null;
@@ -230,7 +233,8 @@ export class PlanningService extends BaseService {
         scenario: { table: 'planning_scenario', labelField: 'name', fallbackField: 'id' },
         item: { table: 'planning_item', labelField: 'display_name', fallbackField: 'name' },
         resource: { table: 'planning_resource', labelField: 'name', fallbackField: 'id' },
-        operation: { table: 'planning_operation', labelField: 'name', fallbackField: 'id' }
+        operation: { table: 'planning_operation', labelField: 'name', fallbackField: 'id' },
+        route: { table: 'planning_operation', labelField: 'name', fallbackField: 'id' }
       } as const;
       if (optionType === 'scenario') {
         const { data: sourceRows, error: sourceError } = await client
@@ -257,10 +261,12 @@ export class PlanningService extends BaseService {
       }
       const option = optionResources[optionType as keyof typeof optionResources];
       if (!option) throw new BadRequestException(`Unsupported planning console option type: ${optionType || '(empty)'}.`);
-      const { data, error } = await client
+      let optionQuery = client
         .from(option.table)
         .select(`id,${option.labelField},${option.fallbackField}`)
-        .eq('account_id', accountId)
+        .eq('account_id', accountId);
+      if (optionType === 'route') optionQuery = optionQuery.in('type', ['routing', 'route']);
+      const { data, error } = await optionQuery
         .order(option.labelField, { ascending: true })
         .limit(1000);
       if (error) throw new BadRequestException(error.message);
@@ -307,6 +313,31 @@ export class PlanningService extends BaseService {
         request.dataset,
         request.filters
       );
+    }
+
+    if (method === 'insertRouteOperation') {
+      const { client } = await this.authorizeExecution(context);
+      const accountId = this.accountValue(context, 'account_id');
+      const targetOperationId = this.readUuid(
+        postData.targetOperationId ?? postData.target_operation_id,
+        'targetOperationId'
+      );
+      const position = this.readOptionalString(postData.position);
+      if (!position || !['before', 'after', 'child'].includes(position)) {
+        throw new BadRequestException('position must be before, after, or child.');
+      }
+      const operation = this.readJsonObject(postData.operation, 'operation');
+      if (!this.readOptionalString(operation.name)) {
+        throw new BadRequestException('operation.name is required.');
+      }
+      const { data, error } = await client.rpc('planning_insert_route_operation', {
+        p_account_id: accountId,
+        p_target_id: targetOperationId,
+        p_position: position,
+        p_operation: operation
+      });
+      if (error) throw new BadRequestException(error.message);
+      return data;
     }
 
     if (method === 'runSupplyPlan') {

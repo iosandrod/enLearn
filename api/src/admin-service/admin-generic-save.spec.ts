@@ -14,6 +14,10 @@ type QueryCall = {
 class TestAdminService extends AdminService {
   readonly call: QueryCall = {};
 
+  protected override async resolveGenericTableColumns() {
+    return new Set(['id', 'code', 'title', 'page_type']);
+  }
+
   protected override async createCrudClient(resource: {
     tableName: string;
     clientMode?: 'user' | 'admin';
@@ -60,6 +64,8 @@ async function main() {
       code: 'form-definetion',
       title: '系统表单',
       page_type: 'list',
+      __details: [{ resource: 'planning_suboperation', created: [], updated: [], deleted: [] }],
+      nonexistent_field: 'must not reach Supabase',
     },
     {} as ServiceContext,
   );
