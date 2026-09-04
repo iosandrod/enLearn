@@ -37,6 +37,7 @@ import DocsScreen from '../components/DocsScreen.vue';
 import NotificationBell from '../components/NotificationBell.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteHeader from '../components/SiteHeader.vue';
+import ApprovalDesigner from '../../packages/approval-workflow/src/components/ApprovalDesigner.vue';
 import {
   initializeSystemSettings,
   installSystemSettingsListeners,
@@ -123,6 +124,7 @@ app.component('LowCodeOverlayHost', LowCodeOverlayHost);
 app.component('LowCodePageRenderer', LowCodePageRenderer);
 app.component('LowCodeTreeItem', LowCodeTreeItem);
 app.component('LowCodeVisualDesigner', LowCodeVisualDesigner);
+app.component('ApprovalDesigner', ApprovalDesigner);
 app.component('VisualEditorProvider', VisualEditorProvider);
 
 app.config.globalProperties.$$refs = refs;

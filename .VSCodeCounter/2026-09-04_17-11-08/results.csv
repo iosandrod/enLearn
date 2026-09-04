@@ -1,0 +1,14 @@
+"filename", "language", "TypeScript", "Vue", "comment", "blank", "total"
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\defaults.ts", "TypeScript", 306, 0, 0, 19, 325
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\page-grid-menu.ts", "TypeScript", 82, 0, 0, 6, 88
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\runtime-grid-designer.ts", "TypeScript", 308, 0, 0, 34, 342
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\grid\runtime-grid-field-editor.ts", "TypeScript", 318, 0, 3, 33, 354
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\helpers.ts", "TypeScript", 110, 0, 0, 16, 126
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\index.ts", "TypeScript", 59, 0, 3, 12, 74
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-gantt\GanttDisplaySettings.vue", "Vue", 0, 91, 0, 8, 99
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\planning-gantt\display-settings.ts", "TypeScript", 73, 0, 1, 8, 82
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\runtime-form-designer.ts", "TypeScript", 309, 0, 3, 33, 345
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\runtime-form-field-editor.ts", "TypeScript", 436, 0, 0, 35, 471
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\runtime-form-relation-options.ts", "TypeScript", 422, 0, 0, 42, 464
+"e:\enLearn\packages\lowcode-framework\src\lowcode\block-materials\types.ts", "TypeScript", 83, 0, 0, 7, 90
+"Total", "-", 2506, 91, 10, 253, 2860

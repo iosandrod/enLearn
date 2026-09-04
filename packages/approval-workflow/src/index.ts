@@ -1,4 +1,12 @@
 export { default as ApprovalDesigner } from './components/ApprovalDesigner.vue';
+export {
+  approvalEdgeFormSchemaCode,
+  approvalNodeFormSchemaCodeByType,
+  approvalNodeFormSchemaCodes,
+  getApprovalNodeFormSchemaCode,
+  resolveApprovalEdgeFormSchema,
+  resolveApprovalNodeFormSchema,
+} from './inspector-form';
 export { default as ApprovalFlowViewer } from './components/ApprovalFlowViewer.vue';
 export { default as ApprovalRuntimeViewer } from './components/ApprovalRuntimeViewer.vue';
 export type {

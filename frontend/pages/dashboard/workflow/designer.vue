@@ -49,6 +49,7 @@
         v-model="workflowModel"
         class="workflow-designer-page__designer"
         :show-header="false"
+        :node-form-schemas="nodeFormSchemas"
         @export="handleDesignerExport"
         @validation="handleValidation"
       />
@@ -406,9 +407,13 @@ import {
   parseWorkflowModelJson,
   serializeWorkflowModel,
   type WorkflowModel,
-  type WorkflowSchemaIssue
+  type WorkflowSchemaIssue,
+  approvalNodeFormSchemaCodeByType,
+  approvalEdgeFormSchemaCode
 } from '@enlearn/approval-workflow';
 import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
+import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
+import { loadAvailableLowCodeFormDefinitions } from '../../../utils/lowCodeFormDefinitions';
 
 const localStorageKey = computed(() =>
   `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.default`
@@ -436,6 +441,7 @@ const workflowModel = ref<WorkflowModel>(
     }
   )
 );
+const nodeFormSchemas = ref<Record<string, LowCodeFormSchema>>({});
 type ApprovalDesignerExpose = {
   getSchema: () => WorkflowModel;
   loadSchema: (model: WorkflowModel) => void;
@@ -659,7 +665,23 @@ onMounted(() => {
   window.addEventListener('click', closeActionMenu);
   window.addEventListener('keydown', handlePageKeydown);
   void loadInitialWorkflow();
+  void loadApprovalInspectorSchemas();
 });
+
+async function loadApprovalInspectorSchemas() {
+  try {
+    const codes = [...Object.values(approvalNodeFormSchemaCodeByType), approvalEdgeFormSchemaCode];
+    const definitions = await loadAvailableLowCodeFormDefinitions(serviceApi, codes);
+    nodeFormSchemas.value = Object.fromEntries(
+      Object.entries(approvalNodeFormSchemaCodeByType).flatMap(([type, code]) => {
+        const definition = definitions[code];
+        return definition ? [[type, definition.schema]] : [];
+      }),
+    );
+  } catch (error) {
+    console.warn('审批节点低代码表单加载失败，将使用 JSON 配置回退。', error);
+  }
+}
 
 onBeforeUnmount(() => {
   approvalTestPollGeneration += 1;

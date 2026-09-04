@@ -10,6 +10,8 @@ import {
 } from '@vue-flow/core';
 import { VxeUI, type VxeContextMenuDefines } from 'vxe-pc-ui';
 import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
+import LowCodeForm from '@enlearn/lowcode-framework/components/LowCodeForm.vue';
+import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import {
@@ -44,10 +46,16 @@ const props = withDefaults(
     modelValue?: WorkflowModel;
     readonly?: boolean;
     showHeader?: boolean;
+    /** Render only the flow canvas when hosted by a low-code page material. */
+    minimal?: boolean;
+    /** Database-backed node inspector schemas keyed by workflow node type. */
+    nodeFormSchemas?: Partial<Record<WorkflowNodeType, LowCodeFormSchema>>;
   }>(),
   {
     readonly: false,
-    showHeader: true
+    showHeader: true,
+    minimal: false,
+    nodeFormSchemas: () => ({})
   }
 );
 
@@ -166,6 +174,7 @@ const flowEdges = ref<ApprovalFlowEdge[]>(workflowToFlowEdges(currentModel.value
 const isSyncingFromModel = ref(false);
 const flowCanvasRef = ref<HTMLElement | null>(null);
 const selectedNodeId = ref<string | null>(null);
+const minimalInspectorOpen = ref(false);
 const draggingPaletteType = ref<WorkflowNodeType | null>(null);
 const isCanvasDragOver = ref(false);
 const pointerPaletteDrag = ref<PointerPaletteDrag | null>(null);
@@ -191,6 +200,9 @@ const warnings = computed(() => issues.value.filter((issue) => issue.level === '
 const selectedNode = computed(() => currentModel.value.nodes.find((node) => node.id === selectedNodeId.value));
 const selectedFlowNode = computed(() => flowNodes.value.find((node) => node.id === selectedNodeId.value));
 const selectedPresentation = computed(() => (selectedNode.value ? getNodePresentation(selectedNode.value) : undefined));
+const selectedNodeFormSchema = computed(() =>
+  selectedNode.value ? props.nodeFormSchemas?.[selectedNode.value.type] : undefined
+);
 const selectedOutgoingEdges = computed(() => {
   if (!selectedNode.value) return [];
 
@@ -992,6 +1004,7 @@ function onConnect(connection: Connection) {
 
 function onNodeClick(payload: NodeMouseEvent) {
   selectedNodeId.value = payload.node.id;
+  if (props.minimal) minimalInspectorOpen.value = true;
 }
 
 function onNodeDragStop(payload: NodeDragEvent) {
@@ -1000,6 +1013,7 @@ function onNodeDragStop(payload: NodeDragEvent) {
 
 function onPaneClick() {
   selectedNodeId.value = null;
+  minimalInspectorOpen.value = false;
   closeFloatingMenus();
 }
 
@@ -1153,6 +1167,10 @@ function updateSelectedNodeDescription(event: Event) {
 function updateSelectedConfig(value: unknown) {
   if (!selectedNode.value || props.readonly) return;
   patchSelectedNode({ config: isRecord(value) ? value : {} });
+}
+
+function updateSelectedConfigFromForm(value: Record<string, unknown>) {
+  updateSelectedConfig(value);
 }
 
 function generateConditionBranches(nodeId = selectedNode.value?.id) {
@@ -1886,7 +1904,7 @@ defineExpose({
 <template>
   <section
     class="approval-designer"
-    :class="{ 'approval-designer--embedded': !showHeader }"
+    :class="{ 'approval-designer--embedded': !showHeader, 'approval-designer--minimal': minimal }"
     aria-label="审批流程设计器"
   >
     <header
@@ -1932,7 +1950,7 @@ defineExpose({
     </header>
 
     <div class="approval-designer__body">
-      <aside class="approval-designer__palette" aria-label="节点库">
+      <aside v-if="!minimal" class="approval-designer__palette" aria-label="节点库">
         <div class="approval-designer__side-title">
           <strong>节点库</strong>
           <span>{{ paletteGroups.reduce((count, group) => count + group.items.length, 0) }}</span>
@@ -1973,7 +1991,7 @@ defineExpose({
       </aside>
 
       <main class="approval-designer__canvas-shell" aria-label="流程画布">
-        <div class="approval-designer__canvas-toolbar">
+        <div v-if="!minimal" class="approval-designer__canvas-toolbar">
           <div class="approval-designer__canvas-status">
             <strong>{{ selectedNode ? selectedNode.name : '流程画布' }}</strong>
             <span>{{ canvasSubtitle }}</span>
@@ -2066,7 +2084,7 @@ defineExpose({
           </VueFlow>
         </div>
 
-        <footer class="approval-designer__validation-strip">
+        <footer v-if="!minimal" class="approval-designer__validation-strip">
           <span
             class="approval-designer__validation-dot"
             :class="{ 'approval-designer__validation-dot--error': errors.length }"
@@ -2077,7 +2095,7 @@ defineExpose({
         </footer>
       </main>
 
-      <aside class="approval-designer__inspect" aria-label="节点属性">
+      <aside v-if="!minimal" class="approval-designer__inspect" aria-label="节点属性">
         <div class="approval-designer__side-title">
           <strong>属性</strong>
           <span>{{ selectedNode ? selectedNode.type : '未选择' }}</span>
@@ -2322,8 +2340,17 @@ defineExpose({
           </section>
 
           <label class="approval-designer__field">
-            <span>配置 JSON</span>
+            <span>{{ selectedNodeFormSchema ? '节点配置' : '配置 JSON' }}</span>
+            <LowCodeForm
+              v-if="selectedNodeFormSchema"
+              class="nodrag nowheel approval-designer__node-form"
+              :schema="selectedNodeFormSchema"
+              :model-value="(selectedNode.config ?? {}) as Record<string, unknown>"
+              :readonly="readonly"
+              @update:model-value="updateSelectedConfigFromForm"
+            />
             <JsonDialogInput
+              v-else
               class="nodrag nowheel"
               :model-value="selectedNode.config ?? {}"
               name="nodeConfig"
@@ -2435,6 +2462,34 @@ defineExpose({
     >
       {{ draggingPaletteLabel }}
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="minimal && minimalInspectorOpen && selectedNode"
+        class="approval-designer__minimal-mask"
+        @click.self="minimalInspectorOpen = false"
+      >
+        <section class="approval-designer__minimal-dialog" role="dialog" aria-modal="true">
+          <header>
+            <div><strong>{{ selectedNode.name }}</strong><span>{{ selectedNode.type }}</span></div>
+            <button type="button" aria-label="关闭" @click="minimalInspectorOpen = false">×</button>
+          </header>
+          <label class="approval-designer__field">
+            <span>节点名称</span>
+            <input class="approval-designer__input" :value="selectedNode.name" :readonly="readonly" @input="updateSelectedNodeName" />
+          </label>
+          <LowCodeForm
+            v-if="selectedNodeFormSchema"
+            class="approval-designer__node-form"
+            :schema="selectedNodeFormSchema"
+            :model-value="(selectedNode.config ?? {}) as Record<string, unknown>"
+            :readonly="readonly"
+            @update:model-value="updateSelectedConfigFromForm"
+          />
+          <p v-else class="approval-designer__form-error">该节点的低代码配置表单尚未启用。</p>
+        </section>
+      </div>
+    </Teleport>
   </section>
 </template>
 
@@ -2457,6 +2512,24 @@ defineExpose({
   border-top: 0;
   border-radius: 0 0 8px 8px;
 }
+
+.approval-designer--minimal .approval-designer__body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.approval-designer--minimal .approval-designer__canvas-shell,
+.approval-designer--minimal .approval-designer__canvas,
+.approval-designer--minimal .approval-designer__flow {
+  min-height: 0;
+  height: 100%;
+}
+
+.approval-designer__minimal-mask { position: fixed; inset: 0; z-index: 4000; display: grid; place-items: center; background: rgb(15 23 42 / 42%); padding: 20px; }
+.approval-designer__minimal-dialog { width: min(560px, 100%); max-height: min(760px, calc(100vh - 40px)); overflow: auto; border-radius: 10px; background: #fff; box-shadow: 0 24px 64px rgb(15 23 42 / 25%); padding: 16px; }
+.approval-designer__minimal-dialog header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+.approval-designer__minimal-dialog header div { display: grid; gap: 3px; }
+.approval-designer__minimal-dialog header span { color: #64748b; font-size: 11px; }
+.approval-designer__minimal-dialog header button { border: 0; background: transparent; color: #64748b; cursor: pointer; font-size: 24px; }
 
 .approval-designer__header {
   display: flex;

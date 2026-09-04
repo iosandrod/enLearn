@@ -48,6 +48,12 @@ const containerDesigner = () => import('../../packages/container-component/vxe-t
   .then((module) => module.default);
 
 export const lowCodeBlockMaterialAdapters: Record<string, BlockAdapter> = {
+  'approval-workflow-designer': {
+    type: 'approval-workflow-designer',
+    label: '审批流画布',
+    materialVersion: '1.0.0',
+    order: 5,
+  },
   container: {
     type: 'container',
     label: '容器',

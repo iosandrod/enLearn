@@ -103,6 +103,7 @@ export class LowCodeSchemaValidationError extends Error {
 }
 
 const knownBlockKinds = new Set([
+  'approval-workflow-designer',
   'buttonGroup',
   'container',
   'detail',
