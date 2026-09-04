@@ -1,8 +1,9 @@
-import type { Component, CSSProperties } from 'vue';
+import type { CSSProperties } from 'vue';
 import type {
   VisualEditorBlockData,
   VisualEditorComponent,
 } from '../../visual-editor/visual-editor.utils';
+import { resolveLowCodeBlockMaterialComponent } from '../../lowcode/material-runtime/component-bridge';
 
 type PlanningVisualDesignerOptions = {
   key: string;
@@ -10,7 +11,6 @@ type PlanningVisualDesignerOptions = {
   label: string;
   description: string;
   icon: string;
-  component: Component;
   sourceKey: string;
   dataset: string;
   sampleData: unknown;
@@ -64,8 +64,6 @@ function previewCard(options: PlanningVisualDesignerOptions) {
 export function createPlanningVisualDesigner(
   options: PlanningVisualDesignerOptions,
 ): VisualEditorComponent {
-  const RuntimeComponent = options.component as any;
-
   return {
     key: options.key,
     moduleName: 'businessComponents',
@@ -73,6 +71,7 @@ export function createPlanningVisualDesigner(
     preview: () => previewCard(options),
     render({ props, styles, block }) {
       return () => {
+        const RuntimeComponent = resolveLowCodeBlockMaterialComponent(options.kind) as any;
         const sourceKey = readString(props.sourceKey, options.sourceKey);
         const runtimeBlock = {
           id: readString(props.blockId, block._vid),
@@ -90,6 +89,14 @@ export function createPlanningVisualDesigner(
           minHeight: '300px',
           overflow: 'hidden',
         };
+
+        if (!RuntimeComponent) {
+          return (
+            <div style={wrapperStyle} role="status">
+              物料正在加载…
+            </div>
+          );
+        }
 
         return (
           <div style={wrapperStyle}>

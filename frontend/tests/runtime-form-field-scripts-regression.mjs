@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const [
@@ -21,8 +22,8 @@ const [
     readFile(new URL('runtime/useLowCodePageRenderer.ts', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/script-runtime.worker.ts', frameworkRoot), 'utf8'),
     readFile(new URL('components/LowCodeForm.vue', frameworkRoot), 'utf8'),
-    readFile(new URL('lowcode/block-materials/form/index.vue', frameworkRoot), 'utf8'),
-    readFile(new URL('lowcode/block-materials/search-form/index.vue', frameworkRoot), 'utf8'),
+    readLowCodeMaterialSource('page', 'form'),
+    readLowCodeMaterialSource('page', 'searchForm'),
     readFile(new URL('types/lowcode.ts', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/page-runtime.ts', frameworkRoot), 'utf8'),
     readFile(

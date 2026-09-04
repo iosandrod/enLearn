@@ -1,4 +1,3 @@
-import PlanningFlow from '../../../lowcode/block-materials/planning-flow/index.vue';
 import { createPlanningVisualDesigner } from '../planning-visual-designer';
 
 export default createPlanningVisualDesigner({
@@ -7,7 +6,6 @@ export default createPlanningVisualDesigner({
   label: '工艺路线图',
   description: '展示工序顺序、依赖、资源与物料关系',
   icon: 'ri-route-line',
-  component: PlanningFlow,
   sourceKey: 'flow',
   dataset: 'flow',
   sampleData: {

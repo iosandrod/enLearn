@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const [
@@ -7,6 +8,7 @@ const [
   materialEntrySource,
   arrayTableSource,
   designerSource,
+  buttonSchemaMigrationSource,
   formDesignerSource,
   attrEditorSource,
   formFieldSource,
@@ -19,23 +21,21 @@ const [
   componentTypeMigrationSource,
   onChangeMigrationSource,
 ] = await Promise.all([
+  readLowCodeMaterialSource('form', 'lc-monaco-editor'),
   readFile(
-    new URL('lowcode/form-materials/lc-monaco-editor/index.vue', frameworkRoot),
+    new URL('lowcode/material-runtime/material-adapters.ts', frameworkRoot),
     'utf8',
   ),
-  readFile(
-    new URL('lowcode/form-materials/lc-monaco-editor/index.ts', frameworkRoot),
-    'utf8',
-  ),
-  readFile(
-    new URL('lowcode/form-materials/lc-array-table/index.vue', frameworkRoot),
-    'utf8',
-  ),
+  readLowCodeMaterialSource('form', 'lc-array-table'),
   readFile(
     new URL(
       'visual-editor/components/button-group-designer/button-group-designer.service.tsx',
       frameworkRoot,
     ),
+    'utf8',
+  ),
+  readFile(
+    new URL('../../../supabase/migrations/20260831170000_button_group_designer_form_schema.sql', frameworkRoot),
     'utf8',
   ),
   readFile(
@@ -53,8 +53,8 @@ const [
     'utf8',
   ),
   readFile(new URL('components/LowCodeFormField.vue', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/block-materials/form/index.vue', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/block-materials/search-form/index.vue', frameworkRoot), 'utf8'),
+  readLowCodeMaterialSource('page', 'form'),
+  readLowCodeMaterialSource('page', 'searchForm'),
   readFile(new URL('lowcode/visual-converters/helpers.ts', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/block-materials/runtime-form-designer.ts', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/block-materials/runtime-form-field-editor.ts', frameworkRoot), 'utf8'),
@@ -71,8 +71,8 @@ const [
 
 assert.match(
   materialEntrySource,
-  /type: 'lc-monaco-editor'[\s\S]*?component/,
-  'The Monaco editor must be registered as a reusable low-code form material.',
+  /\['lc-monaco-editor',\s*'代码编辑器'/,
+  'The Monaco editor metadata must be registered as a reusable low-code form material.',
 );
 assert.match(
   materialSource,
@@ -101,12 +101,12 @@ assert.match(
 );
 assert.match(
   arrayTableSource,
-  /<LcMonacoEditor[\s\S]*?column\.component === 'lc-monaco-editor'[\s\S]*?setCell/,
+  /<component[\s\S]*?column\.component === 'lc-monaco-editor'[\s\S]*?:is="monacoEditorComponent"[\s\S]*?setCell/,
   'Array-table columns must support the Monaco form material.',
 );
 assert.match(
-  designerSource,
-  /field: 'script'[\s\S]*?title: '(?:执行脚本|鎵ц鑴氭湰)'[\s\S]*?component: 'lc-monaco-editor'[\s\S]*?dialog: true[\s\S]*?language: 'javascript'[\s\S]*?scriptThisType: 'LowCodeButtonScriptThis'/,
+  buttonSchemaMigrationSource,
+  /["']field["']:\s*["']script["'][\s\S]*?["']title["']:\s*["'](?:执行脚本|鎵ц鑴氭湰)["'][\s\S]*?["']component["']:\s*["']lc-monaco-editor["'][\s\S]*?["']dialog["']:\s*true[\s\S]*?["']language["']:\s*["']javascript["'][\s\S]*?["']scriptThisType["']:\s*["']LowCodeButtonScriptThis["']/,
   'The button designer must expose a JavaScript execution-script column in dialog mode.',
 );
 assert.match(

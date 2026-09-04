@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
-const source = await readFile(
-  new URL('../../packages/lowcode-framework/src/lowcode/form-materials/vxe-select/index.vue', import.meta.url),
-  'utf8',
-);
+const source = await readLowCodeMaterialSource('form', 'vxe-select');
 
 assert.match(source, /v-bind="selectProps"/);
 assert.match(

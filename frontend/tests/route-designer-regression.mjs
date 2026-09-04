@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { access, readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const routeDesignerVue = new URL('../pages/dashboard/planning/route-designer.vue', import.meta.url);
 await assert.rejects(
@@ -11,7 +12,7 @@ await assert.rejects(
 const [routerSource, dynamicPageSource, flowSource, schemaSource, migrationSource, generatorSource, applyServiceSource, planningServiceSource] = await Promise.all([
   readFile(new URL('../src/router.ts', import.meta.url), 'utf8'),
   readFile(new URL('../pages/dashboard/[...slug].vue', import.meta.url), 'utf8'),
-  readFile(new URL('../../packages/lowcode-framework/src/lowcode/block-materials/planning-flow/index.vue', import.meta.url), 'utf8'),
+  readLowCodeMaterialSource('page', 'planningFlow'),
   readFile(new URL('../../api/src/planning-service/planning-structure-pages.schema.ts', import.meta.url), 'utf8'),
   readFile(new URL('../../supabase/migrations/20260902090000_planning_route_designer_lowcode_page.sql', import.meta.url), 'utf8'),
   readFile(new URL('../../api/scripts/generate-planning-route-designer-migration.ts', import.meta.url), 'utf8'),

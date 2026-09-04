@@ -1,17 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const pageSource = await readFile(
   new URL('../pages/dashboard/entity-design.vue', import.meta.url),
   'utf8'
 );
-const arrayTableSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
+const arrayTableSource = await readLowCodeMaterialSource('form', 'lc-array-table');
 const formDefinitionSource = await readFile(
   new URL('../utils/lowCodeFormDefinitions.ts', import.meta.url),
   'utf8'

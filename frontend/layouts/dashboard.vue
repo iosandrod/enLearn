@@ -1078,8 +1078,6 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
     }
     runtimeForm.schema = formSchema;
     runtimeForm.initialValues = createPageInfoDesignForm(currentPage);
-    runtimeForm.sourceKey = undefined;
-    runtimeForm.submitSourceKey = undefined;
     runtimeForm.schema.actions = [];
 
     const result = await confirmLowCodePage({

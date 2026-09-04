@@ -12,6 +12,7 @@ import {
   getLowCodeNodeActionMethods,
   getLowCodeNodeTypeDefinition,
 } from './node-action-registry';
+import { getBuiltinLowCodeActionPresetsForPage } from '../lowcode/actions/builtins';
 
 export type LowCodeContextCategory = 'fields' | 'apis' | 'functions' | 'nodes';
 
@@ -289,8 +290,32 @@ function createFunctions(source: LowCodeContextSource): LowCodeContextEntry[] {
       .map((fn) => ({ id: `function:page:${fn.name}`, category: 'functions' as const, group: '页面函数', label: fn.label || fn.name,
         description: fn.description || `调用页面函数 ${fn.name}`, insertText: `const result = await this.executeFunction({ name: ${quote(fn.name)}, args: {} });`,
         badge: 'PAGE', icon: 'ri-function-line', keywords: [fn.name] }))
+      : [];
+  const pageType = source.page?.page_type;
+  const builtin = capabilities.has('pageFunction.execute') &&
+    (pageType === 'list' || pageType === 'edit')
+    ? getBuiltinLowCodeActionPresetsForPage(pageType)
+      .filter((preset) => Boolean(preset.functionName))
+      .map((preset) => {
+        const functionName = preset.functionName as string;
+        const baseLabel = preset.action.label || functionName;
+        const label = functionName === 'create' || functionName === 'edit'
+          ? `${baseLabel}跳转到编辑页`
+          : baseLabel;
+        return {
+          id: `function:builtin:${pageType}:${functionName}`,
+          category: 'functions' as const,
+          group: '内置页面函数',
+          label,
+          description: `调用内置页面函数 ${functionName}`,
+          insertText: `const result = await this.executeFunction({ name: ${quote(functionName)}, args: {} });`,
+          badge: 'PAGE',
+          icon: 'ri-function-line',
+          keywords: [functionName, baseLabel],
+        };
+      })
     : [];
-  return [...database, ...custom, ...result];
+  return [...database, ...custom, ...builtin, ...result];
 }
 
 function blockNode(block: LowCodePageBlock, path: string, actions: NonNullable<LowCodePageRecord['node_actions']>): LowCodeContextNode {

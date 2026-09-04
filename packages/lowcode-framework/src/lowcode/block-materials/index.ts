@@ -1,24 +1,25 @@
+import { defineComponent, h, ref } from 'vue';
 import type { LowCodeBlockMaterial } from './types';
 import type { VisualToLowCodeConverter } from '../visual-converters/types';
-import buttonGroupMaterial from './button-group';
+import { lowCodeBlockMaterialAdapters } from '../material-runtime/material-adapters';
+import { registerLowCodeBlockMaterialComponent } from '../material-runtime/component-bridge';
 
-type MaterialModule =
-  | { default?: LowCodeBlockMaterial | LowCodeBlockMaterial[]; material?: LowCodeBlockMaterial }
-  | LowCodeBlockMaterial
-  | LowCodeBlockMaterial[];
-
-const materialModules = import.meta.glob<MaterialModule>('./*/index.ts', { eager: true });
+// Synchronous bootstrap entries keep schema/design-time APIs usable while the
+// database catalog is loading. Every entry is replaced by its compiled SFC
+// once initializeLowCodeMaterialCatalog completes.
+const DatabaseMaterialPending = defineComponent({
+  name: 'LowCodeDatabaseMaterialPending',
+  props: { block: { type: Object, required: false } },
+  setup(props) {
+    return () => h('article', { class: 'content-panel lc-node-material-pending' }, [
+      h('strong', '物料正在加载'),
+      h('span', String((props.block as { kind?: unknown } | undefined)?.kind ?? '')),
+    ]);
+  },
+});
 const materialMap: Record<string, LowCodeBlockMaterial> = {};
 const materialList: LowCodeBlockMaterial[] = [];
-
-function normalizeModule(module: MaterialModule) {
-  if (Array.isArray(module)) return module;
-  if ('default' in module && module.default) {
-    return Array.isArray(module.default) ? module.default : [module.default];
-  }
-  if ('material' in module && module.material) return [module.material];
-  return [module as LowCodeBlockMaterial];
-}
+export const lowCodeBlockMaterialRevision = ref(0);
 
 export function registerLowCodeBlockMaterial(material: LowCodeBlockMaterial) {
   const keys = [material.type, ...(material.aliases ?? [])].filter(Boolean);
@@ -35,12 +36,14 @@ export function registerLowCodeBlockMaterial(material: LowCodeBlockMaterial) {
   }
 
   materialList.sort((prev, next) => (prev.order ?? 0) - (next.order ?? 0));
+  lowCodeBlockMaterialRevision.value += 1;
 }
 
-Object.values(materialModules).forEach((module) => {
-  normalizeModule(module).forEach(registerLowCodeBlockMaterial);
+Object.values(lowCodeBlockMaterialAdapters).forEach((adapter) => {
+  const component = DatabaseMaterialPending;
+  registerLowCodeBlockMaterialComponent(adapter.type, component, adapter.aliases);
+  registerLowCodeBlockMaterial({ ...adapter, component } as LowCodeBlockMaterial);
 });
-registerLowCodeBlockMaterial(buttonGroupMaterial);
 
 export function getLowCodeBlockMaterial(type?: string) {
   return type ? materialMap[type] : undefined;

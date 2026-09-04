@@ -20,8 +20,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { getLowCodeFormMaterial } from '../lowcode/form-materials';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import {
+  getLowCodeFormMaterial,
+  lowCodeFormMaterialRevision,
+} from '../lowcode/form-materials';
+import { useLowCodeHost } from '../core/host';
+import { initializeLowCodeMaterialCatalog } from '../lowcode/material-runtime/catalog';
 import type { LowCodeField } from '../types/lowcode';
 import type { LowCodeResolvedOption } from '../lowcode/form-materials';
 import type {
@@ -88,9 +93,22 @@ const renderField = computed<LowCodeField>(() => {
   };
 });
 
-const materialComponent = computed(() =>
-  getLowCodeFormMaterial(renderField.value.component).component
-);
+const host = useLowCodeHost();
+onBeforeMount(() => {
+  let serviceApi;
+  try {
+    serviceApi = host.getServiceApi();
+  } catch {
+    return;
+  }
+  void initializeLowCodeMaterialCatalog(serviceApi).catch((error) => {
+    console.error('[LowCode Material] Failed to initialize the Form material catalog.', error);
+  });
+});
+const materialComponent = computed(() => {
+  lowCodeFormMaterialRevision.value;
+  return getLowCodeFormMaterial(renderField.value.component).component;
+});
 const materialRef = ref<{ commitPendingValue?: () => void } | null>(null);
 
 function commitPendingValue() {

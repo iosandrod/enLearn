@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const readWorkspaceFile = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
-const editorSource = await readWorkspaceFile(
-  'packages/lowcode-framework/src/lowcode/form-materials/lc-json-editor/index.vue',
-);
+const editorSource = await readLowCodeMaterialSource('form', 'lc-json-editor');
 const formDefinitionMigration = await readWorkspaceFile(
   'supabase/migrations/20260808200000_lowcode_form_definitions.sql',
 );
@@ -54,8 +53,8 @@ const structuredJsonEntries = [
     label: 'low-code page schema',
   },
   {
-    path: 'packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-group-designer.service.tsx',
-    pattern: /field: 'directivesJson'[\s\S]*?component: 'lc-json-editor'/,
+    path: 'supabase/migrations/20260831170000_button_group_designer_form_schema.sql',
+    pattern: /"field": "directivesJson"[\s\S]*?"component": "lc-json-editor"/,
     label: 'button directive configuration',
   },
   {
@@ -64,23 +63,23 @@ const structuredJsonEntries = [
     label: 'print data headers and shape props',
   },
   {
-    path: 'packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/components/prop-config/index.tsx',
-    pattern: /VisualEditorPropsType\.json\]: renderJsonInput[\s\S]*?<JsonDialogInput|<JsonDialogInput[\s\S]*?VisualEditorPropsType\.json\]: renderJsonInput/,
+    path: 'packages/lowcode-framework/src/visual-editor/material-prop-forms/helpers.ts',
+    pattern: /export function jsonPropField[\s\S]*?component: 'lc-json-editor'[\s\S]*?valueKind: 'json'/,
     label: 'visual component JSON props',
   },
   {
-    path: 'packages/lowcode-framework/src/packages/chart-component/index.tsx',
-    pattern: /categoriesJson: createEditorJsonProp[\s\S]*?optionJson: createEditorJsonProp/,
+    path: 'supabase/migrations/20260819100000_database_only_material_property_forms.sql',
+    pattern: /'field', 'categoriesJson'[\s\S]*?'component', 'lc-json-editor'[\s\S]*?'field', 'seriesDataJson'[\s\S]*?'component', 'lc-json-editor'[\s\S]*?'field', 'pieDataJson'[\s\S]*?'component', 'lc-json-editor'[\s\S]*?'field', 'radarIndicatorsJson'[\s\S]*?'component', 'lc-json-editor'[\s\S]*?'field', 'radarDataJson'[\s\S]*?'component', 'lc-json-editor'[\s\S]*?'field', 'optionJson'[\s\S]*?'component', 'lc-json-editor'/,
     label: 'chart JSON props',
   },
   {
-    path: 'packages/lowcode-framework/src/packages/business-component/lowcode-grid/index.tsx',
-    pattern: /postDataJson: createEditorJsonProp/,
+    path: 'supabase/migrations/20260819100000_database_only_material_property_forms.sql',
+    pattern: /"componentKey":"lowcode-grid"[\s\S]*?"field":"postDataJson"[\s\S]*?"component":"lc-json-editor"/,
     label: 'grid request JSON props',
   },
   {
-    path: 'packages/lowcode-framework/src/packages/business-component/lowcode-edit-form/index.tsx',
-    pattern: /postDataJson: createEditorJsonProp/,
+    path: 'supabase/migrations/20260819100000_database_only_material_property_forms.sql',
+    pattern: /"componentKey":"lowcode-edit-form"[\s\S]*?"field":"postDataJson"[\s\S]*?"component":"lc-json-editor"/,
     label: 'edit-form request JSON props',
   },
   {
@@ -90,8 +89,13 @@ const structuredJsonEntries = [
   },
   {
     path: 'packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue',
-    pattern: /<JsonDialogInput[\s\S]*?label="Compiled plan"[\s\S]*?standalone[\s\S]*?<JsonDialogInput[\s\S]*?label="Raw config"[\s\S]*?standalone/,
-    label: 'trigger compiled plan and raw configuration',
+    pattern: /<JsonDialogInput[\s\S]*?label="编译结果"[\s\S]*?standalone[\s\S]*?value-mode="string"/,
+    label: 'trigger compiled plan',
+  },
+  {
+    path: 'packages/trigger-workflow-editor/src/inspector-form.ts',
+    pattern: /jsonField\('rawConfig'[\s\S]*?component: 'lc-json-editor'[\s\S]*?jsonRootType: rootType[\s\S]*?jsonValueMode: 'parsed'/,
+    label: 'trigger raw configuration',
   },
   {
     path: 'frontend/pages/dashboard/workflow/designer.vue',
@@ -120,8 +124,8 @@ const retainedTextareaEntries = [
     /"field": "description"[\s\S]*?"component": "vxe-textarea"/,
   ],
   [
-    'packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue',
-    /<span>System prompt<\/span><textarea/,
+    'packages/trigger-workflow-editor/src/inspector-form.ts',
+    /textareaField\('aiPrompt', '系统提示词'/,
   ],
   [
     'packages/tldraw-vue/src/components/LowCodeFormPanel.vue',

@@ -14,6 +14,18 @@ export {
 export type LowCodeButtonDisabledAction = { code?: string; disabled?: unknown };
 export type LowCodeButtonDisabledOptions = { enabled?: boolean };
 
+/** Named predicates retained for script/designer integrations. */
+export const buttonDisabledFunctions: Record<
+  string,
+  (context: LowCodePageRuntimeContext | null | undefined) => boolean
+> = Object.fromEntries(
+  [
+    'save', 'submit', 'addDetail', 'detailDelete', 'modify', 'create',
+    'copy', 'refresh', 'saveReport', 'addDetailTax',
+  ].map((code) => [code, (context: LowCodePageRuntimeContext | null | undefined) =>
+    isLowCodeButtonDisabled({ code }, context)]),
+);
+
 export function isLowCodeButtonDisabled(
   action: LowCodeButtonDisabledAction,
   context: LowCodePageRuntimeContext | null | undefined,
@@ -24,6 +36,12 @@ export function isLowCodeButtonDisabled(
   if (!context || options.enabled === false) return false;
 
   const code = normalizeLowCodeEditPageActionCode(action.code);
+  const formMode = context.state.status.formMode;
+  if (formMode === 'scan' && ['save', 'submit', 'adddetail', 'detaildelete'].includes(code)) {
+    return true;
+  }
+  if (code === 'modify' && formMode !== 'scan') return true;
+  if (code === 'copy' && formMode === 'add') return true;
   const rule = (context.runtimeFunctions ?? [])
     .filter((item) =>
       item.function_type === 'button_rule' &&

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 
@@ -438,7 +439,7 @@ const [
   simulatorSource,
   appSource,
 ] = await Promise.all([
-  readFile(new URL('lowcode/form-materials/lc-monaco-editor/index.vue', frameworkRoot), 'utf8'),
+  readLowCodeMaterialSource('form', 'lc-monaco-editor'),
   readFile(new URL('runtime/lowcode-context-drawer.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeContextDrawerPanel.vue', frameworkRoot), 'utf8'),
   readFile(new URL('runtime/node-action-registry.ts', frameworkRoot), 'utf8'),

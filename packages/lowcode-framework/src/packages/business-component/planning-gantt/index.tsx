@@ -1,4 +1,3 @@
-import PlanningGantt from '../../../lowcode/block-materials/planning-gantt/index.vue';
 import { createPlanningVisualDesigner } from '../planning-visual-designer';
 
 export default createPlanningVisualDesigner({
@@ -7,7 +6,6 @@ export default createPlanningVisualDesigner({
   label: '排产甘特图',
   description: '按资源查看计划单时间占用、状态与延期',
   icon: 'ri-calendar-schedule-line',
-  component: PlanningGantt,
   sourceKey: 'operationPlans',
   dataset: 'operationPlans',
   sampleData: [

@@ -81,6 +81,7 @@
  * isSuccessfulEditPageSaveEvent; enterScanModeAfterSave; form: new Set(['setData', 'resetData']); grid: new Set(['addRow', 'deleteCurrentRow'])
  * getFormBaseline: getFormBaseline, validateForm: validateForm, clearFormValidation: clearFormValidation, refreshFormOptions: refreshFormOptions
  * getSourceValue: getSourceValue, setGridRows: setGridRows, getGridChanges: getGridChanges, setGridCurrentRow: setGridCurrentRow, validateGrid: validateGrid
+ * visualProps.formDesignerModel = cloneRuntimeValue('formDesignerModel' in update.changes ? update.changes.formDesignerModel : null)
  */
 import GlobalDialogHost from './GlobalDialogHost';
 import LowCodeBlockRenderer from './LowCodeBlockRenderer.vue';
@@ -90,9 +91,24 @@ import {
   useLowCodePageRenderer,
   type LowCodePageRendererProps,
 } from '../runtime/useLowCodePageRenderer';
+import { onBeforeMount } from 'vue';
+import { initializeLowCodeMaterialCatalog } from '../lowcode/material-runtime/catalog';
+import { useLowCodeHost } from '../core/host';
 
 const props = withDefaults(defineProps<LowCodePageRendererProps>(), {
   showGlobalDialogHost: true,
+});
+const materialHost = useLowCodeHost(() => ({ serviceApi: props.serviceApi }));
+onBeforeMount(() => {
+  let serviceApi;
+  try {
+    serviceApi = materialHost.getServiceApi();
+  } catch {
+    return;
+  }
+  void initializeLowCodeMaterialCatalog(serviceApi).catch((error) => {
+    console.error('[LowCode Material] Failed to initialize the Page material catalog.', error);
+  });
 });
 const renderer = useLowCodePageRenderer(props);
 const {

@@ -78,6 +78,7 @@
     "db:apply-planning-operation-type-options": "tsx scripts/apply-planning-operation-type-options.ts",
     "db:apply-runtime-form-field-editor-option-source-select": "tsx scripts/apply-runtime-form-field-editor-option-source-select.ts",
     "db:apply-runtime-form-field-mode-disabled": "tsx scripts/apply-runtime-form-field-mode-disabled.ts",
+    "db:apply-lowcode-materials": "tsx scripts/apply-lowcode-materials.ts",
     "db:apply-runtime-form-field-component-type": "tsx scripts/apply-runtime-form-field-component-type.ts",
     "db:apply-runtime-form-field-base-info": "tsx scripts/apply-runtime-form-field-base-info.ts",
     "db:apply-runtime-form-field-editor-tabs": "tsx scripts/apply-runtime-form-field-editor-tabs.ts",

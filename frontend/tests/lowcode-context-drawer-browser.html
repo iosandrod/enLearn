@@ -39,9 +39,39 @@
       import 'vxe-pc-ui/lib/style.css';
       import 'vxe-table/lib/style.css';
       import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
-      import LcMonacoEditor from '../../packages/lowcode-framework/src/lowcode/form-materials/lc-monaco-editor/index.vue';
+      import { compileLowCodeMaterialSfc } from '../../packages/lowcode-framework/src/lowcode/material-runtime/sfc-compiler.ts';
       import { openGlobalDialog } from '../../packages/lowcode-framework/src/runtime/global-dialog-core.ts';
       import { registerLowCodeScriptApi } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
+      import materialsMigration from '../../supabase/migrations/20260904100000_lowcode_materials.sql?raw';
+
+      const monacoMaterialMatch = materialsMigration.match(
+        /\(\s*'form',\s*'lc-monaco-editor',[\s\S]*?'lowcode\/form-materials\/lc-monaco-editor\/index\.vue'\s*,\s*(\$material_[a-f0-9]{12}\$)([\s\S]*?)\1\s*,/,
+      );
+      if (!monacoMaterialMatch) {
+        throw new Error('lc-monaco-editor source is missing from the material catalog migration.');
+      }
+      const LcMonacoEditor = (await compileLowCodeMaterialSfc({
+        id: 'browser-lc-monaco-editor',
+        material_kind: 'form',
+        code: 'lc-monaco-editor',
+        label: '代码编辑器',
+        description: null,
+        category: 'form',
+        renderer_type: 'vue-sfc',
+        source_path: 'lowcode/form-materials/lc-monaco-editor/index.vue',
+        // The browser smoke test intentionally enables the material's existing
+        // dev-only editor handle so it can drive Monaco selections and undo.
+        source_text: monacoMaterialMatch[2].replaceAll('import.meta.env.DEV', 'true'),
+        source_hash: 'cdd6f5bb3a5c',
+        material_version: '1.0.0',
+        aliases: ['monaco-editor'],
+        sort_order: 34,
+        manifest: {},
+        dependencies: [],
+        status: 'published',
+        enabled: true,
+        is_system: true,
+      })).component;
 
       registerLowCodeScriptApi('records.allowed', {
         description: '允许调用的记录 API',
@@ -109,6 +139,39 @@
               },
             ],
           },
+          node_actions: [
+            ...[
+              ['setData', '设置表单数据'],
+              ['validate', '校验表单数据'],
+              ['getData', '获取绑定数据'],
+              ['refreshOptions', '刷新下拉数据'],
+              ['resetData', '重置表单数据'],
+            ].map(([action_code, label]) => ({
+              node_type: 'form', node_label: '表单', node_icon: 'ri-survey-line',
+              action_code, label, description: '', source_code: 'async function main() {}',
+              parameters: [], returns: '', insert_text_template: `await this.executeAction({ node: {{nodeId}}, method: "${action_code}" });`,
+              applicable_when: {}, is_data_source_loader: false, enabled: true, sort_order: 20,
+            })),
+            ...[
+              ['loadData', '加载数据'],
+              ['reloadData', '重新加载'],
+              ['getChanges', '获取变更'],
+              ['validate', '校验表格'],
+              ['addRow', '新增行'],
+              ['deleteCurrentRow', '删除当前行'],
+            ].map(([action_code, label]) => ({
+              node_type: 'grid', node_label: '表格', node_icon: 'ri-table-line',
+              action_code, label, description: '', source_code: 'async function main() {}',
+              parameters: [], returns: '', insert_text_template: `await this.executeAction({ node: {{nodeId}}, method: "${action_code}" });`,
+              applicable_when: {}, is_data_source_loader: false, enabled: true, sort_order: 20,
+            })),
+            {
+              node_type: 'modal', node_label: '弹框', node_icon: 'ri-window-line',
+              action_code: 'open', label: '打开', description: '', source_code: 'async function main() {}',
+              parameters: [], returns: '', insert_text_template: 'await this.executeAction({ node: {{nodeId}}, method: "open" });',
+              applicable_when: {}, is_data_source_loader: false, enabled: true, sort_order: 20,
+            },
+          ],
         },
         data: {
           records: [{ id: 1, name: 'Ada' }],

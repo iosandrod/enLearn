@@ -30,6 +30,7 @@
 import { computed } from 'vue';
 import {
   getLowCodeBlockMaterial,
+  lowCodeBlockMaterialRevision,
   type LowCodeBlockMaterialEmits,
   type LowCodeBlockMaterialProps,
 } from '../lowcode/block-materials';
@@ -37,7 +38,10 @@ import {
 const props = defineProps<LowCodeBlockMaterialProps>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 
-const materialComponent = computed(() => getLowCodeBlockMaterial(props.block.kind)?.component);
+const materialComponent = computed(() => {
+  lowCodeBlockMaterialRevision.value;
+  return getLowCodeBlockMaterial(props.block.kind)?.component;
+});
 const blockClass = computed(() => [
   {
     'lc-runtime-block': true,

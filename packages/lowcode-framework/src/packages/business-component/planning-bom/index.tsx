@@ -1,4 +1,3 @@
-import PlanningBom from '../../../lowcode/block-materials/planning-bom/index.vue';
 import { createPlanningVisualDesigner } from '../planning-visual-designer';
 
 export default createPlanningVisualDesigner({
@@ -7,7 +6,6 @@ export default createPlanningVisualDesigner({
   label: '工艺 BOM',
   description: '按产成品、工序和组件递归展开物料结构',
   icon: 'ri-node-tree',
-  component: PlanningBom,
   sourceKey: 'bom',
   dataset: 'bom',
   sampleData: [{

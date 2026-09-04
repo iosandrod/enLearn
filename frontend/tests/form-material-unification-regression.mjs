@@ -9,7 +9,7 @@ const [baseWidgets, visualAdapter, materialRegistry, converter, inputMaterial] =
   source('packages/lowcode-framework/src/visual-editor/form-material-visual-components.tsx'),
   source('packages/lowcode-framework/src/lowcode/form-materials/index.ts'),
   source('packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts'),
-  source('packages/lowcode-framework/src/lowcode/form-materials/vxe-input/index.ts'),
+  source('packages/lowcode-framework/src/lowcode/material-runtime/material-adapters.ts'),
 ]);
 const designerSource = await source(
   'packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx',
@@ -32,9 +32,11 @@ for (const componentKey of [
 ]) {
   assert.match(visualAdapter, new RegExp(componentKey.replace('-', '\\-')));
 }
-assert.match(materialRegistry, /import\.meta\.glob<MaterialModule>\('\.\/\*\/index\.ts'/);
+assert.doesNotMatch(materialRegistry, /import\.meta\.glob/);
+assert.match(materialRegistry, /Object\.values\(lowCodeFormMaterialAdapters\)/);
+assert.match(materialRegistry, /PendingFormMaterial/);
 assert.match(materialRegistry, /materialMap\[key\] = material/);
-assert.match(inputMaterial, /aliases: \['input'\]/);
+assert.match(inputMaterial, /\['vxe-input',\s*'输入框',\s*\['input'\]/);
 for (const runtimeType of ['vxe-input', 'vxe-select', 'vxe-switch', 'vxe-checkbox-group', 'vxe-radio-group', 'lc-array-table', 'lc-sub-form', 'lc-stepper', 'lc-rate', 'lc-slider']) {
   assert.match(visualAdapter, new RegExp(`runtimeComponent: '${runtimeType.replace('-', '\\-')}'`));
 }

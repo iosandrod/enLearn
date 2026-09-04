@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const layoutSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeFormLayout.vue', import.meta.url),
@@ -9,13 +10,7 @@ const formSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeForm.vue', import.meta.url),
   'utf8'
 );
-const arrayTableSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
+const arrayTableSource = await readLowCodeMaterialSource('form', 'lc-array-table');
 const legacyWidgetsSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LegacyWidgets.tsx', import.meta.url),
   'utf8'

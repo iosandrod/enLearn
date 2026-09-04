@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
-const [arrayTable, optionRegistry, visualConverter, visualProps] = await Promise.all([
-  readFile(new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
-    import.meta.url,
-  ), 'utf8'),
+const [arrayTable, optionRegistry, visualConverter, formDesigner] = await Promise.all([
+  readLowCodeMaterialSource('form', 'lc-array-table'),
   readFile(new URL(
     '../../packages/lowcode-framework/src/runtime/option-source-registry.ts',
     import.meta.url,
@@ -15,7 +13,7 @@ const [arrayTable, optionRegistry, visualConverter, visualProps] = await Promise
     import.meta.url,
   ), 'utf8'),
   readFile(new URL(
-    '../../packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts',
+    '../../packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx',
     import.meta.url,
   ), 'utf8'),
 ]);
@@ -52,9 +50,9 @@ assert.match(
   'Visual conversion must preserve array-table column optionsCode.',
 );
 assert.match(
-  visualProps,
-  /option\.optionsCode \? \{ optionsCode: option\.optionsCode \}/,
-  'Material property tables must pass array-table column optionsCode through.',
+  formDesigner,
+  /const optionsCode = readString\(field\.optionsCode\)[\s\S]*?\.\.\.\(optionsCode \? \{ optionsCode \} : \{\}\)/,
+  'Form designer conversion must preserve field optionsCode.',
 );
 
 console.log('Array-table optionsCode regression test passed.');

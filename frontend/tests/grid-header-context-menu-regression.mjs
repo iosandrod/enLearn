@@ -1,17 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const gridSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeGrid.vue', import.meta.url),
   'utf8'
 );
-const pageGridSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
+const pageGridSource = await readLowCodeMaterialSource('page', 'grid');
 const pageGridMenuSource = await readFile(
   new URL(
     '../../packages/lowcode-framework/src/lowcode/block-materials/grid/page-grid-menu.ts',

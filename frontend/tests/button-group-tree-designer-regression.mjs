@@ -1,20 +1,25 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const frameworkRoot = new URL(
   '../../packages/lowcode-framework/src/',
   import.meta.url,
 );
 
-const [arrayTableSource, designerSource] = await Promise.all([
-  readFile(
-    new URL('lowcode/form-materials/lc-array-table/index.vue', frameworkRoot),
-    'utf8',
-  ),
+const [arrayTableSource, designerSource, formSchemaMigrationSource] = await Promise.all([
+  readLowCodeMaterialSource('form', 'lc-array-table'),
   readFile(
     new URL(
       'visual-editor/components/button-group-designer/button-group-designer.service.tsx',
       frameworkRoot,
+    ),
+    'utf8',
+  ),
+  readFile(
+    new URL(
+      '../../supabase/migrations/20260831170000_button_group_designer_form_schema.sql',
+      import.meta.url,
     ),
     'utf8',
   ),
@@ -81,23 +86,23 @@ assert.match(
   'Move, copy, and delete operations must locate nested rows recursively.',
 );
 assert.match(
-  designerSource,
-  /treeConfig: \{[\s\S]*?childrenField: 'children',[\s\S]*?expandAll: true/,
+  formSchemaMigrationSource,
+  /"treeConfig": \{[\s\S]*?"childrenField": "children",[\s\S]*?"expandAll": true/,
   'The button designer must enable the children-based tree table.',
 );
 assert.match(
-  designerSource,
-  /childAddable: true,[\s\S]*?addChildText: '新增子按钮'/,
+  formSchemaMigrationSource,
+  /"childAddable": true,[\s\S]*?"addChildText": "新增子按钮"/,
   'The button designer must expose an add-child command.',
 );
 assert.match(
   designerSource,
-  /toolbarButtons: \[[\s\S]*?label: '新增按钮',[\s\S]*?execute: executeAddToolbarAction/,
-  'The button designer must place its add behavior on the toolbar button object.',
+  /code === 'add-dropdown'[\s\S]*?execute: executeAddToolbarAction/,
+  'The button designer must attach executable toolbar behavior to add-dropdown.',
 );
 assert.match(
   designerSource,
-  /code: 'add-dropdown',[\s\S]*?label: '新增下拉按钮',[\s\S]*?children: \[createButtonRow\('下拉项'\)\],[\s\S]*?execute: executeAddToolbarAction/,
+  /if \(code === 'add-dropdown'\)[\s\S]*?const row = isRecord\(button\.row\)/,
   'The button designer must expose an executable action that creates a dropdown button with a child item.',
 );
 assert.doesNotMatch(

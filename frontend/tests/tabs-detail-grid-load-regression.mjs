@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const [tabsSource, rendererSource] = await Promise.all([
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue'),
+  readLowCodeMaterialSource('page', 'tabs'),
   read('../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts'),
 ]);
 

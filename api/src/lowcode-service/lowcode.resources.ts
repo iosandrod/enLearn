@@ -196,5 +196,55 @@ export const lowCodeResources: ResourceConfigMap = {
       allowedFields: ['name', 'description', 'schema', 'enabled'],
       userFields: { updatedBy: 'updated_by' }
     }
+  },
+  lowcode_materials: {
+    tableName: 'lowcode_materials',
+    clientMode: 'user',
+    permissions: {
+      create: 'lowcode.pages.manage',
+      update: 'lowcode.pages.manage',
+      delete: 'lowcode.pages.manage'
+    },
+    defaults: {
+      renderer_type: 'vue-sfc',
+      material_version: '1.0.0',
+      aliases: [],
+      manifest: {},
+      dependencies: [],
+      status: 'draft',
+      enabled: true,
+      is_system: false,
+      sort_order: 0
+    },
+    list: {
+      defaultFilters: { enabled: true, status: 'published' },
+      defaultSorts: [
+        { field: 'material_kind', direction: 'asc' },
+        { field: 'sort_order', direction: 'asc' },
+        { field: 'code', direction: 'asc' }
+      ],
+      maxPageSize: 100
+    },
+    create: {
+      allowedFields: [
+        'material_kind', 'code', 'label', 'description', 'category',
+        'renderer_type', 'source_path', 'source_text', 'source_hash',
+        'material_version', 'aliases', 'sort_order', 'manifest',
+        'dependencies', 'status', 'enabled', 'is_system'
+      ],
+      requiredFields: [
+        'material_kind', 'code', 'label', 'category', 'renderer_type',
+        'source_path', 'source_text', 'source_hash'
+      ],
+      userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+    },
+    update: {
+      allowedFields: [
+        'label', 'description', 'category', 'renderer_type', 'source_path',
+        'source_text', 'source_hash', 'material_version', 'aliases',
+        'sort_order', 'manifest', 'dependencies', 'status', 'enabled'
+      ],
+      userFields: { updatedBy: 'updated_by' }
+    }
   }
 };

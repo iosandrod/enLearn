@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const designerSource = await readFile(
   new URL(
@@ -8,13 +9,7 @@ const designerSource = await readFile(
   ),
   'utf8',
 );
-const arrayTableSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
-    import.meta.url,
-  ),
-  'utf8',
-);
+const arrayTableSource = await readLowCodeMaterialSource('form', 'lc-array-table');
 const [migrationSource, formMigrationSource] = await Promise.all([
   readFile(
     new URL(

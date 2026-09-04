@@ -1,12 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const [runtimeButtonGroupSource, designerSource, rendererSource] = await Promise.all([
-  readFile(
-    new URL('lowcode/block-materials/button-group/index.vue', frameworkRoot),
-    'utf8',
-  ),
+  readLowCodeMaterialSource('page', 'buttonGroup'),
   readFile(
     new URL(
       'visual-editor/components/button-group-designer/button-group-designer.service.tsx',

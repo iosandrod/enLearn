@@ -1,5 +1,6 @@
 <template>
-  <LcJsonEditor
+  <component
+    :is="jsonEditorComponent"
     class="json-dialog-input"
     :field="field"
     :model-value="modelValue"
@@ -11,7 +12,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import GlobalDialogHost from './GlobalDialogHost';
-import LcJsonEditor from '../lowcode/form-materials/lc-json-editor/index.vue';
+import {
+  getLowCodeFormMaterial,
+  lowCodeFormMaterialRevision,
+} from '../lowcode/form-materials';
 import type { LowCodeField } from '../types/lowcode';
 
 type JsonRootType = 'any' | 'object' | 'array';
@@ -50,6 +54,11 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:modelValue': [value: unknown];
 }>();
+
+const jsonEditorComponent = computed(() => {
+  lowCodeFormMaterialRevision.value;
+  return getLowCodeFormMaterial('lc-json-editor').component;
+});
 
 const field = computed<LowCodeField>(() => ({
   field: props.name,

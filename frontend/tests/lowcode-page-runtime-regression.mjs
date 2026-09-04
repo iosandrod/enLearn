@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 import { createRenderer, defineComponent, h } from 'vue';
 import {
   createLowCodePageRuntime,
@@ -355,34 +356,10 @@ const [
   searchMaterialSource,
   buttonGroupMaterialSource,
 ] = await Promise.all([
-  readFile(
-    new URL(
-      '../../packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue',
-      import.meta.url
-    ),
-    'utf8'
-  ),
-  readFile(
-    new URL(
-      '../../packages/lowcode-framework/src/lowcode/block-materials/form/index.vue',
-      import.meta.url
-    ),
-    'utf8'
-  ),
-  readFile(
-    new URL(
-      '../../packages/lowcode-framework/src/lowcode/block-materials/search-form/index.vue',
-      import.meta.url
-    ),
-    'utf8'
-  ),
-  readFile(
-    new URL(
-      '../../packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue',
-      import.meta.url
-    ),
-    'utf8'
-  ),
+  readLowCodeMaterialSource('page', 'grid'),
+  readLowCodeMaterialSource('page', 'form'),
+  readLowCodeMaterialSource('page', 'searchForm'),
+  readLowCodeMaterialSource('page', 'buttonGroup'),
 ]);
 
 for (const [alias, stateKey] of [

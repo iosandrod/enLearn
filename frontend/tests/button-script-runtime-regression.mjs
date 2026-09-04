@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 import {
   compactLowCodeScriptContext,
   clearLowCodeScriptApis,
@@ -17,7 +18,7 @@ const [rendererSource, rendererInteractionsSource, workerSource, scriptsSource, 
     readFile(new URL('runtime/useLowCodePageRenderer.ts', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/script-runtime.worker.ts', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/scripts.ts', frameworkRoot), 'utf8'),
-    readFile(new URL('lowcode/block-materials/button-group/index.vue', frameworkRoot), 'utf8'),
+    readLowCodeMaterialSource('page', 'buttonGroup'),
     readFile(new URL('lowcode/visual-converters/lowcode-button-group/index.ts', frameworkRoot), 'utf8'),
     readFile(new URL('visual-editor/components/button-group-designer/button-script-monaco.ts', frameworkRoot), 'utf8'),
     readFile(new URL('lowcode/schema.ts', frameworkRoot), 'utf8'),
@@ -153,7 +154,7 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /scriptPolicy\?\.apiNames[\s\S]*?scriptPolicy\?\.capabilities[\s\S]*?!Array\.isArray\(allowedCapabilities\)[\s\S]*?allowedCapabilities\.includes\(request\.name\)/,
+  /const allowedCapabilities = context\.policy\?\.capabilities[\s\S]*?Array\.isArray\(allowedCapabilities\)[\s\S]*?!allowedCapabilities\.includes\(request\.name\)/,
   'Page script policies must constrain registered APIs and host capabilities.',
 );
 for (const source of [schemaSource, apiSchemaSource]) {

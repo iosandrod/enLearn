@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const migrationSource = await readFile(
   new URL(
@@ -26,13 +27,31 @@ const adminServiceSource = await readFile(
   new URL('../../api/src/admin-service/admin.service.ts', import.meta.url),
   'utf8'
 );
-const rendererSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
+const rendererSource = (
+  await Promise.all([
+    readFile(
+      new URL(
+        '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue',
+        import.meta.url
+      ),
+      'utf8'
+    ),
+    readFile(
+      new URL(
+        '../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts',
+        import.meta.url
+      ),
+      'utf8'
+    ),
+    readFile(
+      new URL(
+        '../../packages/lowcode-framework/src/runtime/page-data-controller.ts',
+        import.meta.url
+      ),
+      'utf8'
+    ),
+  ])
+).join('\n');
 const dashboardLayoutSource = await readFile(
   new URL('../layouts/dashboard.vue', import.meta.url),
   'utf8'
@@ -75,31 +94,13 @@ const lowCodeGridSource = await readFile(
   ),
   'utf8'
 );
-const arrayTableSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
+const arrayTableSource = await readLowCodeMaterialSource('form', 'lc-array-table');
 const lowCodeFormSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeForm.vue', import.meta.url),
   'utf8'
 );
-const colorPickerSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-color-picker/index.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
-const subFormSource = await readFile(
-  new URL(
-    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue',
-    import.meta.url
-  ),
-  'utf8'
-);
+const colorPickerSource = await readLowCodeMaterialSource('form', 'lc-color-picker');
+const subFormSource = await readLowCodeMaterialSource('form', 'lc-sub-form');
 
 assert.match(
   migrationSource,
@@ -133,12 +134,12 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /function mergeFormModelValues\([\s\S]*isRecord\(defaultValue\) && isRecord\(value\)[\s\S]*mergeFormModelValues\(defaultValue, value\)/,
+  /mergeFormModelValues\s*=\s*\([\s\S]*isRecord\(defaultValue\) && isRecord\(value\)[\s\S]*mergeFormModelValues\(defaultValue, value\)/,
   'Nested settings defaults must be merged with previously saved user values.'
 );
 assert.match(
   rendererSource,
-  /function collectSharedFormDefaults\([\s\S]*defaultsBySource\[sourceKey\] = mergeFormModelValues/,
+  /collectSharedFormDefaults\s*=\s*\([\s\S]*defaultsBySource\[sourceKey\] = this\.mergeFormModelValues/,
   'Multiple forms sharing a source must still contribute one complete source model.'
 );
 assert.match(
@@ -213,17 +214,17 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /function collectFormSubmissionGroups\([\s\S]*groups\.set\(sourceKey[\s\S]*function buildFormSubmissionValues\([\s\S]*mergeChangedFormValue/,
+  /collectFormSubmissionGroups\s*=\s*\(\)[\s\S]*groups\.set\(sourceKey[\s\S]*buildFormSubmissionValues\s*=\s*\([\s\S]*mergeChangedFormValue/,
   'Forms sharing a data source must be merged into one save payload without overwriting changes from another settings tab.'
 );
 assert.match(
   rendererSource,
-  /defineExpose\(\{[\s\S]*submitForms[\s\S]*async function submitForms\([\s\S]*saveFormSource/,
+  /defineExpose\(renderer\.exposed\)[\s\S]*submitForms[\s\S]*saveFormSource/,
   'The page renderer must expose an awaited form submission operation to dialog hosts.'
 );
 assert.match(
   rendererSource,
-  /async function submitForms\([\s\S]*await commitPendingFormValues\(\)[\s\S]*function commitPendingFormValues\(/,
+  /submitForms\s*=\s*async[\s\S]*await this\.commitPendingFormValues\(\)[\s\S]*commitPendingFormValues\s*=\s*async/,
   'Outer dialog submission must commit pending field values before building the save payload.'
 );
 assert.match(

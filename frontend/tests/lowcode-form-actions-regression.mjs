@@ -9,6 +9,14 @@ const pageRendererSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue', import.meta.url),
   'utf8',
 );
+const rendererRuntimeSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts', import.meta.url),
+  'utf8',
+);
+const pageDataControllerSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/runtime/page-data-controller.ts', import.meta.url),
+  'utf8',
+);
 
 assert.match(
   source,
@@ -16,7 +24,7 @@ assert.match(
   'LowCodeForm must render schema actions and route clicks through its action handler.',
 );
 assert.match(
-  pageRendererSource,
+  rendererRuntimeSource,
   /\[\(\) => props\.page\.id, \(\) => props\.page\.version, \(\) => props\.route\?\.fullPath/,
   'Runtime data must reload on page identity/version changes without treating in-place schema edits as navigation.',
 );
@@ -26,9 +34,9 @@ assert.doesNotMatch(
   'Watching the mutable page object causes search-time grid updates to reset forms and sources.',
 );
 assert.match(
-  pageRendererSource,
-  /const refreshEntry = async \(\[key, source\][\s\S]*runtime\.setSource\(key, undefined\)[\s\S]*invokeDataSource\(key, source, true\)[\s\S]*Promise\.all\(entries\.map\(refreshEntry\)\)/,
-  'Data-source refreshes must publish a distinct value transition before applying replacement rows.',
+  pageDataControllerSource,
+  /readonly refreshDataSources = async[\s\S]*executeNodeAction\(\{ node: block\.id, method: 'loadData' \}\)/,
+  'Data-source refreshes must route through the page node action loader.',
 );
 assert.match(
   source,
@@ -37,8 +45,8 @@ assert.match(
 );
 assert.match(
   source,
-  /const isLocalUpdate = formValuesEqual\(nextValue, formData\)[\s\S]*if \(!isLocalUpdate\) initialModel\.value = \{ \.\.\.nextValue \}/,
-  'Locally emitted field changes must not replace the baseline used by the reset action.',
+  /const isLocalUpdate = formValuesEqual\(nextValue, formData\)[\s\S]*if \(isLocalUpdate\) return;[\s\S]*initialModel\.value = \{ \.\.\.nextValue \}/,
+  'External model changes must refresh the reset baseline while local field updates do not.',
 );
 
 console.log('Low-code form action rendering regression checks passed.');

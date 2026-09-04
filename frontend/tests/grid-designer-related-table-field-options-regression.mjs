@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const [migration, designer, runtimeForm] = await Promise.all([
   readFile(
@@ -16,13 +17,7 @@ const [migration, designer, runtimeForm] = await Promise.all([
     ),
     'utf8',
   ),
-  readFile(
-    new URL(
-      '../../packages/lowcode-framework/src/lowcode/block-materials/form/index.vue',
-      import.meta.url,
-    ),
-    'utf8',
-  ),
+  readLowCodeMaterialSource('page', 'form'),
 ]);
 
 assert.match(

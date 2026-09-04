@@ -1148,7 +1148,20 @@ export class LowCodePageScriptRuntime {
     context: LowCodeScriptContextSnapshot,
     event: LowCodeRuntimeEvent
   ) {
-    
+    const allowedCapabilities = context.policy?.capabilities;
+    if (
+      Array.isArray(allowedCapabilities) &&
+      !allowedCapabilities.includes(request.name)
+    ) {
+      throw new Error(`脚本能力 "${request.name}" 未注册或当前页面策略不允许调用。`);
+    }
+
+    if (request.name === 'api.invoke') {
+      const apiName = this.readScriptStringArg(request.args, 0, 'apiName');
+      const payload = this.readScriptRecordArg(request.args, 1);
+      return invokeRegisteredLowCodeScriptApi(apiName, payload, context);
+    }
+
     if (this.primaryScriptExecutors.has(request.name)) {
       return this.primaryScriptExecutors.execute(request, {
         event,

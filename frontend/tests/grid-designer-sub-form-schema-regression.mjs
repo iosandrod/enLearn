@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const [subFormSource, subFormSchemaSource, gridDesignerSource, migrationSource] = await Promise.all([
-  readFile(new URL('lowcode/form-materials/lc-sub-form/index.vue', frameworkRoot), 'utf8'),
+  readLowCodeMaterialSource('form', 'lc-sub-form'),
   readFile(new URL('lowcode/form-schema.ts', frameworkRoot), 'utf8'),
   readFile(
     new URL('visual-editor/components/grid-designer/grid-designer.service.tsx', frameworkRoot),

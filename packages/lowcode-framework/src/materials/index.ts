@@ -51,3 +51,8 @@ export * from '../lowcode/block-materials/defaults';
 export * from '../lowcode/block-materials';
 export * from '../lowcode/form-materials';
 export * from '../lowcode/form-materials/useLowCodeFormMaterialModel';
+export * from '../lowcode/material-runtime/catalog';
+export * from '../lowcode/material-runtime/material-adapters';
+export * from '../lowcode/material-runtime/component-bridge';
+export * from '../lowcode/material-runtime/sfc-compiler';
+export * from '../lowcode/material-runtime/types';

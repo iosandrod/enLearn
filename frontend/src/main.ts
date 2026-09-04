@@ -88,6 +88,11 @@ VxeUI.use(AdvancedFilterPlugin, {
 });
 
 const app = createApp(App);
+Object.defineProperty(window, '__LOWCODE_APP__', {
+  configurable: true,
+  enumerable: false,
+  value: app,
+});
 const refs: Record<string, unknown> = {};
 const ClientOnly = defineComponent({
   name: 'ClientOnly',

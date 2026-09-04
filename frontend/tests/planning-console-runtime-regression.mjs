@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const [
@@ -14,6 +15,9 @@ const [
   materialRegistrySource,
   nodeRegistrySource,
   blockHelpersSource,
+  pageDataControllerSource,
+  pageSchemaRepositorySource,
+  pageRendererRuntimeSource,
   visualConfigSource,
   visualConverterSource,
   flowMaterialSource,
@@ -22,35 +26,39 @@ const [
   gridSource,
 ] = await Promise.all([
   read('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue'),
+  readLowCodeMaterialSource('page', 'tabs'),
   read('../assets/styles/app.css'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-flow/index.vue'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/index.vue'),
+  readLowCodeMaterialSource('page', 'planningFlow'),
+  readLowCodeMaterialSource('page', 'planningGantt'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/GanttDisplaySettings.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/display-settings.ts'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-bom/index.vue'),
+  readLowCodeMaterialSource('page', 'planningBom'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/index.ts'),
   read('../../packages/lowcode-framework/src/runtime/node-action-registry.ts'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/helpers.ts'),
+  read('../../packages/lowcode-framework/src/runtime/page-data-controller.ts'),
+  read('../../packages/lowcode-framework/src/runtime/page-schema-repository.ts'),
+  read('../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts'),
   read('../../packages/lowcode-framework/src/visual.config.tsx'),
   read('../../packages/lowcode-framework/src/lowcode/visual-converters/index.ts'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-flow/index.ts'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/index.ts'),
-  read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-bom/index.ts'),
+  read('../../packages/lowcode-framework/src/lowcode/material-runtime/material-adapters.ts'),
+  read('../../packages/lowcode-framework/src/lowcode/material-runtime/material-adapters.ts'),
+  read('../../packages/lowcode-framework/src/lowcode/material-runtime/material-adapters.ts'),
   read('../../packages/lowcode-framework/src/components/LowCodeGrid.vue'),
 ]);
 
-assert.match(rendererSource, /function searchTargetSourceKeys[\s\S]*targetSourceKeys/);
-assert.match(rendererSource, /sourceKeys\.forEach\(\(sourceKey\) => runtime\.replaceSearch/);
-assert.match(rendererSource, /await refreshDataSources\(sourceKeys\)/);
-assert.match(rendererSource, /const sourceRequestVersions = new Map<string, number>\(\)/);
-assert.match(rendererSource, /function beginSourceRequest[\s\S]*runtime\.setSourceLoading\(key, true\)/);
-assert.match(rendererSource, /function isCurrentSourceRequest[\s\S]*sourceRequestVersions\.get\(key\) === version/);
-assert.match(rendererSource, /if \(!isCurrentSourceRequest\(key, version\)\) return ''/);
-assert.match(rendererSource, /runtime\.setSource\(key, undefined\)[\s\S]*invokeDataSource\(key, source, true\)/);
+const dataRuntimeSource = [rendererSource, pageDataControllerSource, pageSchemaRepositorySource, pageRendererRuntimeSource].join('\n');
+assert.match(dataRuntimeSource, /searchTargetSourceKeys[\s\S]*targetSourceKeys/);
+assert.match(dataRuntimeSource, /sourceKeys\.forEach\(\(sourceKey\) => runtime\.replaceSearch/);
+assert.match(dataRuntimeSource, /await refreshDataSources\(sourceKeys\)/);
+assert.match(dataRuntimeSource, /const sourceRequestVersions = new Map<string, number>\(\)/);
+assert.match(dataRuntimeSource, /beginSourceRequest[\s\S]*runtime\.setSourceLoading\(key, true\)/);
+assert.match(dataRuntimeSource, /isCurrentSourceRequest[\s\S]*sourceRequestVersions\.get\(key\) === version/);
+assert.match(dataRuntimeSource, /isCurrentSourceRequest\(key, version\)[\s\S]*?return ''/);
+assert.match(dataRuntimeSource, /invokeDataSource\(key, source\)[\s\S]*runtime\.setSource\(resolvedKey, value/);
 assert.match(
-  rendererSource,
-  /async function loadDataSourceWaves[\s\S]*source\.loadAfterSourceKeys[\s\S]*hydrateSourceBoundForms\(pageBlocks, sources, new Set\(ready\.map/,
+  dataRuntimeSource,
+  /loadDataSourceWaves[\s\S]*loadedSourceKeys[\s\S]*hydrateSourceBoundForms\(pageBlocks, sources, loadedSourceKeys\)/,
   'Form-dependent data sources must wait for prerequisite rows to hydrate their forms.',
 );
 assert.match(rendererSource, /@media \(max-width: 820px\)[\s\S]*overflow-y: auto[\s\S]*\.lc-runtime-block--fill\.lc-node-tabs[\s\S]*min-height: min\(560px, calc\(100dvh - 16px\)\)/);
@@ -70,6 +78,12 @@ assert.match(flowSource, /ResizeObserver/);
 assert.match(flowSource, /lowcode:tab-activated/);
 assert.match(flowSource, /planningFlow\.nodeSelect/);
 assert.match(flowSource, /fitView/);
+assert.match(flowSource, /BezierEdge/);
+assert.match(flowSource, /:edge-types="edgeTypes"/);
+assert.match(flowSource, /const edgeTypes = \{ bezier: BezierEdge \}/);
+assert.match(flowSource, /--lc-planning-visual-height/);
+assert.match(flowSource, /minHeight: `\$\{height\}px`/);
+assert.match(flowSource, /height: `\$\{height\}px`/);
 assert.match(flowSource, /viewMode = ref<'lanes' \| 'graph'>\('graph'\)/);
 assert.match(flowSource, /lc-planning-flow__view-switch/);
 assert.match(flowSource, /v-for="lane in laneRows"/);
@@ -159,10 +173,11 @@ assert.match(bomSource, /fitView/);
 assert.doesNotMatch(bomSource, /PlanningBomNode/);
 assert.doesNotMatch(bomSource, /<table/);
 
-assert.match(materialRegistrySource, /import\.meta\.glob<MaterialModule>\('\.\/\*\/index\.ts'/);
-for (const kind of ['planningFlow', 'planningGantt', 'planningBom']) {
-  assert.match(nodeRegistrySource, new RegExp(`${kind}:\\s*nodeType`));
-}
+assert.doesNotMatch(materialRegistrySource, /import\.meta\.glob/);
+assert.match(materialRegistrySource, /Object\.values\(lowCodeBlockMaterialAdapters\)/);
+assert.match(materialRegistrySource, /DatabaseMaterialPending/);
+assert.match(nodeRegistrySource, /getLowCodeNodeActionMethods/);
+assert.match(nodeRegistrySource, /resolveLowCodeDataSourceNodeAction/);
 
 assert.match(visualConfigSource, /Object\.entries\(businessComponent\)/);
 for (const [source, componentKey] of [
@@ -170,7 +185,9 @@ for (const [source, componentKey] of [
   [ganttMaterialSource, 'planning-gantt'],
   [bomMaterialSource, 'planning-bom'],
 ]) {
-  assert.match(source, /designer:\s*\(\)\s*=>/);
+  // Planning material metadata now lives in material-adapters.ts.  Designer
+  // loaders are declared once there and keyed by the business-component id.
+  assert.match(source, new RegExp(`const planning${componentKey.replace('planning-', '').replace(/(^|-)([a-z])/g, (_, _d, c) => c.toUpperCase())}Designer`));
   assert.match(source, new RegExp(`business-component/${componentKey}`));
   assert.match(source, /converter/);
   assert.match(visualConverterSource, new RegExp(`componentKey: '${componentKey}'`));

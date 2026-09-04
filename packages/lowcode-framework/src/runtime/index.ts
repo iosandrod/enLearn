@@ -11,6 +11,11 @@ export { default as JsonDialogInput } from '../components/JsonDialogInput.vue';
 export { default as LcVxeModalRenderer } from '../components/LcVxeModalRenderer';
 export { default as LowCodeOverlayHost } from '../components/LowCodeOverlayHost.vue';
 export { default as LowCodePageRenderer } from '../components/LowCodePageRenderer.vue';
+export {
+  initializeLowCodeMaterialCatalog,
+  lowCodeMaterialCatalogState,
+  resetLowCodeMaterialCatalog,
+} from '../lowcode/material-runtime/catalog';
 export { default as LowCodeTreeItem } from '../components/LowCodeTreeItem.vue';
 export type {
   LcVxeModalConfig,
@@ -35,3 +40,7 @@ export * from './page-function';
 export * from '../lowcode/builtin-pages';
 export * from '../lowcode/block-materials';
 export * from '../lowcode/form-materials';
+export * from '../lowcode/material-runtime/catalog';
+export * from '../lowcode/material-runtime/material-adapters';
+export * from '../lowcode/material-runtime/component-bridge';
+export * from '../lowcode/material-runtime/types';

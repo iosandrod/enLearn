@@ -7,7 +7,7 @@ import type {
   LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
 import { isLowCodeFormSchema } from '../../../lowcode/form-schema';
-import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-materials/lc-array-table/index.vue';
+import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-materials/array-table-types';
 import {
   createBuiltinLowCodeActionEditorRow,
   createBuiltinLowCodePageFunctionScript,

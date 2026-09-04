@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readLowCodeMaterialSource } from './lowcode-material-source.mjs';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const [
@@ -27,13 +28,13 @@ const [
   relationSelectMigrationSource,
   relationSelectApplyScriptSource,
 ] = await Promise.all([
-  readFile(new URL('lowcode/form-materials/base-info/index.vue', frameworkRoot), 'utf8'),
+  readLowCodeMaterialSource('form', 'base-info'),
   readFile(new URL('lowcode/form-materials/base-info/relate-info.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/form-materials/base-info/index.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/material-runtime/material-adapters.ts', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeFormField.vue', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeForm.vue', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/block-materials/form/index.vue', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/block-materials/search-form/index.vue', frameworkRoot), 'utf8'),
+  readLowCodeMaterialSource('page', 'form'),
+  readLowCodeMaterialSource('page', 'searchForm'),
   readFile(new URL('lowcode/block-materials/runtime-form-field-editor.ts', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/block-materials/runtime-form-designer.ts', frameworkRoot), 'utf8'),
   readFile(new URL('visual-editor/components/form-designer/form-designer.service.tsx', frameworkRoot), 'utf8'),
@@ -46,13 +47,13 @@ const [
   readFile(new URL('../../../supabase/migrations/20260812150000_planning_operationmaterial_base_info.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../api/scripts/apply-planning-operationmaterial-base-info.ts', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/block-materials/runtime-form-relation-options.ts', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/form-materials/lc-array-table/index.vue', frameworkRoot), 'utf8'),
-  readFile(new URL('lowcode/form-materials/lc-sub-form/index.vue', frameworkRoot), 'utf8'),
+  readLowCodeMaterialSource('form', 'lc-array-table'),
+  readLowCodeMaterialSource('form', 'lc-sub-form'),
   readFile(new URL('../../../supabase/migrations/20260812230000_runtime_form_relation_selects.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../api/scripts/apply-runtime-form-relation-selects.ts', frameworkRoot), 'utf8'),
 ]);
 
-assert.match(materialSource, /type: 'base-info'[^]*?label: '关联资料'/);
+assert.match(materialSource, /'base-info',\s*'关联资料'/);
 assert.match(
   componentSource,
   /<vxe-pulldown[^]*?<vxe-input[^]*?@focus="openPanel"[^]*?<template #dropdown>[^]*?<vxe-grid[^]*?@cell-dblclick="handleRowDblclick"/,
