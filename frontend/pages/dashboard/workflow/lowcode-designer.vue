@@ -56,7 +56,30 @@ onMounted(loadPage);
 </script>
 
 <style scoped>
-.workflow-lowcode-page { height: 100%; min-height: 0; }
+.workflow-lowcode-page { height: calc(100vh - 112px); min-height: 640px; }
 .workflow-lowcode-page :deep(.lowcode-runtime-shell),
-.workflow-lowcode-page :deep(.lowcode-runtime-page) { height: 100%; min-height: 0; }
+.workflow-lowcode-page :deep(.lowcode-runtime-page) { display:flex; flex-direction:column; height: 100%; min-height: 0; }
+.workflow-lowcode-page :deep(.lc-runtime-block) { flex: 0 0 auto; min-height: 0; height: auto; }
+.workflow-lowcode-page :deep(.lc-node-button-group) {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 2px 6px;
+  gap: 2px;
+}
+.workflow-lowcode-page :deep(.lc-button-group) {
+  min-height: 0;
+  gap: 6px;
+}
+.workflow-lowcode-page :deep(.lc-button-group .vxe-button) {
+  min-height: 28px;
+  height: 28px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.workflow-lowcode-page :deep(.approval-workflow-material) {
+  flex: 1 1 auto;
+  min-height: 560px;
+  height: calc(100vh - 180px);
+}
+.workflow-lowcode-page :deep(.approval-designer) { min-height: 560px; height: 100%; }
 </style>

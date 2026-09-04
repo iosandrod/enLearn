@@ -36,6 +36,7 @@ import {
 } from './script-executors';
 import { appendRouteQuery, cloneRuntimeValue, isRecord, readPath, readString } from './renderer-value-utils';
 import { applyLowCodeRuntimeEffects } from './runtime-effects.ts';
+import { executeLowCodeMaterialRuntimeAction } from './material-controller-registry';
 
 type ValueRef<T> = { value: T };
 type DataSourceRequest = {
@@ -431,6 +432,14 @@ export class LowCodePageScriptRuntime {
       case 'grid.validate':
         return runtime.getGridController(block.id)?.validate() ??
           Promise.reject(new Error(`表格节点 "${block.id}" 当前未挂载，无法校验。`));
+      case 'material.loadData':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'loadData', payload);
+      case 'material.setData':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'setData', payload.value, payload);
+      case 'material.getData':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'getData');
+      case 'material.validate':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'validate');
       case 'overlay.open': {
         if (!isOverlayBlock(block)) throw new Error(`节点 "${block.id}" 不是弹框或抽屉。`);
         const result = await openLowCodeGlobalDialog(

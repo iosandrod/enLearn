@@ -7,6 +7,7 @@ import {
   provide,
   resolveDynamicComponent,
   unref,
+  watch,
   type VNodeChild,
 } from 'vue';
 import { VxeButton, VxeModal, VxeTabPane, VxeTabs } from 'vxe-pc-ui';
@@ -661,8 +662,23 @@ export default defineComponent({
     };
 
     onMounted(() => window.addEventListener('keydown', handleEscape, true));
+    const syncPopupLayerState = () => {
+      if (typeof document === 'undefined') return;
+      document.body.classList.toggle(
+        'lc-global-dialog-open',
+        globalDialogInstances.length > 0 || globalDrawerInstances.length > 0,
+      );
+    };
+    watch(
+      () => [globalDialogInstances.length, globalDrawerInstances.length],
+      syncPopupLayerState,
+      { immediate: true },
+    );
     onBeforeUnmount(() => {
       window.removeEventListener('keydown', handleEscape, true);
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('lc-global-dialog-open');
+      }
       dialogFormControllers.clear();
       dialogFormControllersByKey.clear();
       host.unregister();
@@ -687,6 +703,9 @@ export default defineComponent({
               resize: true,
               escClosable: false,
               ...(config.props ?? {}),
+              // Keep global dialogs above page overlays while preserving the
+              // creation order for nested dialogs and VXE popups.
+              zIndex: 10000 + globalDialogInstances.indexOf(instance),
               'onUpdate:modelValue': (visible: boolean) => {
                 if (!visible) {
                   void closeGlobalDialog(instance.id, {

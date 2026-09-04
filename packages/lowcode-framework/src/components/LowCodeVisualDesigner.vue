@@ -145,6 +145,7 @@ import {
   filterAdminRouteNodes,
   type AdminRouteNode,
 } from '../utils/admin-navigation';
+import { initializeLowCodeMaterialCatalog } from '../lowcode/material-runtime/catalog';
 
 const props = defineProps<{
   code?: string;
@@ -980,6 +981,13 @@ watch(
 );
 
 onMounted(() => {
+  try {
+    void initializeLowCodeMaterialCatalog(host.getServiceApi()).catch((error) => {
+      console.warn('[LowCode Material] Designer catalog initialization failed.', error);
+    });
+  } catch {
+    // Embedded/test hosts may not expose a service API; static materials remain usable.
+  }
   unsubscribeDesignerLoadPage = subscribeLowCodeDesignerLoadPage(handleDesignerLoadPage);
   if (showMenuDrawer.value) {
     void loadMenuTree();

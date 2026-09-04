@@ -18,6 +18,7 @@ function nodeActionKindForVisualBlock(block: { componentKey?: string; props?: Re
   if (componentKey === 'form' || componentKey === 'lowcode-edit-form') return 'form';
   if (componentKey === 'lowcode-grid') return 'grid';
   if (componentKey === 'lowcode-button-group') return 'buttonGroup';
+  if (componentKey === 'approval-workflow-designer') return 'approvalWorkflowDesigner';
   if (componentKey === 'vxe-tabs') return 'tabs';
   if (componentKey === 'lowcode-modal') return 'modal';
   if (componentKey === 'lowcode-drawer') return 'drawer';

@@ -36,6 +36,7 @@ export * from './scripts';
 export * from './script-context-provider';
 export * from './lowcode-context-drawer';
 export * from './node-action-registry';
+export * from './material-controller-registry';
 export * from './page-function';
 export * from '../lowcode/builtin-pages';
 export * from '../lowcode/block-materials';

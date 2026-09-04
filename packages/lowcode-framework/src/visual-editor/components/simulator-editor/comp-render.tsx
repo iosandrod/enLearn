@@ -21,8 +21,15 @@ const CompRender = defineComponent({
     },
   },
   setup(props) {
-    return () =>
-      visualConfig.componentMap[props.element.componentKey].render({
+    return () => {
+      const component = visualConfig.componentMap[props.element.componentKey];
+      if (!component) {
+        return h('article', { class: 'content-panel lc-node-unsupported' }, [
+          h('strong', '未注册可视化物料'),
+          h('span', props.element.componentKey),
+        ]);
+      }
+      return component.render({
         styles: props.element.styles || {},
         props: props.element.props || {},
         model: {},
@@ -32,6 +39,7 @@ const CompRender = defineComponent({
           renderDesignedBlocks: renderDesignedBlocks as DesignedBlockRenderer,
         },
       })();
+    };
   },
 });
 

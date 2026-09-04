@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   ConnectionLineType,
   useVueFlow,
@@ -11,6 +11,7 @@ import {
 import { VxeUI, type VxeContextMenuDefines } from 'vxe-pc-ui';
 import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
 import LowCodeForm from '@enlearn/lowcode-framework/components/LowCodeForm.vue';
+import { closeGlobalDialog, openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dialog';
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
@@ -179,6 +180,8 @@ const draggingPaletteType = ref<WorkflowNodeType | null>(null);
 const isCanvasDragOver = ref(false);
 const pointerPaletteDrag = ref<PointerPaletteDrag | null>(null);
 const suppressNextPaletteClick = ref(false);
+let canvasResizeObserver: ResizeObserver | null = null;
+let canvasFitTimers: number[] = [];
 const nodeTypeMenu = ref<NodeTypeMenuState>({
   visible: false,
   sourceId: null,
@@ -501,13 +504,78 @@ onMounted(() => {
   window.addEventListener('click', closeFloatingMenus);
   window.addEventListener('keydown', onWindowKeyDown);
   window.addEventListener('resize', closeFloatingMenus);
+
+  // Vue Flow may initialize before the low-code host has assigned a real size
+  // to the material. Re-fit after mount and whenever the canvas gets sized so
+  // the nodes cannot remain outside the visible viewport.
+  const requestCanvasFit = (delay = 0) => {
+    if (typeof window === 'undefined') return;
+    const timer = window.setTimeout(() => {
+      canvasFitTimers = canvasFitTimers.filter((item) => item !== timer);
+      void fitViewSafe();
+    }, delay);
+    canvasFitTimers.push(timer);
+  };
+
+  requestCanvasFit();
+  requestCanvasFit(120);
+  requestCanvasFit(320);
+
+  if (typeof ResizeObserver !== 'undefined' && flowCanvasRef.value) {
+    canvasResizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry || entry.contentRect.width <= 0 || entry.contentRect.height <= 0) return;
+      requestCanvasFit(40);
+    });
+    canvasResizeObserver.observe(flowCanvasRef.value);
+  }
+});
+
+let minimalInspectorDialogId = `${flowId}-node-inspector`;
+
+const MinimalNodeInspector = defineComponent({
+  name: 'ApprovalWorkflowNodeInspector',
+  setup() {
+    return () => {
+      const node = selectedNode.value;
+      if (!node) return null;
+
+      return h('section', { class: 'approval-designer__minimal-dialog', role: 'dialog', 'aria-modal': 'true' }, [
+        selectedNodeFormSchema.value
+          ? h(LowCodeForm, {
+              class: 'approval-designer__node-form',
+              schema: selectedNodeFormSchema.value,
+              modelValue: (node.config ?? {}) as Record<string, unknown>,
+              readonly: props.readonly,
+              'onUpdate:modelValue': updateSelectedConfigFromForm
+            })
+          : h(JsonDialogInput, {
+              class: 'approval-designer__node-form',
+              modelValue: node.config ?? {},
+              name: 'nodeConfig',
+              label: '配置 JSON',
+              title: '编辑节点配置 JSON',
+              readonly: props.readonly,
+              rows: 10,
+              rootType: 'object',
+              valueMode: 'parsed',
+              'onUpdate:modelValue': updateSelectedConfig
+            })
+      ]);
+    };
+  }
 });
 
 onBeforeUnmount(() => {
+  closeMinimalInspector();
   window.removeEventListener('click', closeFloatingMenus);
   window.removeEventListener('keydown', onWindowKeyDown);
   window.removeEventListener('resize', closeFloatingMenus);
   window.removeEventListener('pointermove', onPalettePointerMove);
+  canvasResizeObserver?.disconnect();
+  canvasResizeObserver = null;
+  canvasFitTimers.forEach((timer) => window.clearTimeout(timer));
+  canvasFitTimers = [];
 });
 
 function emitModel(nextModel: WorkflowModel) {
@@ -1004,7 +1072,7 @@ function onConnect(connection: Connection) {
 
 function onNodeClick(payload: NodeMouseEvent) {
   selectedNodeId.value = payload.node.id;
-  if (props.minimal) minimalInspectorOpen.value = true;
+  if (props.minimal) openMinimalInspector();
 }
 
 function onNodeDragStop(payload: NodeDragEvent) {
@@ -1013,8 +1081,54 @@ function onNodeDragStop(payload: NodeDragEvent) {
 
 function onPaneClick() {
   selectedNodeId.value = null;
-  minimalInspectorOpen.value = false;
+  closeMinimalInspector();
   closeFloatingMenus();
+}
+
+function openMinimalInspector() {
+  if (!props.minimal || minimalInspectorOpen.value || !selectedNode.value) return;
+
+  const dialogId = `${flowId}-node-inspector-${selectedNode.value.id}`;
+  minimalInspectorDialogId = dialogId;
+  minimalInspectorOpen.value = true;
+  void openGlobalDialog({
+    id: dialogId,
+    title: '节点配置',
+    width: 'min(620px, calc(100vw - 32px))',
+    height: 'min(760px, calc(100vh - 40px))',
+    className: 'approval-workflow-node-inspector-dialog',
+    props: {
+      top: '5vh',
+      destroyOnClose: true
+    },
+    body: () => h(MinimalNodeInspector),
+    actions: [
+      {
+        code: 'cancel',
+        label: '关闭',
+        role: 'cancel'
+      },
+      ...(props.readonly
+        ? []
+        : [
+            {
+              code: 'confirm',
+              label: '完成',
+              role: 'confirm' as const,
+              status: 'primary' as const
+            }
+          ])
+    ]
+  }).finally(() => {
+    if (minimalInspectorDialogId === dialogId) minimalInspectorOpen.value = false;
+  });
+}
+
+function closeMinimalInspector() {
+  minimalInspectorOpen.value = false;
+  void closeGlobalDialog(minimalInspectorDialogId, {
+    action: 'close'
+  });
 }
 
 function openNodeContextMenu(event: MouseEvent, nodeId: string) {
@@ -1950,7 +2064,7 @@ defineExpose({
     </header>
 
     <div class="approval-designer__body">
-      <aside v-if="!minimal" class="approval-designer__palette" aria-label="节点库">
+      <aside class="approval-designer__palette" aria-label="节点库">
         <div class="approval-designer__side-title">
           <strong>节点库</strong>
           <span>{{ paletteGroups.reduce((count, group) => count + group.items.length, 0) }}</span>
@@ -1990,7 +2104,7 @@ defineExpose({
         </section>
       </aside>
 
-      <main class="approval-designer__canvas-shell" aria-label="流程画布">
+      <main class="approval-designer__canvas-shell" aria-label="流程画布" :style="minimal ? { minHeight: '560px' } : undefined">
         <div v-if="!minimal" class="approval-designer__canvas-toolbar">
           <div class="approval-designer__canvas-status">
             <strong>{{ selectedNode ? selectedNode.name : '流程画布' }}</strong>
@@ -2036,6 +2150,7 @@ defineExpose({
         <div
           ref="flowCanvasRef"
           class="approval-designer__canvas"
+          :style="minimal ? { height: '560px', minHeight: '560px' } : undefined"
           :class="{ 'approval-designer__canvas--drag-over': isCanvasDragOver }"
           @dragover="onCanvasDragOver"
           @dragleave="onCanvasDragLeave"
@@ -2356,9 +2471,8 @@ defineExpose({
               name="nodeConfig"
               label="配置 JSON"
               title="编辑节点配置 JSON"
-              :readonly="readonly"
-              :rows="10"
-              standalone
+            :readonly="readonly"
+            :rows="10"
               root-type="object"
               value-mode="parsed"
               @update:model-value="updateSelectedConfig"
@@ -2463,33 +2577,6 @@ defineExpose({
       {{ draggingPaletteLabel }}
     </div>
 
-    <Teleport to="body">
-      <div
-        v-if="minimal && minimalInspectorOpen && selectedNode"
-        class="approval-designer__minimal-mask"
-        @click.self="minimalInspectorOpen = false"
-      >
-        <section class="approval-designer__minimal-dialog" role="dialog" aria-modal="true">
-          <header>
-            <div><strong>{{ selectedNode.name }}</strong><span>{{ selectedNode.type }}</span></div>
-            <button type="button" aria-label="关闭" @click="minimalInspectorOpen = false">×</button>
-          </header>
-          <label class="approval-designer__field">
-            <span>节点名称</span>
-            <input class="approval-designer__input" :value="selectedNode.name" :readonly="readonly" @input="updateSelectedNodeName" />
-          </label>
-          <LowCodeForm
-            v-if="selectedNodeFormSchema"
-            class="approval-designer__node-form"
-            :schema="selectedNodeFormSchema"
-            :model-value="(selectedNode.config ?? {}) as Record<string, unknown>"
-            :readonly="readonly"
-            @update:model-value="updateSelectedConfigFromForm"
-          />
-          <p v-else class="approval-designer__form-error">该节点的低代码配置表单尚未启用。</p>
-        </section>
-      </div>
-    </Teleport>
   </section>
 </template>
 
@@ -2514,22 +2601,34 @@ defineExpose({
 }
 
 .approval-designer--minimal .approval-designer__body {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'palette canvas';
+  grid-template-columns: 214px minmax(0, 1fr);
+}
+
+.approval-designer--minimal .approval-designer__palette {
+  display: block;
+  max-height: none;
+  overflow: auto;
+  border-right: 1px solid #d5deea;
 }
 
 .approval-designer--minimal .approval-designer__canvas-shell,
 .approval-designer--minimal .approval-designer__canvas,
 .approval-designer--minimal .approval-designer__flow {
-  min-height: 0;
+  min-height: 560px;
   height: 100%;
 }
 
-.approval-designer__minimal-mask { position: fixed; inset: 0; z-index: 4000; display: grid; place-items: center; background: rgb(15 23 42 / 42%); padding: 20px; }
+.approval-designer--minimal .approval-designer__canvas-shell {
+  grid-template-rows: minmax(0, 1fr);
+}
+
 .approval-designer__minimal-dialog { width: min(560px, 100%); max-height: min(760px, calc(100vh - 40px)); overflow: auto; border-radius: 10px; background: #fff; box-shadow: 0 24px 64px rgb(15 23 42 / 25%); padding: 16px; }
 .approval-designer__minimal-dialog header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
 .approval-designer__minimal-dialog header div { display: grid; gap: 3px; }
 .approval-designer__minimal-dialog header span { color: #64748b; font-size: 11px; }
 .approval-designer__minimal-dialog header button { border: 0; background: transparent; color: #64748b; cursor: pointer; font-size: 24px; }
+:global(.approval-workflow-node-inspector-dialog) .approval-designer__minimal-dialog { width: 100%; max-height: none; border-radius: 0; box-shadow: none; padding: 4px; }
 
 .approval-designer__header {
   display: flex;

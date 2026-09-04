@@ -5,10 +5,10 @@ begin;
 
 insert into public.lowcode_form_definitions (code, name, description, schema, enabled)
 values
-('approval-workflow.node.approval', '审批节点配置', '审批节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"审批人策略","component":"lc-monaco-editor","props":{"language":"json","dialogTitle":"编辑审批人策略"}},{"field":"completionStrategy","label":"完成策略","component":"vxe-select","props":{"options":[{"label":"全部通过","value":"all"},{"label":"任一通过","value":"any"}]}},{"field":"allowReject","label":"允许驳回","component":"vxe-switch"}],"actions":[]}'::jsonb, true),
-('approval-workflow.node.sign', '会签节点配置', '会签节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"审批人策略","component":"lc-monaco-editor","props":{"language":"json"}},{"field":"sequential","label":"顺序会签","component":"vxe-switch"},{"field":"allowReject","label":"允许驳回","component":"vxe-switch"}],"actions":[]}'::jsonb, true),
-('approval-workflow.node.or-sign', '或签节点配置', '或签节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"审批人策略","component":"lc-monaco-editor","props":{"language":"json"}},{"field":"allowReject","label":"允许驳回","component":"vxe-switch"}],"actions":[]}'::jsonb, true),
-('approval-workflow.node.cc', '抄送节点配置', '抄送节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"抄送人策略","component":"lc-monaco-editor","props":{"language":"json"}}],"actions":[]}'::jsonb, true),
+('approval-workflow.node.approval', '审批节点配置', '审批节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"审批人策略","component":"lc-json-editor","props":{"dialogTitle":"编辑审批人策略"}},{"field":"completionStrategy","label":"完成策略","component":"vxe-select","props":{"options":[{"label":"全部通过","value":"all"},{"label":"任一通过","value":"any"}]}},{"field":"allowReject","label":"允许驳回","component":"vxe-switch"}],"actions":[]}'::jsonb, true),
+('approval-workflow.node.sign', '会签节点配置', '会签节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"审批人策略","component":"lc-json-editor"},{"field":"sequential","label":"顺序会签","component":"vxe-switch"},{"field":"allowReject","label":"允许驳回","component":"vxe-switch"}],"actions":[]}'::jsonb, true),
+('approval-workflow.node.or-sign', '或签节点配置', '或签节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"审批人策略","component":"lc-json-editor"},{"field":"allowReject","label":"允许驳回","component":"vxe-switch"}],"actions":[]}'::jsonb, true),
+('approval-workflow.node.cc', '抄送节点配置', '抄送节点运行配置。', '{"fields":[{"field":"assigneeStrategy","label":"抄送人策略","component":"lc-json-editor"}],"actions":[]}'::jsonb, true),
 ('approval-workflow.node.condition', '条件节点配置', '条件节点运行配置。', '{"fields":[{"field":"expression","label":"表达式","component":"vxe-textarea"}],"actions":[]}'::jsonb, true),
 ('approval-workflow.node.parallel-gateway', '并行网关配置', '并行网关运行配置。', '{"fields":[{"field":"joinStrategy","label":"汇聚策略","component":"vxe-select","props":{"options":[{"label":"全部完成","value":"all"},{"label":"任一完成","value":"any"}]}}],"actions":[]}'::jsonb, true),
 ('approval-workflow.node.service-task', '服务节点配置', '服务节点运行配置。', '{"fields":[{"field":"serviceName","label":"服务名","component":"vxe-input"},{"field":"serviceMethod","label":"方法名","component":"vxe-input"}],"actions":[]}'::jsonb, true),
@@ -37,6 +37,7 @@ insert into public.lowcode_materials (
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useLowCodeHost } from '/core/host';
 import { loadLowCodeFormDefinition } from '/lowcode/form-definition-loader';
+import { registerLowCodeMaterialRuntimeController } from '/runtime/material-controller-registry';
 const props = defineProps<{ block: Record<string, any>; resolvedData: Record<string, any> }>();
 const host = useLowCodeHost();
 const designer = ref<any>();
@@ -52,12 +53,15 @@ const nodeCodes: Record<string, string> = {
   subProcess: 'approval-workflow.node.sub-process'
 };
 const nodeSchemas = ref<Record<string, any>>({});
+let unregisterRuntimeController = () => undefined;
 const blank = () => ({ schemaVersion: 1, code: 'approval_workflow', name: '审批流程', documentType: 'document', status: 'draft', variables: [], nodes: [
   { id: 'start', type: 'start', name: '开始', position: { x: 330, y: 48 } },
   { id: 'approval', type: 'approval', name: '审批', position: { x: 330, y: 190 }, config: { assigneeStrategy: { type: 'initiatorManager', level: 1 }, allowReject: true } },
   { id: 'end', type: 'end', name: '结束', position: { x: 330, y: 332 } }
 ], edges: [{ id: 'e1', source: 'start', target: 'approval' }, { id: 'e2', source: 'approval', target: 'end' }] });
-const model = ref<any>(blank());
+const model = ref<any>(props.block.model && typeof props.block.model === 'object'
+  ? props.block.model
+  : (props.resolvedData?.[String(props.block.sourceKey || 'workflowModel')] ?? blank()));
 async function load() {
   const api = host.getServiceApi();
   const entries = await Promise.all(Object.entries(nodeCodes).map(async ([type, code]) => [type, (await loadLowCodeFormDefinition(api, code)).schema]));
@@ -70,6 +74,18 @@ async function load() {
 }
 function createNew() { savedModelId.value = ''; model.value = blank(); message.value = '已新建草稿'; }
 function autoLayout() { designer.value?.autoLayout?.(); }
+function setData(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('审批流模型 setData 的 value 必须是对象。');
+  }
+  model.value = value;
+  return model.value;
+}
+function getData() { return model.value; }
+function validate() {
+  const issues = designer.value?.validate?.() ?? [];
+  return Array.isArray(issues) ? issues.length === 0 : Boolean(issues);
+}
 async function save() {
   const api = host.getServiceApi();
   const schema = designer.value?.getSchema?.() ?? model.value;
@@ -88,13 +104,25 @@ const listeners: Array<[string, EventListener]> = [
   ['lowcode:workflow.save', (() => void save()) as EventListener],
   ['lowcode:workflow.layout', autoLayout as EventListener]
 ];
-onMounted(() => { listeners.forEach(([name, listener]) => window.addEventListener(name, listener)); void load().catch((error) => { message.value = error instanceof Error ? error.message : '加载失败'; }); });
-onBeforeUnmount(() => listeners.forEach(([name, listener]) => window.removeEventListener(name, listener)));
+onMounted(() => {
+  unregisterRuntimeController = registerLowCodeMaterialRuntimeController(String(props.block.id), {
+    loadData: () => load().then(() => model.value),
+    setData,
+    getData,
+    validate,
+  });
+  listeners.forEach(([name, listener]) => window.addEventListener(name, listener));
+  void load().catch((error) => { message.value = error instanceof Error ? error.message : '加载失败'; });
+});
+onBeforeUnmount(() => {
+  unregisterRuntimeController();
+  listeners.forEach(([name, listener]) => window.removeEventListener(name, listener));
+});
 </script>
 <style scoped>.approval-workflow-material{position:relative;height:100%;min-height:560px;overflow:hidden}.approval-workflow-material__message{position:absolute;right:12px;top:8px;z-index:10;border:1px solid #cbd5e1;border-radius:5px;background:#fff;padding:5px 9px;color:#334155;font-size:11px}</style>
-  $material$, 'approval-workflow-material-v1', '1.0.0', array['approval-flow'], 100,
+  $material$, 'approval-workflow-material-v2', '1.0.0', array['approval-flow'], 100,
   '{"implementationKey":"approval-workflow-designer"}'::jsonb,
-  '["/core/host","/lowcode/form-definition-loader"]'::jsonb, 'published', true, true
+  '["/core/host","/lowcode/form-definition-loader","/runtime/material-controller-registry"]'::jsonb, 'published', true, true
 )
 on conflict (material_kind, code) do update set label = excluded.label, source_text = excluded.source_text, source_hash = excluded.source_hash, status = 'published', enabled = true, updated_at = timezone('utc'::text, now());
 

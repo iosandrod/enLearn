@@ -847,6 +847,15 @@ export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
   childrenField?: string;
 };
 
+/** Database-backed approval workflow designer material block. */
+export type LowCodePageApprovalWorkflowDesignerBlock = LowCodeMaterialVersionedBlock & {
+  id: string;
+  kind: 'approval-workflow-designer';
+  sourceKey?: string;
+  model?: Record<string, unknown>;
+  readonly?: boolean;
+};
+
 export type LowCodePageBlock =
   | LowCodePageTextBlock
   | LowCodePageContainerBlock
@@ -864,7 +873,8 @@ export type LowCodePageBlock =
   | LowCodePageTreeBlock
   | LowCodePagePlanningFlowBlock
   | LowCodePagePlanningGanttBlock
-  | LowCodePagePlanningBomBlock;
+  | LowCodePagePlanningBomBlock
+  | LowCodePageApprovalWorkflowDesignerBlock;
 
 export type LowCodePageOverlayBlock = LowCodePageModalBlock | LowCodePageDrawerBlock;
 

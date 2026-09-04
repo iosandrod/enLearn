@@ -12,6 +12,16 @@ function readBlockValue(block: LowCodePageBlock, key: string) {
   return (block as unknown as Record<string, unknown>)[key];
 }
 
+function normalizeNodeType(value: unknown) {
+  return typeof value === 'string'
+    ? value.replace(/[^A-Za-z0-9]/g, '').toLowerCase()
+    : '';
+}
+
+function sameNodeType(left: unknown, right: unknown) {
+  return left === right || normalizeNodeType(left) === normalizeNodeType(right);
+}
+
 function matchesApplicability(
   action: LowCodeNodeActionDefinition,
   block?: LowCodePageBlock,
@@ -36,7 +46,7 @@ export function getLowCodeNodeTypeDefinition(
   kind: string,
   actions: LowCodeNodeActionDefinition[] = [],
 ) {
-  const action = actions.find((candidate) => candidate.node_type === kind);
+  const action = actions.find((candidate) => sameNodeType(candidate.node_type, kind));
   if (!action) return undefined;
   return {
     kind,
@@ -51,7 +61,8 @@ export function getLowCodeNodeActionMethods(
   actions: LowCodeNodeActionDefinition[] = [],
 ) {
   return actions
-    .filter((action) => action.enabled && action.node_type === kind)
+    .filter((action) => action.enabled &&
+      (action.node_type === kind || sameNodeType(action.node_type, kind)))
     .filter((action) => matchesApplicability(action, block))
     .sort((left, right) => left.sort_order - right.sort_order)
     .map((action) => ({

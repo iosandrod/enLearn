@@ -17,6 +17,8 @@ const repoRoot = process.cwd().toLowerCase().endsWith('api')
 const migrationFiles = [
   'supabase/migrations/20260904113000_approval_workflow_lowcode.sql',
   'supabase/migrations/20260904113100_approval_workflow_designer_page.sql',
+  'supabase/migrations/20260904135000_approval_workflow_node_actions.sql',
+  'supabase/migrations/20260904140000_approval_workflow_material_property.sql',
 ];
 
 function connectionString(value: string) {
@@ -42,14 +44,15 @@ async function main() {
     for (const file of migrationFiles) {
       await client.query(await readFile(resolve(repoRoot, file), 'utf8'));
     }
-    const { rows } = await client.query<{ forms: number; materials: number; pages: number }>(`
+    const { rows } = await client.query<{ forms: number; materials: number; pages: number; actions: number }>(`
       select
         (select count(*)::int from public.lowcode_form_definitions where code like 'approval-workflow.%' and enabled) as forms,
         (select count(*)::int from public.lowcode_materials where material_kind = 'page' and code = 'approval-workflow-designer' and enabled and status = 'published') as materials,
-        (select count(*)::int from public.lowcode_pages where route = '/dashboard/workflow/designer' and status = 'published') as pages
+        (select count(*)::int from public.lowcode_pages where route = '/dashboard/workflow/designer' and status = 'published') as pages,
+        (select count(*)::int from public.lowcode_node_actions where node_type = 'approvalWorkflowDesigner' and enabled) as actions
     `);
     const result = rows[0];
-    if (result.forms !== 12 || result.materials !== 1 || result.pages !== 1) {
+    if (result.forms !== 12 || result.materials !== 1 || result.pages !== 1 || result.actions !== 5) {
       throw new Error(`Approval low-code verification failed: ${JSON.stringify(result)}`);
     }
     await client.query('commit');

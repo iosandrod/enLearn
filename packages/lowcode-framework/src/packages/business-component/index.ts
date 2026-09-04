@@ -1,5 +1,6 @@
 import type { VisualEditorComponent } from '../../visual-editor/visual-editor.utils';
 import lowcodeButtonGroup from './lowcode-button-group';
+import approvalWorkflowDesigner from './approval-workflow-designer';
 import normalForm from '../container-component/form';
 
 const modules = import.meta.glob<{ default?: VisualEditorComponent } | VisualEditorComponent>(
@@ -10,6 +11,7 @@ const modules = import.meta.glob<{ default?: VisualEditorComponent } | VisualEdi
 const components: Record<string, VisualEditorComponent> = {
   form: normalForm,
   'lowcode-button-group': lowcodeButtonGroup,
+  'approval-workflow-designer': approvalWorkflowDesigner,
 };
 
 Object.keys(modules).forEach((key: string) => {

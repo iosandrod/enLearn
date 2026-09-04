@@ -1,5 +1,16 @@
 -- Route the approval workflow designer through the low-code page renderer.
 begin;
+create temporary table _approval_workflow_route_refs on commit drop as
+select id
+from public.admin_routes
+where page_code = (
+  select code from public.lowcode_pages
+  where route = '/dashboard/workflow/designer'
+  limit 1
+);
+update public.admin_routes
+set page_code = null
+where id in (select id from _approval_workflow_route_refs);
 insert into public.lowcode_pages (
   code, route, title, description, page_type, layout, status, keep_alive,
   schema, version, published_at
@@ -42,6 +53,7 @@ insert into public.lowcode_pages (
   1, timezone('utc'::text, now())
  )
 on conflict (route) do update set
+  code = excluded.code,
   route = excluded.route,
   title = excluded.title,
   description = excluded.description,
@@ -53,4 +65,7 @@ on conflict (route) do update set
   version = public.lowcode_pages.version + 1,
   published_at = timezone('utc'::text, now()),
   updated_at = timezone('utc'::text, now());
+update public.admin_routes
+set page_code = 'approval-workflow-designer'
+where id in (select id from _approval_workflow_route_refs);
 commit;

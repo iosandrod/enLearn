@@ -64,8 +64,8 @@ export default defineComponent({
             destroyOnClose: true,
             padding: false,
             escClosable: false,
-            zIndex: 10000 + globalDrawerInstances.indexOf(instance),
             ...(config.props ?? {}),
+            zIndex: 11000 + globalDrawerInstances.indexOf(instance),
             'onUpdate:modelValue': (visible: boolean) => {
               if (!visible) void closeGlobalDrawer(instance.id, 'close');
               else instance.visible = true;

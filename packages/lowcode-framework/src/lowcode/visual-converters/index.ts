@@ -667,6 +667,22 @@ function convertRuntimeBlockToVisual(
     });
   }
 
+  if (block.kind === 'approval-workflow-designer') {
+    return createVisualBlock({
+      block,
+      componentKey: 'approval-workflow-designer',
+      moduleName: 'businessComponents',
+      label: '审批流模型图',
+      path,
+      props: {
+        blockId: block.id,
+        sourceKey: readString(block.sourceKey, 'workflowModel'),
+        ...(isPlainRecord(block.model) ? { model: cloneJson(block.model) } : {}),
+        readonly: block.readonly === true,
+      },
+    });
+  }
+
   if (block.kind === 'grid') {
     const schema: Record<string, unknown> = isPlainRecord(block.schema) ? block.schema : {};
     const grid: Record<string, unknown> = isPlainRecord(schema.grid) ? schema.grid : {};

@@ -42,6 +42,7 @@ import * as MonacoModule from '../../visual-editor/components/common/monaco-edit
 import GanttDisplaySettings from '../block-materials/planning-gantt/GanttDisplaySettings.vue';
 import * as GanttSettings from '../block-materials/planning-gantt/display-settings';
 import * as ComponentBridge from './component-bridge';
+import * as MaterialControllerRegistry from '../../runtime/material-controller-registry';
 import type { LowCodeMaterialModule, LowCodeMaterialModuleResolver } from './types';
 
 type LowCodeMaterialModuleLoader = () => LowCodeMaterialModule;
@@ -100,6 +101,7 @@ const moduleLoaders: Record<string, LowCodeMaterialModuleLoader> = {
   // so cold-start SFC compilation remains compatible after source files are
   // retired from the workspace.
   '/lowcode/material-runtime/component-bridge': module(() => ComponentBridge),
+  '/runtime/material-controller-registry': module(() => MaterialControllerRegistry),
   '/visual-editor/components/button-group-designer/button-group-designer.service': module(() => ButtonGroupDesigner),
   '/visual-editor/components/button-group-designer/button-script-monaco': module(() => ButtonScriptMonaco),
   '/visual-editor/components/common/monaco-editor/monaco': module(() => MonacoModule),
