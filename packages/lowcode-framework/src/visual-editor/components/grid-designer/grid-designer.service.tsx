@@ -2362,14 +2362,19 @@ const ServiceComponent = defineComponent({
 
     const createGridDesignerFormModels = () => {
       const advancedModels = state.advancedModels as Record<string, Record<string, unknown>>;
+      const businessInfoModel = createSchemaModel(
+        resolveGridDesignerFormSchema(gridDesignerFormCodes.businessInfo),
+        state.business as unknown as Record<string, unknown>,
+      );
+      // The database-owned business schema edits postDataJson through a
+      // structured sub-form. Keep the persisted representation as JSON text,
+      // but expose the parsed object to the nested form material.
+      businessInfoModel.postDataJson = readPostDataObject(state.business.postDataJson);
       const formModel = {
         [gridDesignerFormCodes.columns]: {
           columns: state.columns as unknown as Record<string, unknown>[],
         },
-        [gridDesignerFormCodes.businessInfo]: createSchemaModel(
-          resolveGridDesignerFormSchema(gridDesignerFormCodes.businessInfo),
-          state.business as unknown as Record<string, unknown>,
-        ),
+        [gridDesignerFormCodes.businessInfo]: businessInfoModel,
         [gridDesignerFormCodes.detailConfig]: createSchemaModel(
           resolveGridDesignerFormSchema(gridDesignerFormCodes.detailConfig),
           state.detailConfig as unknown as Record<string, unknown>,

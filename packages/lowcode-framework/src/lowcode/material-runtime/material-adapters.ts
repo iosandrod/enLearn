@@ -48,6 +48,12 @@ const containerDesigner = () => import('../../packages/container-component/vxe-t
   .then((module) => module.default);
 
 export const lowCodeBlockMaterialAdapters: Record<string, BlockAdapter> = {
+  'label-designer': {
+    type: 'label-designer',
+    label: '标签设计器',
+    materialVersion: '1.0.0',
+    order: 4,
+  },
   'trigger-workflow-designer': {
     type: 'trigger-workflow-designer',
     label: '触发器编排画布',
