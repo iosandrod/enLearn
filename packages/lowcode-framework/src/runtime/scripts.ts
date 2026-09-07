@@ -10,6 +10,7 @@ export const DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES = 256 * 1024*100;
 export type LowCodeScriptCapabilityName =
   | 'action.execute'
   | 'api.invoke'
+  | 'dialog.confirmLowCodePage'
   | 'dialog.open'
   | 'event.emit'
   | 'form.patch'

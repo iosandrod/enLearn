@@ -1,0 +1,1611 @@
+{
+    "pages": {
+        "/": {
+            "path": "/",
+            "title": "工艺路线设计",
+            "blocks": [
+                {
+                    "_vid": "vid_703f71db3c",
+                    "focus": true,
+                    "hooks": [],
+                    "label": "布局容器",
+                    "model": {},
+                    "props": {
+                        "open": false,
+                        "panel": false,
+                        "slots": {
+                            "slot0": {
+                                "key": "slot0",
+                                "span": 5,
+                                "children": [
+                                    {
+                                        "_vid": "vid_b4e102b421",
+                                        "focus": false,
+                                        "hooks": [],
+                                        "label": "数据表格",
+                                        "model": {},
+                                        "props": {
+                                            "data": [
+                                                {
+                                                    "id": "row_1142",
+                                                    "role": "学生",
+                                                    "email": "alice@example.com",
+                                                    "full_name": "Alice"
+                                                },
+                                                {
+                                                    "id": "row_1143",
+                                                    "role": "老师",
+                                                    "email": "bob@example.com",
+                                                    "full_name": "Bob"
+                                                }
+                                            ],
+                                            "size": "",
+                                            "round": false,
+                                            "title": "物料列表",
+                                            "border": true,
+                                            "height": "360px",
+                                            "stripe": true,
+                                            "blockId": "records-grid",
+                                            "columns": [
+                                                {
+                                                    "field": "id",
+                                                    "fixed": "left",
+                                                    "title": "编号",
+                                                    "width": 230,
+                                                    "visible": true,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "name",
+                                                    "title": "物料编码",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "display_name",
+                                                    "title": "物料名称",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "account_id",
+                                                    "title": "account_id",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "owner_id",
+                                                    "title": "owner_id",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "lft",
+                                                    "title": "lft",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "rght",
+                                                    "title": "rght",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "lvl",
+                                                    "title": "lvl",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "description",
+                                                    "title": "description",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "category",
+                                                    "title": "category",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "subcategory",
+                                                    "title": "subcategory",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "cost",
+                                                    "title": "cost",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "type",
+                                                    "title": "type",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "weight",
+                                                    "title": "weight",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "volume",
+                                                    "title": "volume",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "periodofcover",
+                                                    "title": "periodofcover",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "uom",
+                                                    "title": "uom",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "latedemandcount",
+                                                    "title": "latedemandcount",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "latedemandquantity",
+                                                    "title": "latedemandquantity",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "latedemandvalue",
+                                                    "title": "latedemandvalue",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "unplanneddemandcount",
+                                                    "title": "unplanneddemandcount",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "unplanneddemandquantity",
+                                                    "title": "unplanneddemandquantity",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "unplanneddemandvalue",
+                                                    "title": "unplanneddemandvalue",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "demand_pattern",
+                                                    "title": "demand_pattern",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "adi",
+                                                    "title": "adi",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "cv2",
+                                                    "title": "cv2",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "outlier_1b",
+                                                    "title": "outlier_1b",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "outlier_6b",
+                                                    "title": "outlier_6b",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "outlier_12b",
+                                                    "title": "outlier_12b",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "source",
+                                                    "title": "source",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "lastmodified",
+                                                    "title": "lastmodified",
+                                                    "visible": true,
+                                                    "minWidth": 180,
+                                                    "sortable": false,
+                                                    "formatter": {
+                                                        "type": "datetime",
+                                                        "emptyText": "-"
+                                                    },
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "created_by",
+                                                    "title": "created_by",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "updated_by",
+                                                    "title": "updated_by",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "created_at",
+                                                    "title": "created_at",
+                                                    "visible": true,
+                                                    "minWidth": 180,
+                                                    "sortable": false,
+                                                    "formatter": {
+                                                        "type": "datetime",
+                                                        "emptyText": "-"
+                                                    },
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "updated_at",
+                                                    "title": "updated_at",
+                                                    "visible": true,
+                                                    "minWidth": 180,
+                                                    "sortable": false,
+                                                    "formatter": {
+                                                        "type": "datetime",
+                                                        "emptyText": "-"
+                                                    },
+                                                    "resizable": true
+                                                },
+                                                {
+                                                    "field": "category_id",
+                                                    "title": "category_id",
+                                                    "visible": true,
+                                                    "minWidth": 150,
+                                                    "sortable": false,
+                                                    "resizable": true
+                                                }
+                                            ],
+                                            "viewName": "",
+                                            "rowConfig": {
+                                                "drag": false,
+                                                "useKey": true,
+                                                "isHover": true,
+                                                "keyField": "id",
+                                                "isCurrent": false,
+                                                "resizable": false
+                                            },
+                                            "sourceKey": "records",
+                                            "tableName": "public.planning_item",
+                                            "tableType": "default",
+                                            "autoResize": true,
+                                            "gridEvents": [
+                                                {
+                                                    "key": "rowCurrentChange",
+                                                    "label": "当前行变化",
+                                                    "enabled": false,
+                                                    "vxeName": "currentRowChange",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "current-row-change",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "cellClick",
+                                                    "label": "单元格点击",
+                                                    "enabled": false,
+                                                    "vxeName": "cellClick",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "cell-click",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "cellDblclick",
+                                                    "label": "单元格双击",
+                                                    "enabled": false,
+                                                    "vxeName": "cellDblclick",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "cell-dblclick",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "rowDblclick",
+                                                    "label": "行双击",
+                                                    "enabled": false,
+                                                    "vxeName": "rowDblclick",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "row-dblclick",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "radioChange",
+                                                    "label": "单选变化",
+                                                    "enabled": false,
+                                                    "vxeName": "radioChange",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "radio-change",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "checkboxChange",
+                                                    "label": "复选变化",
+                                                    "enabled": false,
+                                                    "vxeName": "checkboxChange",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "checkbox-change",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "checkboxAll",
+                                                    "label": "全选变化",
+                                                    "enabled": false,
+                                                    "vxeName": "checkboxAll",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "checkbox-all",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "sortChange",
+                                                    "label": "排序变化",
+                                                    "enabled": false,
+                                                    "vxeName": "sortChange",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "sort-change",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "filterChange",
+                                                    "label": "筛选变化",
+                                                    "enabled": false,
+                                                    "vxeName": "filterChange",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "filter-change",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "pageChange",
+                                                    "label": "分页变化",
+                                                    "enabled": false,
+                                                    "vxeName": "pageChange",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "page-change",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "toolbarButtonClick",
+                                                    "label": "工具栏按钮",
+                                                    "enabled": false,
+                                                    "vxeName": "toolbarButtonClick",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "toolbar-button-click",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "toolbarToolClick",
+                                                    "label": "工具栏工具",
+                                                    "enabled": false,
+                                                    "vxeName": "toolbarToolClick",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "toolbar-tool-click",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "proxyQuery",
+                                                    "label": "代理查询",
+                                                    "enabled": false,
+                                                    "vxeName": "proxyQuery",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "proxy-query",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "proxyDelete",
+                                                    "label": "代理删除",
+                                                    "enabled": false,
+                                                    "vxeName": "proxyDelete",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "proxy-delete",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "proxySave",
+                                                    "label": "代理保存",
+                                                    "enabled": false,
+                                                    "vxeName": "proxySave",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "proxy-save",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "formSubmit",
+                                                    "label": "内置表单提交",
+                                                    "enabled": false,
+                                                    "vxeName": "formSubmit",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "form-submit",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "formReset",
+                                                    "label": "内置表单重置",
+                                                    "enabled": false,
+                                                    "vxeName": "formReset",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "form-reset",
+                                                    "directivesJson": "[]"
+                                                },
+                                                {
+                                                    "key": "zoom",
+                                                    "label": "最大化切换",
+                                                    "enabled": false,
+                                                    "vxeName": "zoom",
+                                                    "eventName": "",
+                                                    "directives": [],
+                                                    "nativeName": "zoom",
+                                                    "directivesJson": "[]"
+                                                }
+                                            ],
+                                            "keepSource": false,
+                                            "rowActions": [],
+                                            "saveMethod": "",
+                                            "showFooter": false,
+                                            "showHeader": true,
+                                            "sourceType": "table",
+                                            "pagerConfig": {
+                                                "enabled": false
+                                            },
+                                            "proxyConfig": {
+                                                "enabled": false
+                                            },
+                                            "serviceName": "admin",
+                                            "columnConfig": {
+                                                "drag": false,
+                                                "useKey": true,
+                                                "isHover": false,
+                                                "isCurrent": false,
+                                                "resizable": true
+                                            },
+                                            "deleteMethod": "",
+                                            "detailConfig": {
+                                                "enabled": false,
+                                                "defaults": {},
+                                                "resource": "planning_item",
+                                                "parentKey": "id",
+                                                "foreignKey": "",
+                                                "updateMode": "changes",
+                                                "inheritFields": [],
+                                                "parentSourceKey": "",
+                                                "stripCreatedKey": true
+                                            },
+                                            "postDataJson": "{\n  \"tableName\": \"public.planning_item\"\n}",
+                                            "showOverflow": "tooltip",
+                                            "categoryField": "",
+                                            "serviceMethod": "listItems",
+                                            "toolbarConfig": {
+                                                "enabled": false
+                                            },
+                                            "showRowActions": false,
+                                            "gridDesignerUpdatedAt": 1788719035787
+                                        },
+                                        "events": [],
+                                        "styles": {
+                                            "height": "360px",
+                                            "display": "flex",
+                                            "minHeight": "320px",
+                                            "paddingTop": "0",
+                                            "paddingLeft": "0",
+                                            "tempPadding": "0",
+                                            "paddingRight": "0",
+                                            "paddingBottom": "0",
+                                            "justifyContent": "flex-start"
+                                        },
+                                        "actions": [],
+                                        "draggable": true,
+                                        "hasResize": false,
+                                        "animations": [],
+                                        "moduleName": "businessComponents",
+                                        "componentKey": "lowcode-grid",
+                                        "adjustPosition": true,
+                                        "focusWithChild": false,
+                                        "showStyleConfig": true
+                                    }
+                                ]
+                            },
+                            "slot1": {
+                                "key": "slot1",
+                                "span": 19,
+                                "children": [
+                                    {
+                                        "_vid": "vid_planning_route_designer_actions",
+                                        "focus": false,
+                                        "hooks": [],
+                                        "label": "按钮组",
+                                        "model": {},
+                                        "props": {
+                                            "gap": 8,
+                                            "align": "left",
+                                            "title": "",
+                                            "blockId": "planning_route_designer_actions",
+                                            "buttons": [
+                                                {
+                                                    "code": "planning-route-designer-new-route",
+                                                    "icon": "ri-add-line",
+                                                    "mode": "button",
+                                                    "type": "button",
+                                                    "label": "新建路线",
+                                                    "round": false,
+                                                    "route": "",
+                                                    "circle": false,
+                                                    "script": "return this.executeFunction({ name: \"newRoute\", args: {} });",
+                                                    "status": "primary",
+                                                    "children": [],
+                                                    "disabled": false,
+                                                    "eventName": "",
+                                                    "prefixIcon": "",
+                                                    "suffixIcon": "",
+                                                    "directivesJson": "[]",
+                                                    "showDropdownIcon": true
+                                                }
+                                            ],
+                                            "description": ""
+                                        },
+                                        "events": [],
+                                        "layout": {},
+                                        "styles": {
+                                            "display": "flex",
+                                            "paddingTop": "0",
+                                            "paddingLeft": "0",
+                                            "tempPadding": "0",
+                                            "paddingRight": "0",
+                                            "paddingBottom": "0",
+                                            "justifyContent": "flex-start"
+                                        },
+                                        "actions": [],
+                                        "draggable": true,
+                                        "hasResize": false,
+                                        "animations": [],
+                                        "moduleName": "businessComponents",
+                                        "componentKey": "lowcode-button-group",
+                                        "adjustPosition": true,
+                                        "focusWithChild": false,
+                                        "showStyleConfig": true
+                                    },
+                                    {
+                                        "_vid": "vid_planning_route_designer_filter",
+                                        "focus": false,
+                                        "hooks": [],
+                                        "label": "查询表单",
+                                        "model": {},
+                                        "props": {
+                                            "title": "工艺路线查询",
+                                            "fields": [
+                                                {
+                                                    "span": 1,
+                                                    "field": "operationId",
+                                                    "label": "工艺路线",
+                                                    "required": false,
+                                                    "component": "vxe-select",
+                                                    "propsJson": "{\"border\":true,\"clearable\":true,\"filterable\":true,\"placeholder\":\"请选择工艺路线\",\"error-message-align\":\"left\"}",
+                                                    "optionLabel": "label",
+                                                    "optionValue": "value",
+                                                    "optionsCode": "planning_route",
+                                                    "placeholder": "请选择工艺路线",
+                                                    "updateScript": "const flow = await this.executeAction({\r\n  node: \"planning_route_designer_flow\",\r\n  method: \"loadData\",\r\n});",
+                                                    "optionsSourceKey": "routeOptions"
+                                                }
+                                            ],
+                                            "schema": {
+                                                "fields": [
+                                                    {
+                                                        "span": 1,
+                                                        "field": "operationId",
+                                                        "label": "工艺路线",
+                                                        "props": {
+                                                            "border": true,
+                                                            "clearable": true,
+                                                            "filterable": true,
+                                                            "placeholder": "请选择工艺路线",
+                                                            "error-message-align": "left"
+                                                        },
+                                                        "events": {
+                                                            "change": [
+                                                                {
+                                                                    "type": "refreshDataSources",
+                                                                    "sourceKeys": [
+                                                                        "flow"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        "component": "vxe-select",
+                                                        "optionProps": {
+                                                            "label": "label",
+                                                            "value": "value"
+                                                        },
+                                                        "optionsCode": "planning_route",
+                                                        "updateScript": "const flow = await this.executeAction({\r\n  node: \"planning_route_designer_flow\",\r\n  method: \"loadData\",\r\n});",
+                                                        "optionsSourceKey": "routeOptions"
+                                                    }
+                                                ],
+                                                "layout": [
+                                                    {
+                                                        "kind": "field",
+                                                        "field": "operationId"
+                                                    }
+                                                ],
+                                                "actions": [
+                                                    {
+                                                        "code": "submit",
+                                                        "icon": "ri-search-line",
+                                                        "type": "submit",
+                                                        "label": "查询",
+                                                        "status": "primary"
+                                                    },
+                                                    {
+                                                        "code": "reset",
+                                                        "icon": "ri-refresh-line",
+                                                        "type": "reset",
+                                                        "label": "重置"
+                                                    }
+                                                ],
+                                                "columns": 1
+                                            },
+                                            "blockId": "planning_route_designer_filter",
+                                            "formType": "search",
+                                            "resetText": "重置",
+                                            "sourceKey": "flow",
+                                            "tableName": "",
+                                            "entityCode": "",
+                                            "saveMethod": "",
+                                            "submitText": "查询",
+                                            "serviceName": "planning",
+                                            "postDataJson": "{\"dataset\":\"flow\",\"filters\":{\"operationId\":\"{{ forms.planning_route_designer_filter.operationId }}\"},\"requiredFilters\":[\"operationId\"]}",
+                                            "serviceMethod": "getPlanningConsoleData",
+                                            "formDesignerModel": {
+                                                "pages": {
+                                                    "/": {
+                                                        "path": "/",
+                                                        "title": "工艺路线查询设计",
+                                                        "blocks": [
+                                                            {
+                                                                "_vid": "vid_14a739b206",
+                                                                "focus": true,
+                                                                "hooks": [],
+                                                                "label": "下拉选择",
+                                                                "model": {},
+                                                                "props": {
+                                                                    "name": "operationId",
+                                                                    "label": "工艺路线",
+                                                                    "border": true,
+                                                                    "columns": [],
+                                                                    "onChange": "const flow = await this.executeAction({\r\n  node: \"planning_route_designer_flow\",\r\n  method: \"loadData\",\r\n});",
+                                                                    "required": false,
+                                                                    "__formHelp": "",
+                                                                    "__formSpan": 1,
+                                                                    "placeholder": "请选择工艺路线",
+                                                                    "error-message-align": "left",
+                                                                    "__lowcodeOptionsCode": "planning_route"
+                                                                },
+                                                                "events": [
+                                                                    {
+                                                                        "label": "值变化",
+                                                                        "value": "update:model-value"
+                                                                    }
+                                                                ],
+                                                                "styles": {
+                                                                    "width": "100%",
+                                                                    "display": "flex",
+                                                                    "paddingTop": "0",
+                                                                    "paddingLeft": "0",
+                                                                    "tempPadding": "0",
+                                                                    "paddingRight": "0",
+                                                                    "paddingBottom": "0",
+                                                                    "justifyContent": "flex-start"
+                                                                },
+                                                                "actions": [],
+                                                                "draggable": true,
+                                                                "hasResize": false,
+                                                                "animations": [],
+                                                                "moduleName": "formComponents",
+                                                                "componentKey": "picker",
+                                                                "adjustPosition": true,
+                                                                "focusWithChild": false,
+                                                                "showStyleConfig": true
+                                                            }
+                                                        ],
+                                                        "config": {
+                                                            "bgColor": "",
+                                                            "bgImage": "",
+                                                            "keepAlive": false
+                                                        },
+                                                        "overlays": []
+                                                    }
+                                                },
+                                                "models": [],
+                                                "actions": {
+                                                    "fetch": {
+                                                        "apis": [],
+                                                        "name": "接口请求"
+                                                    },
+                                                    "dialog": {
+                                                        "name": "对话框",
+                                                        "handlers": []
+                                                    }
+                                                }
+                                            },
+                                            "initialValuesJson": "{\"operationId\":\"\"}",
+                                            "formDesignerUpdatedAt": 1788611279269
+                                        },
+                                        "events": [],
+                                        "layout": {},
+                                        "styles": {
+                                            "display": "flex",
+                                            "paddingTop": "0",
+                                            "paddingLeft": "0",
+                                            "tempPadding": "0",
+                                            "paddingRight": "0",
+                                            "paddingBottom": "0",
+                                            "justifyContent": "flex-start"
+                                        },
+                                        "actions": [],
+                                        "draggable": true,
+                                        "hasResize": false,
+                                        "animations": [],
+                                        "moduleName": "businessComponents",
+                                        "componentKey": "lowcode-search-form",
+                                        "adjustPosition": true,
+                                        "focusWithChild": false,
+                                        "showStyleConfig": true
+                                    },
+                                    {
+                                        "_vid": "vid_planning_route_designer_flow",
+                                        "focus": false,
+                                        "hooks": [],
+                                        "label": "工艺路线图",
+                                        "model": {},
+                                        "props": {
+                                            "title": "工艺路线",
+                                            "height": "300",
+                                            "blockId": "planning_route_designer_flow",
+                                            "sourceKey": "flow",
+                                            "description": "选择工序后，关联信息将在下方子表中更新。",
+                                            "serviceName": "planning",
+                                            "postDataJson": "{\"dataset\":\"flow\",\"filters\":{\"operationId\":\"{{ forms.planning_route_designer_filter.operationId }}\"},\"requiredFilters\":[\"operationId\"]}",
+                                            "fitViewOnInit": true,
+                                            "serviceMethod": "getPlanningConsoleData"
+                                        },
+                                        "events": [],
+                                        "layout": {},
+                                        "styles": {
+                                            "display": "flex",
+                                            "paddingTop": "0",
+                                            "paddingLeft": "0",
+                                            "tempPadding": "0",
+                                            "paddingRight": "0",
+                                            "paddingBottom": "0",
+                                            "justifyContent": "flex-start"
+                                        },
+                                        "actions": [],
+                                        "draggable": true,
+                                        "hasResize": false,
+                                        "animations": [],
+                                        "moduleName": "businessComponents",
+                                        "componentKey": "planning-flow",
+                                        "adjustPosition": true,
+                                        "focusWithChild": false,
+                                        "showStyleConfig": true
+                                    },
+                                    {
+                                        "_vid": "vid_planning_route_designer_detail_tabs",
+                                        "focus": false,
+                                        "hooks": [],
+                                        "label": "VXE页签容器",
+                                        "model": {},
+                                        "props": {
+                                            "type": "default",
+                                            "panes": [
+                                                {
+                                                    "name": "materials",
+                                                    "title": "关联物料"
+                                                },
+                                                {
+                                                    "name": "resources",
+                                                    "title": "关联资源"
+                                                },
+                                                {
+                                                    "name": "dependencies",
+                                                    "title": "工序依赖"
+                                                },
+                                                {
+                                                    "name": "suboperations",
+                                                    "title": "路线工序"
+                                                }
+                                            ],
+                                            "slots": {
+                                                "tab_materials": {
+                                                    "key": "tab_materials",
+                                                    "label": "关联物料",
+                                                    "children": [
+                                                        {
+                                                            "_vid": "vid_planning_routing_materials_grid",
+                                                            "focus": false,
+                                                            "hooks": [],
+                                                            "label": "数据表格",
+                                                            "model": {},
+                                                            "props": {
+                                                                "title": "关联物料",
+                                                                "border": true,
+                                                                "height": 270,
+                                                                "stripe": true,
+                                                                "blockId": "planning_routing_materials_grid",
+                                                                "columns": [
+                                                                    {
+                                                                        "type": "seq",
+                                                                        "align": "center",
+                                                                        "title": "序号",
+                                                                        "width": 64
+                                                                    },
+                                                                    {
+                                                                        "field": "item_id_label",
+                                                                        "fixed": "left",
+                                                                        "title": "物料",
+                                                                        "minWidth": 220,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "location_id_label",
+                                                                        "title": "地点",
+                                                                        "minWidth": 160,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "name",
+                                                                        "title": "名称",
+                                                                        "minWidth": 160,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "center",
+                                                                        "field": "type",
+                                                                        "title": "流动时点",
+                                                                        "width": 112,
+                                                                        "formatter": {
+                                                                            "map": {
+                                                                                "end": "结束",
+                                                                                "start": "开始",
+                                                                                "transfer_batch": "分批转移"
+                                                                            },
+                                                                            "type": "enum",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "quantity",
+                                                                        "title": "变动用量",
+                                                                        "width": 110,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "quantity_fixed",
+                                                                        "title": "固定用量",
+                                                                        "width": 110,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "transferbatch",
+                                                                        "title": "转移批量",
+                                                                        "width": 110,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "priority",
+                                                                        "title": "优先级",
+                                                                        "width": 90,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "effective_start",
+                                                                        "title": "生效开始",
+                                                                        "width": 180,
+                                                                        "formatter": {
+                                                                            "type": "datetime",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "effective_end",
+                                                                        "title": "生效结束",
+                                                                        "width": 180,
+                                                                        "formatter": {
+                                                                            "type": "datetime",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "viewName": "",
+                                                                "rowConfig": {
+                                                                    "keyField": "id",
+                                                                    "isCurrent": true
+                                                                },
+                                                                "sourceKey": "routingMaterials",
+                                                                "tableName": "",
+                                                                "tableType": "detail",
+                                                                "entityCode": "",
+                                                                "gridEvents": [],
+                                                                "rowActions": [],
+                                                                "saveMethod": "",
+                                                                "sourceType": "custom",
+                                                                "serviceName": "planning",
+                                                                "columnConfig": {
+                                                                    "resizable": true
+                                                                },
+                                                                "deleteMethod": "",
+                                                                "detailConfig": {},
+                                                                "postDataJson": "{\"limit\":1000,\"filters\":{\"operation_id\":\"__none__\"},\"resource\":\"planning_operationmaterial\",\"tableName\":\"planning_operationmaterial\",\"requiredFilters\":[\"operation_id\"]}",
+                                                                "showOverflow": "tooltip",
+                                                                "categoryField": "",
+                                                                "serviceMethod": "listItems",
+                                                                "showRowActions": false
+                                                            },
+                                                            "events": [],
+                                                            "layout": {},
+                                                            "styles": {
+                                                                "display": "flex",
+                                                                "paddingTop": "0",
+                                                                "paddingLeft": "0",
+                                                                "tempPadding": "0",
+                                                                "paddingRight": "0",
+                                                                "paddingBottom": "0",
+                                                                "justifyContent": "flex-start"
+                                                            },
+                                                            "actions": [],
+                                                            "draggable": true,
+                                                            "hasResize": false,
+                                                            "animations": [],
+                                                            "moduleName": "businessComponents",
+                                                            "componentKey": "lowcode-grid",
+                                                            "adjustPosition": true,
+                                                            "focusWithChild": false,
+                                                            "showStyleConfig": true
+                                                        }
+                                                    ]
+                                                },
+                                                "tab_resources": {
+                                                    "key": "tab_resources",
+                                                    "label": "关联资源",
+                                                    "children": [
+                                                        {
+                                                            "_vid": "vid_planning_routing_resources_grid",
+                                                            "focus": false,
+                                                            "hooks": [],
+                                                            "label": "数据表格",
+                                                            "model": {},
+                                                            "props": {
+                                                                "title": "关联资源",
+                                                                "border": true,
+                                                                "height": 270,
+                                                                "stripe": true,
+                                                                "blockId": "planning_routing_resources_grid",
+                                                                "columns": [
+                                                                    {
+                                                                        "type": "seq",
+                                                                        "align": "center",
+                                                                        "title": "序号",
+                                                                        "width": 64
+                                                                    },
+                                                                    {
+                                                                        "field": "resource_id_label",
+                                                                        "fixed": "left",
+                                                                        "title": "资源",
+                                                                        "minWidth": 220,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "skill_id_label",
+                                                                        "title": "技能",
+                                                                        "minWidth": 180,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "name",
+                                                                        "title": "名称",
+                                                                        "minWidth": 160,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "quantity",
+                                                                        "title": "变动用量",
+                                                                        "width": 110,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "quantity_fixed",
+                                                                        "title": "固定用量",
+                                                                        "width": 110,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "setup",
+                                                                        "title": "换型",
+                                                                        "minWidth": 130,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "priority",
+                                                                        "title": "优先级",
+                                                                        "width": 90,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "effective_start",
+                                                                        "title": "生效开始",
+                                                                        "width": 180,
+                                                                        "formatter": {
+                                                                            "type": "datetime",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "effective_end",
+                                                                        "title": "生效结束",
+                                                                        "width": 180,
+                                                                        "formatter": {
+                                                                            "type": "datetime",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "viewName": "",
+                                                                "rowConfig": {
+                                                                    "keyField": "id",
+                                                                    "isCurrent": true
+                                                                },
+                                                                "sourceKey": "routingResources",
+                                                                "tableName": "",
+                                                                "tableType": "detail",
+                                                                "entityCode": "",
+                                                                "gridEvents": [],
+                                                                "rowActions": [],
+                                                                "saveMethod": "",
+                                                                "sourceType": "custom",
+                                                                "serviceName": "planning",
+                                                                "columnConfig": {
+                                                                    "resizable": true
+                                                                },
+                                                                "deleteMethod": "",
+                                                                "detailConfig": {},
+                                                                "postDataJson": "{\"limit\":1000,\"filters\":{\"operation_id\":\"__none__\"},\"resource\":\"planning_operationresource\",\"tableName\":\"planning_operationresource\",\"requiredFilters\":[\"operation_id\"]}",
+                                                                "showOverflow": "tooltip",
+                                                                "categoryField": "",
+                                                                "serviceMethod": "listItems",
+                                                                "showRowActions": false
+                                                            },
+                                                            "events": [],
+                                                            "layout": {},
+                                                            "styles": {
+                                                                "display": "flex",
+                                                                "paddingTop": "0",
+                                                                "paddingLeft": "0",
+                                                                "tempPadding": "0",
+                                                                "paddingRight": "0",
+                                                                "paddingBottom": "0",
+                                                                "justifyContent": "flex-start"
+                                                            },
+                                                            "actions": [],
+                                                            "draggable": true,
+                                                            "hasResize": false,
+                                                            "animations": [],
+                                                            "moduleName": "businessComponents",
+                                                            "componentKey": "lowcode-grid",
+                                                            "adjustPosition": true,
+                                                            "focusWithChild": false,
+                                                            "showStyleConfig": true
+                                                        }
+                                                    ]
+                                                },
+                                                "tab_dependencies": {
+                                                    "key": "tab_dependencies",
+                                                    "label": "工序依赖",
+                                                    "children": [
+                                                        {
+                                                            "_vid": "vid_planning_routing_dependencies_grid",
+                                                            "focus": false,
+                                                            "hooks": [],
+                                                            "label": "数据表格",
+                                                            "model": {},
+                                                            "props": {
+                                                                "title": "工序依赖",
+                                                                "border": true,
+                                                                "height": 270,
+                                                                "stripe": true,
+                                                                "blockId": "planning_routing_dependencies_grid",
+                                                                "columns": [
+                                                                    {
+                                                                        "type": "seq",
+                                                                        "align": "center",
+                                                                        "title": "序号",
+                                                                        "width": 64
+                                                                    },
+                                                                    {
+                                                                        "field": "blockedby_id_label",
+                                                                        "fixed": "left",
+                                                                        "title": "前置工序",
+                                                                        "minWidth": 240,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "operation_id_label",
+                                                                        "title": "当前工序",
+                                                                        "minWidth": 220,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "quantity",
+                                                                        "title": "数量比例",
+                                                                        "width": 110,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "safety_leadtime",
+                                                                        "title": "安全提前期",
+                                                                        "width": 140,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "hard_safety_leadtime",
+                                                                        "title": "硬安全提前期",
+                                                                        "width": 150,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "viewName": "",
+                                                                "rowConfig": {
+                                                                    "keyField": "id",
+                                                                    "isCurrent": true
+                                                                },
+                                                                "sourceKey": "routingDependencies",
+                                                                "tableName": "",
+                                                                "tableType": "detail",
+                                                                "entityCode": "",
+                                                                "gridEvents": [],
+                                                                "rowActions": [],
+                                                                "saveMethod": "",
+                                                                "sourceType": "custom",
+                                                                "serviceName": "planning",
+                                                                "columnConfig": {
+                                                                    "resizable": true
+                                                                },
+                                                                "deleteMethod": "",
+                                                                "detailConfig": {},
+                                                                "postDataJson": "{\"limit\":1000,\"filters\":{\"operation_id\":\"__none__\"},\"resource\":\"planning_operation_dependency\",\"tableName\":\"planning_operation_dependency\",\"requiredFilters\":[\"operation_id\"]}",
+                                                                "showOverflow": "tooltip",
+                                                                "categoryField": "",
+                                                                "serviceMethod": "listItems",
+                                                                "showRowActions": false
+                                                            },
+                                                            "events": [],
+                                                            "layout": {},
+                                                            "styles": {
+                                                                "display": "flex",
+                                                                "paddingTop": "0",
+                                                                "paddingLeft": "0",
+                                                                "tempPadding": "0",
+                                                                "paddingRight": "0",
+                                                                "paddingBottom": "0",
+                                                                "justifyContent": "flex-start"
+                                                            },
+                                                            "actions": [],
+                                                            "draggable": true,
+                                                            "hasResize": false,
+                                                            "animations": [],
+                                                            "moduleName": "businessComponents",
+                                                            "componentKey": "lowcode-grid",
+                                                            "adjustPosition": true,
+                                                            "focusWithChild": false,
+                                                            "showStyleConfig": true
+                                                        }
+                                                    ]
+                                                },
+                                                "tab_suboperations": {
+                                                    "key": "tab_suboperations",
+                                                    "label": "路线工序",
+                                                    "children": [
+                                                        {
+                                                            "_vid": "vid_planning_routing_suboperations_grid",
+                                                            "focus": false,
+                                                            "hooks": [],
+                                                            "label": "数据表格",
+                                                            "model": {},
+                                                            "props": {
+                                                                "data": [
+                                                                    {
+                                                                        "id": "row_149",
+                                                                        "role": "学生",
+                                                                        "email": "alice@example.com",
+                                                                        "full_name": "Alice"
+                                                                    },
+                                                                    {
+                                                                        "id": "row_150",
+                                                                        "role": "老师",
+                                                                        "email": "bob@example.com",
+                                                                        "full_name": "Bob"
+                                                                    }
+                                                                ],
+                                                                "size": "",
+                                                                "title": "路线工序",
+                                                                "border": true,
+                                                                "height": 270,
+                                                                "stripe": true,
+                                                                "blockId": "planning_routing_suboperations_grid",
+                                                                "columns": [
+                                                                    {
+                                                                        "type": "seq",
+                                                                        "align": "center",
+                                                                        "title": "序号",
+                                                                        "width": 64
+                                                                    },
+                                                                    {
+                                                                        "field": "suboperation_id_label",
+                                                                        "fixed": "left",
+                                                                        "title": "工序",
+                                                                        "minWidth": 220,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "operation_id_label",
+                                                                        "title": "所属路线",
+                                                                        "minWidth": 200,
+                                                                        "formatter": {
+                                                                            "type": "text",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "align": "right",
+                                                                        "field": "priority",
+                                                                        "title": "顺序/优先级",
+                                                                        "width": 120,
+                                                                        "formatter": {
+                                                                            "type": "number",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "0"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "effective_start",
+                                                                        "title": "生效开始",
+                                                                        "width": 180,
+                                                                        "formatter": {
+                                                                            "type": "datetime",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "field": "effective_end",
+                                                                        "title": "生效结束",
+                                                                        "width": 180,
+                                                                        "formatter": {
+                                                                            "type": "datetime",
+                                                                            "locale": "zh-CN",
+                                                                            "emptyText": "-"
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "viewName": "",
+                                                                "rowConfig": {
+                                                                    "keyField": "id",
+                                                                    "isCurrent": true
+                                                                },
+                                                                "sourceKey": "routingSuboperations",
+                                                                "tableName": "",
+                                                                "tableType": "detail",
+                                                                "entityCode": "",
+                                                                "gridEvents": [],
+                                                                "rowActions": [],
+                                                                "saveMethod": "",
+                                                                "sourceType": "custom",
+                                                                "serviceName": "planning",
+                                                                "columnConfig": {
+                                                                    "resizable": true
+                                                                },
+                                                                "deleteMethod": "",
+                                                                "detailConfig": {},
+                                                                "postDataJson": "{\"limit\":1000,\"filters\":{\"operation_id\":\"__none__\"},\"resource\":\"planning_suboperation\",\"tableName\":\"planning_suboperation\",\"requiredFilters\":[\"operation_id\"]}",
+                                                                "showOverflow": "tooltip",
+                                                                "categoryField": "",
+                                                                "serviceMethod": "listItems",
+                                                                "showRowActions": false
+                                                            },
+                                                            "events": [],
+                                                            "layout": {},
+                                                            "styles": {
+                                                                "display": "flex",
+                                                                "paddingTop": "0",
+                                                                "paddingLeft": "0",
+                                                                "tempPadding": "0",
+                                                                "paddingRight": "0",
+                                                                "paddingBottom": "0",
+                                                                "justifyContent": "flex-start"
+                                                            },
+                                                            "actions": [],
+                                                            "draggable": true,
+                                                            "hasResize": false,
+                                                            "animations": [],
+                                                            "moduleName": "businessComponents",
+                                                            "componentKey": "lowcode-grid",
+                                                            "adjustPosition": true,
+                                                            "focusWithChild": false,
+                                                            "showStyleConfig": true
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "title": "关联信息",
+                                            "width": "100%",
+                                            "height": "",
+                                            "blockId": "planning_route_designer_detail_tabs",
+                                            "padding": true,
+                                            "trigger": "click",
+                                            "position": "top",
+                                            "showBody": true,
+                                            "showClose": false,
+                                            "modelValue": "suboperations",
+                                            "titleAlign": "left",
+                                            "titleWidth": "",
+                                            "description": "",
+                                            "destroyOnClose": false
+                                        },
+                                        "events": [],
+                                        "layout": {},
+                                        "styles": {
+                                            "display": "flex",
+                                            "paddingTop": "0",
+                                            "paddingLeft": "0",
+                                            "tempPadding": "0",
+                                            "paddingRight": "0",
+                                            "paddingBottom": "0",
+                                            "justifyContent": "flex-start"
+                                        },
+                                        "actions": [],
+                                        "draggable": true,
+                                        "hasResize": false,
+                                        "animations": [],
+                                        "moduleName": "containerComponents",
+                                        "componentKey": "vxe-tabs",
+                                        "adjustPosition": true,
+                                        "focusWithChild": false,
+                                        "showStyleConfig": true
+                                    }
+                                ]
+                            },
+                            "value": "5:19"
+                        },
+                        "title": "",
+                        "width": "",
+                        "gutter": "",
+                        "blockId": "container-block",
+                        "placement": "right",
+                        "description": "",
+                        "runtimeKind": "container"
+                    },
+                    "events": [],
+                    "styles": {
+                        "display": "flex",
+                        "paddingTop": "0",
+                        "paddingLeft": "0",
+                        "tempPadding": "0",
+                        "paddingRight": "0",
+                        "paddingBottom": "0",
+                        "justifyContent": "flex-start"
+                    },
+                    "actions": [],
+                    "draggable": true,
+                    "hasResize": false,
+                    "animations": [],
+                    "moduleName": "containerComponents",
+                    "componentKey": "layout",
+                    "adjustPosition": true,
+                    "focusWithChild": false,
+                    "showStyleConfig": true
+                }
+            ],
+            "config": {
+                "bgColor": "",
+                "bgImage": "",
+                "keepAlive": true
+            },
+            "overlays": []
+        }
+    },
+    "models": [],
+    "actions": {
+        "fetch": {
+            "apis": [],
+            "name": "接口请求"
+        },
+        "dialog": {
+            "name": "对话框",
+            "handlers": []
+        }
+    }
+}

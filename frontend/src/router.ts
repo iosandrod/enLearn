@@ -28,9 +28,9 @@ const publicRoutes: RouteRecordRaw[] = [
 
 const dashboardRoutes: RouteRecordRaw[] = [
   { path: '/dashboard', component: () => import('../pages/dashboard/index.vue'), meta: dashboardRouteMeta },
-  { path: '/dashboard/trigger-workflow/designer', component: () => import('../pages/dashboard/trigger-workflow/designer.vue'), meta: dashboardCachedRouteMeta },
-  { path: '/dashboard/advanced/print-designer', component: () => import('../pages/dashboard/advanced/print-designer.vue'), meta: dashboardCachedRouteMeta },
-  { path: '/dashboard/print-designer', component: () => import('../pages/dashboard/advanced/print-designer.vue'), meta: dashboardCachedRouteMeta },
+  { path: '/dashboard/trigger-workflow/designer', component: () => import('../pages/dashboard/trigger-workflow/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },
+  { path: '/dashboard/advanced/print-designer', component: () => import('../pages/dashboard/print/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },
+  { path: '/dashboard/print-designer', component: () => import('../pages/dashboard/print/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/low-code/designer/:code?', component: () => import('../pages/dashboard/low-code/designer/[code].vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/workflow/designer/:code?', component: () => import('../pages/dashboard/workflow/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/workflow/tasks/:taskId', component: () => import('../pages/dashboard/workflow/tasks/[taskId].vue'), meta: dashboardRouteMeta },

@@ -147,6 +147,10 @@ const defaultCodeEditorProps = {
   },
 };
 
+// Global design dialogs and drawers occupy 10000-11000; transferred control
+// panels start at 12000. Keep this nested workbench between those layers.
+const FORM_DESIGNER_Z_INDEX = 11500;
+
 const optionComponents = new Set([
   'vxe-select',
   'vxe-tree-select',
@@ -1180,6 +1184,7 @@ const ServiceComponent = defineComponent({
         title={state.option.title || '表单设计'}
         width="min(1280px, calc(100vw - 40px))"
         top="4vh"
+        zIndex={FORM_DESIGNER_Z_INDEX}
         class="form-designer-dialog form-workbench-dialog"
         destroyOnClose={true}
         onClosed={() => {

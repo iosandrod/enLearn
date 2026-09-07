@@ -113,6 +113,7 @@
     "security:verify-account-sets": "tsx scripts/verify-account-set-security.ts",
     "db:apply-trigger-workflow-route": "tsx scripts/apply-trigger-workflow-route.ts",
     "db:apply-trigger-workflow-inspector-forms": "tsx scripts/apply-trigger-workflow-inspector-forms.ts",
+    "db:apply-trigger-workflow-lowcode": "tsx scripts/apply-trigger-workflow-lowcode.ts",
     "db:seed-trigger-workflow-task-examples": "tsx scripts/seed-trigger-workflow-task-examples.ts",
     "db:apply-print-template-edit-page": "tsx scripts/apply-print-template-edit-page.ts",
     "db:generate-lowcode-table-page": "tsx scripts/generate-lowcode-table-page.ts",

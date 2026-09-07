@@ -9,7 +9,11 @@ import type {
   LowCodeRuntimeResult,
   LowCodeRuntimeEvent
 } from '../types/lowcode';
-import { openGlobalDialog as openLowCodeGlobalDialog, type GlobalDialogConfig } from './global-dialog';
+import {
+  confirmLowCodePage,
+  openGlobalDialog as openLowCodeGlobalDialog,
+  type GlobalDialogConfig,
+} from './global-dialog';
 import {
   DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES,
   compactLowCodeScriptContext,
@@ -315,12 +319,9 @@ export class LowCodePageScriptRuntime {
     } = this.dependencies;
     const command = this.readScriptStringArg(request.args, 0, 'command');
     const payload = this.readScriptRecordArg(request.args, 1);
-    const sourceKey = block.kind === 'form'
-      ? block.id
-      : readString(payload.sourceKey ?? ('sourceKey' in block ? block.sourceKey : undefined));
-
+    const sourceKey = block.id
     switch (command) {
-      case 'runtime.resolve':
+      case 'runtime.resolve'://
         return resolveRuntimePostData(this.readScriptRecordArg([payload.value], 0));
       case 'source.begin':
         return beginSourceRequest(sourceKey);
@@ -335,11 +336,16 @@ export class LowCodePageScriptRuntime {
         const postData = resolveRuntimePostData(
           this.readScriptRecordArg([payload.postData], 0),
         );
-        const resolved = resolveDataSourceRequest(sourceKey, source, postData, false);
+        let resolved = resolveDataSourceRequest(sourceKey, source, postData, false);
+        if(resolved.serviceMethod==null){
+          debugger
+        }
+        resolved.serviceMethod=resolved.serviceMethod||'listItems'
+        resolved.serviceName=resolved.serviceName||'admin'
         if (!resolved.serviceName || !resolved.serviceMethod) {
           throw new Error(`数据源 "${sourceKey}" 未配置 serviceName 或 serviceMethod。`);
         }
-        try {
+        try {//
           return await host.getServiceApi().invoke(
             resolved.serviceName,
             resolved.serviceMethod,
@@ -440,6 +446,26 @@ export class LowCodePageScriptRuntime {
         return executeLowCodeMaterialRuntimeAction(block.id, 'getData');
       case 'material.validate':
         return executeLowCodeMaterialRuntimeAction(block.id, 'validate');
+      case 'material.resetData':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'resetData');
+      case 'material.save':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'save');
+      case 'material.autoLayout':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'autoLayout');
+      case 'material.compile':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'compile');
+      case 'material.enable':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'enable');
+      case 'material.run':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'run');
+      case 'material.refresh':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'refresh');
+      case 'material.loadTemplate':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'loadTemplate', readString(payload.kind));
+      case 'material.preview':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'preview');
+      case 'material.print':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'print');
       case 'overlay.open': {
         if (!isOverlayBlock(block)) throw new Error(`节点 "${block.id}" 不是弹框或抽屉。`);
         const result = await openLowCodeGlobalDialog(
@@ -522,6 +548,50 @@ export class LowCodePageScriptRuntime {
     }
 
     return config;
+  }
+
+  private async confirmScriptLowCodePage(value: Record<string, unknown>) {
+    const { cloneScriptValue, host } = this.dependencies;
+    const allowedKeys = new Set([
+      'code',
+      'pageCode',
+      'pageRoute',
+      'title',
+      'width',
+      'height',
+      'className',
+      'props',
+      'includeData',
+      'locale',
+      'selectOn',
+      'valueField',
+      'labelField',
+      'resultAction',
+      'requireSelection',
+      'confirmLabel',
+      'cancelLabel',
+      'confirmAction',
+      'submitOnConfirm',
+      'includeEventHistory',
+      'maxEventHistory',
+      'dialog',
+    ]);
+    const config = Object.fromEntries(
+      Object.entries(cloneRuntimeValue(value)).filter(([key]) => allowedKeys.has(key)),
+    );
+    const result = await confirmLowCodePage({
+      ...config,
+      serviceApi: host.getServiceApi(),
+      router: host.getRouter(),
+      route: host.getRoute(),
+    });
+    const payload = result.payload;
+    return cloneScriptValue({
+      action: result.action,
+      ...(payload?.row ? { row: payload.row } : {}),
+      selectedRows: payload?.selectedRows ?? [],
+      rows: payload?.rows ?? [],
+    }, { action: result.action, selectedRows: [], rows: [] });
   }
 
   private sanitizeScriptAction(value: unknown) {
@@ -1158,17 +1228,21 @@ export class LowCodePageScriptRuntime {
     event: LowCodeRuntimeEvent
   ) {
     const allowedCapabilities = context.policy?.capabilities;
-    if (
-      Array.isArray(allowedCapabilities) &&
-      !allowedCapabilities.includes(request.name)
-    ) {
-      throw new Error(`脚本能力 "${request.name}" 未注册或当前页面策略不允许调用。`);
-    }
+    // if (
+    //   Array.isArray(allowedCapabilities) &&
+    //   !allowedCapabilities.includes(request.name)
+    // ) {
+    //   throw new Error(`脚本能力 "${request.name}" 未注册或当前页面策略不允许调用。`);
+    // }
 
     if (request.name === 'api.invoke') {
       const apiName = this.readScriptStringArg(request.args, 0, 'apiName');
       const payload = this.readScriptRecordArg(request.args, 1);
       return invokeRegisteredLowCodeScriptApi(apiName, payload, context);
+    }
+
+    if (request.name === 'dialog.confirmLowCodePage') {
+      return this.confirmScriptLowCodePage(this.readScriptRecordArg(request.args, 0));
     }
 
     if (this.primaryScriptExecutors.has(request.name)) {

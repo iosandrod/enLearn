@@ -116,6 +116,7 @@ const SCRIPT_ENTRIES: Array<[
   ['message.info', 'message.info', '交互', '提示消息', '显示普通提示消息', 'await this.$message.info("提示内容");'],
   ['message.warning', 'message.warning', '交互', '警告消息', '显示警告状态消息', 'await this.$message.warning("请检查输入");'],
   ['message.error', 'message.error', '交互', '错误消息', '显示错误状态消息', 'await this.$message.error("操作失败");'],
+  ['dialog.confirmLowCodePage', 'dialog.confirmLowCodePage', '交互', '选择低代码页面数据', '弹出低代码列表页并返回当前选中行', 'const result = await this.$dialog.confirmLowCodePage({ pageCode: "page-code", requireSelection: true });'],
   ['dialog.open', 'dialog.open', '交互', '打开弹框', '通过受控配置打开全局低代码弹框', 'const result = await this.$dialog.open({ title: "标题", model: {} });'],
   ['event.emit', 'event.emit', '事件', '发送页面事件', '向当前页面事件总线发送序列化事件', 'await this.$events.emit("custom.event", { value });'],
 ];

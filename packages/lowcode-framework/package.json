@@ -78,6 +78,7 @@
     "@vue/compiler-sfc": "^3.5.40",
     "@svar-ui/vue-gantt": "workspace:*",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
+    "artplayer": "^5.4.0",
     "quickjs-emscripten-core": "0.32.0",
     "typescript": "^5.9.3"
   }

@@ -54,6 +54,32 @@ class TestAdminService extends AdminService {
   }
 }
 
+class TestUuidAdminService extends TestAdminService {
+  protected override async resolveGenericTableColumns() {
+    const columns = new Set(['id', 'name', 'owner_id', 'source_id', 'duration']) as Set<string> & {
+      typedColumns?: Set<string>;
+    };
+    columns.typedColumns = new Set(['id', 'owner_id', 'duration']);
+    return columns;
+  }
+}
+
+class TestAccountAdminService extends TestAdminService {
+  protected override async resolveGenericTableColumns() {
+    const columns = new Set(['id', 'name', 'account_id']) as Set<string> & {
+      typedColumns?: Set<string>;
+    };
+    columns.typedColumns = new Set(['id', 'account_id']);
+    return columns;
+  }
+}
+
+class TestTypeAdminService extends TestAdminService {
+  protected override async resolveGenericTableColumns() {
+    return new Set(['id', 'name', 'type']);
+  }
+}
+
 async function main() {
   const service = new TestAdminService();
   const result = await service.execute(
@@ -87,6 +113,58 @@ async function main() {
     code: 'form-definetion',
     title: '系统表单',
     page_type: 'list',
+  });
+
+  const uuidService = new TestUuidAdminService();
+  await uuidService.execute(
+    'saveItem',
+    {
+      tableName: 'planning_operation',
+      id: '',
+      name: 'test',
+      owner_id: '',
+      source_id: '',
+      duration: '',
+      nonexistent_field: 'must not reach Supabase',
+    },
+    {} as ServiceContext,
+  );
+  assert.deepEqual(uuidService.call.payload, {
+    name: 'test',
+    owner_id: null,
+    source_id: '',
+    duration: null,
+  });
+
+  const accountService = new TestAccountAdminService();
+  await accountService.execute(
+    'saveItem',
+    {
+      tableName: 'planning_operation',
+      id: '',
+      name: 'account-scoped',
+    },
+    { accountId: 'account-1' } as ServiceContext,
+  );
+  assert.deepEqual(accountService.call.payload, {
+    name: 'account-scoped',
+    account_id: 'account-1',
+  });
+
+  const typeService = new TestTypeAdminService();
+  await typeService.execute(
+    'saveItem',
+    {
+      tableName: 'planning_operation',
+      id: 'operation-1',
+      name: 'route',
+      type: 'routing',
+    },
+    {} as ServiceContext,
+  );
+  assert.deepEqual(typeService.call.payload, {
+    name: 'route',
+    type: 'routing',
   });
 
   console.log('Admin generic saveItem test passed.');

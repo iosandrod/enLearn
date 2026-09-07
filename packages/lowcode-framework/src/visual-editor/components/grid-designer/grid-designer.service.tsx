@@ -2247,7 +2247,14 @@ const ServiceComponent = defineComponent({
 
       columnsField.props = {
         ...fieldProps,
+        // The designer owns the available viewport height. Keep this nested
+        // array-table in fill mode so it follows dialog resizing instead of
+        // retaining the schema's default preview height.
+        height: '100%',
         toolbarButtons,
+        // The compact system row height can be identical to the input height.
+        // Reserve vertical breathing room so VXE cell overflow does not crop controls.
+        rowHeight: Math.max(Number(fieldProps.rowHeight) || 0, 36),
         rowActions: [
           {
             code: 'advanced-column-design',

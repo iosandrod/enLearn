@@ -2,6 +2,7 @@ import * as Vue from 'vue';
 import * as VxePcUi from 'vxe-pc-ui';
 import * as VueFlow from '@vue-flow/core';
 import * as SvarGantt from '@svar-ui/vue-gantt';
+import Artplayer from 'artplayer';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import '@svar-ui/vue-gantt/style.css';
@@ -57,6 +58,7 @@ const module = (read: () => LowCodeMaterialModule): LowCodeMaterialModuleLoader 
 const moduleLoaders: Record<string, LowCodeMaterialModuleLoader> = {
   vue: module(() => Vue),
   'vxe-pc-ui': module(() => VxePcUi),
+  artplayer: component(() => Artplayer),
   '@vue-flow/core': module(() => VueFlow),
   '@svar-ui/vue-gantt': module(() => SvarGantt),
   '@vue-flow/core/dist/style.css': () => ({}),

@@ -78,6 +78,10 @@ export type LowCodeGridRuntimeEvent = {
 };
 
 export type LowCodePageRuntimeResetOptions = {
+  /** Keep form models when reloading the same page (for example, a data refresh). */
+  preserveForms?: boolean;
+  /** Keep query filters when reloading the same page (for example, a data refresh). */
+  preserveSearches?: boolean;
   preserveGrids?: boolean;
   preserveLocalGridRows?: boolean;
 };
@@ -497,8 +501,8 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
 
   function resetData(options: LowCodePageRuntimeResetOptions = {}) {
     clearRecord(state.sources);
-    clearRecord(state.forms);
-    clearRecord(state.searches);
+    if (!options.preserveForms) clearRecord(state.forms);
+    if (!options.preserveSearches) clearRecord(state.searches);
     if (!options.preserveGrids) {
       clearRecord(state.grids);
       initializedGridIds.clear();

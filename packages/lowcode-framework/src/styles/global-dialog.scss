@@ -138,7 +138,8 @@
 // VXE transfer popups are mounted directly under <body>. When a global
 // dialog/drawer is open, keep those popups above the overlay so selects,
 // cascaders and date pickers remain visible and interactive.
-body.lc-global-dialog-open {
+body.lc-global-dialog-open,
+body:has(.form-designer-dialog) {
   .vxe-select--panel,
   .vxe-pulldown--panel,
   .vxe-tree-select--panel,
@@ -148,7 +149,7 @@ body.lc-global-dialog-open {
   .vxe-input--panel,
   .vxe-color-picker--panel,
   .vxe-table-select--panel,
-  .vxe-icon-picker--panel {
+  .vxe-ico-picker--panel {
     z-index: 12000 !important;
   }
 }

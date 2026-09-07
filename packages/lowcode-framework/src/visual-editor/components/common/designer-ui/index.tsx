@@ -442,7 +442,8 @@ export const ElDialog = defineComponent({
     appendToBody: Boolean,
     closeOnClickModal: Boolean,
     destroyOnClose: Boolean,
-    fullscreen: Boolean
+    fullscreen: Boolean,
+    zIndex: [String, Number]
   },
   emits: ['update:modelValue', 'close', 'closed'],
   setup(props, { attrs, slots, emit }) {
@@ -467,6 +468,7 @@ export const ElDialog = defineComponent({
           maskClosable: props.closeOnClickModal !== false,
           destroyOnClose: props.destroyOnClose,
           fullscreen: props.fullscreen,
+          zIndex: props.zIndex,
           transfer: props.appendToBody !== false,
           showFooter: Boolean(slots.footer),
           'onUpdate:modelValue': (value: boolean) => emit('update:modelValue', value),

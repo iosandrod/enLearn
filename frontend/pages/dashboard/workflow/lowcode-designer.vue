@@ -14,7 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
+import type { LowCodeHostRoute } from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord, LowCodeRuntimeEvent } from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../../../utils/lowCodePages';
 
@@ -24,12 +25,17 @@ const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
-const pageRoute = computed(() => ({
-  path: route.path,
-  fullPath: route.fullPath,
-  query: { ...route.query },
-  params: { ...route.params },
-}));
+const cachedRoutePath = route.path;
+const pageRoute = ref<LowCodeHostRoute>(createPageRoute());
+
+function createPageRoute(): LowCodeHostRoute {
+  return {
+    path: route.path,
+    fullPath: route.fullPath,
+    query: { ...route.query },
+    params: { ...route.params },
+  };
+}
 
 function forwardWorkflowEvent(event: LowCodeRuntimeEvent) {
   window.dispatchEvent(new CustomEvent(`lowcode:${event.name}`, { detail: event }));
@@ -51,7 +57,14 @@ async function loadPage() {
   }
 }
 
-watch(() => route.params.code, loadPage);
+// A kept-alive page still observes the global vue-router route while it is
+// deactivated. Keep a local snapshot so visiting another dashboard page does
+// not make this runtime execute loadData against that page's route and replace
+// an unsaved workflow model. A different :code path receives its own cache
+// entry and therefore loads the page schema from onMounted.
+watch(() => route.fullPath, () => {
+  if (route.path === cachedRoutePath) pageRoute.value = createPageRoute();
+});
 onMounted(loadPage);
 </script>
 

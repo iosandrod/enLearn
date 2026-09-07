@@ -98,6 +98,7 @@
     "test:trigger-workflow-inspector-schema": "node tests/trigger-workflow-inspector-schema-regression.mjs",
     "test:trigger-workflow-persistence": "node tests/trigger-workflow-persistence-regression.mjs",
     "test:trigger-workflow-job-adapters": "node tests/trigger-workflow-job-adapters-regression.mjs",
+    "test:trigger-workflow-lowcode-designer": "node tests/trigger-workflow-lowcode-designer-regression.mjs",
     "test:trigger-workflow-persistence-browser": "node tests/trigger-workflow-persistence-browser-launcher.mjs",
     "test:trigger-workflow-canvas-browser": "node tests/trigger-workflow-canvas-browser-launcher.mjs",
     "test:trigger-workflow-toast-browser": "node tests/trigger-workflow-toast-browser-launcher.mjs",

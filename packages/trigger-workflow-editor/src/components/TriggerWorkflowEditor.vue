@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { VxeUI } from 'vxe-pc-ui';
 import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form';
 import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
+import {
+  closeGlobalDialog,
+  openGlobalDialog
+} from '@enlearn/lowcode-framework/runtime/global-dialog';
 import {
   VueFlow,
   useVueFlow,
@@ -23,6 +27,7 @@ import {
   type TriggerFlowNode as TriggerCanvasNode
 } from '../flow-adapter';
 import { compileTriggerWorkflow } from '../compiler/trigger';
+import { buildTriggerWorkflowJob } from '../job-adapters';
 import { cloneTriggerWorkflow, normalizeTriggerWorkflow } from '../schema/normalize';
 import {
   getTriggerNodeDefinition,
@@ -60,6 +65,8 @@ const props = withDefaults(
     height?: string;
     busy?: boolean;
     canRun?: boolean;
+    /** Render only the flow canvas when hosted by a database-backed low-code page. */
+    minimal?: boolean;
     nodeFormSchemas?: TriggerNodeFormSchemaOverrides;
     edgeFormSchema?: TriggerInspectorFormSchema;
     inspectorSchemasLoading?: boolean;
@@ -69,6 +76,7 @@ const props = withDefaults(
     height: '760px',
     busy: false,
     canRun: false,
+    minimal: false,
     inspectorSchemasLoading: false
   }
 );
@@ -105,6 +113,7 @@ const flowNodes = ref<TriggerCanvasNode[]>(triggerWorkflowToFlowNodes(currentMod
 const flowEdges = ref<TriggerFlowEdge[]>(triggerWorkflowToFlowEdges(currentModel.value));
 const selectedNodeId = ref<string | null>(null);
 const selectedEdgeId = ref<string | null>(null);
+const inspectorDialogOpen = ref(false);
 const activeInspectorTab = ref<'config' | 'compiled'>('config');
 const syncing = ref(false);
 const undoStack = ref<TriggerWorkflowModel[]>([]);
@@ -115,6 +124,7 @@ let dragStartSnapshot: TriggerWorkflowModel | undefined;
 const pendingHistorySnapshot = ref<TriggerWorkflowModel>();
 let pendingHistoryTimer: ReturnType<typeof setTimeout> | undefined;
 let sequence = 0;
+let inspectorDialogId = `${flowId}-inspector`;
 
 const palette = computed(() => getTriggerNodeDefinitionsForKind(currentModel.value.kind));
 const selectedNode = computed(() => currentModel.value.nodes.find((node) => node.id === selectedNodeId.value));
@@ -271,6 +281,7 @@ function loadTemplate(kind: Exclude<TriggerWorkflowKind, 'custom'>) {
   selectedNodeId.value = null;
   selectedEdgeId.value = null;
   replaceModel(factory());
+  return currentModel.value;
 }
 
 function onNodeClick(event: NodeMouseEvent) {
@@ -278,6 +289,7 @@ function onNodeClick(event: NodeMouseEvent) {
   selectedNodeId.value = event.node.id;
   selectedEdgeId.value = null;
   activeInspectorTab.value = 'config';
+  if (props.minimal) void openSelectedInspectorDialog();
 }
 
 function onEdgeClick(event: EdgeMouseEvent) {
@@ -285,10 +297,12 @@ function onEdgeClick(event: EdgeMouseEvent) {
   selectedEdgeId.value = event.edge.id;
   selectedNodeId.value = null;
   activeInspectorTab.value = 'config';
+  if (props.minimal) void openSelectedInspectorDialog();
 }
 
 function onPaneClick() {
   closeNodeContextMenu();
+  if (props.minimal) closeInspectorDialog();
 }
 
 function onNodeDragStart(event: NodeMouseEvent) {
@@ -339,6 +353,15 @@ function onNodeContextMenu(event: NodeMouseEvent) {
           disabled: true
         }
       ],
+      ...(props.readonly
+        ? []
+        : [[...palette.value
+            .filter((item) => item.type !== 'start' && item.type !== 'end')
+            .map((item) => ({
+              code: `add:${item.type}`,
+              name: `添加后续 · ${item.label}`,
+              prefixIcon: item.icon
+            }))]]),
       [
         {
           code: 'inspect',
@@ -367,6 +390,10 @@ function onNodeContextMenu(event: NodeMouseEvent) {
     ],
     events: {
       optionClick({ option }) {
+        if (typeof option.code === 'string' && option.code.startsWith('add:')) {
+          closeNodeContextMenu();
+          addNodeAt(option.code.slice(4) as TriggerNodeType);
+        }
         if (option.code === 'inspect') inspectContextNode(node);
         if (option.code === 'duplicate') duplicateContextNode(node);
         if (option.code === 'copy-id') void copyContextNodeId(node);
@@ -483,6 +510,91 @@ function inspectContextNode(node: TriggerWorkflowNode) {
   selectedEdgeId.value = null;
   activeInspectorTab.value = 'config';
   closeNodeContextMenu();
+  if (props.minimal) void openSelectedInspectorDialog();
+}
+
+async function openSelectedInspectorDialog() {
+  const node = selectedNode.value;
+  const edge = selectedEdge.value;
+  const schema = node ? selectedNodeFormSchema.value : selectedEdgeFormSchema.value;
+  if ((!node && !edge) || !schema) return;
+
+  if (inspectorDialogOpen.value) {
+    await closeGlobalDialog(inspectorDialogId, { action: 'close' });
+  }
+
+  const targetId = node?.id ?? edge?.id ?? 'selection';
+  const dialogId = `${flowId}-inspector-${targetId}`;
+  inspectorDialogId = dialogId;
+  inspectorDialogOpen.value = true;
+  const model = node ? selectedNodeFormModel.value : selectedEdgeFormModel.value;
+
+  void openGlobalDialog({
+    id: dialogId,
+    title: node ? `编辑节点 · ${node.name}` : `编辑连线 · ${selectedEdgeSummary.value}`,
+    width: 'min(720px, calc(100vw - 32px))',
+    height: 'min(820px, calc(100vh - 40px))',
+    className: 'trigger-workflow-inspector-dialog',
+    props: {
+      top: '4vh',
+      destroyOnClose: true
+    },
+    form: {
+      schema,
+      model,
+      loading: props.inspectorSchemasLoading,
+      props: {
+        readonly: props.readonly,
+        vertical: true,
+        size: 'mini'
+      },
+      onUpdateModel(values) {
+        if (node) replaceNodeFromFormModel(node, values);
+        else if (edge) replaceEdgeFromFormModel(edge, values);
+      }
+    },
+    actions: [
+      {
+        code: 'close',
+        label: props.readonly ? '关闭' : '完成',
+        role: props.readonly ? 'cancel' : 'confirm',
+        ...(props.readonly ? {} : { status: 'primary' as const })
+      }
+    ]
+  }).finally(() => {
+    if (inspectorDialogId === dialogId) inspectorDialogOpen.value = false;
+  });
+}
+
+function closeInspectorDialog() {
+  if (!inspectorDialogOpen.value) return;
+  inspectorDialogOpen.value = false;
+  void closeGlobalDialog(inspectorDialogId, { action: 'close' });
+}
+
+function replaceNodeFromFormModel(
+  node: TriggerWorkflowNode,
+  values: Record<string, unknown>
+) {
+  if (props.readonly) return;
+  let next = node;
+  Object.entries(values).forEach(([field, value]) => {
+    next = updateTriggerNodeFromFormField(next, field, value);
+    if (field === 'taskType') next = applyTaskTypeDefaults(next);
+  });
+  replaceNode(next);
+}
+
+function replaceEdgeFromFormModel(
+  edge: TriggerWorkflowModel['edges'][number],
+  values: Record<string, unknown>
+) {
+  if (props.readonly) return;
+  let next = edge;
+  Object.entries(values).forEach(([field, value]) => {
+    next = updateTriggerEdgeFromFormField(next, field, value);
+  });
+  replaceEdge(next);
 }
 
 function duplicateContextNode(node: TriggerWorkflowNode) {
@@ -581,6 +693,7 @@ function layout() {
   if (props.readonly || !flowNodes.value.length) return;
   const layoutNodes = autoLayoutTriggerFlowNodes(flowNodes.value, flowEdges.value);
   replaceModel(flowToTriggerWorkflow(currentModel.value, layoutNodes, flowEdges.value));
+  return currentModel.value;
 }
 
 function fitCanvas() {
@@ -710,6 +823,7 @@ function compile() {
   if (!compiledPlan.value) return;
   emit('compile', compiledPlan.value);
   activeInspectorTab.value = 'compiled';
+  return compiledPlan.value;
 }
 
 function exportModel() {
@@ -870,11 +984,34 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
     y: touch?.clientY ?? 0
   };
 }
+
+function loadSchema(value: TriggerWorkflowModel) {
+  resetHistory();
+  syncFromModel(prepareEditorModel(value));
+  emitModel(currentModel.value);
+  fitCanvas();
+  return currentModel.value;
+}
+
+onBeforeUnmount(() => {
+  closeInspectorDialog();
+  if (pendingHistoryTimer) clearTimeout(pendingHistoryTimer);
+});
+
+defineExpose({
+  getSchema: () => currentModel.value,
+  loadSchema,
+  validate: () => issues.value,
+  compile,
+  buildJob: () => buildTriggerWorkflowJob(currentModel.value),
+  autoLayout: layout,
+  loadTemplate
+});
 </script>
 
 <template>
-  <section class="trigger-editor" :style="rootStyle">
-    <header class="trigger-editor__header">
+  <section class="trigger-editor" :class="{ 'trigger-editor--minimal': minimal }" :style="rootStyle">
+    <header v-if="!minimal" class="trigger-editor__header">
       <div class="trigger-editor__identity">
         <span class="trigger-editor__brand-icon"><i class="ri-git-branch-line" aria-hidden="true" /></span>
         <div>
@@ -938,17 +1075,19 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
 
     <div class="trigger-editor__workspace">
       <aside class="trigger-editor__palette">
-        <div class="trigger-editor__side-head">
-          <strong>流程模板</strong>
-          <span>{{ kindOptions.find((item) => item.value === currentModel.kind)?.label }}</span>
-        </div>
-        <div class="trigger-editor__templates">
-          <button type="button" :disabled="readonly" @click="loadTemplate('approval')">审批</button>
-          <button type="button" :disabled="readonly" @click="loadTemplate('dataSync')">同步</button>
-          <button type="button" :disabled="readonly" @click="loadTemplate('aiAgent')">智能体</button>
-        </div>
+        <template v-if="!minimal">
+          <div class="trigger-editor__side-head">
+            <strong>流程模板</strong>
+            <span>{{ kindOptions.find((item) => item.value === currentModel.kind)?.label }}</span>
+          </div>
+          <div class="trigger-editor__templates">
+            <button type="button" :disabled="readonly" @click="loadTemplate('approval')">审批</button>
+            <button type="button" :disabled="readonly" @click="loadTemplate('dataSync')">同步</button>
+            <button type="button" :disabled="readonly" @click="loadTemplate('aiAgent')">智能体</button>
+          </div>
+        </template>
 
-        <div class="trigger-editor__side-head trigger-editor__side-head--nodes">
+        <div class="trigger-editor__side-head" :class="{ 'trigger-editor__side-head--nodes': !minimal }">
           <strong>可用节点</strong>
           <span>{{ palette.length }}</span>
         </div>
@@ -978,7 +1117,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
       </aside>
 
       <main class="trigger-editor__canvas" @dragover="onCanvasDragOver" @drop="onCanvasDrop">
-        <div class="trigger-editor__canvas-topbar">
+        <div v-if="!minimal" class="trigger-editor__canvas-topbar">
           <div class="trigger-editor__canvas-status">
             <span :class="{ 'trigger-editor__status-dot--error': errorCount }" class="trigger-editor__status-dot" />
             <strong>{{ errorCount ? `${errorCount} 个错误` : '校验通过' }}</strong>
@@ -1050,7 +1189,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
 
       </main>
 
-      <aside class="trigger-editor__inspector">
+      <aside v-if="!minimal" class="trigger-editor__inspector">
         <div class="trigger-editor__tabs">
           <button
             type="button"
@@ -1154,6 +1293,16 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   border-radius: 6px;
   background: #f5f7fa;
   color: #172033;
+}
+
+.trigger-editor--minimal {
+  min-height: 560px;
+  grid-template-rows: minmax(0, 1fr);
+  border-radius: 8px;
+}
+
+.trigger-editor--minimal .trigger-editor__workspace {
+  grid-template-columns: 196px minmax(0, 1fr);
 }
 
 .trigger-editor__header {

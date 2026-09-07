@@ -19,6 +19,7 @@ const migrationFiles = [
   'supabase/migrations/20260904113100_approval_workflow_designer_page.sql',
   'supabase/migrations/20260904135000_approval_workflow_node_actions.sql',
   'supabase/migrations/20260904140000_approval_workflow_material_property.sql',
+  'supabase/migrations/20260905100000_approval_workflow_page_functions.sql',
 ];
 
 function connectionString(value: string) {
@@ -52,7 +53,7 @@ async function main() {
         (select count(*)::int from public.lowcode_node_actions where node_type = 'approvalWorkflowDesigner' and enabled) as actions
     `);
     const result = rows[0];
-    if (result.forms !== 12 || result.materials !== 1 || result.pages !== 1 || result.actions !== 5) {
+    if (result.forms !== 12 || result.materials !== 1 || result.pages !== 1 || result.actions !== 7) {
       throw new Error(`Approval low-code verification failed: ${JSON.stringify(result)}`);
     }
     await client.query('commit');

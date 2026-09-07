@@ -14,9 +14,18 @@ export function textToneClass(tone?: 'default' | 'muted' | 'success' | 'warning'
 }
 
 export function containerStyle(block: LowCodePageContainerBlock) {
+  const columnSpans = Array.isArray(block.columnSpans)
+    ? block.columnSpans
+      .map((span) => Number(span))
+      .filter((span) => Number.isFinite(span) && span > 0)
+    : [];
+
   return {
     '--lc-container-columns': String(block.columns ?? 1),
     '--lc-container-gap': `${block.gap ?? 8}px`,
+    ...(columnSpans.length
+      ? { '--lc-container-template': columnSpans.map((span) => `${span}fr`).join(' ') }
+      : {}),
   };
 }
 

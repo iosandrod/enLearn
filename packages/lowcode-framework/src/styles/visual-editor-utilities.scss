@@ -491,6 +491,21 @@
   min-height: 0;
 }
 
+// Propagate the dialog height through the nested column-editor form so the
+// array-table viewport has a real containing block during resize.
+.grid-designer-master-form [data-lc-field="grid-designer-columns"],
+.grid-designer-master-form [data-lc-field="grid-designer-columns"] > .vxe-form--item-inner,
+.grid-designer-master-form [data-lc-field="grid-designer-columns"] .lc-form-item__content,
+.grid-designer-master-form [data-lc-field="grid-designer-columns"] .lc-field,
+.grid-designer-master-form [data-lc-field="columns"],
+.grid-designer-master-form [data-lc-field="columns"] > .vxe-form--item-inner,
+.grid-designer-master-form [data-lc-field="columns"] .lc-form-item__content,
+.grid-designer-master-form [data-lc-field="columns"] .lc-field,
+.grid-designer-master-form [data-lc-field="columns"] .lc-array-table {
+  height: 100%;
+  min-height: 0;
+}
+
 .grid-designer-tabs,
 .grid-designer-tabs > .vxe-tabs--body {
   height: 100%;
@@ -920,14 +935,6 @@
 
 .grid-designer-table .vxe-body--row {
   cursor: pointer;
-}
-
-.grid-designer-column-table-panel .vxe-table--render-wrapper,
-.grid-designer-column-table-panel .vxe-table--main-wrapper,
-.grid-designer-column-table-panel .vxe-table--body-wrapper,
-.grid-designer-column-table-panel .vxe-table--header-wrapper {
-  max-width: 100%;
-  min-width: 0;
 }
 
 .grid-designer-object-cell {

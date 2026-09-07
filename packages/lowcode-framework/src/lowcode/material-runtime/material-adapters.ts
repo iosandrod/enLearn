@@ -48,6 +48,12 @@ const containerDesigner = () => import('../../packages/container-component/vxe-t
   .then((module) => module.default);
 
 export const lowCodeBlockMaterialAdapters: Record<string, BlockAdapter> = {
+  'trigger-workflow-designer': {
+    type: 'trigger-workflow-designer',
+    label: '触发器编排画布',
+    materialVersion: '1.0.0',
+    order: 6,
+  },
   'approval-workflow-designer': {
     type: 'approval-workflow-designer',
     label: '审批流画布',
@@ -212,6 +218,7 @@ const formMaterials: Array<[string, string, string[], number]> = [
   ['vxe-checkbox-group', '复选框组', ['checkbox', 'checkbox-group'], 60],
   ['vxe-radio-group', '单选框组', ['radio', 'radio-group'], 70],
   ['vxe-tree-select', '树形选择', ['tree-select'], 80],
+  ['vxe-upload', '文件上传', ['upload', 'file-upload'], 85],
 ];
 
 export const lowCodeFormMaterialAdapters: Record<string, FormAdapter> = Object.fromEntries(

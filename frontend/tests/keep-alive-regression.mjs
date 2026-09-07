@@ -138,6 +138,25 @@ assert.doesNotMatch(
   /onActivated\([\s\S]*?(refreshTemplates|loadRouteTemplate)\(/,
   'The cached print designer must not refresh its data when reactivated.',
 );
+const workflowDesignerSource = await readFile(
+  new URL('../pages/dashboard/workflow/lowcode-designer.vue', import.meta.url),
+  'utf8',
+);
+assert.match(
+  workflowDesignerSource,
+  /const pageRoute = ref<LowCodeHostRoute>\(createPageRoute\(\)\)/,
+  'The workflow designer must retain an instance-local route snapshot while cached.',
+);
+assert.match(
+  workflowDesignerSource,
+  /const cachedRoutePath = route\.path;[\s\S]*watch\(\(\) => route\.fullPath, \(\) => \{\s*if \(route\.path === cachedRoutePath\) pageRoute\.value = createPageRoute\(\);\s*\}\)/,
+  'A cached workflow designer must ignore other pages and other workflow-code cache entries.',
+);
+assert.doesNotMatch(
+  workflowDesignerSource,
+  /watch\(\(\) => route\.params\.code, loadPage\)/,
+  'Leaving a coded workflow route must not reload its cached page definition.',
+);
 assert.match(
   dynamicPageSource,
   /const currentLoad = \+\+loadSequence[\s\S]*?currentLoad !== loadSequence/,

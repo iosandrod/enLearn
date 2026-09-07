@@ -143,25 +143,32 @@ assert.equal(
 );
 assert.equal(routeDesignerSchema.code, PLANNING_ROUTE_DESIGNER_PAGE_CODE);
 assert.equal(routeDesignerSchema.route, PLANNING_ROUTE_DESIGNER_ROUTE);
-assert.deepEqual(routeDesignerSchema.blocks.map((block) => block.kind), ['searchForm', 'planningFlow', 'tabs']);
-assert.equal(routeDesignerSchema.blocks[0]?.id, 'planning_route_designer_filter');
-assert.equal(routeDesignerSchema.blocks[1]?.id, 'planning_route_designer_flow');
-assert.equal(routeDesignerSchema.blocks[1]?.sourceKey, 'flow');
-assert.equal(routeDesignerSchema.blocks[1]?.height, 560);
-assert.equal(routeDesignerSchema.blocks[2]?.id, 'planning_route_designer_detail_tabs');
+assert.deepEqual(routeDesignerSchema.blocks.map((block) => block.kind), ['buttonGroup', 'searchForm', 'planningFlow', 'tabs']);
+const routeDesignerActions = routeDesignerSchema.blocks[0];
+const routeDesignerToolbarActions = Array.isArray(routeDesignerActions?.actions)
+  ? routeDesignerActions.actions.filter(isRecord)
+  : [];
+assert.equal(routeDesignerActions?.id, 'planning_route_designer_actions');
+assert.equal(routeDesignerToolbarActions[0]?.label, '新建路线');
+assert.match(String(routeDesignerToolbarActions[0]?.script), /executeFunction\(\{ name: "newRoute"/);
+assert.equal(routeDesignerSchema.blocks[1]?.id, 'planning_route_designer_filter');
+assert.equal(routeDesignerSchema.blocks[2]?.id, 'planning_route_designer_flow');
+assert.equal(routeDesignerSchema.blocks[2]?.sourceKey, 'flow');
+assert.equal(routeDesignerSchema.blocks[2]?.height, 560);
+assert.equal(routeDesignerSchema.blocks[3]?.id, 'planning_route_designer_detail_tabs');
 assert.equal(routeDesignerSchema.dataSources?.flow?.autoLoad, false);
 assert.deepEqual(routeDesignerSchema.dataSources?.flow?.postData?.filters, {
   operationId: '{{ forms.planning_route_designer_filter.operationId }}'
 });
 assert.deepEqual(routeDesignerSchema.dataSources?.flow?.postData?.requiredFilters, ['operationId']);
 assert.equal(routeDesignerSchema.dataSources?.routeOptions?.postData?.optionType, 'route');
-const routeDesignerFilter = routeDesignerSchema.blocks[0];
+const routeDesignerFilter = routeDesignerSchema.blocks[1];
 assert.deepEqual(routeDesignerFilter?.initialValues, { operationId: '' });
 assert.equal(routeDesignerSchema.dataSources?.routingOperations, undefined);
 assert.equal(routeDesignerSchema.dataSources?.itemOptions, undefined);
 assert.equal(routeDesignerSchema.dataSources?.resourceOptions, undefined);
 
-const routeDesignerTabs = routeDesignerSchema.blocks[2]?.tabs;
+const routeDesignerTabs = routeDesignerSchema.blocks[3]?.tabs;
 assert.ok(Array.isArray(routeDesignerTabs));
 assert.deepEqual(routeDesignerTabs?.map((tab: any) => tab.key), [
   'suboperations',
@@ -172,6 +179,19 @@ assert.deepEqual(routeDesignerTabs?.map((tab: any) => tab.key), [
 const routeDesignerBlocks = flattenBlocks(routeDesignerSchema.blocks);
 assert.equal(routeDesignerBlocks.some((block) => block.id === 'planning_route_designer_filter'), true);
 assert.equal(routeDesignerBlocks.some((block) => block.id === 'planning_routing_grid'), false);
+
+assert.deepEqual(routeDesignerSchema.scriptPolicy?.capabilities, [
+  'action.execute',
+  'dialog.confirmLowCodePage',
+  'message.success',
+  'pageFunction.execute'
+]);
+const newRouteFunction = routeDesignerSchema.functions?.find((pageFunction) => pageFunction.name === 'newRoute');
+assert.equal(newRouteFunction?.label, '新建路线');
+assert.match(String(newRouteFunction?.script), /pageCode: "planning_operation-edit"/);
+assert.match(String(newRouteFunction?.script), /confirmLabel: "保存路线"/);
+assert.match(String(newRouteFunction?.script), /submitOnConfirm: true/);
+assert.match(String(newRouteFunction?.script), /method: "refreshOptions"/);
 
 for (const sourceKey of [
   'routingSuboperations',

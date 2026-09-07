@@ -533,38 +533,7 @@ onMounted(() => {
 
 let minimalInspectorDialogId = `${flowId}-node-inspector`;
 
-const MinimalNodeInspector = defineComponent({
-  name: 'ApprovalWorkflowNodeInspector',
-  setup() {
-    return () => {
-      const node = selectedNode.value;
-      if (!node) return null;
 
-      return h('section', { class: 'approval-designer__minimal-dialog', role: 'dialog', 'aria-modal': 'true' }, [
-        selectedNodeFormSchema.value
-          ? h(LowCodeForm, {
-              class: 'approval-designer__node-form',
-              schema: selectedNodeFormSchema.value,
-              modelValue: (node.config ?? {}) as Record<string, unknown>,
-              readonly: props.readonly,
-              'onUpdate:modelValue': updateSelectedConfigFromForm
-            })
-          : h(JsonDialogInput, {
-              class: 'approval-designer__node-form',
-              modelValue: node.config ?? {},
-              name: 'nodeConfig',
-              label: '配置 JSON',
-              title: '编辑节点配置 JSON',
-              readonly: props.readonly,
-              rows: 10,
-              rootType: 'object',
-              valueMode: 'parsed',
-              'onUpdate:modelValue': updateSelectedConfig
-            })
-      ]);
-    };
-  }
-});
 
 onBeforeUnmount(() => {
   closeMinimalInspector();
@@ -1101,7 +1070,12 @@ function openMinimalInspector() {
       top: '5vh',
       destroyOnClose: true
     },
-    body: () => h(MinimalNodeInspector),
+    // body: () => h(MinimalNodeInspector),
+    form: {
+      schema: selectedNodeFormSchema.value as any,//
+      model: (selectedNode.value.config ?? {}) as Record<string, unknown>,
+      onUpdateModel: updateSelectedConfigFromForm
+    },//
     actions: [
       {
         code: 'cancel',
@@ -2149,8 +2123,8 @@ defineExpose({
 
         <div
           ref="flowCanvasRef"
-          class="approval-designer__canvas"
-          :style="minimal ? { height: '560px', minHeight: '560px' } : undefined"
+          class="approval-designer__canvas h-full overflow-hidden"
+          :style="{}"
           :class="{ 'approval-designer__canvas--drag-over': isCanvasDragOver }"
           @dragover="onCanvasDragOver"
           @dragleave="onCanvasDragLeave"

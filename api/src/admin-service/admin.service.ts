@@ -281,12 +281,18 @@ export class AdminService extends BaseService {
 
     delete payload.primaryKey;
     delete payload.primary_key;
-    if (hasId) delete payload[primaryKey];
+    // The primary key is a transport/control field when updating. For an
+    // insert, discard only an empty key so a database-generated UUID default
+    // can be applied while still allowing an explicitly supplied key.
+    if (hasId || payload[primaryKey] === '') delete payload[primaryKey];
 
     // Generic requests do not have a resource-level allowedFields list. Resolve
     // the physical schema first so transport-only and stale form fields are
     // removed before the Supabase insert/update call.
     const tableColumns = await this.resolveGenericTableColumns(tableName, context);
+    const typedColumns = (tableColumns as Set<string> & {
+      typedColumns?: Set<string>;
+    }).typedColumns ?? new Set<string>();
     if (hasId && !tableColumns.has(primaryKey)) {
       throw new BadRequestException(
         `Primary key ${primaryKey} was not found on table ${tableName}.`
@@ -294,6 +300,34 @@ export class AdminService extends BaseService {
     }
     for (const field of Object.keys(payload)) {
       if (!tableColumns.has(field)) delete payload[field];
+    }
+    // `type` is also a service-protocol field and is therefore excluded by
+    // readDataPayload(). If the target generic table has a real `type` column,
+    // preserve the submitted value as table data.
+    if (
+      tableColumns.has('type') &&
+      payload.type === undefined &&
+      Object.prototype.hasOwnProperty.call(postData, 'type')
+    ) {
+      payload.type = postData.type;
+    }
+    // Account-scoped generic tables must receive the active account id for
+    // INSERT so their RLS WITH CHECK policy can authorize the new row. Do not
+    // trust a client-supplied account id from the form payload.
+    if (tableColumns.has('account_id')) {
+      const accountId = this.accountValue(context, 'account_id');
+      const suppliedAccountId = payload.account_id;
+      if (
+        suppliedAccountId !== undefined &&
+        suppliedAccountId !== null &&
+        String(suppliedAccountId) !== accountId
+      ) {
+        throw new ForbiddenException('The requested data belongs to a different account set.');
+      }
+      payload.account_id = accountId;
+    }
+    for (const field of typedColumns) {
+      if (payload[field] === '') payload[field] = null;
     }
     if (!Object.keys(payload).length) {
       throw new BadRequestException('Save data is required.');
@@ -346,7 +380,27 @@ export class AdminService extends BaseService {
       );
     }
 
-    return new Set(names);
+    const result = new Set(names) as Set<string> & { typedColumns?: Set<string> };
+    Object.defineProperty(result, 'typedColumns', {
+      enumerable: false,
+      value: new Set(
+        columns
+          .filter((column): column is Record<string, unknown> => isRecord(column))
+          .filter((column) => {
+            const dataType = readOptionalString(column.dataType ?? column.data_type).toLowerCase();
+            const udtName = readOptionalString(column.udtName ?? column.udt_name).toLowerCase();
+            return udtName === 'uuid' || [
+              'array', 'bigint', 'boolean', 'date', 'double precision', 'integer',
+              'interval', 'json', 'jsonb', 'numeric', 'real', 'smallint',
+              'time without time zone', 'time with time zone',
+              'timestamp without time zone', 'timestamp with time zone'
+            ].includes(dataType);
+          })
+          .map((column) => readOptionalString(column.name))
+          .filter(Boolean)
+      )
+    });
+    return result;
   }
 
   protected async resolveNavigationAuthorization(context: ServiceContext) {

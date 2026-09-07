@@ -38,6 +38,8 @@ import NotificationBell from '../components/NotificationBell.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 import ApprovalDesigner from '../../packages/approval-workflow/src/components/ApprovalDesigner.vue';
+import TriggerWorkflowEditor from '../../packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue';
+import TldrawVue from 'tldraw-vue-phase-one';
 import {
   initializeSystemSettings,
   installSystemSettingsListeners,
@@ -125,6 +127,9 @@ app.component('LowCodePageRenderer', LowCodePageRenderer);
 app.component('LowCodeTreeItem', LowCodeTreeItem);
 app.component('LowCodeVisualDesigner', LowCodeVisualDesigner);
 app.component('ApprovalDesigner', ApprovalDesigner);
+app.component('TriggerWorkflowEditor', TriggerWorkflowEditor);
+// Database-backed print designer materials resolve this host component by name.
+app.component('TldrawVue', TldrawVue);
 app.component('VisualEditorProvider', VisualEditorProvider);
 
 app.config.globalProperties.$$refs = refs;

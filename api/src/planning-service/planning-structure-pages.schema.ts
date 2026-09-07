@@ -489,6 +489,40 @@ export function buildPlanningRouteDesignerPageSchema(): LowCodePageSchema {
     title: '工艺路线设计',
     description: '查看工艺路线，并在选中工序后查看其物料、资源、子工序和前置依赖。',
     dataSources,
+    scriptPolicy: {
+      capabilities: [
+        'action.execute',
+        'dialog.confirmLowCodePage',
+        'message.success',
+        'pageFunction.execute'
+      ]
+    },
+    functions: [{
+      name: 'newRoute',
+      label: '新建路线',
+      description: '在工序编辑页弹框中新建并保存一条工艺路线。',
+      enabled: true,
+      script: [
+        'const result = await this.$dialog.confirmLowCodePage({',
+        '  pageCode: "planning_operation-edit",',
+        '  title: "新建路线",',
+        '  confirmLabel: "保存路线",',
+        '  cancelLabel: "取消",',
+        '  submitOnConfirm: true,',
+        '  requireSelection: false,',
+        '  includeEventHistory: false,',
+        '  dialog: { id: "planning-route-designer-new-route-dialog" }',
+        '});',
+        'if (!result || result.action !== "confirm") return null;',
+        'await this.executeAction({',
+        '  node: "planning_route_designer_filter",',
+        '  method: "refreshOptions",',
+        '  sourceKeys: ["routeOptions"]',
+        '});',
+        'await this.$message.success("工艺路线已保存。");',
+        'return result;'
+      ].join('\n')
+    }],
     eventHandlers: [{
       event: 'planningFlow.nodeSelect',
       blockId: 'planning_route_designer_flow',
@@ -500,6 +534,22 @@ export function buildPlanningRouteDesignerPageSchema(): LowCodePageSchema {
       }))
     }],
     blocks: [
+      {
+        id: 'planning_route_designer_actions',
+        kind: 'buttonGroup',
+        align: 'left',
+        gap: 8,
+        actions: [{
+          code: 'planning-route-designer-new-route',
+          label: '新建路线',
+          type: 'button',
+          mode: 'button',
+          status: 'primary',
+          icon: 'ri-add-line',
+          permissionCode: 'planning.models.manage',
+          script: 'return this.executeFunction({ name: "newRoute", args: {} });'
+        }]
+      },
       {
         id: 'planning_route_designer_filter',
         kind: 'searchForm',

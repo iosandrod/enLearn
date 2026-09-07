@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   BadRequestException,
   GatewayTimeoutException,
+  HttpException,
   Inject,
   Injectable,
   NotFoundException
@@ -277,7 +278,10 @@ export class JobService {
       } catch {
         // Preserve the Trigger.dev failure returned to the caller.
       }
-      throw error;
+      // Trigger.dev's SDK exposes transport failures as a plain Error. Letting
+      // that error escape makes Nest return an opaque 500 even though the
+      // request itself is valid and the dependency is simply unavailable.
+      throw normalizeTriggerInvocationError(error);
     }
 
     try {
@@ -621,6 +625,31 @@ function isTerminalRunStatus(status: WorkflowJobRunStatus) {
 
 function sleep(milliseconds: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function normalizeTriggerInvocationError(error: unknown) {
+  if (error instanceof HttpException || !isTriggerTransportError(error)) {
+    return error;
+  }
+
+  const detail = error instanceof Error ? error.message.trim() : String(error).trim();
+  const suffix = detail ? ` (${detail})` : '';
+  return new BadGatewayException(
+    `Workflow runtime is unavailable. Start Trigger.dev and verify TRIGGER_API_URL${suffix}`
+  );
+}
+
+function isTriggerTransportError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.toLowerCase();
+  return [
+    'connection error',
+    'fetch failed',
+    'econnrefused',
+    'enotfound',
+    'etimedout',
+    'socket hang up'
+  ].some((marker) => normalized.includes(marker));
 }
 
 function isTriggerNotFoundError(error: unknown) {

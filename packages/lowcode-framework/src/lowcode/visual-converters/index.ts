@@ -683,6 +683,38 @@ function convertRuntimeBlockToVisual(
     });
   }
 
+  if (block.kind === 'trigger-workflow-designer') {
+    return createVisualBlock({
+      block,
+      componentKey: 'trigger-workflow-designer',
+      moduleName: 'businessComponents',
+      label: '触发器编排画布',
+      path,
+      props: {
+        blockId: block.id,
+        sourceKey: readString(block.sourceKey, 'triggerWorkflowModel'),
+        ...(isPlainRecord(block.model) ? { model: cloneJson(block.model) } : {}),
+        readonly: block.readonly === true,
+      },
+    });
+  }
+
+  if (block.kind === 'label-designer') {
+    return createVisualBlock({
+      block,
+      componentKey: 'label-designer',
+      moduleName: 'businessComponents',
+      label: '标签设计器',
+      path,
+      props: {
+        blockId: block.id,
+        ...(readString(block.templateId) ? { templateId: readString(block.templateId) } : {}),
+        templateName: readString(block.templateName, '标签打印模板'),
+        readonly: block.readonly === true,
+      },
+    });
+  }
+
   if (block.kind === 'grid') {
     const schema: Record<string, unknown> = isPlainRecord(block.schema) ? block.schema : {};
     const grid: Record<string, unknown> = isPlainRecord(schema.grid) ? schema.grid : {};
@@ -868,6 +900,30 @@ function convertRuntimeBlockToVisual(
   ) {
     const width = block.kind === 'drawer' ? block.width : undefined;
     const placement = block.kind === 'drawer' ? block.placement : undefined;
+    const runtimeColumnSpans = block.kind === 'container' && Array.isArray(block.columnSpans)
+      ? block.columnSpans
+      : [];
+    const hasRuntimeSlotWrappers = block.kind === 'container' &&
+      runtimeColumnSpans.length === block.blocks.length &&
+      block.blocks.every((child) => child.kind === 'container');
+    const visualSlots = hasRuntimeSlotWrappers
+      ? Object.fromEntries(block.blocks.map((slot, index) => [
+          `slot${index}`,
+          {
+            key: `slot${index}`,
+            span: runtimeColumnSpans[index],
+            children: slot.kind === 'container'
+              ? context.convertBlocks(slot.blocks, [...path, `slot${index}`])
+              : [],
+          },
+        ]))
+      : {
+          slot0: {
+            key: 'slot0',
+            span: 24,
+            children: context.convertBlocks(block.blocks, [...path, 'slot0']),
+          },
+        };
 
     return createVisualBlock({
       block,
@@ -894,12 +950,10 @@ function convertRuntimeBlockToVisual(
           ? { overlays: context.convertBlocks(block.overlays ?? [], [...path, 'overlays']) }
           : {}),
         slots: {
-          value: '24',
-          slot0: {
-            key: 'slot0',
-            span: 24,
-            children: context.convertBlocks(block.blocks, [...path, 'slot0']),
-          },
+          value: hasRuntimeSlotWrappers
+            ? runtimeColumnSpans.join(':')
+            : '24',
+          ...visualSlots,
         },
       },
     });

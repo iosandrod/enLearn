@@ -28,6 +28,7 @@ import {
   type LowCodeHostRoute,
 } from '@enlearn/lowcode-framework/runtime';
 import type {
+  LowCodePageDataSource,
   LowCodePageRecord,
   LowCodeRuntimeEvent,
 } from '@enlearn/lowcode-framework/types/lowcode';
@@ -94,6 +95,172 @@ function handleRuntimeEvent(event: LowCodeRuntimeEvent) {
   }
 }
 
+const sourceReferenceKeys = new Set([
+  'sourceKey',
+  'sourceKeys',
+  'parentSourceKey',
+  'targetSourceKey',
+  'targetSourceKeys',
+  'submitSourceKey',
+  'deleteSourceKey',
+  'refreshSourceKeys',
+]);
+const stringifiedSourceReferenceKeys = new Set([
+  'directivesJson',
+  'postDataJson',
+  'queryJson',
+  'requestJson',
+  'filtersJson',
+]);
+
+type SourceKeyMap = Map<string, string[]>;
+
+function readSourceKey(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function visitBlocks(value: unknown, visitor: (block: Record<string, unknown>) => void) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => visitBlocks(item, visitor));
+    return;
+  }
+  if (!isRecord(value)) return;
+
+  if (typeof value.id === 'string' && typeof value.kind === 'string') {
+    visitor(value);
+  }
+
+  if (Array.isArray(value.blocks)) visitBlocks(value.blocks, visitor);
+  if (Array.isArray(value.tabs)) {
+    value.tabs.forEach((tab) => {
+      if (isRecord(tab)) visitBlocks(tab.blocks, visitor);
+    });
+  }
+  if (Array.isArray(value.overlays)) visitBlocks(value.overlays, visitor);
+}
+
+function rewriteSourceReference(value: unknown, sourceKeyMap: SourceKeyMap) {
+  const sourceKey = readSourceKey(value);
+  const blockIds = sourceKeyMap.get(sourceKey);
+  return blockIds?.[0] ?? value;
+}
+
+function rewriteSourceReferences(value: unknown, sourceKeyMap: SourceKeyMap): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => rewriteSourceReferences(item, sourceKeyMap));
+  }
+  if (!isRecord(value)) return value;
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => {
+      if (stringifiedSourceReferenceKeys.has(key) && typeof item === 'string') {
+        try {
+          return [key, JSON.stringify(rewriteSourceReferences(JSON.parse(item), sourceKeyMap))];
+        } catch {
+          return [key, item];
+        }
+      }
+      if (sourceReferenceKeys.has(key) && typeof item === 'string') {
+        return [key, rewriteSourceReference(item, sourceKeyMap)];
+      }
+      if (sourceReferenceKeys.has(key) && Array.isArray(item)) {
+        return [
+          key,
+          item.flatMap((source) => {
+            const sourceKey = readSourceKey(source);
+            return sourceKeyMap.get(sourceKey) ?? [source];
+          }),
+        ];
+      }
+      return [key, rewriteSourceReferences(item, sourceKeyMap)];
+    }),
+  );
+}
+
+function rewriteBlockSourceKeys(value: unknown, sourceKeyMap: SourceKeyMap): unknown {
+  const rewritten = rewriteSourceReferences(value, sourceKeyMap);
+
+  const forceBlockIds = (current: unknown): unknown => {
+    if (Array.isArray(current)) return current.map((item) => forceBlockIds(item));
+    if (!isRecord(current)) return current;
+
+    const result = Object.fromEntries(
+      Object.entries(current).map(([key, item]) => [key, forceBlockIds(item)]),
+    ) as Record<string, unknown>;
+    const isBlock = typeof result.id === 'string' && typeof result.kind === 'string';
+    if (isBlock && 'sourceKey' in result) result.sourceKey = result.id;
+    if (isBlock && isRecord(result.dataSource)) {
+      result.dataSource = { ...result.dataSource, key: result.id };
+    }
+    return result;
+  };
+
+  return forceBlockIds(rewritten);
+}
+
+function rewritePageSourceKeys(nextPage: LowCodePageRecord) {
+  const originalDataSources = isRecord(nextPage.schema.dataSources)
+    ? nextPage.schema.dataSources
+    : {};
+  const sourceKeyMap: SourceKeyMap = new Map();
+  const rebuiltDataSources: Record<string, LowCodePageDataSource> = {};
+
+  visitBlocks(
+    [nextPage.schema.blocks ?? [], nextPage.schema.overlays ?? []],
+    (block) => {
+      const blockId = readSourceKey(block.id);
+      if (!blockId) return;
+
+      const sourceKey = readSourceKey(block.sourceKey);
+      if (sourceKey) {
+        sourceKeyMap.set(sourceKey, [...(sourceKeyMap.get(sourceKey) ?? []), blockId]);
+      }
+
+      const embeddedSource = isRecord(block.dataSource) ? block.dataSource : undefined;
+      const configuredSource = embeddedSource ?? (
+        sourceKey && isRecord(originalDataSources[sourceKey])
+          ? originalDataSources[sourceKey]
+          : isRecord(originalDataSources[blockId])
+            ? originalDataSources[blockId]
+            : undefined
+      );
+      if (configuredSource) {
+        rebuiltDataSources[blockId] = {
+          ...configuredSource,
+          key: blockId,
+        } as LowCodePageDataSource;
+      }
+    },
+  );
+
+  const rewrittenSchema = rewriteBlockSourceKeys(nextPage.schema, sourceKeyMap) as LowCodePageRecord['schema'];
+  rewrittenSchema.dataSources = rebuiltDataSources;
+
+  const originalResolvedData = (nextPage as LowCodePageRecord & {
+    resolvedData?: Record<string, unknown>;
+  }).resolvedData;
+  const resolvedData = isRecord(originalResolvedData)
+    ? Object.fromEntries(
+        Object.entries(originalResolvedData).flatMap(([sourceKey, data]) => {
+          const blockIds = sourceKeyMap.get(sourceKey) ?? (
+            rebuiltDataSources[sourceKey] ? [sourceKey] : []
+          );
+          return blockIds.map((blockId) => [blockId, data]);
+        }),
+      )
+    : originalResolvedData;
+
+  return {
+    ...nextPage,
+    schema: rewrittenSchema,
+    ...(resolvedData ? { resolvedData } : {}),
+  };
+}
+
 async function loadPage() {
   const currentLoad = ++loadSequence;
   loading.value = true;
@@ -105,7 +272,7 @@ async function loadPage() {
       includeData: true
     });
     if (currentLoad !== loadSequence) return;
-    page.value = nextPage;
+    page.value = rewritePageSourceKeys(nextPage);
     await nextTick();
     if (page.value) {
       setAiPageContext(page.value, () => rendererRef.value?.getSnapshot?.());
@@ -114,7 +281,7 @@ async function loadPage() {
     if (currentLoad !== loadSequence) return;
     const builtinPage = getBuiltinLowCodePageByRoute(props.routePath);
     if (builtinPage && isMissingLowCodePageError(error)) {
-      page.value = builtinPage;
+      page.value = rewritePageSourceKeys(builtinPage);
       await nextTick();
       setAiPageContext(page.value, () => rendererRef.value?.getSnapshot?.());
       loading.value = false;

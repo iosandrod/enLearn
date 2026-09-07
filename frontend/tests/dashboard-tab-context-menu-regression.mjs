@@ -10,6 +10,10 @@ const layoutSource = await readFile(
   new URL('../layouts/dashboard.vue', import.meta.url),
   'utf8'
 );
+const appStylesSource = await readFile(
+  new URL('../assets/styles/app.css', import.meta.url),
+  'utf8'
+);
 const formDefinitionSource = await readFile(
   new URL('../utils/lowCodeFormDefinitions.ts', import.meta.url),
   'utf8'
@@ -104,6 +108,11 @@ assert.match(
   layoutSource,
   /@contextmenu\.prevent\.stop="openTabContextMenu\(\$event, tab\)"/,
   'Dashboard tabs must open their menu from a native right click.'
+);
+assert.match(
+  appStylesSource,
+  /\.vxe-context-menu--wrapper,\s*\.wx-menu\[data-wx-menu="true"\],\s*\.vue-canvas > \.context-menu-layer\s*\{[\s\S]*?z-index:\s*13000\s*!important;/,
+  'Every frontend context-menu implementation must stay above dialogs, drawers and transferred popup panels.'
 );
 assert.match(layoutSource, /name: '重新加载页面'/);
 assert.match(

@@ -126,6 +126,16 @@ assert.match(
   'The database-backed column schema must receive its runtime-only actions and row handlers.',
 );
 assert.match(
+  designerSource,
+  /columnsField\.props = \{[\s\S]*rowHeight: Math\.max\(Number\(fieldProps\.rowHeight\) \|\| 0, 36\),/,
+  'The column editor must keep compact VXE controls inside a row with vertical breathing room.',
+);
+assert.match(
+  designerSource,
+  /columnsField\.props = \{[\s\S]*height: '100%',[\s\S]*rowHeight:/,
+  'The column editor must use fill height so its array table follows dialog resizing.',
+);
+assert.match(
   baseMigrationSource,
   /"rowActions": \[[\s\S]*"code": "advanced-column-design"[\s\S]*"title": "高级列设计"[\s\S]*"icon": "ri-settings-3-line"/,
   'The column table schema must expose an advanced-design icon action.',

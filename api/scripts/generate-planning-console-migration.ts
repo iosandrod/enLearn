@@ -45,44 +45,7 @@ insert into public.lowcode_pages (
   1,
   timezone('utc'::text, now())
 )
-on conflict (code) do update set
-  route = excluded.route,
-  title = excluded.title,
-  description = excluded.description,
-  page_type = excluded.page_type,
-  layout = excluded.layout,
-  status = excluded.status,
-  keep_alive = excluded.keep_alive,
-  schema = excluded.schema,
-  version = case
-    when public.lowcode_pages.schema is distinct from excluded.schema
-      or public.lowcode_pages.route is distinct from excluded.route
-      or public.lowcode_pages.title is distinct from excluded.title
-      or public.lowcode_pages.description is distinct from excluded.description
-      or public.lowcode_pages.page_type is distinct from excluded.page_type
-      or public.lowcode_pages.layout is distinct from excluded.layout
-      or public.lowcode_pages.status is distinct from excluded.status
-      or public.lowcode_pages.keep_alive is distinct from excluded.keep_alive
-    then public.lowcode_pages.version + 1
-    else public.lowcode_pages.version
-  end,
-  published_at = case
-    when public.lowcode_pages.schema is distinct from excluded.schema
-    then excluded.published_at
-    else public.lowcode_pages.published_at
-  end,
-  updated_at = case
-    when public.lowcode_pages.schema is distinct from excluded.schema
-      or public.lowcode_pages.route is distinct from excluded.route
-      or public.lowcode_pages.title is distinct from excluded.title
-      or public.lowcode_pages.description is distinct from excluded.description
-      or public.lowcode_pages.page_type is distinct from excluded.page_type
-      or public.lowcode_pages.layout is distinct from excluded.layout
-      or public.lowcode_pages.status is distinct from excluded.status
-      or public.lowcode_pages.keep_alive is distinct from excluded.keep_alive
-    then timezone('utc'::text, now())
-    else public.lowcode_pages.updated_at
-  end;
+on conflict (code) do nothing;
 
 insert into public.lowcode_page_versions (page_id, version, schema, published_at)
 select id, version, schema, published_at

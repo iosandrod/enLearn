@@ -2005,3 +2005,38 @@ const sources = schema.dataSources ?? {};
       const payload = this.readScriptRecordArg(request.args, 1);
       return invokeRegisteredLowCodeScriptApi(apiName, payload, context);
     }
+
+
+
+const MinimalNodeInspector = defineComponent({
+  name: 'ApprovalWorkflowNodeInspector',
+  setup() {
+    return () => {
+      const node = selectedNode.value;
+      if (!node) return null;
+
+      return h('section', { class: 'approval-designer__minimal-dialog', role: 'dialog', 'aria-modal': 'true' }, [
+        selectedNodeFormSchema.value
+          ? h(LowCodeForm, {
+              class: 'approval-designer__node-form',
+              schema: selectedNodeFormSchema.value,
+              modelValue: (node.config ?? {}) as Record<string, unknown>,
+              readonly: props.readonly,
+              'onUpdate:modelValue': updateSelectedConfigFromForm
+            })
+          : h(JsonDialogInput, {
+              class: 'approval-designer__node-form',
+              modelValue: node.config ?? {},
+              name: 'nodeConfig',
+              label: '配置 JSON',
+              title: '编辑节点配置 JSON',
+              readonly: props.readonly,
+              rows: 10,
+              rootType: 'object',
+              valueMode: 'parsed',
+              'onUpdate:modelValue': updateSelectedConfig
+            })
+      ]);
+    };
+  }
+});

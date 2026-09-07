@@ -10,7 +10,8 @@ import {
   buildPlanningCategoryMigrationSql,
   buildPlanningEditSchema,
   buildPlanningListSchema,
-  buildPlanningRoutesSql
+  buildPlanningRoutesSql,
+  planningRelationOptionSourceCode
 } from './generate-planning-migration';
 
 const routesSql = buildPlanningRoutesSql();
@@ -58,7 +59,9 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
   for (const relation of model.fields.filter((field) => field.kind === 'relation')) {
     const formField = fields.find((field: any) => field.field === relation.name);
     assert.equal(formField?.component, relation.relationTree ? 'vxe-tree-select' : 'vxe-select');
-    assert.equal(formField?.optionsSourceKey, `${relation.relation}Options`);
+    const optionsCode = planningRelationOptionSourceCode(model, relation);
+    assert.equal(formField?.optionsCode, optionsCode || undefined);
+    assert.equal(formField?.optionsSourceKey, optionsCode ? undefined : `${relation.relation}Options`);
     assert.deepEqual(
       formField?.optionProps,
       relation.relationTree

@@ -144,7 +144,7 @@ begin
       and page.route = ${sqlString(PLANNING_ROUTE_DESIGNER_ROUTE)}
       and page.page_type = 'custom'
       and page.status = 'published'
-      and jsonb_array_length(page.schema->'blocks') = 3
+      and jsonb_array_length(page.schema->'blocks') = 4
   ) then
     raise exception 'The planning route designer low-code page could not be installed.';
   end if;

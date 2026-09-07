@@ -3,6 +3,16 @@ export type LowCodeMaterialRuntimeController = {
   setData?: (value: unknown, options?: Record<string, unknown>) => unknown | Promise<unknown>;
   getData?: () => unknown | Promise<unknown>;
   validate?: () => unknown | Promise<unknown>;
+  resetData?: () => unknown | Promise<unknown>;
+  save?: () => unknown | Promise<unknown>;
+  autoLayout?: () => unknown | Promise<unknown>;
+  compile?: () => unknown | Promise<unknown>;
+  enable?: () => unknown | Promise<unknown>;
+  run?: () => unknown | Promise<unknown>;
+  refresh?: () => unknown | Promise<unknown>;
+  loadTemplate?: (kind?: string) => unknown | Promise<unknown>;
+  preview?: () => unknown | Promise<unknown>;
+  print?: () => unknown | Promise<unknown>;
 };
 
 const controllers = new Map<string, LowCodeMaterialRuntimeController>();

@@ -190,6 +190,7 @@ function normalizeDataSource(
   const entityCode = sourceType === 'custom' ? '' : rawEntityCode;
   const usesListItems = Boolean(entityCode || readTarget);
   const saveMethod = readString(source.saveMethod);
+  const saveServiceName = readString(source.saveServiceName, sourceServiceName);
   const deleteMethod = readString(source.deleteMethod);
   const postData = { ...sourcePostData };
   if (sourceType !== 'custom') {
@@ -210,6 +211,7 @@ function normalizeDataSource(
     serviceName: usesListItems ? 'admin' : sourceServiceName,
     serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
+    ...(saveMethod && saveServiceName ? { saveServiceName } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
     ...(tableName ? { tableName } : {}),
     ...(normalizedViewName ? { viewName: normalizedViewName } : {}),
@@ -671,6 +673,7 @@ function validatePageFunctions(schema: LowCodePageSchema, issues: LowCodeSchemaI
 const knownScriptCapabilities = new Set([
   'action.execute',
   'api.invoke',
+  'dialog.confirmLowCodePage',
   'dialog.open',
   'event.emit',
   'form.patch',

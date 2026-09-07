@@ -1,0 +1,36 @@
+2026-09-07 08:24:42.319 CST [19892] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-09-07 08:24:42.326 CST [19892] LOG:  listening on IPv6 address "::1", port 55432
+2026-09-07 08:24:42.327 CST [19892] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-09-07 08:24:42.657 CST [39620] LOG:  database system was shut down at 2026-08-26 22:33:09 CST
+2026-09-07 08:24:42.833 CST [19892] LOG:  database system is ready to accept connections
+2026-09-07 08:28:50.868 CST [19892] LOG:  received fast shutdown request
+2026-09-07 08:28:50.911 CST [19892] LOG:  aborting any active transactions
+2026-09-07 08:28:50.917 CST [19892] LOG:  background worker "logical replication launcher" (PID 36548) exited with exit code 1
+2026-09-07 08:28:50.918 CST [34112] LOG:  shutting down
+2026-09-07 08:28:50.956 CST [34112] LOG:  checkpoint starting: shutdown immediate
+2026-09-07 08:28:52.132 CST [34112] LOG:  checkpoint complete: wrote 129 buffers (0.8%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.012 s, sync=1.034 s, total=1.215 s; sync files=45, longest=0.093 s, average=0.023 s; distance=826 kB, estimate=826 kB; lsn=0/8075170, redo lsn=0/8075170
+2026-09-07 08:28:52.188 CST [19892] LOG:  database system is shut down
+2026-09-07 08:31:58.274 CST [28212] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-09-07 08:31:58.277 CST [28212] LOG:  listening on IPv6 address "::1", port 55432
+2026-09-07 08:31:58.277 CST [28212] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-09-07 08:31:58.364 CST [53264] LOG:  database system was shut down at 2026-09-07 08:28:52 CST
+2026-09-07 08:31:58.400 CST [28212] LOG:  database system is ready to accept connections
+2026-09-07 08:31:58.565 CST [28212] LOG:  received fast shutdown request
+2026-09-07 08:31:58.601 CST [28212] LOG:  aborting any active transactions
+2026-09-07 08:31:58.605 CST [28212] LOG:  background worker "logical replication launcher" (PID 58644) exited with exit code 1
+2026-09-07 08:31:58.605 CST [22872] LOG:  shutting down
+2026-09-07 08:31:58.624 CST [22872] LOG:  checkpoint starting: shutdown immediate
+2026-09-07 08:31:58.792 CST [22872] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.073 s, total=0.187 s; sync files=4, longest=0.027 s, average=0.019 s; distance=0 kB, estimate=0 kB; lsn=0/80751E8, redo lsn=0/80751E8
+2026-09-07 08:31:58.797 CST [28212] LOG:  database system is shut down
+2026-09-07 08:34:37.656 CST [46512] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-09-07 08:34:37.659 CST [46512] LOG:  listening on IPv6 address "::1", port 55432
+2026-09-07 08:34:37.660 CST [46512] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-09-07 08:34:37.746 CST [31780] LOG:  database system was shut down at 2026-09-07 08:31:58 CST
+2026-09-07 08:34:37.781 CST [46512] LOG:  database system is ready to accept connections
+2026-09-07 08:34:37.943 CST [46512] LOG:  received fast shutdown request
+2026-09-07 08:34:38.004 CST [46512] LOG:  aborting any active transactions
+2026-09-07 08:34:38.008 CST [46512] LOG:  background worker "logical replication launcher" (PID 4764) exited with exit code 1
+2026-09-07 08:34:38.008 CST [2244] LOG:  shutting down
+2026-09-07 08:34:38.027 CST [2244] LOG:  checkpoint starting: shutdown immediate
+2026-09-07 08:34:38.161 CST [2244] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.034 s, total=0.154 s; sync files=3, longest=0.017 s, average=0.012 s; distance=0 kB, estimate=0 kB; lsn=0/8075260, redo lsn=0/8075260
+2026-09-07 08:34:38.167 CST [46512] LOG:  database system is shut down

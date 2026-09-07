@@ -154,11 +154,16 @@ export class PageDataController {
     const resolvedRoute = this.dependencies.resolveRuntimeRoute(route, row);
     const rowValue = row[rowKey];
 
+    // Creating a record must open a clean edit-page URL. In particular, do not
+    // let the current grid selection turn a create action into an edit action,
+    // and do not add navigation metadata when there is no record to load.
+    if (typeof rowValue === 'undefined' || rowValue === null || rowValue === '') {
+      return resolvedRoute;
+    }
+
     return appendRouteQuery(resolvedRoute, {
       fromPage: this.dependencies.props.page.code,
-      ...(typeof rowValue !== 'undefined' && rowValue !== null && rowValue !== ''
-        ? { [rowKey]: rowValue }
-        : {}),
+      [rowKey]: rowValue,
     });
   }
 
@@ -809,16 +814,29 @@ export class PageDataController {
     if (!source) throw new Error(`Data source ${sourceKey} is unavailable.`);
 
     const request = this.dependencies.resolveDataSourceRequest(source.key, source);
-    const serviceName = request.serviceName;
+    const serviceName = source.saveServiceName ?? request.serviceName;
     const serviceMethod = source.saveMethod ?? request.serviceMethod;
 
     if (!serviceName || !serviceMethod || (!source.saveMethod && this.dependencies.isListItemsRequest(serviceName, serviceMethod))) {
       throw new Error(`Data source ${source.key} is missing save service.`);
     }
 
+    // A view-bound source reads from `viewName`, but form writes must target
+    // the associated physical table. Schema normalization intentionally keeps
+    // both values on the source while putting the view in request.postData for
+    // list loading. Do not leak that read target into saveItem.
+    const viewName = readString(source.viewName);
+    const physicalTableName = readString(source.tableName ?? source.table_name);
+    const writeTableName = source.sourceType === 'view' && physicalTableName !== viewName
+      ? physicalTableName
+      : '';
+    const saveResource = serviceName !== 'admin' ? physicalTableName : '';
+
     return this.dependencies.host.getServiceApi().invoke(serviceName, serviceMethod, {
       ...request.postData,
       ...values,
+      ...(writeTableName ? { tableName: writeTableName } : {}),
+      ...(saveResource ? { resource: saveResource } : {}),
     });
   }
 
@@ -1026,7 +1044,14 @@ export class PageDataController {
     }
 
     this.invalidateSourceRequests();
-    this.dependencies.runtime.resetData({ preserveGrids, preserveLocalGridRows: preserveGrids });
+    // A same-page reload is a data refresh, not a new form session. Keep the
+    // query form model and filters so refreshing a grid does not erase them.
+    this.dependencies.runtime.resetData({
+      preserveForms: preserveGrids,
+      preserveSearches: preserveGrids,
+      preserveGrids,
+      preserveLocalGridRows: preserveGrids,
+    });
     this.runtimePageId = nextPage.id;
     this.initializePageGridStates(pageBlocks);
 
@@ -1039,7 +1064,13 @@ export class PageDataController {
           block,
           sharedFormDefaults[sourceKey]
         ));
-      } else if (block.kind === 'searchForm') {
+      } else if (
+        block.kind === 'searchForm' &&
+        (!preserveGrids || !Object.prototype.hasOwnProperty.call(
+          this.dependencies.formModels.value,
+          block.id,
+        ))
+      ) {
         this.dependencies.runtime.replaceForm(block.id, await this.deriveFormModel(block));
       }
     }//

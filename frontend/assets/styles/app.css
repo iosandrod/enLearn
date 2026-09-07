@@ -29,6 +29,14 @@ a {
   text-decoration: none;
 }
 
+/* Keep every frontend context-menu implementation above dialogs, drawers
+   and transferred popup panels. */
+.vxe-context-menu--wrapper,
+.wx-menu[data-wx-menu="true"],
+.vue-canvas > .context-menu-layer {
+  z-index: 13000 !important;
+}
+
 .vxe-context-menu--wrapper.enlearn-context-menu {
   max-height: calc(100vh - 16px);
   overflow-y: auto;
@@ -37,6 +45,31 @@ a {
 
 .vxe-context-menu--wrapper.enlearn-tab-context-menu {
   min-width: 156px;
+}
+
+/* Keep VXE transfer panels above the standalone form designer as well as
+   global dialogs. These panels are mounted directly under <body>. */
+body.lc-global-dialog-open .vxe-select--panel,
+body.lc-global-dialog-open .vxe-pulldown--panel,
+body.lc-global-dialog-open .vxe-tree-select--panel,
+body.lc-global-dialog-open .vxe-cascader--panel,
+body.lc-global-dialog-open .vxe-date-picker--panel,
+body.lc-global-dialog-open .vxe-date-range-picker--panel,
+body.lc-global-dialog-open .vxe-input--panel,
+body.lc-global-dialog-open .vxe-color-picker--panel,
+body.lc-global-dialog-open .vxe-table-select--panel,
+body.lc-global-dialog-open .vxe-ico-picker--panel,
+body:has(.form-designer-dialog) .vxe-select--panel,
+body:has(.form-designer-dialog) .vxe-pulldown--panel,
+body:has(.form-designer-dialog) .vxe-tree-select--panel,
+body:has(.form-designer-dialog) .vxe-cascader--panel,
+body:has(.form-designer-dialog) .vxe-date-picker--panel,
+body:has(.form-designer-dialog) .vxe-date-range-picker--panel,
+body:has(.form-designer-dialog) .vxe-input--panel,
+body:has(.form-designer-dialog) .vxe-color-picker--panel,
+body:has(.form-designer-dialog) .vxe-table-select--panel,
+body:has(.form-designer-dialog) .vxe-ico-picker--panel {
+  z-index: 12000 !important;
 }
 
 .vxe-context-menu--item-wrapper.enlearn-context-menu-option--danger
@@ -1171,6 +1204,8 @@ a {
   flex: 1 1 auto;
   flex-direction: column;
   gap: 0px;
+  height: 100%;
+  overflow: hidden;
   min-width: 0;
   min-height: 0;
   max-width: 100%;
@@ -1179,7 +1214,10 @@ a {
   height: 100%;
   overflow: hidden;
 }
-
+.lowcode-runtime-page >:last-child {
+  flex: 1;
+  min-height: 0;
+}
 .lowcode-runtime-page > *,
 .lowcode-runtime-page .content-panel,
 .lowcode-runtime-page .section-block,
@@ -1190,18 +1228,19 @@ a {
   max-width: 100%;
 }
 
-.lowcode-runtime-page > .lc-runtime-block {
-  flex: none;
+.lowcode-runtime-page >:last-child {
+  flex: 1;
 }
 
-.lowcode-runtime-page > .lc-runtime-block--fill,
-.lc-tab-pane-stack > .lc-runtime-block--fill {
+.lowcode-runtime-page > .lc-runtime-block--fill:not(.lc-node-container),
+.lc-tab-pane-stack > .lc-runtime-block--fill:not(.lc-node-container) {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
 }
+
 .lc-runtime-block--fill >:last-child{
   /* flex: 1; */
   overflow: hidden;
@@ -1262,9 +1301,19 @@ a {
 
 .lc-node-container {
   display: grid;
-  width:100%;
+  width: 100%;
   gap: var(--lc-container-gap, 8px);
-  grid-template-columns: repeat(var(--lc-container-columns, 1), minmax(0, 1fr));
+  grid-template-columns: var(
+    --lc-container-template,
+    repeat(var(--lc-container-columns, 1), minmax(0, 1fr))
+  );
+}
+
+/* Slot containers are grid items; keep their own width within the parent track. */
+.lowcode-runtime-page .lc-node-container > .lc-node-container {
+  width: auto;
+  min-width: 0;
+  --lc-container-template: initial;
 }
 
 .lc-node-section,
@@ -2728,20 +2777,13 @@ a {
   min-height: 0;
   overflow: hidden;
 }
-
+.lc-runtime-block--fill{
+  width: 100%;
+}
 .content-panel.lc-runtime-block.lc-runtime-block--fill.lc-runtime-block--fill>:last-child{
   flex: 1;
   min-height: 0;
   overflow: hidden;
-}
-
-.vxe-cell--wrapper .vxe-input{
-  height:30px;
-}
-
-.vxe-cell--wrapper .vxe-number-input{
-  height:30px;
-  line-height:30px;
 }
 
 .lc-form-tabs{
@@ -2847,17 +2889,6 @@ a {
   overflow: hidden;
 }
 
-.lc-array-table{
-  display: flex !important;
-  flex-direction: column;
-  height: 100%;
-}
-.lc-array-table >:last-child{
-  flex: 1 !important;
-  overflow: hidden;
-}
-
-
 .lc-sub-form{
   display: flex!important;
   flex-direction: column;
@@ -2880,12 +2911,31 @@ a {
 
 
 
-.lc-runtime-block--fill{
+.lc-runtime-block--fill:not(.lc-node-container){
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 .lc-runtime-block--fill >:last-child{
+  flex: 1 !important;
+  overflow: hidden;
+}
+.lc-array-table{
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+}
+.lc-array-table >:last-child{
+  flex: 1 !important;
+  overflow: hidden;
+}
+
+
+.vxe-form--item-inner{
+  display: flex !important;
+  flex-direction: column;
+}
+.vxe-form--item-inner >:last-child{
   flex: 1 !important;
   overflow: hidden;
 }

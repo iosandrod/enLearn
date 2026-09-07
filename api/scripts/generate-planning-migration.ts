@@ -275,6 +275,23 @@ function relationSourceKey(field: PlanningFieldDefinition) {
   return field.relation ? `${field.relation}Options` : '';
 }
 
+export function planningRelationOptionSourceCode(
+  model: PlanningModelDefinition,
+  field: PlanningFieldDefinition
+) {
+  if (
+    field.kind !== 'relation' ||
+    !field.relation ||
+    field.relation === model.key ||
+    field.relationTree ||
+    Object.keys(field.relationFilters ?? {}).length ||
+    Object.keys(field.relationFilterBindings ?? {}).length
+  ) {
+    return '';
+  }
+  return `${field.relation}_options_source`;
+}
+
 function relationFilterBindingEvents(
   model: PlanningModelDefinition,
   field: PlanningFieldDefinition
@@ -326,7 +343,9 @@ function formField(model: PlanningModelDefinition, field: PlanningFieldDefinitio
   if (field.kind === 'relation') {
     props.filterable = true;
     if (field.relationTree) result.component = 'vxe-tree-select';
-    result.optionsSourceKey = relationSourceKey(field);
+    const optionsCode = planningRelationOptionSourceCode(model, field);
+    if (optionsCode) result.optionsCode = optionsCode;
+    else result.optionsSourceKey = relationSourceKey(field);
     result.optionProps = field.relationTree
       ? { label: 'label', value: 'id', children: 'children' }
       : { label: 'label', value: 'id' };

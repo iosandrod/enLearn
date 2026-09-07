@@ -62,6 +62,7 @@ quickJsModulePromise.then(
 const allowedCapabilityNames = new Set<LowCodeScriptCapabilityName>([
   'action.execute',
   'api.invoke',
+  'dialog.confirmLowCodePage',
   'dialog.open',
   'event.emit',
   'form.patch',
@@ -190,6 +191,7 @@ function createScriptSource(request: LowCodeScriptExecutionRequest, contextJson:
     invoke: (name, payload = {}) => call("api.invoke", name, payload),
   });
   const dialog = Object.freeze({
+    confirmLowCodePage: (config) => call("dialog.confirmLowCodePage", config),
     open: (config) => call("dialog.open", config),
   });
   const events = Object.freeze({

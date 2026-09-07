@@ -83,10 +83,10 @@ export class PageSchemaRepository {
 
   readonly getDataSource = (key?: string): LowCodePageDataSource | undefined => {
     if (!key) return undefined;
-
+    
     const node = this.flattenPageBlocks().find(
       (block): block is LowCodePageFormBlock =>
-        block.kind === 'form' && block.id === key,
+         block.id === key,
     );
     if (node && isRecord(node.dataSource)) {
       return {
@@ -94,8 +94,9 @@ export class PageSchemaRepository {
         key: node.id,
       };
     }
-
-    return this.getPage().schema.dataSources?.[key];
+    let schema= this.getPage().schema
+    let obj= schema.dataSources?.[key]||{} as any
+    return obj//
   };
 
   readonly getGridRowKey = (block: LowCodePageGridBlock) => {

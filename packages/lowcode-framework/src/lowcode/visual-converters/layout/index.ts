@@ -21,6 +21,24 @@ type SlotItem = {
   children?: VisualEditorBlockData[];
 };
 
+function readSlotItems(value: unknown): SlotItem[] {
+  if (!isPlainRecord(value)) return [];
+
+  return Object.entries(value)
+    .filter(([key, slot]) => key !== 'value' && isPlainRecord(slot))
+    .sort(([prevKey], [nextKey]) => {
+      const prevIndex = Number(prevKey.replace('slot', ''));
+      const nextIndex = Number(nextKey.replace('slot', ''));
+      return prevIndex - nextIndex;
+    })
+    .map(([, slot]) => ({
+      span: (slot as SlotItem).span,
+      children: Array.isArray((slot as SlotItem).children)
+        ? (slot as SlotItem).children
+        : [],
+    }));
+}
+
 const runtimeKinds = new Set(['container', 'section', 'modal', 'drawer']);
 
 function normalizeRuntimeKind(value: unknown) {
@@ -64,7 +82,17 @@ const converter: VisualToLowCodeConverter = {
     const title = readString(props.title);
     const description = readString(props.description);
     const runtimeKind = normalizeRuntimeKind(props.runtimeKind);
-    const blocks = context.convertBlocks(readSlotChildren(props.slots));
+    const slotItems = runtimeKind === 'container' ? readSlotItems(props.slots) : [];
+    const blocks = runtimeKind === 'container'
+      ? slotItems.map((slot, index) => ({
+          id: `${id}__slot_${index}`,
+          kind: 'container' as const,
+          columns: 1,
+          gap: 0,
+          panel: false,
+          blocks: context.convertBlocks(slot.children),
+        }))
+      : context.convertBlocks(readSlotChildren(props.slots));
     const overlays = Array.isArray(props.overlays)
       ? context.convertOverlays(props.overlays as VisualEditorBlockData[])
       : [];
@@ -115,7 +143,15 @@ const converter: VisualToLowCodeConverter = {
       kind: 'container',
       ...(title ? { title } : {}),
       ...(description ? { description } : {}),
-      columns: blocks.length ? blocks.length : 1,
+      columns: slotItems.length || (blocks.length ? blocks.length : 1),
+      ...(slotItems.length
+        ? {
+            columnSpans: slotItems.map((slot) => {
+              const span = Number(slot.span);
+              return Number.isFinite(span) && span > 0 ? span : 1;
+            }),
+          }
+        : {}),
       gap: typeof gap === 'number' ? gap : Number(gap) || 8,
       panel: readBoolean(props.panel, false),
       blocks,

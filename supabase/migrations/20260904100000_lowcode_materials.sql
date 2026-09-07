@@ -2584,6 +2584,7 @@ $material_9c4ff75f779a$,
     'lowcode/form-materials/lc-array-table/index.vue',
     $material_4e8c367c176d$<template>
   <div
+    ref="arrayTableRef"
     class="lc-array-table"
     :class="{ 'lc-array-table--fill': fillAvailableHeight }"
   >
@@ -2903,6 +2904,10 @@ const tableRef = ref<{
   setCurrentRow?: (row: Record<string, unknown>) => Promise<unknown> | void;
   setTreeExpand?: (row: Record<string, unknown>, expanded: boolean) => Promise<unknown> | void;
 }>();
+const arrayTableRef = ref<HTMLElement>();
+let arrayTableResizeObserver: ResizeObserver | undefined;
+let arrayTableResizeFrame: number | undefined;
+const measuredFillHeight = ref<number>();
 const systemSettings = useSystemSettings();
 let generatedRowKeySeed = 0;
 
@@ -3076,7 +3081,12 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
   )
 );
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
-const tableHeight = computed(() => readSize(tableConfig.value.height));
+const tableHeight = computed(() => {
+  const configuredHeight = readSize(tableConfig.value.height);
+  return isFillHeight(configuredHeight) && measuredFillHeight.value
+    ? measuredFillHeight.value
+    : configuredHeight;
+});
 const showSeq = computed(() => fieldProps.value.showSeq !== false);
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
 const showActions = computed(() => fieldProps.value.showActions !== false);
@@ -3113,7 +3123,6 @@ watch(
 watch(
   () => [
     columns.value,
-    tableHeight.value,
     showSeq.value,
     showActions.value,
     actionWidth.value,
@@ -3154,11 +3163,65 @@ watch(
   { immediate: true },
 );
 
+function measureFillHeight() {
+  arrayTableResizeFrame = undefined;
+  if (!isFillHeight(tableConfig.value.height)) {
+    measuredFillHeight.value = undefined;
+    return;
+  }
+
+  const root = arrayTableRef.value;
+  if (!root) return;
+
+  // The array-table can be content-sized, so observing only it misses changes
+  // made by a flex/grid parent. Use the smallest rendered ancestor as the
+  // available box and reserve the toolbar plus the component gap.
+  const heights: number[] = [];
+  let element: HTMLElement | null = root;
+  while (element && element !== document.body) {
+    const height = element.getBoundingClientRect().height;
+    if (height > 0) heights.push(height);
+    element = element.parentElement;
+  }
+  const constrainedHeight = Math.min(...heights);
+  if (!Number.isFinite(constrainedHeight)) return;
+  const toolbarHeight = root.querySelector<HTMLElement>('.lc-array-table__toolbar')?.getBoundingClientRect().height ?? 0;
+  const nextHeight = Math.max(0, Math.floor(constrainedHeight - toolbarHeight - 8));
+  if (nextHeight === measuredFillHeight.value) return;
+  measuredFillHeight.value = nextHeight;
+  recalculateTable();
+}
+
+function scheduleFillHeightMeasurement() {
+  if (typeof requestAnimationFrame === 'undefined') {
+    measureFillHeight();
+    return;
+  }
+  if (typeof arrayTableResizeFrame === 'number') cancelAnimationFrame(arrayTableResizeFrame);
+  arrayTableResizeFrame = requestAnimationFrame(measureFillHeight);
+}
+
 onMounted(() => {
-  //
-  setTimeout(() => recalculateTable(), 10);//
+  setTimeout(() => recalculateTable(), 10);
+
+  const element = arrayTableRef.value;
+  if (element && typeof ResizeObserver !== 'undefined') {
+    arrayTableResizeObserver = new ResizeObserver(scheduleFillHeightMeasurement);
+    let observed: HTMLElement | null = element;
+    while (observed && observed !== document.body) {
+      arrayTableResizeObserver.observe(observed);
+      observed = observed.parentElement;
+    }
+  }
+  scheduleFillHeightMeasurement();
 });
-onBeforeUnmount(() => unsubscribeOptionSources?.());
+onBeforeUnmount(() => {
+  unsubscribeOptionSources?.();
+  arrayTableResizeObserver?.disconnect();
+  arrayTableResizeObserver = undefined;
+  if (typeof arrayTableResizeFrame === 'number') cancelAnimationFrame(arrayTableResizeFrame);
+  arrayTableResizeFrame = undefined;
+});
 
 function recalculateTable() {
   nextTick(() => {
@@ -4154,8 +4217,8 @@ function cloneValue(value: unknown) {
 }
 </style>
 $material_4e8c367c176d$,
-    '4e8c367c176dd4cca1b424379e0d32d16ab350f64c8391cdea0a66ed264ed68b',
-    '1.0.0',
+    '87348ed642227f7ea42fd07f2b9ad77298de75a008a6cc412a2f07d072bc6c45',
+    '1.2.0',
     array[]::text[],
     35,
     '{"implementationKey":"lc-array-table","sourcePath":"lowcode/form-materials/lc-array-table/index.vue"}'::jsonb,
@@ -6539,7 +6602,6 @@ $material_6aeff6391682$,
       <div class="lc-planning-visual__actions">
         <span>
           {{ flowLanes.length }} 条路线 · {{ operationCount }} 道工序
-          <template v-if="dependencyCount"> · {{ dependencyCount }} 条前置约束</template>
         </span>
         <div class="lc-planning-flow__view-switch" role="group" aria-label="工艺路线视图">
           <button
@@ -6555,8 +6617,8 @@ $material_6aeff6391682$,
           <button
             type="button"
             :class="{ 'is-active': viewMode === 'graph' }"
-            title="流程与约束视图"
-            aria-label="流程与约束视图"
+            title="流程图"
+            aria-label="流程图"
             @click="showGraph"
           >
             <i class="ri-node-tree" aria-hidden="true" />
@@ -6635,10 +6697,6 @@ $material_6aeff6391682$,
                   <template v-if="node.data.parentOperationPath">
                     <dt>父级</dt>
                     <dd :title="readString(node.data.parentOperationPath)">{{ node.data.parentOperationPath }}</dd>
-                  </template>
-                  <template v-if="incomingDependencyCount(node.id)">
-                    <dt>前置</dt>
-                    <dd :title="incomingDependencyTitle(node.id)">{{ incomingDependencyCount(node.id) }} 个约束</dd>
                   </template>
                 </dl>
                 <button
@@ -7034,18 +7092,14 @@ const operationCount = computed(() => nodes.value.length);
 const rawEdges = computed<Record<string, unknown>[]>(() =>
   (Array.isArray(source.value.edges) ? source.value.edges : []).filter(isRecord)
 );
-const dependencyCount = computed(() =>
-  rawEdges.value.filter((edge) => readString(edge.relation) === 'dependency').length
-);
-
 const edges = computed<Edge[]>(() => {
   const edgeGroups = new Map<string, Record<string, unknown>[]>();
   const visibleNodeIds = new Set(nodes.value.map((node) => node.id));
   rawEdges.value.forEach((row) => {
     const sourceId = readString(row.source);
     const targetId = readString(row.target);
-    const relation = readString(row.relation, 'dependency');
-    if (!sourceId || !targetId || relation === 'owner') return;
+    const relation = readString(row.relation, 'routing');
+    if (!sourceId || !targetId || relation !== 'routing') return;
     if (!visibleNodeIds.has(sourceId) || !visibleNodeIds.has(targetId)) return;
     const key = `${sourceId}:${targetId}`;
     edgeGroups.set(key, [...(edgeGroups.get(key) ?? []), row]);
@@ -7056,16 +7110,9 @@ const edges = computed<Edge[]>(() => {
       const first = rows[0];
       const sourceId = readString(first.source);
       const targetId = readString(first.target);
-      const relations = [...new Set(rows.map((row) => readString(row.relation, 'dependency')))];
-      const hasDependency = relations.includes('dependency');
-      const hasRouting = relations.includes('routing');
-      const tone = hasDependency && hasRouting
-        ? 'combined'
-        : hasDependency
-          ? 'dependency'
-          : 'routing';
+      const tone = 'routing';
       const color = edgeColor(tone);
-      const label = hasDependency ? '前置约束' : '';
+      const label = '';
       const sameLane = readString(nodeById.value.get(sourceId)?.data.laneId) ===
         readString(nodeById.value.get(targetId)?.data.laneId);
       const presentation = flowEdgePresentation(
@@ -7088,7 +7135,6 @@ const edges = computed<Edge[]>(() => {
         style: {
           stroke: color,
           strokeWidth: tone === 'routing' ? 2.4 : 2.8,
-          strokeDasharray: tone === 'dependency' ? '8 6' : undefined,
         },
         labelStyle: {
           fill: '#172033',
@@ -7316,22 +7362,6 @@ async function showGraph() {
   viewMode.value = 'graph';
   await nextTick();
   scheduleFit(180);
-}
-
-function incomingDependencies(nodeId: string) {
-  return rawEdges.value.filter((edge) => {
-    return readString(edge.relation) === 'dependency' && readString(edge.target) === nodeId;
-  });
-}
-
-function incomingDependencyCount(nodeId: string) {
-  return incomingDependencies(nodeId).length;
-}
-
-function incomingDependencyTitle(nodeId: string) {
-  return incomingDependencies(nodeId)
-    .map((edge) => readString(allNodeById.value.get(readString(edge.source))?.data.label, readString(edge.source)))
-    .join('、');
 }
 
 function selectNode(id: string, data: Record<string, unknown>) {
@@ -7762,7 +7792,7 @@ function handleNodeDragStop(event: { node?: Node }) {
   padding: 8px 10px;
   pointer-events: auto;
 }
-.lc-planning-flow__graph-container.is-alternate { border-style: dashed; border-color: #c69b3c; background: rgb(255 248 225 / 50%); color: #805d18; }
+.lc-planning-flow__graph-container.is-alternate { border-style: solid; border-color: #c69b3c; background: rgb(255 248 225 / 50%); color: #805d18; }
 .lc-planning-flow__graph-container.is-split { border-color: #9b7ac3; background: rgb(246 241 255 / 54%); color: #65458c; }
 .lc-planning-flow__graph-container header { display: flex; min-width: 0; align-items: center; gap: 7px; }
 .lc-planning-flow__graph-container header > i { font-size: 15px; }

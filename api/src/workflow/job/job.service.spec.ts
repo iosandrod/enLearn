@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { BadRequestException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import type { TriggerDevClient } from '../trigger/trigger-dev.client';
@@ -34,6 +34,7 @@ async function main() {
   await testTypedRunKeepsPersistedPlanAndTrustedActor();
   await testSyncRunReturnsFinalWorkflowOutput();
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
+  await testTriggerConnectionFailureReturnsBadGateway();
   await testTriggeredRunIsCanceledWhenRunIdProjectionFails();
   console.log('workflow-api Trigger.dev job Supabase RPC tests passed');
 }
@@ -614,6 +615,35 @@ async function testTriggerFailureIsPreservedWhenFailureProjectionFails() {
   );
 
   await assert.rejects(() => service.runJob(job.id, {}, actor), /Trigger\.dev unavailable/);
+}
+
+async function testTriggerConnectionFailureReturnsBadGateway() {
+  const job = createJob({ type: 'manual' });
+  const run = createRun();
+  let call = 0;
+  const service = createService(
+    async () => {
+      call += 1;
+      if (call === 1) return { data: toRow(job), error: null };
+      if (call === 2) return { data: toRunRow(run), error: null };
+      return { data: toRunRow(run), error: null };
+    },
+    createTriggerClient({
+      triggerTask: async () => {
+        throw new Error('Connection error.');
+      }
+    })
+  );
+
+  await assert.rejects(
+    () => service.runJob(job.id, {}, actor),
+    (error: unknown) => {
+      assert.ok(error instanceof BadGatewayException);
+      assert.match(error.message, /Workflow runtime is unavailable/);
+      assert.match(error.message, /TRIGGER_API_URL/);
+      return true;
+    }
+  );
 }
 
 async function testTriggeredRunIsCanceledWhenRunIdProjectionFails() {

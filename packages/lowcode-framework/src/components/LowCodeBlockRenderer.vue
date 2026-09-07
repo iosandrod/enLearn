@@ -37,7 +37,6 @@ import {
 
 const props = defineProps<LowCodeBlockMaterialProps>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
-
 const materialComponent = computed(() => {
   lowCodeBlockMaterialRevision.value;
   return getLowCodeBlockMaterial(props.block.kind)?.component;
