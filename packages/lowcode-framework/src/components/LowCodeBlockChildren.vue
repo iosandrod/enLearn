@@ -13,6 +13,7 @@
     @form-action="(payload) => emit('formAction', payload)"
     @grid-edit="(payload) => emit('gridEdit', payload)"
     @grid-delete="(payload) => emit('gridDelete', payload)"
+    @grid-row-action="(payload) => emit('gridRowAction', payload)"
     @toolbar-action="(payload) => emit('toolbarAction', payload)"
     @search-submit="(payload) => emit('searchSubmit', payload)"
     @search-action="(payload) => emit('searchAction', payload)"

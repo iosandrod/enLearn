@@ -109,6 +109,7 @@ const knownBlockKinds = new Set([
   'container',
   'detail',
   'drawer',
+  'entity-design-flow',
   'form',
   'grid',
   'modal',

@@ -5,6 +5,7 @@ import type {
   LowCodePageBlock,
   LowCodePageRecord,
   LowCodePageGridBlock,
+  LowCodeGridRowAction,
   LowCodePageOverlayBlock,
   LowCodePageSearchFormBlock,
   LowCodeRuntimeEvent
@@ -996,6 +997,27 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     }
   }
 
+  async function handleGridRowAction(
+    block: LowCodePageGridBlock,
+    action: LowCodeGridRowAction,
+    row: Record<string, unknown>,
+  ) {
+    const actionCode = readString(action.code);
+    await publishRuntimeEvent({
+      name: 'grid.rowAction',
+      blockId: block.id,
+      blockKind: block.kind,
+      timestamp: Date.now(),
+      payload: {
+        actionCode,
+        action,
+        row,
+        directives: action.directives ?? [],
+        ...(action.script ? { script: action.script } : {}),
+      },
+    });
+  }
+
   async function handleGridDelete(
     block: LowCodePageGridBlock,
     row: Record<string, unknown>
@@ -1068,6 +1090,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     handleFormSubmit,
     handleFormAction,
     handleGridEdit,
+    handleGridRowAction,
     handleGridDelete,
     handleToolbarAction,
     handleSearchSubmit,

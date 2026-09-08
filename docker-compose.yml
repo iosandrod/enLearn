@@ -1,0 +1,50 @@
+name: enlearn
+
+services:
+  api:
+    build:
+      context: .
+      target: api-runtime
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3002
+      TRIGGER_DEV_WORKER_AUTOSTART: ${TRIGGER_DEV_WORKER_AUTOSTART:-0}
+      PLANNING_RUN_MODE: ${PLANNING_RUN_MODE:-inline}
+      PLANNING_ENGINE_MODE: ${PLANNING_ENGINE_MODE:-cpp-typescript}
+    expose:
+      - "3002"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      target: web-runtime
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        VITE_SOCKET_BASE_URL: ${VITE_SOCKET_BASE_URL:-}
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

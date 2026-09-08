@@ -1,6 +1,7 @@
 import type {
   LowCodePageContainerBlock,
   LowCodePageButtonGroupBlock,
+  LowCodePageEntityDesignFlowBlock,
   LowCodePageDetailBlock,
   LowCodePageDrawerBlock,
   LowCodePageFormBlock,
@@ -266,6 +267,12 @@ export function createDefaultTreeBlock(overrides?: Partial<LowCodePageTreeBlock>
     },
     overrides
   );
+}
+
+export function createDefaultEntityDesignFlowBlock(overrides?: Partial<LowCodePageEntityDesignFlowBlock>) {
+  return withOverrides<LowCodePageEntityDesignFlowBlock>({
+    id: 'entity-design-flow-block', kind: 'entity-design-flow', title: '实体关系画布', height: 560,
+  }, overrides);
 }
 
 export function createDefaultPlanningFlowBlock(

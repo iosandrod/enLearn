@@ -183,15 +183,23 @@ assert.equal(routeDesignerBlocks.some((block) => block.id === 'planning_routing_
 assert.deepEqual(routeDesignerSchema.scriptPolicy?.capabilities, [
   'action.execute',
   'dialog.confirmLowCodePage',
+  'event.emit',
   'message.success',
   'pageFunction.execute'
 ]);
+const viewBomRoutesFunction = routeDesignerSchema.functions?.find((pageFunction) => pageFunction.name === 'viewBomRoutes');
+assert.equal(viewBomRoutesFunction?.label, '查看工艺路线');
+assert.match(String(viewBomRoutesFunction?.script), /planning_bom_route_picker/);
+assert.match(String(viewBomRoutesFunction?.script), /planningBom\.routeSelect/);
 const newRouteFunction = routeDesignerSchema.functions?.find((pageFunction) => pageFunction.name === 'newRoute');
 assert.equal(newRouteFunction?.label, '新建路线');
 assert.match(String(newRouteFunction?.script), /pageCode: "planning_operation-edit"/);
 assert.match(String(newRouteFunction?.script), /confirmLabel: "保存路线"/);
 assert.match(String(newRouteFunction?.script), /submitOnConfirm: true/);
 assert.match(String(newRouteFunction?.script), /method: "refreshOptions"/);
+assert.match(String(newRouteFunction?.script), /materialId/);
+assert.match(String(newRouteFunction?.script), /prefill/);
+assert.match(String(newRouteFunction?.script), /route: dialogRoute/);
 
 for (const sourceKey of [
   'routingSuboperations',
@@ -225,6 +233,27 @@ assert.match(String(routingHandler?.directives[0]?.route), /planning\/operation\
 const bomHandler = PLANNING_BOM_PAGE_SCHEMA.eventHandlers?.[0];
 assert.equal(bomHandler?.event, 'planningBom.nodeSelect');
 assert.match(String(bomHandler?.directives[0]?.route), /planning\/\{\{ row\.entityType \}\}\/edit/);
+
+const bomFlow = PLANNING_BOM_PAGE_SCHEMA.dataSources?.bomFlow;
+assert.equal(bomFlow?.serviceMethod, 'getPlanningConsoleData');
+assert.deepEqual(bomFlow?.postData, {
+  dataset: 'flow',
+  filters: { operationId: '__none__' },
+  requiredFilters: ['operationId']
+});
+const bomRouteHandler = PLANNING_BOM_PAGE_SCHEMA.eventHandlers?.find((handler) => handler.event === 'planningBom.routeSelect');
+assert.equal(bomRouteHandler?.blockId, 'planning_bom_tree');
+assert.deepEqual(bomRouteHandler?.directives[0], {
+  type: 'setSearchFilters',
+  sourceKey: 'bomFlow',
+  mode: 'replace',
+  values: { operationId: '{{ event.route.id }}' }
+});
+const bomCreateHandler = PLANNING_BOM_PAGE_SCHEMA.eventHandlers?.find((handler) => handler.event === 'planningBom.createRoute');
+assert.match(String(bomCreateHandler?.directives[0]?.route), /prefill=.*event\.materialId/);
+const bomWorkspace = PLANNING_BOM_PAGE_SCHEMA.blocks.find((block) => block.id === 'planning_bom_workspace');
+assert.equal(bomWorkspace?.kind, 'container');
+assert.deepEqual((bomWorkspace as any)?.blocks?.map((block: any) => block.id), ['planning_bom_tree', 'planning_bom_flow']);
 
 assert.deepEqual(
   PLANNING_STRUCTURE_ROUTES.map((route) => [route.title, route.sortOrder]),

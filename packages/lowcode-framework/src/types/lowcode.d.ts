@@ -628,6 +628,14 @@ export type LowCodePageTreeBlock = LowCodeMaterialVersionedBlock & {
     keyField?: string;
     titleField?: string;
     childrenField?: string;
+    routeActionDirectives?: LowCodeRuntimeDirective[];
+};
+export type LowCodePageEntityDesignFlowBlock = LowCodeMaterialVersionedBlock & {
+    id: string;
+    kind: 'entity-design-flow';
+    title?: string;
+    sourceKey?: string;
+    height?: number | string;
 };
 export type LowCodePagePlanningFlowBlock = LowCodeMaterialVersionedBlock & {
     id: string;
@@ -666,6 +674,7 @@ export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
     keyField?: string;
     titleField?: string;
     childrenField?: string;
+    routeActionDirectives?: LowCodeRuntimeDirective[];
 };
 /** Database-backed label printing designer material block. */
 export type LowCodePageLabelDesignerBlock = LowCodeMaterialVersionedBlock & {
@@ -675,7 +684,7 @@ export type LowCodePageLabelDesignerBlock = LowCodeMaterialVersionedBlock & {
     templateName?: string;
     readonly?: boolean;
 };
-export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageButtonGroupBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock | LowCodePagePlanningFlowBlock | LowCodePagePlanningGanttBlock | LowCodePagePlanningBomBlock | LowCodePageLabelDesignerBlock;
+export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageButtonGroupBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock | LowCodePageEntityDesignFlowBlock | LowCodePagePlanningFlowBlock | LowCodePagePlanningGanttBlock | LowCodePagePlanningBomBlock | LowCodePageLabelDesignerBlock;
 export type LowCodePageOverlayBlock = LowCodePageModalBlock | LowCodePageDrawerBlock;
 export type LowCodePageSchema = {
     schemaVersion?: number;

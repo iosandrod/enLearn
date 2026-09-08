@@ -1037,11 +1037,9 @@ export abstract class BaseService implements ServiceExecutor {
       );
     }
 
-    const filters = this.readRecord(ctx.filters);
     const defaultFilters = ctx.resource.list?.defaultFilters ?? {};
-    for (const [field, value] of Object.entries({ ...defaultFilters, ...filters })) {
-      query = this.applySupabaseFilter(query, field, value);
-    }
+    query = this.applyListItemsFilters(query, defaultFilters);
+    query = this.applyListItemsFilters(query, ctx.filters);
 
     const sorts = this.readCrudSorts(ctx);
     for (const sort of sorts) {
@@ -1883,12 +1881,84 @@ export abstract class BaseService implements ServiceExecutor {
   protected applyListItemsFilters(query: any, filters: unknown) {
     if (!this.isRecord(filters)) return query;
 
+    if (this.isListFilterGroup(filters)) {
+      const expression = this.compileListFilterExpression(filters);
+      return expression ? query.or(expression) : query;
+    }
+
     for (const [field, value] of Object.entries(filters)) {
       this.assertIdentifierPath(field, 'filter field');
       query = this.applySupabaseFilter(query, field, value);
     }
 
     return query;
+  }
+
+  protected isListFilterGroup(value: unknown): value is ListFilterGroup {
+    return this.isRecord(value)
+      && Array.isArray(value.conditions)
+      && ['and', 'or'].includes(this.readOptionalString(value.logic).toLowerCase());
+  }
+
+  protected compileListFilterExpression(value: ListFilterCondition | ListFilterGroup): string {
+    if (this.isListFilterGroup(value)) {
+      const conditions = value.conditions
+        .map((condition) => this.compileListFilterExpression(condition))
+        .filter(Boolean);
+      if (!conditions.length) return '';
+      if (conditions.length === 1) return conditions[0];
+      return `${this.readOptionalString(value.logic).toLowerCase() === 'or' ? 'or' : 'and'}(${conditions.join(',')})`;
+    }
+
+    if (!this.isRecord(value)) return '';
+    const field = this.readOptionalString(value.field);
+    if (!field) return '';
+    this.assertIdentifierPath(field, 'filter field');
+    const op = this.readOptionalString(value.op).replace(/_/g, '').toLowerCase() || 'eq';
+    const operand = value.value;
+
+    if (op === 'isnull') return `${field}.is.null`;
+    if (op === 'isnotnull') return `${field}.not.is.null`;
+    if (operand === undefined || operand === '') return '';
+    if (op === 'between') {
+      const items = Array.isArray(operand) ? operand : [];
+      return items.length >= 2
+        ? `and(${field}.gte.${this.formatPostgrestFilterValue(items[0])},${field}.lte.${this.formatPostgrestFilterValue(items[1])})`
+        : '';
+    }
+    if (op === 'in' || op === 'notin') {
+      const items = Array.isArray(operand) ? operand : [operand];
+      if (!items.length) return '';
+      const values = items.map((item) => this.formatPostgrestFilterValue(item)).join(',');
+      return `${field}.${op === 'notin' ? 'not.in' : 'in'}.(${values})`;
+    }
+
+    const operatorMap: Record<string, string> = {
+      eq: 'eq', ne: 'neq', gt: 'gt', gte: 'gte', lt: 'lt', lte: 'lte',
+      like: 'like', ilike: 'ilike', notlike: 'not.like', notilike: 'not.ilike',
+      startswith: 'like', endswith: 'like',
+      contains: 'cs', containedby: 'cd', overlaps: 'ov',
+    };
+    const operator = operatorMap[op];
+    if (!operator) throw new BadRequestException('Unsupported filter operator: ' + value.op);
+    const resolvedOperand = op === 'startswith'
+      ? `${String(operand)}%`
+      : op === 'endswith'
+        ? `%${String(operand)}`
+        : ['like', 'ilike', 'notlike', 'notilike'].includes(op)
+          ? `%${String(operand)}%`
+          : operand;
+    const resolvedOperator = op === 'startswith' || op === 'endswith' ? 'like' : operator;
+    return `${field}.${resolvedOperator}.${this.formatPostgrestFilterValue(resolvedOperand)}`;
+  }
+
+  protected formatPostgrestFilterValue(value: unknown) {
+    if (value === null) return 'null';
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (this.isRecord(value) || Array.isArray(value)) {
+      return JSON.stringify(value);
+    }
+    return `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
 
   protected applyListItemsSearch(query: any, postData: ServicePostData) {
@@ -2111,29 +2181,56 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected hasRequiredListFilters(postData: ServicePostData) {
-    const required = this.readStringArray(
-      postData.requiredFilters ?? postData.required_filters
-    );
+    const required = [
+      ...this.readStringArray(postData.requiredFilters ?? postData.required_filters),
+      ...this.readRequiredFilterFields(postData.filters),
+    ].filter((field, index, fields) => fields.indexOf(field) === index);
     if (!required.length) return true;
 
-    const filters = this.readRecord(postData.filters);
     return required.every((field) => {
       this.assertIdentifierPath(field, 'required filter field');
-      const value = filters[field];
-      if (this.isUnresolvedRequiredFilterValue(value)) return false;
-      if (Array.isArray(value)) {
-        return value.length > 0
-          && value.every((item) => !this.isUnresolvedRequiredFilterValue(item));
-      }
-      if (this.isRecord(value)) {
+      const values = this.readListFilterValues(postData.filters, field);
+      if (!values.length) return false;
+      return values.every((value) => {
+        if (this.isUnresolvedRequiredFilterValue(value)) return false;
+        if (Array.isArray(value)) {
+          return value.length > 0
+            && value.every((item) => !this.isUnresolvedRequiredFilterValue(item));
+        }
+        if (!this.isRecord(value)) return true;
         const operand = value.value;
         if (this.isUnresolvedRequiredFilterValue(operand)) return false;
         return !Array.isArray(operand)
           || (operand.length > 0
             && operand.every((item) => !this.isUnresolvedRequiredFilterValue(item)));
-      }
-      return true;
+      });
     });
+  }
+
+  protected readRequiredFilterFields(filters: unknown): string[] {
+    if (!this.isRecord(filters)) return [];
+    if (this.isListFilterGroup(filters)) {
+      return filters.conditions.flatMap((condition) =>
+        this.readRequiredFilterFields(condition)
+      );
+    }
+    const field = this.readOptionalString(filters.field);
+    return filters.required === true && field ? [field] : [];
+  }
+
+  protected readListFilterValues(filters: unknown, field: string): unknown[] {
+    if (!this.isRecord(filters)) return [];
+    if (this.isListFilterGroup(filters)) {
+      return filters.conditions.flatMap((condition) => {
+        if (this.isListFilterGroup(condition)) {
+          return this.readListFilterValues(condition, field);
+        }
+        return this.readOptionalString(condition.field) === field
+          ? [condition.value]
+          : [];
+      });
+    }
+    return Object.prototype.hasOwnProperty.call(filters, field) ? [filters[field]] : [];
   }
 
   protected isUnresolvedRequiredFilterValue(value: unknown) {

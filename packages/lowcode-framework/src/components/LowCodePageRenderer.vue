@@ -32,6 +32,7 @@
         @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
         @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
         @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+        @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
         @toolbar-action="({ action }) => handleToolbarAction(action)"
         @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
         @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
@@ -50,6 +51,7 @@
         @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
         @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
         @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+        @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
         @toolbar-action="({ action }) => handleToolbarAction(action)"
         @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
         @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
@@ -135,6 +137,7 @@ const {
   handleFormAction,
   handleGridEdit,
   handleGridDelete,
+  handleGridRowAction,
   handleToolbarAction,
   handleSearchSubmit,
   handleSearchAction,

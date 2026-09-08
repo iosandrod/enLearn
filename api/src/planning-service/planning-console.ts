@@ -66,6 +66,28 @@ function readNumber(value: unknown, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function planningOperationTypeLabel(value: unknown) {
+  const type = readString(value, 'fixed_time');
+  return ({
+    routing: '工艺路线',
+    fixed_time: '固定时长工序',
+    time_per: '单位时长工序',
+    alternate: '备选工序',
+    split: '拆分工序'
+  } as Record<string, string>)[type] ?? type;
+}
+
+function planningOperationStatusLabel(operation: PlanningRow) {
+  const explicit = readString(operation.status);
+  if (explicit) return explicit;
+  const now = Date.now();
+  const start = Date.parse(readString(operation.effective_start));
+  const end = Date.parse(readString(operation.effective_end));
+  if (Number.isFinite(start) && start > now) return '未生效';
+  if (Number.isFinite(end) && end < now) return '已结束';
+  return '生效中';
+}
+
 export function intervalHours(value: unknown) {
   if (typeof value === 'number' && Number.isFinite(value)) return value / 3_600;
   const text = readString(value).toLowerCase();
@@ -1295,6 +1317,16 @@ export function buildPlanningBomTree(
       quantity: typeof quantity === 'number' ? Math.abs(quantity) : undefined,
       uom: readString(item.uom),
       cycle,
+      producerRoutes: itemOperations.map((operation) => ({
+        id: readString(operation.id),
+        name: readString(operation.name) || readString(operation.id),
+        type: readString(operation.type, 'fixed_time'),
+        typeLabel: planningOperationTypeLabel(operation.type),
+        statusLabel: planningOperationStatusLabel(operation),
+        priority: readNumber(operation.priority),
+        effective_start: operation.effective_start,
+        effective_end: operation.effective_end,
+      })),
       children: itemOperations.map((operation, operationIndex) => {
         const operationId = readString(operation.id);
         const operationType = readString(operation.type);
@@ -1329,7 +1361,7 @@ async function loadBom(
 ) {
   const [items, operations, materials, suboperations] = await Promise.all([
     selectRows(client, accountId, 'planning_item', 'id,name,display_name,description,uom'),
-    selectRows(client, accountId, 'planning_operation', 'id,name,type,item_id,owner_id,priority'),
+    selectRows(client, accountId, 'planning_operation', 'id,name,type,item_id,owner_id,priority,effective_start,effective_end'),
     selectRows(client, accountId, 'planning_operationmaterial', 'id,operation_id,item_id,quantity,quantity_fixed,type'),
     selectRows(client, accountId, 'planning_suboperation', 'id,operation_id,suboperation_id,priority')
   ]);

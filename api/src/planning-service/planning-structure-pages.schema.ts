@@ -6,6 +6,8 @@ export const PLANNING_ROUTE_DESIGNER_PAGE_CODE = 'planning_route_designer';
 export const PLANNING_ROUTE_DESIGNER_ROUTE = '/dashboard/planning/route-designer';
 export const PLANNING_BOM_PAGE_CODE = 'planning_bom_view';
 export const PLANNING_BOM_ROUTE = '/dashboard/planning/bom-view';
+export const PLANNING_BOM_ROUTE_PICKER_PAGE_CODE = 'planning_bom_route_picker';
+export const PLANNING_BOM_ROUTE_PICKER_ROUTE = '/dashboard/planning/bom-route-picker';
 
 export const PLANNING_STRUCTURE_ROUTES = [
   {
@@ -403,16 +405,49 @@ export function buildPlanningBomPageSchema(): LowCodePageSchema {
         },
         autoLoad: true
       },
+      bomFlow: {
+        key: 'bomFlow',
+        label: '选中物料工艺路线图',
+        sourceType: 'custom',
+        serviceName: 'planning',
+        serviceMethod: 'getPlanningConsoleData',
+        postData: {
+          dataset: 'flow',
+          filters: { operationId: '__none__' },
+          requiredFilters: ['operationId']
+        },
+        autoLoad: false
+      },
       itemOptions: optionSource('item', '产品与物料选项')
     },
-    eventHandlers: [{
-      event: 'planningBom.nodeSelect',
-      blockId: 'planning_bom_tree',
-      directives: [{
-        type: 'navigate',
-        route: '/dashboard/planning/{{ row.entityType }}/edit?id={{ row.entityId }}&fromPage=planning_bom_view'
-      }]
-    }],
+    eventHandlers: [
+      {
+        event: 'planningBom.nodeSelect',
+        blockId: 'planning_bom_tree',
+        directives: [{
+          type: 'navigate',
+          route: '/dashboard/planning/{{ row.entityType }}/edit?id={{ row.entityId }}&fromPage=planning_bom_view'
+        }]
+      },
+      {
+        event: 'planningBom.routeSelect',
+        blockId: 'planning_bom_tree',
+        directives: [{
+          type: 'setSearchFilters',
+          sourceKey: 'bomFlow',
+          mode: 'replace',
+          values: { operationId: '{{ event.route.id }}' }
+        }]
+      },
+      {
+        event: 'planningBom.createRoute',
+        blockId: 'planning_bom_tree',
+        directives: [{
+          type: 'navigate',
+          route: '/dashboard/planning/operation/edit?prefill=%7B%22item_id%22%3A%22{{ event.materialId }}%22%2C%22type%22%3A%22routing%22%7D&fromPage=planning_bom_view'
+        }]
+      }
+    ],
     blocks: [
       {
         id: 'planning_bom_filter',
@@ -429,15 +464,34 @@ export function buildPlanningBomPageSchema(): LowCodePageSchema {
         }
       },
       {
-        id: 'planning_bom_tree',
-        kind: 'planningBom',
-        sourceKey: 'bom',
-        height: 650,
-        title: 'BOM',
-        description: '按产品、工艺路线、工序和组件递归展开。',
-        keyField: 'id',
-        titleField: 'title',
-        childrenField: 'children'
+        id: 'planning_bom_workspace',
+        kind: 'container',
+        columns: 2,
+        columnSpans: [1, 1],
+        gap: 12,
+        blocks: [
+          {
+            id: 'planning_bom_tree',
+            kind: 'planningBom',
+            sourceKey: 'bom',
+            height: 650,
+            title: 'BOM',
+            description: '按产品、工艺路线、工序和组件递归展开。',
+            keyField: 'id',
+            titleField: 'title',
+            childrenField: 'children',
+            routeActionDirectives: []
+          },
+          {
+            id: 'planning_bom_flow',
+            kind: 'planningFlow',
+            sourceKey: 'bomFlow',
+            height: 650,
+            title: '产出工艺路线',
+            description: '选择物料操作中的路线后，在此查看工序模型。',
+            fitViewOnInit: true
+          }
+        ]
       }
     ]
   };
@@ -493,16 +547,53 @@ export function buildPlanningRouteDesignerPageSchema(): LowCodePageSchema {
       capabilities: [
         'action.execute',
         'dialog.confirmLowCodePage',
+        'event.emit',
         'message.success',
         'pageFunction.execute'
       ]
     },
     functions: [{
+      name: 'viewBomRoutes',
+      label: '查看工艺路线',
+      description: '弹出当前物料可用的工艺路线列表，并将选中的路线显示在右侧模型图。',
+      enabled: true,
+      script: [
+        'const materialId = String(this.event?.args?.materialId || "").trim();',
+        'if (!materialId) return null;',
+        'const currentRow = this.event?.args?.row || this.event?.row || {};',
+        'const currentRoute = this.route || {};',
+        'const currentQuery = currentRoute.query && typeof currentRoute.query === "object" ? currentRoute.query : {};',
+        'const dialogRoute = { ...currentRoute, query: { ...currentQuery, itemId: materialId } };',
+        'const result = await this.$dialog.confirmLowCodePage({',
+        '  pageCode: "planning_bom_route_picker",',
+        '  title: "选择工艺路线",',
+        '  confirmLabel: "查看路线",',
+        '  cancelLabel: "取消",',
+        '  requireSelection: true,',
+        '  selectOn: ["rowCurrentChange", "rowDblclick"],',
+        '  route: dialogRoute,',
+        '  dialog: { id: "planning-route-designer-bom-route-picker-dialog" }',
+        '});',
+        'if (!result || result.action !== "confirm" || !result.row?.id) return null;',
+        'await this.$events.emit("planningBom.routeSelect", {',
+        '  route: result.row,',
+        '  materialId,',
+        '  row: currentRow',
+        '});',
+        'return result;'
+      ].join('\n')
+    }, {
       name: 'newRoute',
       label: '新建路线',
       description: '在工序编辑页弹框中新建并保存一条工艺路线。',
       enabled: true,
       script: [
+        'const materialId = String(this.event?.args?.materialId || "").trim();',
+        'const currentRoute = this.route || {};',
+        'const currentQuery = currentRoute.query && typeof currentRoute.query === "object" ? currentRoute.query : {};',
+        'const dialogRoute = materialId',
+        '  ? { ...currentRoute, query: { ...currentQuery, prefill: encodeURIComponent(JSON.stringify({ item_id: materialId, type: "routing" })) } }',
+        '  : currentRoute;',
         'const result = await this.$dialog.confirmLowCodePage({',
         '  pageCode: "planning_operation-edit",',
         '  title: "新建路线",',
@@ -511,6 +602,7 @@ export function buildPlanningRouteDesignerPageSchema(): LowCodePageSchema {
         '  submitOnConfirm: true,',
         '  requireSelection: false,',
         '  includeEventHistory: false,',
+        '  route: dialogRoute,',
         '  dialog: { id: "planning-route-designer-new-route-dialog" }',
         '});',
         'if (!result || result.action !== "confirm") return null;',
@@ -583,3 +675,46 @@ export function buildPlanningRouteDesignerPageSchema(): LowCodePageSchema {
 export const PLANNING_ROUTING_PAGE_SCHEMA = buildPlanningRoutingPageSchema();
 export const PLANNING_ROUTE_DESIGNER_PAGE_SCHEMA = buildPlanningRouteDesignerPageSchema();
 export const PLANNING_BOM_PAGE_SCHEMA = buildPlanningBomPageSchema();
+
+/** A plain low-code grid used by BOM row actions to choose a producer route. */
+export function buildPlanningBomRoutePickerPageSchema(): LowCodePageSchema {
+  return {
+    schemaVersion: 1,
+    code: PLANNING_BOM_ROUTE_PICKER_PAGE_CODE,
+    route: PLANNING_BOM_ROUTE_PICKER_ROUTE,
+    title: '选择工艺路线',
+    pageType: 'custom',
+    description: '选择能够产出当前物料的工艺路线。',
+    layout: 'dashboard',
+    status: 'published',
+    keepAlive: false,
+    dataSources: {
+      routes: {
+        key: 'routes',
+        label: '可用工艺路线',
+        sourceType: 'custom',
+        serviceName: 'planning',
+        serviceMethod: 'getPlanningConsoleOptions',
+        postData: { optionType: 'route', itemId: '{{ route.query.itemId }}' },
+        autoLoad: true
+      }
+    },
+    blocks: [{
+      id: 'planning_bom_route_picker_grid',
+      kind: 'grid',
+      tableType: 'main',
+      title: '可选工艺路线',
+      sourceKey: 'routes',
+      schema: {
+        grid: gridConfig([
+          { type: 'seq', title: '序号', width: 64, align: 'center' },
+          { field: 'label', title: '路线名称', minWidth: 260, fixed: 'left' },
+          { field: 'id', title: '路线编号', minWidth: 240 }
+        ], 360),
+        rowActions: { edit: false, delete: false }
+      }
+    }]
+  };
+}
+
+export const PLANNING_BOM_ROUTE_PICKER_PAGE_SCHEMA = buildPlanningBomRoutePickerPageSchema();

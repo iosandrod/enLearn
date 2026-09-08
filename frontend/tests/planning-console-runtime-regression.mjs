@@ -162,17 +162,17 @@ assert.match(ganttSource, /未分配对象/);
 assert.doesNotMatch(ganttSource, /from 'echarts'/);
 assert.doesNotMatch(ganttSource, /row\.lateness_hours/);
 
-assert.match(bomSource, /<VueFlow/);
-assert.match(bomSource, /from '@vue-flow\/core'/);
-assert.match(bomSource, /buildGraph/);
-assert.match(bomSource, /toggleNode/);
-assert.match(bomSource, /roots\.forEach\(\(root, index\)/);
-assert.match(bomSource, /ResizeObserver/);
-assert.match(bomSource, /lowcode:tab-activated/);
+assert.match(bomSource, /<vxe-grid/);
+assert.match(bomSource, /treeNode: true/);
+assert.match(bomSource, /title: '操作'/);
+assert.match(bomSource, /#actions/);
 assert.match(bomSource, /planningBom\.nodeSelect/);
-assert.match(bomSource, /fitView/);
-assert.doesNotMatch(bomSource, /PlanningBomNode/);
-assert.doesNotMatch(bomSource, /<table/);
+assert.match(bomSource, /planningBom\.routeSelect/);
+assert.match(bomSource, /planningBom\.createRoute/);
+assert.match(bomSource, /producerRoutes/);
+assert.match(bomSource, /新增该物料的工艺路线/);
+assert.match(bomSource, /routePicker/);
+assert.doesNotMatch(bomSource, /结构图/);
 
 assert.doesNotMatch(materialRegistrySource, /import\.meta\.glob/);
 assert.match(materialRegistrySource, /Object\.values\(lowCodeBlockMaterialAdapters\)/);

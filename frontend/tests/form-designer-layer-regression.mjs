@@ -63,8 +63,13 @@ assert.ok(drawerLayer < designerLayer, 'The form designer must render above its 
 assert.ok(designerLayer < popupLayer, 'Transferred form controls must render above the form designer.');
 assert.match(
   designerSource,
-  /<ElDialog[\s\S]*?zIndex=\{FORM_DESIGNER_Z_INDEX\}/,
-  'The form designer must apply its dedicated layer to the dialog.',
+  /<ElDialog[\s\S]*?zIndex=\{state\.option\.zIndex \?\? FORM_DESIGNER_Z_INDEX\}/,
+  'The form designer must apply its allocated layer to the dialog.',
+);
+assert.match(
+  designerSource,
+  /const formDesignerLayers = new Set<number>\(\)[\s\S]*?acquireFormDesignerLayer[\s\S]*?formDesignerLayers\.add\(zIndex\)/,
+  'Nested form designers must allocate distinct layers.',
 );
 assert.match(
   adapterSource,

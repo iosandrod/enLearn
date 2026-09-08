@@ -58,6 +58,7 @@ export type LowCodePageTabsBlock = any;
 export type LowCodePageTextBlock = any;
 export type LowCodePageToolbarBlock = any;
 export type LowCodePageTreeBlock = any;
+export type LowCodePageEntityDesignFlowBlock = any;
 `;
 
 const virtualTypeFiles = new Map<string, string>([

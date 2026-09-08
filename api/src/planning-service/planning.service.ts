@@ -265,7 +265,11 @@ export class PlanningService extends BaseService {
         .from(option.table)
         .select(`id,${option.labelField},${option.fallbackField}`)
         .eq('account_id', accountId);
-      if (optionType === 'route') optionQuery = optionQuery.in('type', ['routing', 'route']);
+      if (optionType === 'route') {
+        optionQuery = optionQuery.in('type', ['routing', 'route']);
+        const itemId = this.readOptionalString(postData.itemId ?? postData.item_id);
+        if (itemId) optionQuery = optionQuery.eq('item_id', itemId);
+      }
       const { data, error } = await optionQuery
         .order(option.labelField, { ascending: true })
         .limit(1000);

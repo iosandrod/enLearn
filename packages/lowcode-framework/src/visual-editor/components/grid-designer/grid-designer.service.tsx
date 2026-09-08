@@ -776,6 +776,120 @@ function readPostDataObject(value: unknown) {
   return parsed.ok && isPlainRecord(parsed.value) ? cloneDeep(parsed.value) : {};
 }
 
+type GridDesignerFilterRow = {
+  logic: 'and' | 'or';
+  field: string;
+  value: unknown;
+  required: boolean;
+  op?: string;
+  children: GridDesignerFilterRow[];
+};
+
+function readFilterLogic(value: unknown): 'and' | 'or' {
+  return readString(value).toLowerCase() === 'or' ? 'or' : 'and';
+}
+
+function filterConditionToRow(value: unknown): GridDesignerFilterRow | null {
+  if (!isPlainRecord(value)) return null;
+  const conditions = Array.isArray(value.conditions) ? value.conditions : undefined;
+
+  if (conditions) {
+    return {
+      logic: readFilterLogic(value.logic),
+      field: '',
+      value: '',
+      required: value.required === true,
+      children: conditions
+        .map(filterConditionToRow)
+        .filter((row): row is GridDesignerFilterRow => Boolean(row)),
+    };
+  }
+
+  const field = readString(value.field);
+  if (!field) return null;
+  return {
+    logic: 'and',
+    field,
+    value: cloneDeep(value.value),
+    required: value.required === true,
+    ...(readString(value.op) ? { op: readString(value.op) } : {}),
+    children: [],
+  };
+}
+
+function createFilterRows(value: unknown): GridDesignerFilterRow[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter(isPlainRecord)
+      .map((row) => ({
+        logic: readFilterLogic(row.logic),
+        field: readString(row.field),
+        value: cloneDeep(row.value ?? ''),
+        required: row.required === true,
+        ...(readString(row.op) ? { op: readString(row.op) } : {}),
+        children: createFilterRows(row.children),
+      }));
+  }
+
+  if (!isPlainRecord(value)) return [];
+  if (Array.isArray(value.conditions)) {
+    const rows = value.conditions
+      .map(filterConditionToRow)
+      .filter((row): row is GridDesignerFilterRow => Boolean(row));
+    return readFilterLogic(value.logic) === 'and'
+      ? rows
+      : [{ logic: 'or', field: '', value: '', required: false, children: rows }];
+  }
+
+  return Object.entries(value).map(([field, rawValue]) => {
+    const operatorValue = isPlainRecord(rawValue) && 'value' in rawValue;
+    return {
+      logic: 'and' as const,
+      field,
+      value: cloneDeep(operatorValue ? rawValue.value : rawValue),
+      required: operatorValue && rawValue.required === true,
+      ...(operatorValue && readString(rawValue.op) ? { op: readString(rawValue.op) } : {}),
+      children: [],
+    };
+  });
+}
+
+function filterRowToCondition(value: unknown): Record<string, unknown> | null {
+  if (!isPlainRecord(value)) return null;
+  const field = readString(value.field);
+  const children = (Array.isArray(value.children) ? value.children : [])
+    .map(filterRowToCondition)
+    .filter((condition): condition is Record<string, unknown> => Boolean(condition));
+  const ownCondition = field
+      ? compactObject({
+        field,
+        op: readString(value.op) || undefined,
+        value: cloneDeep(value.value),
+        required: value.required === true ? true : undefined,
+      })
+    : null;
+  const conditions = [...(ownCondition ? [ownCondition] : []), ...children];
+
+  if (!conditions.length) {
+    return {
+      logic: readFilterLogic(value.logic),
+      conditions: [],
+    };
+  }
+  if (conditions.length === 1 && !children.length) return conditions[0];
+  return {
+    logic: readFilterLogic(value.logic),
+    conditions,
+  };
+}
+
+function createFilterGroup(value: unknown) {
+  const conditions = (Array.isArray(value) ? value : [])
+    .map(filterRowToCondition)
+    .filter((condition): condition is Record<string, unknown> => Boolean(condition));
+  return conditions.length ? { logic: 'and', conditions } : undefined;
+}
+
 function createSourcePostData(
   currentValue: unknown,
   sourceTarget = '',
@@ -2323,6 +2437,7 @@ const ServiceComponent = defineComponent({
         ...columnsSection.props,
         schema: createColumnDesignerSchema(),
       };
+
       return schema;
     };
 
@@ -2330,7 +2445,21 @@ const ServiceComponent = defineComponent({
       if (typeof value === 'string') return;
 
       const nextValue = isPlainRecord(value) ? compactObject(value) : {};
+      const filters = createFilterGroup(isPlainRecord(value) ? value.filters : undefined);
+      if (filters) nextValue.filters = filters;
+      else delete nextValue.filters;
       state.business.postDataJson = JSON.stringify(nextValue, null, 2);
+
+      // Keep the live designer form model aligned with the persisted JSON.
+      // Nested array-table updates can emit through both the child form and its
+      // parent in the same tick; leaving this model stale causes the child
+      // material to be rebuilt from the previous filter array.
+      const businessModel = readGridDesignerSectionModel(gridDesignerFormCodes.businessInfo);
+      if (businessModel) {
+        const modelValue = readPostDataObject(state.business.postDataJson);
+        modelValue.filters = createFilterRows(modelValue.filters);
+        businessModel.postDataJson = modelValue;
+      }
     };
 
     const syncBusinessSourceTarget = (clearCustomTargetAliases = false) => {
@@ -2369,7 +2498,9 @@ const ServiceComponent = defineComponent({
       // The database-owned business schema edits postDataJson through a
       // structured sub-form. Keep the persisted representation as JSON text,
       // but expose the parsed object to the nested form material.
-      businessInfoModel.postDataJson = readPostDataObject(state.business.postDataJson);
+      const postDataModel = readPostDataObject(state.business.postDataJson);
+      postDataModel.filters = createFilterRows(postDataModel.filters);
+      businessInfoModel.postDataJson = postDataModel;
       const formModel = {
         [gridDesignerFormCodes.columns]: {
           columns: state.columns as unknown as Record<string, unknown>[],
@@ -2463,6 +2594,16 @@ const ServiceComponent = defineComponent({
       if (sectionCode === gridDesignerFormCodes.businessInfo) {
         const previousBusiness = cloneDeep(state.business);
         const previousSourceType = state.business.sourceType;
+        const sourceTypeChanged =
+          readString(sectionValues.sourceType) !== readString(previousBusiness.sourceType);
+        const tableNameChanged =
+          readString(sectionValues.tableName) !== readString(previousBusiness.tableName);
+        const viewNameChanged =
+          readString(sectionValues.viewName) !== readString(previousBusiness.viewName);
+        const tableTypeChanged =
+          readString(sectionValues.tableType) !== readString(previousBusiness.tableType);
+        const sourceKeyChanged =
+          readString(sectionValues.sourceKey) !== readString(previousBusiness.sourceKey);
         Object.assign(state.business, sectionValues);
 
         if (Object.prototype.hasOwnProperty.call(sectionValues, 'tableType')) {
@@ -2476,7 +2617,7 @@ const ServiceComponent = defineComponent({
 
         if (
           Object.prototype.hasOwnProperty.call(sectionValues, 'sourceType') &&
-          readString(sectionValues.sourceType) !== readString(previousBusiness.sourceType)
+          sourceTypeChanged
         ) {
           const sourceType = readString(sectionValues.sourceType);
           state.business.sourceType = sourceType === 'view'
@@ -2489,7 +2630,7 @@ const ServiceComponent = defineComponent({
           );
         }
 
-        if (readString(sectionValues.tableName) !== readString(previousBusiness.tableName)) {
+        if (tableNameChanged) {
           if (!readString(sectionValues.tableName)) {
             state.business.tableName = '';
             if (state.business.sourceType === 'table') {
@@ -2501,7 +2642,7 @@ const ServiceComponent = defineComponent({
           }
         }
 
-        if (readString(sectionValues.viewName) !== readString(previousBusiness.viewName)) {
+        if (viewNameChanged) {
           if (!readString(sectionValues.viewName)) {
             state.business.viewName = '';
             if (state.business.sourceType === 'view') {
@@ -2524,7 +2665,20 @@ const ServiceComponent = defineComponent({
           await refreshDetailTableFieldOptions();
           await refreshParentTableFieldOptions();
         }
-        syncActiveDesignerDialogModel();
+        // Rebuilding the whole form while an array-table row is being edited
+        // removes incomplete rows before the user can fill them. Source
+        // association changes still need a refresh because they rewrite other
+        // business fields; request-parameter edits already live in the current
+        // reactive form model and only need to be persisted above.
+        if (
+          sourceTypeChanged ||
+          tableNameChanged ||
+          viewNameChanged ||
+          tableTypeChanged ||
+          sourceKeyChanged
+        ) {
+          syncActiveDesignerDialogModel();
+        }
         return;
       }
 

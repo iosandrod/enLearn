@@ -67,6 +67,8 @@ export type FormDesignerResult = {
 
 interface FormDesignerServiceOption {
   title?: string;
+  /** The layer is allocated by $$formDesigner so nested designers stack above their parent. */
+  zIndex?: number;
   mode?: FormDesignerMode;
   fields?: FormDesignerField[];
   layout?: LowCodeFormLayoutNode[];
@@ -150,6 +152,18 @@ const defaultCodeEditorProps = {
 // Global design dialogs and drawers occupy 10000-11000; transferred control
 // panels start at 12000. Keep this nested workbench between those layers.
 const FORM_DESIGNER_Z_INDEX = 11500;
+const formDesignerLayers = new Set<number>();
+
+function acquireFormDesignerLayer() {
+  let zIndex = FORM_DESIGNER_Z_INDEX;
+  while (formDesignerLayers.has(zIndex)) zIndex += 1;
+  formDesignerLayers.add(zIndex);
+  return zIndex;
+}
+
+function releaseFormDesignerLayer(zIndex: number) {
+  formDesignerLayers.delete(zIndex);
+}
 
 const optionComponents = new Set([
   'vxe-select',
@@ -1184,7 +1198,7 @@ const ServiceComponent = defineComponent({
         title={state.option.title || '表单设计'}
         width="min(1280px, calc(100vw - 40px))"
         top="4vh"
-        zIndex={FORM_DESIGNER_Z_INDEX}
+        zIndex={state.option.zIndex ?? FORM_DESIGNER_Z_INDEX}
         class="form-designer-dialog form-workbench-dialog"
         destroyOnClose={true}
         onClosed={() => {
@@ -1249,12 +1263,15 @@ export const $$formDesigner = (
   },
 ) => {
   const dfd = defer<FormDesignerResult>();
+  const zIndex = acquireFormDesignerLayer();
+  let layerReleased = false;
   const el = document.createElement('div');
   document.body.appendChild(el);
 
   const app = createApp(ServiceComponent, {
     option: {
       ...option,
+      zIndex,
       onConfirm: () => undefined,
     },
   });
@@ -1262,6 +1279,10 @@ export const $$formDesigner = (
   app.config.globalProperties.$$refs = {};
 
   const cleanup = () => {
+    if (!layerReleased) {
+      layerReleased = true;
+      releaseFormDesignerLayer(zIndex);
+    }
     window.setTimeout(() => {
       app.unmount();
       el.remove();

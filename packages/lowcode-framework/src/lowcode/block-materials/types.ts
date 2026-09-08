@@ -4,6 +4,7 @@ import type { VisualToLowCodeConverter } from '../visual-converters/types';
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
+  LowCodeGridRowAction,
   LowCodePageBlock,
   LowCodePageGridBlock,
   LowCodePageSearchFormBlock,
@@ -45,6 +46,7 @@ export type LowCodeBlockMaterialEmits = {
   ];
   gridEdit: [payload: { block: LowCodePageGridBlock; row: Record<string, unknown> }];
   gridDelete: [payload: { block: LowCodePageGridBlock; row: Record<string, unknown> }];
+  gridRowAction: [payload: { block: LowCodePageGridBlock; action: LowCodeGridRowAction; row: Record<string, unknown> }];
   toolbarAction: [
     payload: { block: LowCodeRuntimeBlock; action: LowCodeAction | LowCodeButtonGroupAction },
   ];

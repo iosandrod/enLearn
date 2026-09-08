@@ -189,6 +189,16 @@ const bom = buildPlanningBomTree(
 );
 assert.equal(bom.length, 1);
 assert.equal(bom[0].title, '成品 A');
+assert.deepEqual(bom[0].producerRoutes, [{
+  id: 'op-finished',
+  name: '总装',
+  type: 'fixed_time',
+  typeLabel: '固定时长工序',
+  statusLabel: '生效中',
+  priority: 0,
+  effective_start: undefined,
+  effective_end: undefined
+}]);
 const finishedOperation = (bom[0].children as Record<string, unknown>[])[0];
 assert.equal(finishedOperation.title, '总装');
 const semiItem = (finishedOperation.children as Record<string, unknown>[])[0];
@@ -212,6 +222,22 @@ const namedBom = buildPlanningBomTree(
 );
 assert.equal(namedBom[0].title, '独立物料名称');
 assert.equal(namedBom[0].subtitle, 'ITEM-001 · 独立描述');
+
+const routeStatusBom = buildPlanningBomTree(
+  [{ id: 'route-status-item', name: '状态物料' }],
+  [
+    { id: 'route-current', name: '当前路线', type: 'routing', item_id: 'route-status-item', effective_start: '2020-01-01T00:00:00Z', effective_end: '2099-01-01T00:00:00Z' },
+    { id: 'route-future', name: '未来路线', type: 'routing', item_id: 'route-status-item', effective_start: '2099-01-01T00:00:00Z' },
+    { id: 'route-ended', name: '历史路线', type: 'routing', item_id: 'route-status-item', effective_end: '2020-01-01T00:00:00Z' }
+  ],
+  [],
+  'route-status-item'
+);
+assert.deepEqual((routeStatusBom[0].producerRoutes as Record<string, unknown>[]).map((route) => [route.typeLabel, route.statusLabel]), [
+  ['工艺路线', '生效中'],
+  ['工艺路线', '未生效'],
+  ['工艺路线', '已结束']
+]);
 
 const routingBom = buildPlanningBomTree(
   [

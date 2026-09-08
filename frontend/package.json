@@ -85,6 +85,7 @@
     "test:grid-detail-schema-save": "node tests/grid-detail-schema-save-regression.mjs",
     "test:grid-selection-column": "node tests/grid-designer-selection-column-regression.mjs",
     "test:grid-selection-column-browser": "node tests/grid-designer-selection-column-browser-launcher.mjs",
+    "test:grid-designer-add-condition-browser": "node tests/grid-designer-add-condition-browser-launcher.mjs",
     "test:grid-column-drag": "node tests/grid-designer-column-drag-regression.mjs",
     "test:grid-column-drag-browser": "node tests/grid-designer-column-drag-browser-launcher.mjs",
     "test:array-table-drag-config": "node tests/array-table-drag-configuration-regression.mjs",

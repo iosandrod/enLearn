@@ -809,6 +809,15 @@ export type LowCodePageTreeBlock = LowCodeMaterialVersionedBlock & {
   keyField?: string;
   titleField?: string;
   childrenField?: string;
+  routeActionDirectives?: LowCodeRuntimeDirective[];
+};
+
+export type LowCodePageEntityDesignFlowBlock = LowCodeMaterialVersionedBlock & {
+  id: string;
+  kind: 'entity-design-flow';
+  title?: string;
+  sourceKey?: string;
+  height?: number | string;
 };
 
 export type LowCodePagePlanningFlowBlock = LowCodeMaterialVersionedBlock & {
@@ -850,6 +859,7 @@ export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
   keyField?: string;
   titleField?: string;
   childrenField?: string;
+  routeActionDirectives?: LowCodeRuntimeDirective[];
 };
 
 /** Database-backed approval workflow designer material block. */
@@ -894,6 +904,7 @@ export type LowCodePageBlock =
   | LowCodePageDrawerBlock
   | LowCodePageStatCardBlock
   | LowCodePageTreeBlock
+  | LowCodePageEntityDesignFlowBlock
   | LowCodePagePlanningFlowBlock
   | LowCodePagePlanningGanttBlock
   | LowCodePagePlanningBomBlock

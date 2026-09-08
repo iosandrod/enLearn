@@ -1245,6 +1245,19 @@ export class LowCodePageScriptRuntime {
       return this.confirmScriptLowCodePage(this.readScriptRecordArg(request.args, 0));
     }
 
+    if (request.name === 'event.emit') {
+      const eventName = this.readScriptStringArg(request.args, 0, 'name');
+      const payload = this.readScriptRecordArg(request.args, 1);
+      await this.dependencies.publishRuntimeEvent({
+        name: eventName,
+        blockId: event.blockId,
+        blockKind: event.blockKind,
+        timestamp: Date.now(),
+        payload,
+      });
+      return true;
+    }
+
     if (this.primaryScriptExecutors.has(request.name)) {
       return this.primaryScriptExecutors.execute(request, {
         event,

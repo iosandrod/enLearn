@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 
-import { BaseService, type ResourceConfigMap } from './base.service';
+import {
+  BaseService,
+  type ListFilterCondition,
+  type ListFilterGroup,
+  type ResourceConfigMap,
+} from './base.service';
 import type { ServiceContext } from './interfaces/service-executor';
 
 class RequiredFilterTestService extends BaseService {
@@ -65,6 +70,12 @@ class PagedResourceTestService extends BaseService {
   }
 }
 
+class FilterGroupTestService extends BaseService {
+  compile(filters: ListFilterCondition | ListFilterGroup) {
+    return this.compileListFilterExpression(filters);
+  }
+}
+
 async function main() {
   const service = new RequiredFilterTestService();
   const context = {} as ServiceContext;
@@ -100,6 +111,52 @@ async function main() {
     []
   );
   assert.equal(service.calls, 0, 'placeholder filter operands must not reach the database');
+
+  assert.deepEqual(
+    await service.execute('listItems', {
+      resource: 'test_rows',
+      filters: {
+        logic: 'and',
+        conditions: [{ field: 'id', value: '', required: true }],
+      },
+    }, context),
+    [],
+  );
+  assert.equal(service.calls, 0, 'required flags on tree conditions must be enforced');
+
+  assert.deepEqual(
+    await service.execute('listItems', {
+      resource: 'test_rows',
+      filters: {
+        logic: 'or',
+        conditions: [
+          { field: 'id', value: '' },
+          { field: 'id', value: '{{ forms.search.id }}' }
+        ]
+      },
+      requiredFilters: ['id']
+    }, context),
+    []
+  );
+  assert.equal(service.calls, 0, 'unresolved tree-filter values must not reach the database');
+
+  const filterGroupService = new FilterGroupTestService();
+  assert.equal(
+    filterGroupService.compile({
+      logic: 'or',
+      conditions: [
+        { field: 'status', value: 'active' },
+        {
+          logic: 'and',
+          conditions: [
+            { field: 'priority', value: 'high' },
+            { field: 'owner_id', value: '{{ forms.search.ownerId }}' }
+          ]
+        }
+      ]
+    }),
+    'or(status.eq."active",and(priority.eq."high",owner_id.eq."{{ forms.search.ownerId }}"))'
+  );
 
   assert.deepEqual(
     await service.execute('listItems', {

@@ -79,6 +79,42 @@ const renderField = computed<LowCodeField>(() => {
     fieldProps.scriptThisType ||= 'LowCodeButtonScriptThis';
   }
 
+  if (props.field.component === 'lc-array-table' && Array.isArray(fieldProps.toolbarButtons)) {
+    fieldProps.toolbarButtons = fieldProps.toolbarButtons.map((button) => {
+      if (
+        typeof button !== 'object' ||
+        button === null ||
+        Array.isArray(button) ||
+        button.command !== 'add' ||
+        typeof button.execute === 'function'
+      ) {
+        return button;
+      }
+
+      return {
+        ...button,
+        execute: ({ action, addRow }: {
+          action?: { row?: Record<string, unknown> };
+          addRow?: (row?: Record<string, unknown>) => unknown;
+        }) => addRow?.(action?.row),
+      };
+    });
+
+    const configuredToolbarAction = fieldProps.onToolbarAction;
+    fieldProps.onToolbarAction = (payload: {
+      action?: { command?: unknown; row?: Record<string, unknown> };
+      rows?: unknown[];
+    }) => {
+      if (payload?.action?.command === 'add' && Array.isArray(payload.rows)) {
+        payload.rows.push({
+          ...(payload.action.row ?? {}),
+          children: [],
+        });
+      }
+      if (typeof configuredToolbarAction === 'function') configuredToolbarAction(payload);
+    };
+  }
+
   if (props.disabled) {
     fieldProps.disabled = true;
   }

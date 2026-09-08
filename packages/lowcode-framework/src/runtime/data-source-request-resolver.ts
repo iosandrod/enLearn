@@ -351,6 +351,48 @@ export class DataSourceRequestResolver {
       return serviceName === 'admin' && serviceMethod === 'listItems';
     }
 
+    function mergeListFilters(
+      configured: unknown,
+      additional: Record<string, unknown>,
+    ) {
+      const entries = Object.entries(additional);
+      if (!entries.length) return isRecord(configured) ? configured : {};
+      if (
+        isRecord(configured) &&
+        Array.isArray(configured.conditions) &&
+        (configured.logic === 'and' || configured.logic === 'or')
+      ) {
+        const replacedFields = new Set(entries.map(([field]) => field));
+        const pruneReplacedConditions = (value: unknown): unknown => {
+          if (!isRecord(value)) return undefined;
+          if (
+            Array.isArray(value.conditions) &&
+            (value.logic === 'and' || value.logic === 'or')
+          ) {
+            const conditions = value.conditions
+              .map(pruneReplacedConditions)
+              .filter((condition) => condition !== undefined);
+            return conditions.length ? { ...value, conditions } : undefined;
+          }
+          return typeof value.field === 'string' && replacedFields.has(value.field)
+            ? undefined
+            : value;
+        };
+        const retained = pruneReplacedConditions(configured);
+        return {
+          logic: 'and',
+          conditions: [
+            ...(retained ? [retained] : []),
+            ...entries.map(([field, value]) => ({ field, value })),
+          ],
+        };
+      }
+      return {
+        ...(isRecord(configured) ? configured : {}),
+        ...additional,
+      };
+    }
+
     function mergeDataSourceSearchFilters(
       key: string,
       postData: Record<string, unknown>
@@ -361,14 +403,9 @@ export class DataSourceRequestResolver {
         return postData;
       }
 
-      const currentFilters = isRecord(postData.filters) ? postData.filters : {};
-
       return {
         ...postData,
-        filters: {
-          ...currentFilters,
-          ...sourceFilters,
-        },
+        filters: mergeListFilters(postData.filters, sourceFilters),
       };
     }
 
@@ -391,10 +428,9 @@ export class DataSourceRequestResolver {
 
       return {
         ...postData,
-        filters: {
-          ...(isRecord(postData.filters) ? postData.filters : {}),
+        filters: mergeListFilters(postData.filters, {
           [categoryField]: selectedCategoryId.value,
-        },
+        }),
       };
     }
 

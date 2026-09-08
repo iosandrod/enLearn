@@ -4,6 +4,7 @@ import {
   createDefaultContainerBlock,
   createDefaultDetailBlock,
   createDefaultDrawerBlock,
+  createDefaultEntityDesignFlowBlock,
   createDefaultFormBlock,
   createDefaultGridBlock,
   createDefaultModalBlock,
@@ -185,6 +186,14 @@ export const lowCodeBlockMaterialAdapters: Record<string, BlockAdapter> = {
     converter: planningConverter,
     order: 140,
   },
+  entityDesignFlow: {
+    type: 'entity-design-flow',
+    label: '实体关系画布',
+    materialVersion: '1.0.0',
+    createDefaultBlock: createDefaultEntityDesignFlowBlock,
+    aliases: ['entity-design-flow', 'entityFlow'],
+    order: 145,
+  },
   planningGantt: {
     type: 'planningGantt',
     label: '排产甘特图',
@@ -237,9 +246,19 @@ export const lowCodeFormMaterialAdapters: Record<string, FormAdapter> = Object.f
 );
 
 export function getLowCodeBlockMaterialAdapter(type?: string) {
-  return type ? lowCodeBlockMaterialAdapters[type] : undefined;
+  if (!type) return undefined;
+  const direct = lowCodeBlockMaterialAdapters[type];
+  if (direct) return direct;
+  return Object.values(lowCodeBlockMaterialAdapters).find((adapter) =>
+    adapter.aliases?.includes(type),
+  );
 }
 
 export function getLowCodeFormMaterialAdapter(type?: string) {
-  return type ? lowCodeFormMaterialAdapters[type] : undefined;
+  if (!type) return undefined;
+  const direct = lowCodeFormMaterialAdapters[type];
+  if (direct) return direct;
+  return Object.values(lowCodeFormMaterialAdapters).find((adapter) =>
+    adapter.aliases?.includes(type),
+  );
 }

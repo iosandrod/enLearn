@@ -1,0 +1,16 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+frontend/dist
+api/dist
+.codex-screenshots
+.codex-server-logs
+.tmp-*
+.env
+.env.*
+!.env.production.example
+*.log
+coverage
+artifacts
+*.traineddata
