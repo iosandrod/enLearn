@@ -3,6 +3,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DefinitionService } from '../definition/definition.service';
 import {
   WORKFLOW_RUNTIME_STORE,
+  type WorkflowInstanceTaskPayload,
   type WorkflowRuntimeStore,
   type WorkflowTriggerClient
 } from './runtime.engine.types';
@@ -86,6 +87,96 @@ export class RuntimeService {
     }
 
     return this.store.getInstance(instance.id);
+  }
+
+  /**
+   * Re-deliver only instances that were durably created before the Trigger
+   * adapter returned a run id. Trigger.dev's instance idempotency key makes a
+   * repeated recovery call safe, while instances with an existing run are left
+   * untouched and continue to be owned by that run after an API restart.
+   */
+  async recoverOrphanedInstances(tenantId?: string, instanceId?: string) {
+    const instances = await this.store.listInstances({ tenantId, status: 'running' });
+    const scopedInstances = instanceId
+      ? instances.filter((instance) => instance.id === instanceId)
+      : instances;
+    const recovered: string[] = [];
+    const skipped: string[] = [];
+    const failed: Array<{ instanceId: string; error: string }> = [];
+
+    for (const instance of scopedInstances) {
+      if (instance.triggerRunId) {
+        skipped.push(instance.id);
+        continue;
+      }
+
+      try {
+        await this.recordRecoveryEvent(
+          instance,
+          'RECOVERY_ATTEMPTED',
+          { reason: 'orphaned_instance', status: instance.status },
+          `workflow-recovery:${instance.id}:attempt`
+        );
+        const definition = await this.definitionService.getDefinition(
+          instance.definitionId,
+          instance.tenantId
+        );
+        const variables = await this.store.getVariables(instance.id);
+        const payload: WorkflowInstanceTaskPayload = {
+          instanceId: instance.id,
+          tenantId: instance.tenantId,
+          definitionId: definition.id,
+          definitionVersion: definition.version,
+          title: instance.title,
+          ...(instance.initiatorId ? { initiatorId: instance.initiatorId } : {}),
+          schema: definition.schema,
+          variables
+        };
+        const run = await this.triggerClient.triggerWorkflow(payload);
+        await this.store.setTriggerRun(instance.id, run.id);
+        await this.recordRecoveryEvent(
+          instance,
+          'RECOVERY_SUCCEEDED',
+          { triggerRunId: run.id },
+          `workflow-recovery:${instance.id}:succeeded:${run.id}`
+        );
+        recovered.push(instance.id);
+      } catch (error) {
+        await this.recordRecoveryEvent(
+          instance,
+          'RECOVERY_FAILED',
+          { message: error instanceof Error ? error.message : String(error) },
+          `workflow-recovery:${instance.id}:failed`
+        );
+        failed.push({
+          instanceId: instance.id,
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+
+    return { recovered, skipped, failed };
+  }
+
+  private async recordRecoveryEvent(
+    instance: ProcessInstanceRecord,
+    eventType: string,
+    payload: Record<string, unknown>,
+    idempotencyKey: string
+  ) {
+    try {
+      await this.store.recordHistory(
+        instance.tenantId,
+        instance.id,
+        eventType,
+        undefined,
+        payload,
+        idempotencyKey
+      );
+    } catch {
+      // Recovery must remain best-effort observable and must not hide the
+      // Trigger.dev delivery result when history projection is unavailable.
+    }
   }
 
   private async cancelRunAfterProjectionFailure(runId: string) {

@@ -191,15 +191,20 @@ function handleSelect(payload: LowCodeFormMaterialSelectPayload) {
   emit('relateSelect', payload);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function handleNestedFieldChange(payload: {
   field: LowCodeField;
   value: unknown;
   previousValue: unknown;
   values: Record<string, unknown>;
 }) {
+  const nextValue = isRecord(payload?.values) ? payload.values : payload?.value;
   emit('change', {
     field: props.field,
-    value: cloneValue(payload.values),
+    value: cloneValue(nextValue),
     previousValue: cloneValue(valueBeforeChange),
   });
 }

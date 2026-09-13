@@ -11,10 +11,6 @@ type TestWorkflowService = {
   resources(): ResourceConfigMap;
   normalizeCrudPostData(postData: Record<string, unknown>): Record<string, unknown>;
   hooks(): Record<string, Record<string, unknown>>;
-  listItemHandlers(): Record<string, (
-    postData: Record<string, unknown>,
-    context: { accountId: string; userId: string }
-  ) => Promise<unknown>>;
 };
 
 type PublicWorkflowService = {
@@ -25,9 +21,7 @@ type PublicWorkflowService = {
   ): Promise<unknown>;
 };
 
-class WorkflowServiceProbe extends WorkflowService {
-  protected override async assertWorkflowPermission() {}
-}
+class WorkflowServiceProbe extends WorkflowService {}
 
 const delegatedCalls: Array<{ service: string; method: string; args: unknown[] }> = [];
 const delegate = (service: string, methods: string[]) => Object.fromEntries(
@@ -52,6 +46,7 @@ const service = new WorkflowServiceProbe(
     'getInstance',
     'getTimeline',
     'startInstance',
+    'recoverOrphanedInstances',
     'withdrawInstance',
     'terminateInstance',
     'getTask',
@@ -99,61 +94,12 @@ assert.ok(resources.wf_node_instance);
 assert.ok(resources.wf_task);
 assert.ok(resources.wf_job);
 assert.ok(resources.wf_job_run);
+for (const resource of Object.values(resources)) {
+  assert.equal(resource.permissions, undefined);
+}
 assert.equal(typeof service.hooks().wf_model.afterAction, 'function');
 assert.equal(typeof service.hooks().wf_node_instance.afterAction, 'function');
 assert.equal(typeof service.hooks().wf_task.afterAction, 'function');
-assert.equal(typeof service.listItemHandlers().nodeInstances, 'function');
-assert.equal(typeof service.listItemHandlers().tasks, 'function');
-
-class WorkflowJobRunProbe extends WorkflowServiceProbe {
-  protected override async listItems(postData: Record<string, unknown>) {
-    if (postData.resource === 'wf_job_run') {
-      return [{
-        id: 'run-1',
-        job_id: 'job-1',
-        trigger_run_id: 'trigger-1',
-        status: 'succeeded',
-        attempt: 1,
-        error_message: null,
-        started_at: '2026-08-08T00:00:00.000Z',
-        finished_at: '2026-08-08T00:00:01.250Z',
-        created_at: '2026-08-08T00:00:00.000Z'
-      }];
-    }
-    if (postData.resource === 'wf_job') {
-      return [{ id: 'job-1', code: 'daily-plan', name: '每日计划同步' }];
-    }
-    return [];
-  }
-}
-
-async function testJobRunReadModel() {
-  const probe = new WorkflowJobRunProbe(
-    delegate('definitionJobRunProbe', []) as never,
-    delegate('runtimeJobRunProbe', []) as never,
-    delegate('approvalJobRunProbe', []) as never,
-    delegate('jobJobRunProbe', ['createJob']) as never,
-    delegate('runtimeStatusJobRunProbe', []) as never,
-    delegate('taskConsoleJobRunProbe', ['invalidate']) as never
-  ) as unknown as TestWorkflowService;
-  const rows = await probe.listItemHandlers().jobRuns({}, serviceContext) as Array<Record<string, unknown>>;
-  assert.deepEqual(rows[0], {
-    id: 'run-1',
-    job_id: 'job-1',
-    trigger_run_id: 'trigger-1',
-    status: 'succeeded',
-    attempt: 1,
-    error_message: null,
-    started_at: '2026-08-08T00:00:00.000Z',
-    finished_at: '2026-08-08T00:00:01.250Z',
-    created_at: '2026-08-08T00:00:00.000Z',
-    job_name: '每日计划同步',
-    job_code: 'daily-plan',
-    status_label: '成功',
-    duration_ms: 1250
-  });
-}
-
 assert.deepEqual(
   service.normalizeCrudPostData({
     resource: 'wf_model',
@@ -281,29 +227,19 @@ async function testDirectDelegation() {
     args: ['instance-1', serviceContext.accountId]
   });
 
-  const todoHandler = service.listItemHandlers().todoTasks as (
-    postData: Record<string, unknown>,
-    context: typeof serviceContext
-  ) => Promise<unknown>;
-  await todoHandler({
-    limit: 200,
-    tenantId: 'caller-controlled-tenant'
-  }, serviceContext);
-  assert.deepEqual(delegatedCalls.pop(), {
-    service: 'runtime',
-    method: 'listTodoTasks',
-    args: [
-      { tenantId: serviceContext.accountId, userId: serviceContext.userId },
-      { limit: 200 }
-    ]
-  });
-
   await service.execute('startInstance', {
     definitionId: 'definition-1',
     businessKey: 'order-1',
     title: 'Order approval'
   }, serviceContext);
   assert.equal(delegatedCalls.pop()?.method, 'startInstance');
+
+  await service.execute('recoverOrphanedInstances', {}, serviceContext);
+  assert.deepEqual(delegatedCalls.pop(), {
+    service: 'runtime',
+    method: 'recoverOrphanedInstances',
+    args: [serviceContext.accountId]
+  });
 
   await service.execute('approveTask', {
     taskId: 'task-1',
@@ -437,7 +373,6 @@ async function testWebhookTriggerRequiresMatchingEnabledJob() {
 void Promise.all([
   testDirectDelegation(),
   testDirectTypedJobCrudIsBlocked(),
-  testJobRunReadModel(),
   testWebhookTriggerRequiresMatchingEnabledJob()
 ]).then(() => {
   console.log('workflow service tests passed');

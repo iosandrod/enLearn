@@ -237,11 +237,6 @@ export class DataSourceRequestResolver {
       'listDropdownOptions',
     ]);
 
-    const legacyWorkflowListItemTypes: Record<string, string> = {
-      listWorkflowJobs: 'jobs',
-      listWorkflowJobRuns: 'jobRuns',
-    };
-
     const legacyLowCodeListMethodTables: Record<string, string> = {
       listPages: 'lowcode_pages',
     };
@@ -299,17 +294,6 @@ export class DataSourceRequestResolver {
         };
       }
 
-      if (serviceName === 'admin' && legacyWorkflowListItemTypes[serviceMethod]) {
-        return {
-          serviceName: 'workflow',
-          serviceMethod: 'listItems',
-          postData: {
-            ...postData,
-            itemType: readString(postData.itemType ?? postData.item_type ?? postData.type, legacyWorkflowListItemTypes[serviceMethod]),
-          },
-        };
-      }
-
       if (serviceName === 'lowcode' && lowCodeTableListMethods.has(serviceMethod)) {
         return {
           serviceName: 'admin',
@@ -342,7 +326,6 @@ export class DataSourceRequestResolver {
       const message = error instanceof Error ? error.message : String(error ?? '');
       return (
         message.includes('Could not find the table') ||
-        message.includes('Unsupported Admin listItems itemType') ||
         message.includes('does not exist')
       );
     }

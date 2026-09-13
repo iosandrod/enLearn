@@ -109,8 +109,13 @@ assert.match(
 );
 assert.match(
   scriptsSource,
-  /import ScriptRuntimeWorker from '\.\/script-runtime\.worker\.ts\?worker&inline'[\s\S]*?new ScriptRuntimeWorker\([\s\S]*?worker\.terminate\(\)/,
-  'Each untrusted execution must run in a disposable inline worker.',
+  /import ScriptRuntimeWorker from '\.\/script-runtime\.worker\.ts\?worker'[\s\S]*?new ScriptRuntimeWorker\([\s\S]*?worker\.terminate\(\)/,
+  'Each untrusted execution must run in a disposable standalone worker.',
+);
+assert.doesNotMatch(
+  scriptsSource,
+  /script-runtime\.worker\.ts\?worker&inline/,
+  'The QuickJS worker must not use a blob URL because its WASM asset needs an HTTP URL base.',
 );
 assert.match(
   scriptsSource,

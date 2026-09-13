@@ -58,6 +58,21 @@ assert.match(
 );
 assert.match(
   formSource,
+  /formResizeObserver = new ResizeObserver\(\(\) => scheduleFormRecalculation\(\)\)[\s\S]*?formResizeObserver\.observe\(formElement\)/,
+  'Forms must recalculate automatic title widths after a hidden dialog becomes visible.'
+);
+assert.match(
+  formSource,
+  /if \(!form \|\| !formElement \|\| formElement\.clientWidth <= 0\) return;[\s\S]*?void form\.recalculate\(\)/,
+  'Automatic title widths must not be recalculated while the form is hidden.'
+);
+assert.match(
+  layoutSource,
+  /activeTabKeys\[nodeKey\(node, index\)\] = key;[\s\S]*?requestFormRecalculate\(\)/,
+  'Switching a form tab must recalculate title widths for the newly visible fields.'
+);
+assert.match(
+  formSource,
   /\.lc-form-grid-cell--array \{[\s\S]*?align-self: stretch;/,
   'Array-table fields must stretch into a flexible form row without a fixed height.'
 );

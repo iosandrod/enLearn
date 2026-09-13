@@ -96,6 +96,12 @@ export default defineConfig({
     'import.meta.env.VITE_SOCKET_BASE_URL': JSON.stringify(
       env.VITE_SOCKET_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3002'}`,
     ),
+    // The repository-level .env.local is loaded above as parentEnv. Expose the
+    // low-code runtime switch explicitly because Vite's automatic env loading
+    // is rooted at frontend/ and would otherwise omit it.
+    'import.meta.env.VITE_LOWCODE_SCRIPT_RUNTIME': JSON.stringify(
+      env.VITE_LOWCODE_SCRIPT_RUNTIME ?? '',
+    ),
   },
   plugins: [
     transformTldrawVueTsxPlugin(),

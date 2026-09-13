@@ -45,6 +45,11 @@ function createRequestId() {
 export function useServiceApi() {
   const { request } = useAuthenticatedFetch();
 
+  async function listPublishedLowCodeMaterials<TResponse = unknown>() {
+    const response = await request<{ materials: TResponse[] }>('/api/auth/lowcode-materials');
+    return Array.isArray(response.materials) ? response.materials : [];
+  }
+
   async function invoke<TResponse = unknown>(
     serviceName: string,
     serviceMethod: string,
@@ -86,5 +91,5 @@ export function useServiceApi() {
     return readRows<TResponse>(result)[0];
   }
 
-  return { invoke, listItems, firstItem };
+  return { invoke, listItems, firstItem, listPublishedLowCodeMaterials };
 }

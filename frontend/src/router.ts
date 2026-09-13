@@ -28,6 +28,10 @@ const publicRoutes: RouteRecordRaw[] = [
 
 const dashboardRoutes: RouteRecordRaw[] = [
   { path: '/dashboard', component: () => import('../pages/dashboard/index.vue'), meta: dashboardRouteMeta },
+  // Entity designer is a code-backed workspace. Keep it ahead of the catch-all
+  // low-code route so `/dashboard/entity-design` does not get rendered as a
+  // database page (which can be empty when its page definition is unavailable).
+  { path: '/dashboard/entity-design', component: () => import('../pages/dashboard/entity-design.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/trigger-workflow/designer', component: () => import('../pages/dashboard/trigger-workflow/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/advanced/print-designer', component: () => import('../pages/dashboard/print/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/print-designer', component: () => import('../pages/dashboard/print/lowcode-designer.vue'), meta: dashboardCachedRouteMeta },

@@ -231,6 +231,7 @@ const formGridRef = ref<HTMLElement>();
 const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
 provide('low-code-form-values', () => formData);
+provide('low-code-form-request-recalculate', scheduleFormRecalculation);
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
 const codeOptionSources = reactive<Record<string, unknown[]>>({});
 const fields = computed(() =>
@@ -410,6 +411,8 @@ watch(
 
 let formGridResizeObserver: ResizeObserver | undefined;
 let formGridMeasureFrame: number | undefined;
+let formResizeObserver: ResizeObserver | undefined;
+let formRecalculateFrame: number | undefined;
 
 watch(
   formGridRef,
@@ -464,14 +467,26 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => window.addEventListener('resize', scheduleFormGridMeasurement));
+onMounted(() => {
+  window.addEventListener('resize', scheduleFormGridMeasurement);
+  const formElement = vxeFormRef.value?.getRefMaps().refElem.value;
+  if (formElement && typeof ResizeObserver !== 'undefined') {
+    formResizeObserver = new ResizeObserver(() => scheduleFormRecalculation());
+    formResizeObserver.observe(formElement);
+  }
+  scheduleFormRecalculation();
+});
 
 onBeforeUnmount(() => {
   unsubscribeOptionSources?.();
   window.removeEventListener('resize', scheduleFormGridMeasurement);
   formGridResizeObserver?.disconnect();
+  formResizeObserver?.disconnect();
   if (typeof formGridMeasureFrame === 'number') {
     cancelAnimationFrame(formGridMeasureFrame);
+  }
+  if (typeof formRecalculateFrame === 'number') {
+    cancelAnimationFrame(formRecalculateFrame);
   }
 });
 
@@ -530,6 +545,19 @@ function scheduleFormGridMeasurement() {
     cancelAnimationFrame(formGridMeasureFrame);
   }
   formGridMeasureFrame = requestAnimationFrame(measureFormGridRows);
+}
+
+function scheduleFormRecalculation() {
+  if (typeof requestAnimationFrame === 'undefined') return;
+  if (typeof formRecalculateFrame === 'number') return;
+
+  formRecalculateFrame = requestAnimationFrame(() => {
+    formRecalculateFrame = undefined;
+    const form = vxeFormRef.value;
+    const formElement = form?.getRefMaps().refElem.value;
+    if (!form || !formElement || formElement.clientWidth <= 0) return;
+    void form.recalculate();
+  });
 }
 
 function readFormColumnCount() {

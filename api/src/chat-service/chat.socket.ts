@@ -207,7 +207,9 @@ export function registerChatSocket(app: INestApplication) {
     });
   });
 
-  registerFrontendCommandSocket(app, chatNamespace);
+  if (process.env.FRONTEND_COMMAND_REDIS_ENABLED !== '0') {
+    registerFrontendCommandSocket(app, chatNamespace);
+  }
 
   return io;
 }

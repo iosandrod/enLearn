@@ -6,6 +6,9 @@ import type {
   RuntimeActor,
   WorkflowCcRecord,
   WorkflowHistoryEventRecord,
+  WorkflowExecutionEventRecord,
+  WorkflowExecutionTokenRecord,
+  WorkflowExecutionTokenStatus,
   WorkflowTaskCandidateRecord,
   WorkflowTaskRecord,
   WorkflowVariableRecord
@@ -38,6 +41,29 @@ export type WorkflowTaskDecision = {
   comment?: string;
   variables?: Record<string, unknown>;
   targetNodeId?: string;
+};
+
+export type HumanTaskAdapterInput = {
+  tenantId: string;
+  processInstanceId: string;
+  nodeInstanceId: string;
+  nodeId: string;
+  title: string;
+  completionStrategy: 'any' | 'all' | 'ratio';
+  passRatio?: number;
+  candidates: Array<{
+    type: 'user' | 'role' | 'department';
+    id: string;
+    snapshot?: Record<string, unknown>;
+  }>;
+  timeoutSeconds?: number;
+  onTimeout?: 'fail' | 'autoApprove' | 'autoReject' | 'continue';
+};
+
+export type HumanTaskAdapterResult = {
+  status: 'continued' | 'stopped';
+  decisions: WorkflowTaskDecision[];
+  completedTaskIds: string[];
 };
 
 export type CreateProcessInstanceInput = {
@@ -180,6 +206,45 @@ export interface WorkflowRuntimeStore {
     status: Extract<ProcessInstanceStatus, 'approved' | 'rejected' | 'failed'>,
     payload?: Record<string, unknown>
   ): Promise<void>;
+  createExecutionToken?(input: {
+    id: string;
+    processInstanceId: string;
+    parentTokenId?: string;
+    branchId?: string;
+    joinScopeId?: string;
+    nodeId: string;
+    status: WorkflowExecutionTokenStatus;
+    joinKey?: string;
+    waitpointId?: string;
+  }): Promise<WorkflowExecutionTokenRecord>;
+  updateExecutionToken?(tokenId: string, patch: {
+    status?: WorkflowExecutionTokenStatus;
+    nodeId?: string;
+    waitpointId?: string;
+    version: number;
+  }): Promise<WorkflowExecutionTokenRecord>;
+  listExecutionTokens?(processInstanceId: string, joinKey?: string): Promise<WorkflowExecutionTokenRecord[]>;
+  claimExecutionJoin?(input: {
+    processInstanceId: string;
+    joinKey: string;
+    joinScopeId?: string;
+    tokenId: string;
+    expectedBranches: number;
+  }): Promise<boolean>;
+  appendExecutionEvent?(input: {
+    id: string;
+    processInstanceId: string;
+    tokenId?: string;
+    eventType: string;
+    nodeId?: string;
+    payload: Record<string, unknown>;
+    idempotencyKey?: string;
+  }): Promise<WorkflowExecutionEventRecord>;
+  claimRecoveryCandidate?(input: {
+    instanceId: string;
+    leaseSeconds: number;
+  }): Promise<boolean>;
+  releaseRecoveryLease?(instanceId: string, succeeded: boolean, error?: string): Promise<void>;
 }
 
 export interface WorkflowTriggerClient {

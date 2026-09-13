@@ -1,8 +1,7 @@
-# syntax=docker/dockerfile:1.7
-
-FROM node:22-alpine AS base
+FROM public.ecr.aws/docker/library/node:22-alpine AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
+ENV CI=true
 RUN corepack enable
 WORKDIR /app
 
@@ -11,6 +10,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY api/package.json api/package.json
 COPY frontend/package.json frontend/package.json
 COPY mobile-app/package.json mobile-app/package.json
+COPY cpp-typescript/package.json cpp-typescript/package.json
 COPY packages packages
 RUN pnpm install --frozen-lockfile
 
@@ -24,11 +24,14 @@ RUN pnpm --dir frontend build
 
 FROM dependencies AS api-build
 COPY . .
-RUN pnpm --dir api build && pnpm prune --prod
+RUN pnpm --dir api build
 
 FROM dependencies AS planning-build
 COPY . .
-RUN pnpm --dir api exec tsc -p ../cpp-typescript/tsconfig.json
+RUN cd cpp-typescript \
+  && npm install --ignore-scripts --legacy-peer-deps \
+  && npm run build \
+  && npm prune --omit=dev --ignore-scripts --legacy-peer-deps
 
 FROM base AS api-runtime
 ENV NODE_ENV=production
@@ -49,6 +52,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3002/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"
 CMD ["node", "dist/standalone.js"]
 
-FROM caddy:2-alpine AS web-runtime
+FROM public.ecr.aws/docker/library/caddy:2-alpine AS web-runtime
 COPY --from=frontend-build /app/frontend/dist /srv
 COPY Caddyfile /etc/caddy/Caddyfile

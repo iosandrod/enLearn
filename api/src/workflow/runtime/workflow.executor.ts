@@ -6,6 +6,11 @@ import type {
   WorkflowTaskDecision
 } from './runtime.engine.types';
 import { isRecord, readString } from './runtime.helpers';
+import { compileCanonicalWorkflow } from '@enlearn/workflow-schema';
+import {
+  createDefaultNodeStrategyRegistry,
+  type ExecutionResult
+} from './node-strategy.registry';
 import type {
   NodeInstanceRecord,
   RuntimeActor,
@@ -17,6 +22,7 @@ import type {
 } from './runtime.types';
 
 const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
+const NODE_STRATEGIES = createDefaultNodeStrategyRegistry();
 
 export type WorkflowWaitDriver = {
   createToken(input: {
@@ -51,10 +57,42 @@ export async function executeWorkflowInstance(
     throw new Error('Workflow definition has no start node.');
   }
 
+  await store.recordHistory(
+    payload.tenantId,
+    payload.instanceId,
+    'PROCESS_STARTED',
+    actor.userId,
+    { definitionId: payload.definitionId, definitionVersion: payload.definitionVersion },
+    `process:${payload.instanceId}:started`
+  );
+
   const startNodeInstance = await enterNodeProjection(payload, store, startNode, 'root:start', 'completed', actor);
   await completeNodeProjection(payload, store, startNode, startNodeInstance, actor);
 
-  const result = await moveToNextNode(payload, store, waits, definition, startNode.id, 'root', actor);
+  let result: TraversalResult;
+  try {
+    result = await moveToNextNode(
+      payload,
+      store,
+      waits,
+      definition,
+      startNode.id,
+      'root',
+      actor,
+      startNodeInstance.id,
+      []
+    );
+  } catch (error) {
+    await store.recordHistory(
+      payload.tenantId,
+      payload.instanceId,
+      'PROCESS_FAILED',
+      actor.userId,
+      { message: error instanceof Error ? error.message : String(error) },
+      `process:${payload.instanceId}:failed`
+    );
+    throw error;
+  }
   if (result === 'stopped') {
     return {
       instanceId: payload.instanceId,
@@ -66,6 +104,14 @@ export async function executeWorkflowInstance(
     await store.setInstanceStatus(payload.instanceId, 'approved', {
       status: 'approved'
     });
+    await store.recordHistory(
+      payload.tenantId,
+      payload.instanceId,
+      'PROCESS_COMPLETED',
+      actor.userId,
+      { status: 'approved' },
+      `process:${payload.instanceId}:completed`
+    );
     await emitWorkflowApprovedNotification(payload, store, waits, actor);
   }
 
@@ -82,8 +128,10 @@ async function moveToNextNode(
   definition: RuntimeDefinition,
   sourceNodeId: string,
   pathKey: string,
-  actor: RuntimeActor
-): Promise<ExecutionResult> {
+  actor: RuntimeActor,
+  parentTokenId?: string,
+  joinScopeIds: string[] = []
+): Promise<TraversalResult> {
   if (!(await store.isInstanceRunning(payload.instanceId))) return 'stopped';
 
   const variables = await store.getVariables(payload.instanceId);
@@ -106,7 +154,17 @@ async function moveToNextNode(
     throw new Error(`Target node "${edge.target}" does not exist.`);
   }
 
-  return enterNode(payload, store, waits, definition, targetNode, `${pathKey}:${edge.id}`, actor);
+  return enterNode(
+    payload,
+    store,
+    waits,
+    definition,
+    targetNode,
+    `${pathKey}:${edge.id}`,
+    actor,
+    parentTokenId,
+    joinScopeIds
+  );
 }
 
 async function enterNode(
@@ -116,8 +174,10 @@ async function enterNode(
   definition: RuntimeDefinition,
   node: WorkflowNodeSnapshot,
   pathKey: string,
-  actor: RuntimeActor
-): Promise<ExecutionResult> {
+  actor: RuntimeActor,
+  parentTokenId?: string,
+  joinScopeIds: string[] = []
+): Promise<TraversalResult> {
   if (!(await store.isInstanceRunning(payload.instanceId))) return 'stopped';
 
   const nodeInstance = await enterNodeProjection(
@@ -126,76 +186,149 @@ async function enterNode(
     node,
     `${pathKey}:${node.id}`,
     initialNodeStatus(node.type),
-    actor
+    actor,
+    parentTokenId,
+    joinScopeIds.at(-1)
   );
 
   try {
-    switch (node.type) {
-      case 'approval':
-      case 'sign':
-      case 'orSign': {
-        const result = await waitForHumanNode(payload, store, waits, node, nodeInstance, actor);
-        if (result === 'stopped') return 'stopped';
+    const strategy = NODE_STRATEGIES.require(strategyTypeForNode(node.type));
+    const result = await strategy.execute({
+      node,
+      complete: async () => {
         await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
-      }
-      case 'condition':
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
-      case 'cc':
-        await createCcItems(payload, store, waits, node, nodeInstance, actor);
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
-      case 'serviceTask':
-        await executeServiceTask(payload, store, node, nodeInstance, actor);
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
-      case 'timer':
+        if (node.type === 'parallelFork') {
+          await store.recordHistory(
+            payload.tenantId,
+            payload.instanceId,
+            'PARALLEL_GATEWAY_COMPLETED',
+            actor.userId,
+            { nodeId: node.id, nodeInstanceId: nodeInstance.id },
+            `node:${nodeInstance.id}:parallel-completed`
+          );
+        }
+      },
+      waitHuman: () => waitForHumanNode(payload, store, waits, node, nodeInstance, actor),
+      createCc: () => createCcItems(payload, store, waits, node, nodeInstance, actor),
+      executeService: () => executeServiceTask(payload, store, node, nodeInstance, actor),
+      waitTimer: async () => {
         await waitForTimer(payload, store, waits, node, nodeInstance, actor);
-        if (!(await store.isInstanceRunning(payload.instanceId))) return 'stopped';
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
-      case 'subProcess':
+        if (!(await store.isInstanceRunning(payload.instanceId))) {
+          throw new Error('Workflow was stopped while waiting.');
+        }
+      },
+      recordSubProcess: async () => {
         await store.recordHistory(
           payload.tenantId,
           payload.instanceId,
           'SUB_PROCESS_COMPLETED',
           actor.userId,
-          {
-            nodeId: node.id,
-            nodeInstanceId: nodeInstance.id,
-            config: node.config ?? {}
-          },
+          { nodeId: node.id, nodeInstanceId: nodeInstance.id, config: node.config ?? {} },
           `node:${nodeInstance.id}:sub-process-completed`
         );
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
-      case 'parallelGateway': {
-        await store.recordHistory(
-          payload.tenantId,
-          payload.instanceId,
-          'PARALLEL_GATEWAY_COMPLETED',
-          actor.userId,
-          {
+      },
+      next: async () => traversalToExecutionResult(
+        await moveToNextNode(
+          payload,
+          store,
+          waits,
+          definition,
+          node.id,
+          pathKey,
+          actor,
+          nodeInstance.id,
+          node.type === 'parallelJoin' ? joinScopeIds.slice(0, -1) : joinScopeIds
+        )
+      ),
+      join: async () => {
+        const joinKey = readString(node.config?.joinKey, node.id);
+        const joinScopeId = joinScopeIds.at(-1);
+        const expectedBranches = typeof node.config?.expectedBranches === 'number'
+          ? Math.max(1, Math.floor(node.config.expectedBranches))
+          : definition.edges.filter((edge) => edge.target === node.id).length;
+        if (store.claimExecutionJoin) {
+          const released = await store.claimExecutionJoin({
+            processInstanceId: payload.instanceId,
+            joinKey,
+            ...(joinScopeId ? { joinScopeId } : {}),
+            tokenId: nodeInstance.id,
+            expectedBranches
+          });
+          if (!released) {
+            await store.appendExecutionEvent?.({
+              id: randomUUID(),
+              processInstanceId: payload.instanceId,
+              tokenId: nodeInstance.id,
+              eventType: 'JOIN_WAITING',
+              nodeId: node.id,
+              payload: { joinKey, joinScopeId, expectedBranches },
+              idempotencyKey: `execution:${nodeInstance.id}:join-waiting`
+            });
+            return { type: 'waiting', waitpointId: `join:${payload.instanceId}:${joinScopeId ?? 'root'}:${joinKey}` };
+          }
+          await completeNodeProjection(payload, store, node, nodeInstance, actor, false);
+          return traversalToExecutionResult(
+            await moveToNextNode(
+              payload,
+              store,
+              waits,
+              definition,
+              node.id,
+              pathKey,
+              actor,
+              nodeInstance.id,
+              joinScopeIds.slice(0, -1)
+            )
+          );
+        }
+        if (!store.listExecutionTokens) {
+          await completeNodeProjection(payload, store, node, nodeInstance, actor);
+          return traversalToExecutionResult(
+            await moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor, nodeInstance.id, joinScopeIds.slice(0, -1))
+          );
+        }
+
+        const tokens = await store.listExecutionTokens(payload.instanceId, joinKey);
+        const scopedTokens = tokens.filter((token) => token.joinScopeId === joinScopeId);
+        if (scopedTokens.length < expectedBranches) {
+          await setExecutionTokenStatus(store, payload.instanceId, nodeInstance.id, 'waiting');
+          await store.appendExecutionEvent?.({
+            id: randomUUID(),
+            processInstanceId: payload.instanceId,
+            tokenId: nodeInstance.id,
+            eventType: 'JOIN_WAITING',
             nodeId: node.id,
-            nodeInstanceId: nodeInstance.id
-          },
-          `node:${nodeInstance.id}:parallel-completed`
+            payload: { joinKey, joinScopeId, expectedBranches, arrivedBranches: scopedTokens.length },
+            idempotencyKey: `execution:${nodeInstance.id}:join-waiting`
+          });
+          return { type: 'waiting', waitpointId: `join:${payload.instanceId}:${joinKey}` };
+        }
+
+        await completeNodeProjection(payload, store, node, nodeInstance, actor);
+        return traversalToExecutionResult(
+          await moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor, nodeInstance.id, joinScopeIds.slice(0, -1))
         );
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return moveToAllNextNodes(payload, store, waits, definition, node.id, pathKey, actor);
+      },
+      fork: async () => {
+        const branches = selectOutgoingEdges(definition, node.id, await store.getVariables(payload.instanceId))
+          .map((edge) => edge.target);
+        const traversal = await moveToAllNextNodes(
+          payload,
+          store,
+          waits,
+          definition,
+          node.id,
+          pathKey,
+          actor,
+          nodeInstance.id,
+          [...joinScopeIds, nodeInstance.id]
+        );
+        return traversal === 'stopped'
+          ? { type: 'failed', error: 'Workflow stopped while executing parallel branches.' }
+          : { type: 'fork', branches };
       }
-      case 'end':
-        await completeNodeProjection(payload, store, node, nodeInstance, actor);
-        return 'continued';
-      default:
-        await store.setInstanceStatus(payload.instanceId, 'failed', {
-          nodeId: node.id,
-          nodeType: node.type,
-          message: `Unsupported runtime node type "${node.type}".`
-        });
-        throw new Error(`Unsupported runtime node type "${node.type}".`);
-    }
+    });
+    return executionResultToTraversal(result);
   } catch (error) {
     await store.failNodeInstance(nodeInstance.id, error instanceof Error ? error.message : String(error));
     await store.setInstanceStatus(payload.instanceId, 'failed', {
@@ -214,8 +347,10 @@ async function moveToAllNextNodes(
   definition: RuntimeDefinition,
   sourceNodeId: string,
   pathKey: string,
-  actor: RuntimeActor
-): Promise<ExecutionResult> {
+  actor: RuntimeActor,
+  parentTokenId: string,
+  joinScopeIds: string[]
+): Promise<TraversalResult> {
   const variables = await store.getVariables(payload.instanceId);
   const edges = selectOutgoingEdges(definition, sourceNodeId, variables);
   if (!edges.length) {
@@ -230,7 +365,17 @@ async function moveToAllNextNodes(
     edges.map((edge) => {
       const node = definition.nodeMap.get(edge.target);
       if (!node) throw new Error(`Target node "${edge.target}" does not exist.`);
-      return enterNode(payload, store, waits, definition, node, `${pathKey}:${edge.id}`, actor);
+      return enterNode(
+        payload,
+        store,
+        waits,
+        definition,
+        node,
+        `${pathKey}:${edge.id}`,
+        actor,
+        parentTokenId,
+        joinScopeIds
+      );
     })
   );
   return results.includes('stopped') ? 'stopped' : 'continued';
@@ -242,7 +387,9 @@ async function enterNodeProjection(
   node: WorkflowNodeSnapshot,
   executionKey: string,
   status: NodeInstanceRecord['status'],
-  actor: RuntimeActor
+  actor: RuntimeActor,
+  parentTokenId?: string,
+  joinScopeId?: string
 ) {
   const nodeInstance = await store.createNodeInstance({
     id: randomUUID(),
@@ -265,6 +412,25 @@ async function enterNodeProjection(
     },
     `node:${nodeInstance.id}:entered`
   );
+  await store.createExecutionToken?.({
+    id: nodeInstance.id,
+    processInstanceId: payload.instanceId,
+    nodeId: node.id,
+    status: status === 'waiting' ? 'waiting' : 'running',
+    branchId: executionKey,
+    ...(parentTokenId ? { parentTokenId } : {}),
+    ...(joinScopeId ? { joinScopeId } : {}),
+    ...(node.type === 'parallelJoin' ? { joinKey: readString(node.config?.joinKey, node.id) } : {})
+  });
+  await store.appendExecutionEvent?.({
+    id: randomUUID(),
+    processInstanceId: payload.instanceId,
+    tokenId: nodeInstance.id,
+    eventType: 'NODE_ENTERED',
+    nodeId: node.id,
+    payload: { nodeType: node.type, nodeInstanceId: nodeInstance.id },
+    idempotencyKey: `execution:${nodeInstance.id}:entered`
+  });
   return nodeInstance;
 }
 
@@ -273,7 +439,8 @@ async function completeNodeProjection(
   store: WorkflowRuntimeStore,
   node: WorkflowNodeSnapshot,
   nodeInstance: NodeInstanceRecord,
-  actor: RuntimeActor
+  actor: RuntimeActor,
+  updateToken = true
 ) {
   await store.completeNodeInstance(nodeInstance.id);
   await store.recordHistory(
@@ -288,6 +455,31 @@ async function completeNodeProjection(
     },
     `node:${nodeInstance.id}:completed`
   );
+  if (updateToken) {
+    await setExecutionTokenStatus(store, payload.instanceId, nodeInstance.id, 'completed');
+  }
+  await store.appendExecutionEvent?.({
+    id: randomUUID(),
+    processInstanceId: payload.instanceId,
+    tokenId: nodeInstance.id,
+    eventType: 'NODE_COMPLETED',
+    nodeId: node.id,
+    payload: { nodeType: node.type, nodeInstanceId: nodeInstance.id },
+    idempotencyKey: `execution:${nodeInstance.id}:completed`
+  });
+}
+
+async function setExecutionTokenStatus(
+  store: WorkflowRuntimeStore,
+  processInstanceId: string,
+  tokenId: string,
+  status: 'waiting' | 'completed' | 'failed'
+) {
+  if (!store.updateExecutionToken) return;
+  const tokens = await store.listExecutionTokens?.(processInstanceId);
+  const token = tokens?.find((item) => item.id === tokenId);
+  // The version belongs to the durable token, never to a process-local runner.
+  await store.updateExecutionToken(tokenId, { status, version: token?.version ?? 0 });
 }
 
 async function waitForHumanNode(
@@ -297,7 +489,7 @@ async function waitForHumanNode(
   node: WorkflowNodeSnapshot,
   nodeInstance: NodeInstanceRecord,
   actor: RuntimeActor
-): Promise<ExecutionResult> {
+): Promise<TraversalResult> {
   const initialTasks = await store.listNodeTasks(nodeInstance.id);
   let pendingDecision: Promise<WorkflowTaskDecision> | undefined;
   if (!initialTasks.length) {
@@ -382,8 +574,10 @@ async function createHumanTasks(
     ? node.config.assigneeStrategy
     : { type: 'initiatorManager', level: 1 };
   const assignees = resolveAssignees(strategy, actor, variables);
+  const completionStrategy = completionStrategyForNode(node);
   const candidates =
-    node.type === 'approval'
+    completionStrategy === 'any' &&
+    ['approval', 'manualApproval', 'humanReview'].includes(readString(node.config?.__sourceType))
       ? assignees.candidates.slice(0, 1)
       : assignees.candidates.length
         ? assignees.candidates
@@ -767,23 +961,20 @@ async function waitForTimer(
 }
 
 function compileRuntimeDefinition(schema: Record<string, unknown>): RuntimeDefinition {
-  const nodes = Array.isArray(schema.nodes)
-    ? schema.nodes.filter(isRecord).map((node) => ({
-        id: readString(node.id),
-        type: readString(node.type),
-        name: readString(node.name, readString(node.type)),
-        ...(isRecord(node.config) ? { config: node.config } : {})
-      }))
-    : [];
-  const edges = Array.isArray(schema.edges)
-    ? schema.edges.filter(isRecord).map((edge) => ({
-        id: readString(edge.id),
-        source: readString(edge.source),
-        target: readString(edge.target),
-        ...(typeof edge.priority === 'number' ? { priority: edge.priority } : {}),
-        ...(isRecord(edge.condition) ? { condition: edge.condition } : {})
-      }))
-    : [];
+  const canonical = compileCanonicalWorkflow(schema);
+  const nodes = canonical.nodes.map((node) => ({
+    id: node.id,
+    type: node.type,
+    name: node.name,
+    config: { ...node.config, __sourceType: node.sourceType }
+  }));
+  const edges = canonical.edges.map((edge) => ({
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    ...(edge.priority !== undefined ? { priority: edge.priority } : {}),
+    ...(isRecord(edge.condition) ? { condition: edge.condition } : {})
+  }));
 
   return {
     nodes,
@@ -928,14 +1119,20 @@ function isHumanNodeCompleted(node: WorkflowNodeSnapshot, tasks: WorkflowTaskRec
 }
 
 function completionStrategyForNode(node: WorkflowNodeSnapshot) {
-  if (node.type === 'orSign') return 'any';
+  const configured = readString(node.config?.completionStrategy);
+  if (configured === 'any' || configured === 'all' || configured === 'ratio') {
+    return configured;
+  }
+  const sourceType = readString(node.config?.__sourceType);
+  if (sourceType === 'orSign' || sourceType === 'approval' || sourceType === 'manualApproval' || sourceType === 'humanReview') return 'any';
+  if (sourceType === 'sign') return 'all';
   const strategy = readString(node.config?.completionStrategy, 'all');
   return strategy === 'any' || strategy === 'ratio' ? strategy : 'all';
 }
 
 function initialNodeStatus(nodeType: string): NodeInstanceRecord['status'] {
   if (nodeType === 'timer') return 'waiting';
-  if (nodeType === 'approval' || nodeType === 'sign' || nodeType === 'orSign') return 'running';
+  if (nodeType === 'humanTask') return 'running';
   return 'completed';
 }
 
@@ -1018,4 +1215,27 @@ type RuntimeDefinition = {
   nodeMap: Map<string, WorkflowNodeSnapshot>;
 };
 
-type ExecutionResult = 'continued' | 'stopped';
+type TraversalResult = 'continued' | 'stopped';
+
+function strategyTypeForNode(nodeType: string) {
+  switch (nodeType) {
+    case 'approval':
+    case 'sign':
+    case 'orSign':
+      return 'humanTask';
+    case 'parallelGateway':
+      return 'parallelFork';
+    default:
+      return nodeType;
+  }
+}
+
+function traversalToExecutionResult(result: TraversalResult): ExecutionResult {
+  return result === 'stopped'
+    ? { type: 'failed', error: 'Workflow execution stopped.' }
+    : { type: 'completed', next: [] };
+}
+
+function executionResultToTraversal(result: ExecutionResult): TraversalResult {
+  return result.type === 'failed' ? 'stopped' : 'continued';
+}

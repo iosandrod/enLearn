@@ -4,7 +4,7 @@
 
 ## 1. 准备服务器
 
-建议 Ubuntu 22.04/24.04，至少 2 vCPU、2 GB RAM、30 GB SSD。安装 Docker Engine 和 Compose 插件，并把域名的 `A/AAAA` 记录指向服务器。安全组只开放 `22`、`80`、`443`。
+建议 Ubuntu 22.04/24.04，至少 2 vCPU、2 GB RAM、30 GB SSD。安装 Docker Engine 和 Compose 插件，并把域名的 `A/AAAA` 记录指向服务器。安全组开放 `22` 和前端端口 `8081`。
 
 ## 2. 配置环境变量
 
@@ -19,7 +19,6 @@ nano .env.production
 
 ```env
 APP_DOMAIN=app.example.com
-ACME_EMAIL=admin@example.com
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
@@ -28,11 +27,33 @@ DIRECT_URL=postgres://...
 VITE_API_BASE_URL=/api
 VITE_SOCKET_BASE_URL=
 TRIGGER_DEV_WORKER_AUTOSTART=0
+FRONTEND_COMMAND_REDIS_ENABLED=0
 PLANNING_RUN_MODE=inline
 PLANNING_ENGINE_MODE=cpp-typescript
 ```
 
 `.env.production` 只放服务器，不要提交 Git。`SUPABASE_SERVICE_ROLE_KEY` 只能放后端变量，不能以 `VITE_` 开头。
+
+Windows 本机可以直接运行一键脚本：
+
+```powershell
+.\docker-start.ps1
+```
+
+修改前后端代码后，一键重新构建并同步到 Docker：
+
+```powershell
+.\docker-sync.ps1
+```
+
+也可以直接双击项目根目录的 `docker-sync.cmd`。只更新单个服务且其他容器已在运行时，可使用
+`.\docker-sync.ps1 -Service web` 或 `.\docker-sync.ps1 -Service api`。
+
+停止服务：
+
+```powershell
+.\docker-stop.ps1
+```
 
 ## 3. 启动和更新
 
@@ -51,7 +72,7 @@ docker compose --env-file .env.production up -d --build
 docker image prune -f
 ```
 
-首次启动后访问 `https://app.example.com`。Caddy 会自动申请证书；证书和配置保存在 Docker volume 中。
+首次启动后访问 `http://app.example.com:8081`。
 
 ## 4. 数据库迁移和备份
 
@@ -75,8 +96,8 @@ docker compose exec api node -e "console.log('API container is ready')"
 docker compose ps
 docker compose logs --tail=200 api
 docker compose logs --tail=200 web
-curl -I https://app.example.com
-curl -i https://app.example.com/api/service
+curl -I http://app.example.com:8081
+curl -i http://app.example.com:8081/api/service
 ```
 
-如果证书申请失败，先确认 DNS 已生效且 80/443 没有被其他服务占用；如果前端能打开但接口失败，检查 `api` 日志和 `.env.production` 中的 Supabase 变量。
+如果无法访问，先确认服务器安全组和防火墙已开放 `8081`；如果前端能打开但接口失败，检查 `api` 日志和 `.env.production` 中的 Supabase 变量。

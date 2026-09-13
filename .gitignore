@@ -50,6 +50,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
 /trigger-workflow-gateway/.env.bootstrap
 /trigger-workflow-gateway/dist/bootstrap.*
 

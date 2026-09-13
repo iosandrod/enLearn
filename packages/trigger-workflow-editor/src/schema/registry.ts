@@ -23,6 +23,7 @@ const allTriggerNodeDefinitions: TriggerNodeDefinition[] = [
   defineNode('manualApproval', '人工审批', 'human', '等待指定人员完成审批。', 'ri-user-follow-line', '#7c3aed', ['approval', 'custom'], true, true, 1, 1),
   defineNode('condition', '条件分支', 'control', '根据字段或表达式选择执行路径。', 'ri-git-branch-line', '#d97706', ['approval', 'dataSync', 'aiAgent', 'custom'], true, true, 2),
   defineNode('parallel', '并行分支', 'control', '同时启动多个任务分支。', 'ri-git-merge-line', '#dc2626', ['approval', 'dataSync', 'aiAgent', 'custom'], true, true, 2),
+  defineNode('parallelJoin', '并行汇聚', 'control', '等待所有并行分支完成后继续。', 'ri-git-merge-line', '#b91c1c', ['approval', 'dataSync', 'aiAgent', 'custom'], true, true, 2, 1),
   defineNode('task', '执行任务', 'task', '执行一个 Trigger.dev 任务。', 'ri-flashlight-line', '#4f46e5', ['approval', 'dataSync', 'aiAgent', 'custom'], true, true, 1, 1),
   defineNode('triggerAndWait', '触发并等待', 'task', '调用另一个任务并等待完成。', 'ri-timer-line', '#0891b2', ['approval', 'dataSync', 'aiAgent', 'custom'], true, true, 1, 1),
   defineNode('batchTrigger', '批量触发', 'task', '成批触发任务并等待结果。', 'ri-stack-line', '#be123c', ['dataSync', 'aiAgent', 'custom'], true, true, 1, 1),

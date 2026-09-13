@@ -12,7 +12,7 @@ const expectedTaskTypes = new Set([
   'frontendCommand',
   'backendCommand',
   'storedProcedure',
-  'registeredTask'
+  
 ]);
 const actualTaskTypes = new Set<string>();
 
@@ -53,29 +53,26 @@ assert.equal(
 const supabaseRpc = examples.find(
   (example) => example.code === 'example_backend_supabase_inventory_query'
 );
-const supabaseFunction = supabaseRpc?.nodes.find(
+const supabaseCommand = supabaseRpc?.nodes.find(
   (node) => node.type === 'task'
-)?.config?.task?.backendFunction ?? '';
-assert.match(supabaseFunction, /context\.supabase\.rpc/);
-assert.doesNotMatch(supabaseFunction, /context\.supabase\.from/);
+)?.config?.task?.commandCode ?? '';
+assert.equal(supabaseCommand, 'coverage.echo_this_service');
 
 const httpExample = examples.find(
   (example) => example.code === 'example_backend_http_planning_scenarios'
 );
-const httpFunction = httpExample?.nodes.find(
+const httpCommand = httpExample?.nodes.find(
   (node) => node.type === 'task'
-)?.config?.task?.backendFunction ?? '';
-assert.match(httpFunction, /context\.http\.get/);
-assert.doesNotMatch(httpFunction, /\/api\/service/);
+)?.config?.task?.commandCode ?? '';
+assert.equal(httpCommand, 'coverage.echo_this_service');
 
 const baseServiceExample = examples.find(
   (example) => example.code === 'example_backend_base_service_inventory'
 );
-const baseServiceFunction = baseServiceExample?.nodes.find(
+const baseServiceCommand = baseServiceExample?.nodes.find(
   (node) => node.type === 'task'
-)?.config?.task?.backendFunction ?? '';
-assert.match(baseServiceFunction, /listInventoryBuffers/);
-assert.doesNotMatch(baseServiceFunction, /'listItems'/);
+)?.config?.task?.commandCode ?? '';
+assert.equal(baseServiceCommand, 'coverage.echo_this_service');
 
 for (const example of examples) {
   for (const node of example.nodes) {

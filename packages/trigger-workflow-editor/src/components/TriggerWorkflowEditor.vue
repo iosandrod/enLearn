@@ -67,6 +67,8 @@ const props = withDefaults(
     canRun?: boolean;
     /** Render only the flow canvas when hosted by a database-backed low-code page. */
     minimal?: boolean;
+    /** Show the current workflow summary at the top of the node palette. */
+    showWorkflowInfo?: boolean;
     nodeFormSchemas?: TriggerNodeFormSchemaOverrides;
     edgeFormSchema?: TriggerInspectorFormSchema;
     inspectorSchemasLoading?: boolean;
@@ -77,6 +79,7 @@ const props = withDefaults(
     busy: false,
     canRun: false,
     minimal: false,
+    showWorkflowInfo: true,
     inspectorSchemasLoading: false
   }
 );
@@ -127,6 +130,9 @@ let sequence = 0;
 let inspectorDialogId = `${flowId}-inspector`;
 
 const palette = computed(() => getTriggerNodeDefinitionsForKind(currentModel.value.kind));
+const currentKindLabel = computed(
+  () => kindOptions.find((item) => item.value === currentModel.value.kind)?.label ?? '自定义'
+);
 const selectedNode = computed(() => currentModel.value.nodes.find((node) => node.id === selectedNodeId.value));
 const selectedEdge = computed(() => currentModel.value.edges.find((edge) => edge.id === selectedEdgeId.value));
 const issues = computed(() => validateTriggerWorkflow(currentModel.value));
@@ -289,6 +295,10 @@ function onNodeClick(event: NodeMouseEvent) {
   selectedNodeId.value = event.node.id;
   selectedEdgeId.value = null;
   activeInspectorTab.value = 'config';
+}
+
+function onNodeDoubleClick(event: NodeMouseEvent) {
+  onNodeClick(event);
   if (props.minimal) void openSelectedInspectorDialog();
 }
 
@@ -297,6 +307,10 @@ function onEdgeClick(event: EdgeMouseEvent) {
   selectedEdgeId.value = event.edge.id;
   selectedNodeId.value = null;
   activeInspectorTab.value = 'config';
+}
+
+function onEdgeDoubleClick(event: EdgeMouseEvent) {
+  onEdgeClick(event);
   if (props.minimal) void openSelectedInspectorDialog();
 }
 
@@ -887,15 +901,14 @@ function createConfiguredNode(
   name: string,
   position: { x: number; y: number }
 ): TriggerWorkflowNode {
-  const taskId = `${currentModel.value.code}.${id}`;
   const base = { id, type, name, position };
   if (type === 'task' || type === 'triggerAndWait' || type === 'batchTrigger' || type === 'tool') {
     return {
       ...base,
       config: {
         task: {
-          type: 'registeredTask',
-          id: taskId,
+          type: 'backendCommand',
+          commandCode: '',
           failureStrategy: 'failWorkflow',
           retry: { maxAttempts: 3 }
         }
@@ -906,15 +919,14 @@ function createConfiguredNode(
     return {
       ...base,
       config: {
-        task: { type: 'registeredTask', id: taskId, failureStrategy: 'failWorkflow' },
         approval: { assigneeType: 'role', assigneeIds: [], timeoutSeconds: 86400, onTimeout: 'fail' }
       }
     };
   }
   if (type === 'wait') return { ...base, config: { wait: { mode: 'duration', duration: 'PT1H' } } };
-  if (type === 'dataSource' || type === 'dataSink') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, data: { connector: 'http', operation: 'sync' } } };
-  if (type === 'transform' || type === 'memory') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, expression: '' } };
-  if (type === 'agent') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, ai: { provider: 'openai', model: 'gpt-4.1', prompt: '', maxTurns: 6 } } };
+  if (type === 'dataSource' || type === 'dataSink') return { ...base, config: { task: { type: 'backendCommand', commandCode: '' }, data: { connector: 'http', operation: 'sync' } } };
+  if (type === 'transform' || type === 'memory') return { ...base, config: { task: { type: 'backendCommand', commandCode: '' }, expression: '' } };
+  if (type === 'agent') return { ...base, config: { task: { type: 'backendCommand', commandCode: '' }, ai: { provider: 'openai', model: 'gpt-4.1', prompt: '', maxTurns: 6 } } };
   if (type === 'schedule') return { ...base, config: { schedule: { cron: '0 8 * * *', timezone: 'Asia/Shanghai' } } };
   if (type === 'webhook') {
     return {
@@ -1075,10 +1087,46 @@ defineExpose({
 
     <div class="trigger-editor__workspace">
       <aside class="trigger-editor__palette">
+        <section v-if="showWorkflowInfo" class="trigger-editor__workflow-info" aria-label="当前流程信息">
+          <div class="trigger-editor__workflow-info-head">
+            <span><i class="ri-git-branch-line" aria-hidden="true" /></span>
+            <strong>当前流程</strong>
+            <small :class="{ 'trigger-editor__workflow-state--saved': currentModel.id }">
+              {{ currentModel.id ? '已保存' : '未保存' }}
+            </small>
+          </div>
+          <div class="trigger-editor__workflow-info-name" :title="currentModel.name">
+            {{ currentModel.name }}
+          </div>
+          <dl>
+            <div>
+              <dt>流程 ID</dt>
+              <dd :title="currentModel.id || '保存后生成'" class="trigger-editor__workflow-id">
+                {{ currentModel.id || '保存后生成' }}
+              </dd>
+            </div>
+            <div>
+              <dt>流程编码</dt>
+              <dd :title="currentModel.code">{{ currentModel.code }}</dd>
+            </div>
+            <div>
+              <dt>流程类型</dt>
+              <dd>{{ currentKindLabel }}</dd>
+            </div>
+          </dl>
+          <p :title="currentModel.description">
+            {{ currentModel.description || '暂无流程说明' }}
+          </p>
+          <div class="trigger-editor__workflow-info-stats">
+            <span><i class="ri-node-tree" aria-hidden="true" />{{ currentModel.nodes.length }} 个节点</span>
+            <span><i class="ri-route-line" aria-hidden="true" />{{ currentModel.edges.length }} 条连接</span>
+          </div>
+        </section>
+
         <template v-if="!minimal">
           <div class="trigger-editor__side-head">
             <strong>流程模板</strong>
-            <span>{{ kindOptions.find((item) => item.value === currentModel.kind)?.label }}</span>
+            <span>{{ currentKindLabel }}</span>
           </div>
           <div class="trigger-editor__templates">
             <button type="button" :disabled="readonly" @click="loadTemplate('approval')">审批</button>
@@ -1176,10 +1224,12 @@ defineExpose({
           fit-view-on-init
           @connect="onConnect"
           @node-click="onNodeClick"
+          @node-double-click="onNodeDoubleClick"
           @node-drag-start="onNodeDragStart"
           @node-drag-stop="onNodeDragStop"
           @node-context-menu="onNodeContextMenu"
           @edge-click="onEdgeClick"
+          @edge-double-click="onEdgeDoubleClick"
           @pane-click="onPaneClick"
         >
           <template #node-trigger-workflow-node="nodeProps">
@@ -1493,6 +1543,134 @@ defineExpose({
 
 .trigger-editor__inspector {
   border-left: 1px solid #d8dee8;
+}
+
+.trigger-editor__workflow-info {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #cdd8e5;
+  border-radius: 7px;
+  background: #f8fafc;
+  padding: 10px;
+}
+
+.trigger-editor__workflow-info-head {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.trigger-editor__workflow-info-head > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 5px;
+  background: #e8f3ef;
+  color: #08705d;
+  font-size: 13px;
+}
+
+.trigger-editor__workflow-info-head strong {
+  color: #172033;
+  font-size: 12px;
+}
+
+.trigger-editor__workflow-info-head small {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: #fff;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+.trigger-editor__workflow-info-head .trigger-editor__workflow-state--saved {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.trigger-editor__workflow-info-name {
+  overflow: hidden;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger-editor__workflow-info dl {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.trigger-editor__workflow-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger-editor__workflow-info dl > div {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 50px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 7px;
+}
+
+.trigger-editor__workflow-info dt {
+  color: #94a3b8;
+  font-size: 9px;
+}
+
+.trigger-editor__workflow-info dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger-editor__workflow-info dl > div:first-child dd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.trigger-editor__workflow-info p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 15px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.trigger-editor__workflow-info-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 9px;
+  padding-top: 7px;
+}
+
+.trigger-editor__workflow-info-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .trigger-editor__side-head {

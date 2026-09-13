@@ -2040,3 +2040,121 @@ const MinimalNodeInspector = defineComponent({
     };
   }
 });
+
+
+if (
+    !pageCode ||
+    pageInfoDesignOpening ||
+    findGlobalDialog(PAGE_INFO_DESIGN_DIALOG_ID)
+  ) {
+    return;
+  }
+
+  pageInfoDesignOpening = true;
+  routeError.value = '';
+  let savedPage: LowCodePageRecord | null = null;
+
+  try {
+    let currentPage = await getLowCodePage(serviceApi, {
+      code: pageCode,
+      includeData: true,
+    });
+    const pageManagement = await getLowCodePage(serviceApi, {
+      code: 'lowcode-pages',
+      includeData: false,
+    });
+
+    let editorPage = await ensureLowCodeEditPage(serviceApi, pageManagement);
+    const isListPage =
+      editorPage.id === pageManagement.id ||
+      editorPage.code === pageManagement.code ||
+      editorPage.page_type === 'list' ||
+      editorPage.schema.pageType === 'list';
+    if (isListPage) {
+      editorPage = await ensureLowCodeEditPage(serviceApi, {
+        ...pageManagement,
+        edit_page_id: null,
+      });
+    }
+    if (
+      editorPage.id === pageManagement.id ||
+      editorPage.code === pageManagement.code ||
+      editorPage.page_type === 'list' ||
+      editorPage.schema.pageType === 'list'
+    ) {
+      throw new Error('页面配置编辑页解析为列表页，无法打开编辑弹框。');
+    }
+
+    const formBlock = editorPage.schema.blocks.find(
+      (block) => block.kind === 'form',
+    );
+    if (!formBlock || formBlock.kind !== 'form') {
+      throw new Error('页面配置编辑页中没有可用的表单。');
+    }
+
+    const pageInfoFormDefinition = await loadLowCodeFormDefinition(
+      serviceApi,
+      PAGE_INFO_DESIGN_FORM_CODE,
+    );
+    const formSchema = hydratePageInfoDesignSchema(
+      pageInfoFormDefinition.schema,
+      currentPage,
+    );
+    const pageWithCurrentForm = structuredClone(editorPage);
+    const runtimeForm = structuredClone(formBlock);
+    runtimeForm.schema = formSchema;
+    runtimeForm.initialValues = createPageInfoDesignForm(currentPage);
+    runtimeForm.dataSource = undefined;
+    delete (runtimeForm as unknown as { sourceKey?: unknown }).sourceKey;
+    delete (runtimeForm as unknown as { submitSourceKey?: unknown }).submitSourceKey;
+    runtimeForm.schema.actions = [];
+    pageWithCurrentForm.schema.blocks = [runtimeForm];
+    pageWithCurrentForm.schema.overlays = undefined;
+    pageWithCurrentForm.schema.dataSources = {};
+    delete pageWithCurrentForm.schema.visualEditor;
+
+    const result = await confirmLowCodePage({
+      page: pageWithCurrentForm,
+      includeData: false,
+      serviceApi,
+      router,
+      route,
+      title: '页面信息设计',
+      width: 'min(1100px, calc(100vw - 32px))',
+      height: 'min(680px, calc(100vh - 48px))',
+      className: 'dashboard-page-info-design-dialog',
+      confirmLabel: '保存',
+      cancelLabel: '取消',
+      dialog: {
+        id: PAGE_INFO_DESIGN_DIALOG_ID,
+        props: {
+          top: '3vh',
+          destroyOnClose: true,
+        },
+      },
+    });
+    if (result.action !== 'confirm' || !result.payload) return;
+
+    const model = result.payload.formModels[runtimeForm.id];
+    if (model) {
+      const value = normalizePageInfoDesignForm(model as PageInfoDesignForm, currentPage);
+      currentPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+        resource: 'lowcode_pages',
+        id: currentPage.id,
+        data: buildPageInfoSaveData(currentPage, value),
+      });
+    }
+    savedPage = currentPage;
+
+    const page = savedPage as LowCodePageRecord;
+    replaceVisitedTabPageInfo(tab, page);
+    showPageInfoDesignMessage('页面信息已保存。', 'success');
+    await reloadVisitedTab(tab);
+    replaceVisitedTabPageInfo(tab, page);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '页面配置编辑弹框打开失败。';
+    routeError.value = message;
+    showPageInfoDesignMessage(message, 'error');
+  } finally {
+    pageInfoDesignOpening = false;
+  }

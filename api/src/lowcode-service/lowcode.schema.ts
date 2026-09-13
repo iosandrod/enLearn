@@ -103,31 +103,7 @@ export class LowCodeSchemaValidationError extends Error {
   }
 }
 
-const knownBlockKinds = new Set([
-  'approval-workflow-designer',
-  'buttonGroup',
-  'container',
-  'detail',
-  'drawer',
-  'entity-design-flow',
-  'form',
-  'grid',
-  'modal',
-  'planningBom',
-  'planningFlow',
-  'planningGantt',
-  'searchForm',
-  'section',
-  'statCard',
-  'tabs',
-  'text',
-  'toolbar',
-  'tree',
-]);
-
-const materialVersions: Record<string, string> = Object.fromEntries(
-  Array.from(knownBlockKinds).map((kind) => [kind, '1.0.0'])
-);
+export type LowCodeBlockMaterialVersions = Readonly<Record<string, string>>;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -235,15 +211,6 @@ function tableNameFromEntityCode(entityCode: string) {
   };
 
   return knownTables[entityCode] ?? entityCode;
-}
-
-function hasDataSourceTableTarget(source: {
-  entityCode?: string;
-  entity_code?: string;
-  tableName?: string;
-  table_name?: string;
-}) {
-  return Boolean(source.entityCode || source.entity_code || source.tableName || source.table_name);
 }
 
 function normalizeDataSource(
@@ -412,10 +379,16 @@ function normalizeBlocks(
   value: unknown,
   legacyDataSources: NormalizedDataSources = {},
   legacySourceAliases = new Map<string, string>(),
+  registeredMaterialVersions: LowCodeBlockMaterialVersions = {},
 ): Array<Record<string, unknown>> {
   return Array.isArray(value)
     ? value
-        .map((block) => normalizeBlock(block, legacyDataSources, legacySourceAliases))
+        .map((block) => normalizeBlock(
+          block,
+          legacyDataSources,
+          legacySourceAliases,
+          registeredMaterialVersions,
+        ))
         .filter(isRecord)
     : [];
 }
@@ -424,10 +397,16 @@ function normalizeOverlays(
   value: unknown,
   legacyDataSources: NormalizedDataSources = {},
   legacySourceAliases = new Map<string, string>(),
+  registeredMaterialVersions: LowCodeBlockMaterialVersions = {},
 ): Array<Record<string, unknown>> {
   return Array.isArray(value)
     ? (value
-        .map((block) => normalizeBlock(block, legacyDataSources, legacySourceAliases))
+        .map((block) => normalizeBlock(
+          block,
+          legacyDataSources,
+          legacySourceAliases,
+          registeredMaterialVersions,
+        ))
         .filter((block) => isRecord(block) && (block.kind === 'modal' || block.kind === 'drawer')) as Array<Record<string, unknown>>)
     : [];
 }
@@ -436,6 +415,7 @@ function normalizeTabs(
   value: unknown,
   legacyDataSources: NormalizedDataSources = {},
   legacySourceAliases = new Map<string, string>(),
+  registeredMaterialVersions: LowCodeBlockMaterialVersions = {},
 ) {
   return Array.isArray(value)
     ? value
@@ -444,7 +424,12 @@ function normalizeTabs(
           ...tab,
           key: readString(tab.key, `tab${index + 1}`),
           label: readString(tab.label, `Tab ${index + 1}`),
-          blocks: normalizeBlocks(tab.blocks, legacyDataSources, legacySourceAliases),
+          blocks: normalizeBlocks(
+            tab.blocks,
+            legacyDataSources,
+            legacySourceAliases,
+            registeredMaterialVersions,
+          ),
         }))
     : [];
 }
@@ -453,11 +438,15 @@ function normalizeBlock(
   value: unknown,
   legacyDataSources: NormalizedDataSources = {},
   legacySourceAliases = new Map<string, string>(),
+  registeredMaterialVersions: LowCodeBlockMaterialVersions = {},
 ) {
   if (!isRecord(value)) return value;
 
   const kind = normalizeBlockKind(readString(value.kind));
-  const materialVersion = readString(value.materialVersion, materialVersions[kind]);
+  const materialVersion = readString(
+    value.materialVersion,
+    registeredMaterialVersions[kind],
+  );
   const block = {
     ...value,
     kind,
@@ -472,9 +461,21 @@ function normalizeBlock(
   ) {
     return {
       ...block,
-      blocks: normalizeBlocks(value.blocks, legacyDataSources, legacySourceAliases),
+      blocks: normalizeBlocks(
+        value.blocks,
+        legacyDataSources,
+        legacySourceAliases,
+        registeredMaterialVersions,
+      ),
       ...((kind === 'modal' || kind === 'drawer') && Array.isArray(value.overlays)
-        ? { overlays: normalizeOverlays(value.overlays, legacyDataSources, legacySourceAliases) }
+        ? {
+            overlays: normalizeOverlays(
+              value.overlays,
+              legacyDataSources,
+              legacySourceAliases,
+              registeredMaterialVersions,
+            ),
+          }
         : {}),
     };
   }
@@ -482,7 +483,12 @@ function normalizeBlock(
   if (kind === 'tabs') {
     return {
       ...block,
-      tabs: normalizeTabs(value.tabs, legacyDataSources, legacySourceAliases),
+      tabs: normalizeTabs(
+        value.tabs,
+        legacyDataSources,
+        legacySourceAliases,
+        registeredMaterialVersions,
+      ),
     };
   }
 
@@ -556,7 +562,10 @@ function rewriteLegacyFormSourceReferences(
   );
 }
 
-export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
+export function normalizeLowCodePageSchema(
+  value: unknown,
+  registeredMaterialVersions: LowCodeBlockMaterialVersions = {},
+): LowCodePageSchema {
   if (!isRecord(value)) {
     throw new LowCodeSchemaValidationError([
       {
@@ -575,9 +584,19 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
   const scriptPolicy = normalizeScriptPolicy(value.scriptPolicy);
   const dataSources = normalizeDataSources(value.dataSources);
   const legacySourceAliases = new Map<string, string>();
-  const blocks = normalizeBlocks(value.blocks, dataSources, legacySourceAliases);
+  const blocks = normalizeBlocks(
+    value.blocks,
+    dataSources,
+    legacySourceAliases,
+    registeredMaterialVersions,
+  );
   const overlays = Array.isArray(value.overlays)
-    ? normalizeOverlays(value.overlays, dataSources, legacySourceAliases)
+    ? normalizeOverlays(
+        value.overlays,
+        dataSources,
+        legacySourceAliases,
+        registeredMaterialVersions,
+      )
     : undefined;
   const nodeDataSources = Object.fromEntries(
     Object.entries(dataSources).filter(([key]) => !legacySourceAliases.has(key)),
@@ -624,8 +643,11 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
   };
 }
 
-export function migrateLowCodePageSchema(value: unknown) {
-  return normalizeLowCodePageSchema(value);
+export function migrateLowCodePageSchema(
+  value: unknown,
+  registeredMaterialVersions: LowCodeBlockMaterialVersions = {},
+) {
+  return normalizeLowCodePageSchema(value, registeredMaterialVersions);
 }
 
 function pushIssue(
@@ -635,21 +657,6 @@ function pushIssue(
   message: string
 ) {
   issues.push({ level, path, message });
-}
-
-function dataSourceExists(schema: LowCodePageSchema, key?: unknown) {
-  return true//
-}
-
-function validateDataSourceDependencyCycles(
-  schema: LowCodePageSchema,
-  issues: LowCodeSchemaIssue[]
-) {
-  
-}
-
-function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
-  
 }
 
 function validateDirectives(
@@ -821,24 +828,24 @@ function validateColumns(
 
 function validateNestedBlocks(
   blocks: unknown,
-  schema: LowCodePageSchema,
   issues: LowCodeSchemaIssue[],
   blockIds: Set<string>,
-  path: string
+  path: string,
+  registeredBlockKinds: ReadonlySet<string> | undefined,
 ) {
   if (!Array.isArray(blocks)) return;
 
   blocks.forEach((block, index) =>
-    validateBlock(block, schema, issues, blockIds, `${path}.${index}`)
+    validateBlock(block, issues, blockIds, `${path}.${index}`, registeredBlockKinds)
   );
 }
 
 function validateBlock(
   block: unknown,
-  schema: LowCodePageSchema,
   issues: LowCodeSchemaIssue[],
   blockIds: Set<string>,
-  path: string
+  path: string,
+  registeredBlockKinds: ReadonlySet<string> | undefined,
 ) {
   if (!isRecord(block)) {
     pushIssue(issues, 'error', path, 'Block must be an object.');
@@ -861,73 +868,26 @@ function validateBlock(
     return;
   }
 
-  if (!knownBlockKinds.has(kind)) {
+  if (registeredBlockKinds && !registeredBlockKinds.has(kind)) {
     pushIssue(issues, 'error', `${path}.kind`, `Block kind "${kind}" is not registered.`);
-  } else if (!readString(block.materialVersion)) {
+  } else if (registeredBlockKinds && !readString(block.materialVersion)) {
     pushIssue(issues, 'warning', `${path}.materialVersion`, 'Material version is missing.');
   }
 
   if (kind === 'form') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     validateFields(schemaRecord.fields, issues, `${path}.schema.fields`);
-    if (isRecord(block.dataSource)) {
-      const source = block.dataSource as NonNullable<LowCodePageSchema['dataSources']>[string];
-      if (source.key !== id) {
-        pushIssue(issues, 'error', `${path}.dataSource.key`, 'Form data source key must equal the block ID.');
-      }
-      if (!source.serviceName && !hasDataSourceTableTarget(source)) {
-        pushIssue(issues, 'error', `${path}.dataSource.serviceName`, 'Service name is required.');
-      }
-      if (!source.serviceMethod && !hasDataSourceTableTarget(source)) {
-        pushIssue(issues, 'error', `${path}.dataSource.serviceMethod`, 'Service method is required.');
-      }
-    }
   }
 
   if (kind === 'searchForm') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     validateFields(schemaRecord.fields, issues, `${path}.schema.fields`);
-
-    if (!dataSourceExists(schema, block.targetSourceKey)) {
-      pushIssue(
-        issues,
-        'error',
-        `${path}.targetSourceKey`,
-        `Target data source "${block.targetSourceKey}" does not exist.`
-      );
-    }
-
-    if (Array.isArray(block.targetSourceKeys)) {
-      block.targetSourceKeys.forEach((sourceKey, index) => {
-        if (!dataSourceExists(schema, sourceKey)) {
-          pushIssue(
-            issues,
-            'error',
-            `${path}.targetSourceKeys.${index}`,
-            `Target data source "${sourceKey}" does not exist.`
-          );
-        }
-      });
-    }
   }
 
   if (kind === 'grid') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     const grid = isRecord(schemaRecord.grid) ? schemaRecord.grid : {};
     validateColumns(grid.columns, issues, `${path}.schema.grid.columns`);
-
-    if (!dataSourceExists(schema, block.sourceKey)) {
-      pushIssue(issues, 'error', `${path}.sourceKey`, `Data source "${block.sourceKey}" does not exist.`);
-    }
-
-    if (!dataSourceExists(schema, block.deleteSourceKey)) {
-      pushIssue(
-        issues,
-        'error',
-        `${path}.deleteSourceKey`,
-        `Delete data source "${block.deleteSourceKey}" does not exist.`
-      );
-    }
   }
 
   if (kind === 'tabs') {
@@ -957,7 +917,13 @@ function validateBlock(
         pushIssue(issues, 'error', `${panePath}.label`, 'Tab label is required.');
       }
 
-      validateNestedBlocks(tab.blocks, schema, issues, blockIds, `${panePath}.blocks`);
+      validateNestedBlocks(
+        tab.blocks,
+        issues,
+        blockIds,
+        `${panePath}.blocks`,
+        registeredBlockKinds,
+      );
     });
   }
 
@@ -967,16 +933,34 @@ function validateBlock(
     kind === 'modal' ||
     kind === 'drawer'
   ) {
-    validateNestedBlocks(block.blocks, schema, issues, blockIds, `${path}.blocks`);
+    validateNestedBlocks(
+      block.blocks,
+      issues,
+      blockIds,
+      `${path}.blocks`,
+      registeredBlockKinds,
+    );
 
     if (kind === 'modal' || kind === 'drawer') {
-      validateNestedBlocks(block.overlays, schema, issues, blockIds, `${path}.overlays`);
+      validateNestedBlocks(
+        block.overlays,
+        issues,
+        blockIds,
+        `${path}.overlays`,
+        registeredBlockKinds,
+      );
     }
   }
 }
 
-export function validateLowCodePageSchema(schema: LowCodePageSchema) {
+export function validateLowCodePageSchema(
+  schema: LowCodePageSchema,
+  registeredMaterialVersions?: LowCodeBlockMaterialVersions,
+) {
   const issues: LowCodeSchemaIssue[] = [];
+  const registeredBlockKinds = registeredMaterialVersions
+    ? new Set(Object.keys(registeredMaterialVersions))
+    : undefined;
 
   if (schema.schemaVersion !== LOW_CODE_SCHEMA_VERSION) {
     pushIssue(
@@ -999,7 +983,6 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
     pushIssue(issues, 'error', 'title', 'Page title is required.');
   }
 
-  validateDataSources(schema, issues);
   validatePageApis(schema, issues);
   validatePageFunctions(schema, issues);
   validateEventHandlers(schema, issues);
@@ -1007,10 +990,10 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
 
   const blockIds = new Set<string>();
   schema.blocks.forEach((block, index) =>
-    validateBlock(block, schema, issues, blockIds, `blocks.${index}`)
+    validateBlock(block, issues, blockIds, `blocks.${index}`, registeredBlockKinds)
   );
   (schema.overlays ?? []).forEach((block, index) =>
-    validateBlock(block, schema, issues, blockIds, `overlays.${index}`)
+    validateBlock(block, issues, blockIds, `overlays.${index}`, registeredBlockKinds)
   );
 
   return issues;
@@ -1035,8 +1018,11 @@ export function formatLowCodeSchemaIssues(issues: LowCodeSchemaIssue[]) {
   ].join('\n');
 }
 
-export function assertValidLowCodePageSchema(schema: LowCodePageSchema) {
-  const issues = validateLowCodePageSchema(schema);
+export function assertValidLowCodePageSchema(
+  schema: LowCodePageSchema,
+  registeredMaterialVersions?: LowCodeBlockMaterialVersions,
+) {
+  const issues = validateLowCodePageSchema(schema, registeredMaterialVersions);
   const errors = issues.filter((issue) => issue.level === 'error');
 
   if (errors.length) {
@@ -1046,8 +1032,11 @@ export function assertValidLowCodePageSchema(schema: LowCodePageSchema) {
   return issues;
 }
 
-export function prepareLowCodePageSchema(value: unknown) {
-  const schema = migrateLowCodePageSchema(value);
-  assertValidLowCodePageSchema(schema);
+export function prepareLowCodePageSchema(
+  value: unknown,
+  registeredMaterialVersions?: LowCodeBlockMaterialVersions,
+) {
+  const schema = migrateLowCodePageSchema(value, registeredMaterialVersions);
+  assertValidLowCodePageSchema(schema, registeredMaterialVersions);
   return schema;
 }

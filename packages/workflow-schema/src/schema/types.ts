@@ -10,6 +10,7 @@ export type WorkflowNodeType =
   | 'condition'
   | 'cc'
   | 'parallelGateway'
+  | 'parallelJoin'
   | 'serviceTask'
   | 'timer'
   | 'subProcess'

@@ -38,6 +38,8 @@ export async function executeLowCodeMaterialRuntimeAction(
   method: keyof LowCodeMaterialRuntimeController,
   ...args: unknown[]
 ) {
+  // console.log('executeLowCodeMaterialRuntimeAction', blockId, method, args);
+  // debugger//
   const controller = getLowCodeMaterialRuntimeController(blockId);
   const handler = controller?.[method];
   if (typeof handler !== 'function') {

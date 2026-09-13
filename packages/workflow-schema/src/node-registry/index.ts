@@ -73,6 +73,15 @@ export const builtInWorkflowNodeDefinitions: WorkflowNodeDefinition[] = [
     minOutgoing: 2
   },
   {
+    type: 'parallelJoin',
+    label: '并行汇聚',
+    category: 'gateway',
+    allowIncoming: true,
+    allowOutgoing: true,
+    minOutgoing: 1,
+    maxOutgoing: 1
+  },
+  {
     type: 'serviceTask',
     label: '服务节点',
     category: 'task',

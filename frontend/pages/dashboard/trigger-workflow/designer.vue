@@ -161,7 +161,7 @@ function loadDraft() {
   const saved = window.localStorage.getItem(storageKey.value);
   if (!saved) return false;
   try {
-    model.value = JSON.parse(saved) as TriggerWorkflowModel;
+    model.value = normalizeTriggerWorkflow(JSON.parse(saved) as unknown);
     savedModelId.value = readSavedModelId(model.value);
     notify('已恢复本地草稿。', 'success');
     return true;
@@ -195,20 +195,52 @@ async function saveWorkflow() {
   if (isJobBusy.value) return;
   isJobBusy.value = true;
   try {
-    const saved = await workflowApi<WorkflowModelRecord>(
-      savedModelId.value ? 'updateModel' : 'saveModel',
-      {
-        ...(savedModelId.value ? { modelId: savedModelId.value } : {}),
-        code: model.value.code,
-        name: model.value.name,
-        documentType: triggerWorkflowDocumentType,
-        schema: model.value
-      }
-    );
-    savedModelId.value = saved.id;
-    model.value = { ...model.value, id: saved.id };
+    const schema = { ...model.value };
+    const result = await confirmLowCodePage({
+      pageCode: 'workflow-model-management-edit',
+      title: schema.id ? '更新流程' : '新增流程',
+      confirmLabel: '保存',
+      cancelLabel: '取消',
+      submitOnConfirm: true,
+      disableFormAutoLoad: true,
+      formInitialValues: {
+        'edit-form': {
+          id: schema.id ?? '',
+          name: schema.name ?? '',
+          code: schema.code ?? '',
+          documentType: triggerWorkflowDocumentType,
+          draftSchema: schema
+        }
+      },
+      includeEventHistory: false,
+      serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
+      router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
+      route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
+      locale: 'zh-CN',
+      dialog: { id: 'trigger-workflow-save-dialog' }
+    });
+    if (result.action === 'cancel' || result.action === 'close') return;
+
+    const saved = result.payload?.savedRecord ?? result.payload?.formModels?.['edit-form'];
+    const savedId = String(saved?.id ?? schema.id ?? '').trim();
+    if (!savedId) throw new Error('保存成功但未返回流程 ID。');
+    const savedSchema: TriggerWorkflowModel = saved?.draftSchema && typeof saved.draftSchema === 'object'
+      ? readWorkflowSchema(saved.draftSchema)
+      : {
+        ...schema,
+        name: String(saved?.name ?? schema.name ?? ''),
+        code: String(saved?.code ?? schema.code ?? '')
+      };
+    if (
+      savedSchema.nodes.length !== schema.nodes.length ||
+      savedSchema.edges.length !== schema.edges.length
+    ) {
+      throw new Error('保存结果中的节点或连线不完整，请勿刷新页面并重试。');
+    }
+    savedModelId.value = savedId;
+    model.value = { ...savedSchema, id: savedId };
     persistLocalWorkflow(model.value);
-    notify(`流程“${saved.name}”已保存。`, 'success');
+    notify(`流程“${model.value.name}”已保存。`, 'success');
   } catch (error) {
     notify(error instanceof Error ? error.message : '流程保存失败。', 'error');
   } finally {

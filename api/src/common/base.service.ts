@@ -3,7 +3,8 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  HttpException
+  HttpException,
+  GatewayTimeoutException
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
@@ -15,6 +16,7 @@ import {
   hasRequiredPermission
 } from './utils/supabase';
 import { getEnv } from './utils/env';
+import { parseRegisteredCommandFunction, validateRegisteredCommandSource } from '../workflow/runtime/registered-command.runtime';
 
 const DYNAMIC_CRUD_RPC = 'execute_dynamic_crud';
 const WORKFLOW_WEBHOOK_LOOKUP_RPC = 'find_workflow_webhook_job';
@@ -68,8 +70,6 @@ export type ListSort = {
 
 export interface ServicePostData {
   resource?: unknown;
-  itemType?: unknown;
-  item_type?: unknown;
   type?: unknown;
   entityCode?: unknown;
   entity_code?: unknown;
@@ -247,6 +247,64 @@ export type ListItemsHandler = (
 ) => Promise<unknown> | unknown;
 
 export abstract class BaseService implements ServiceExecutor {
+  async executeRegisteredCommand(
+    commandCode: string,
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const code = commandCode.trim();
+    if (!code) throw new BadRequestException('Registered workflow command code is required.');
+    if (!context.internal || context.internal.principal !== 'trigger-workflow') {
+      throw new ForbiddenException('Registered workflow commands can only be called by the workflow runtime.');
+    }
+    if (!context.accountId) throw new ForbiddenException('An active account set is required.');
+
+    const client = createSupabaseClient('admin', context);
+    const serviceName = this.resolveServiceName(context);
+    const { data: task, error: taskError } = await client
+      .from('wf_task_registry')
+      .select('id, service_name, command_code, function_source, timeout_seconds, version, task_type')
+      .eq('service_name', serviceName)
+      .eq('command_code', code)
+      .eq('task_type', 'backendCommand')
+      .eq('status', 'enabled')
+      .or(`account_id.eq.${context.accountId},account_id.is.null`)
+      .order('account_id', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+    if (taskError) {
+      throw new BadRequestException(`Unable to load workflow task registry: ${taskError.message}`);
+    }
+    const data = task;
+    if (!data) throw new BadRequestException(`Registered workflow command not found: ${serviceName}.${code}`);
+
+    const source = String(data.function_source ?? '').trim();
+    validateRegisteredCommandSource(source);
+    const handler = parseRegisteredCommandFunction(source);
+
+    const invocation = Promise.resolve(handler.call(this, {
+      payload: postData,
+      context: context as unknown as Record<string, unknown>,
+      service: this,
+      command: {
+        id: data.id,
+        serviceName,
+        commandCode: code,
+        version: data.version
+      }
+    }));
+    const timeoutMs = Math.max(1, Number(data.timeout_seconds ?? 30)) * 1000;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new GatewayTimeoutException(`Workflow command ${serviceName}.${code} timed out.`)),
+        timeoutMs
+      );
+    });
+    return Promise.race([invocation, timeout]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  }
   async execute(
     method: string,
     postData: ServicePostData,

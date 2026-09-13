@@ -14,7 +14,14 @@ const editorSource = await readFile(
 );
 const migrationSource = await readFile(
   new URL(
-    '../../supabase/migrations/20260813140000_trigger_workflow_model_picker.sql',
+    '../../artifacts/migration-backups/migrations-20260907-174149/supabase-migrations/20260813140000_trigger_workflow_model_picker.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
+const saveDialogMigrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260910050000_trigger_workflow_save_dialog.sql',
     import.meta.url,
   ),
   'utf8',
@@ -37,13 +44,18 @@ for (const [eventName, label, icon] of [
 
 assert.match(
   pageSource,
-  /const triggerWorkflowDocumentType = 'trigger-workflow'[\s\S]*async function saveWorkflow[\s\S]*savedModelId\.value \? 'updateModel' : 'saveModel'[\s\S]*documentType: triggerWorkflowDocumentType[\s\S]*schema: model\.value/,
-  'Save must create a new workflow model and update a previously loaded model.',
+  /const triggerWorkflowDocumentType = 'trigger-workflow'[\s\S]*async function saveWorkflow[\s\S]*confirmLowCodePage\(\{[\s\S]*pageCode: 'workflow-model-management-edit'[\s\S]*submitOnConfirm: true[\s\S]*disableFormAutoLoad: true[\s\S]*draftSchema: schema/,
+  'Save must open the workflow model edit page for both new and existing workflows.',
 );
 assert.match(
   pageSource,
-  /model\.value = \{ \.\.\.model\.value, id: saved\.id \}[\s\S]*persistLocalWorkflow\(model\.value\)/,
+  /savedModelId\.value = savedId[\s\S]*model\.value = \{ \.\.\.savedSchema, id: savedId \}[\s\S]*persistLocalWorkflow\(model\.value\)/,
   'A saved model ID must be retained locally so later saves update the same record.',
+);
+assert.match(
+  pageSource,
+  /savedSchema\.nodes\.length !== schema\.nodes\.length[\s\S]*savedSchema\.edges\.length !== schema\.edges\.length[\s\S]*节点或连线不完整/,
+  'The page must not replace the live canvas with a truncated save response.',
 );
 assert.match(
   pageSource,
@@ -89,6 +101,82 @@ assert.match(
   browserTestSource,
   /deleteItem[\s\S]*resource: 'wf_model'/,
   'The authenticated browser test must remove the workflow record it creates.',
+);
+
+const saveDialogSchemaMatch = saveDialogMigrationSource.match(
+  /\$json\$\s*([\s\S]*?)\s*\$json\$::jsonb/,
+);
+assert.ok(saveDialogSchemaMatch, 'The workflow model edit migration must embed a page schema.');
+const saveDialogSchema = JSON.parse(saveDialogSchemaMatch[1]);
+assert.deepEqual(
+  {
+    serviceName: saveDialogSchema.dataSources['edit-form'].serviceName,
+    saveMethod: saveDialogSchema.dataSources['edit-form'].saveMethod,
+    sourceKey: saveDialogSchema.blocks[0].sourceKey,
+    submitSourceKey: saveDialogSchema.blocks[0].submitSourceKey,
+  },
+  {
+    serviceName: 'workflow',
+    saveMethod: 'saveItem',
+    sourceKey: 'edit-form',
+    submitSourceKey: 'edit-form',
+  },
+  'The save dialog must use the workflow service so schema validation and field mapping cannot be bypassed.',
+);
+const draftSchemaField = saveDialogSchema.blocks[0].schema.fields.find(
+  (field) => field.field === 'draftSchema',
+);
+const codeField = saveDialogSchema.blocks[0].schema.fields.find(
+  (field) => field.field === 'code',
+);
+assert.equal(
+  codeField?.validationScript,
+  undefined,
+  'Workflow code validation must not depend on a field-validation event payload that is unavailable at submit time.',
+);
+assert.deepEqual(
+  {
+    component: draftSchemaField?.component,
+    rootType: draftSchemaField?.props?.jsonRootType,
+    valueMode: draftSchemaField?.props?.jsonValueMode,
+  },
+  { component: 'lc-json-editor', rootType: 'object', valueMode: 'parsed' },
+  'draftSchema must remain an object-valued form field during submission.',
+);
+
+for (const expected of [
+  'pageCode: "workflow-model-management-edit"',
+  'submitOnConfirm: true',
+  'disableFormAutoLoad: true',
+  'formInitialValues:',
+  'draftSchema: schema',
+  'schema.id || ""',
+  'method: "setData"',
+]) {
+  assert.ok(
+    saveDialogMigrationSource.includes(expected),
+    `The Trigger workflow save dialog migration must include ${expected}.`,
+  );
+}
+assert.match(
+  saveDialogMigrationSource,
+  /const validation = await this\.executeAction[\s\S]*method: "validate"[\s\S]*const schema = await this\.executeAction[\s\S]*method: "getData"/,
+  'Save must validate and read the current canvas before opening the model editor.',
+);
+assert.match(
+  saveDialogMigrationSource,
+  /savedSchema\.nodes\.length !== schema\.nodes\.length[\s\S]*savedSchema\.edges\.length !== schema\.edges\.length[\s\S]*节点或连线不完整/,
+  'The low-code save action must reject a truncated persistence response before replacing the canvas.',
+);
+assert.match(
+  saveDialogMigrationSource,
+  /"field": "draftSchema"[\s\S]*"component": "lc-json-editor"/,
+  'The edit form must retain the workflow draft schema in its submission model.',
+);
+assert.match(
+  saveDialogMigrationSource,
+  /"field": "name"[\s\S]*"updateScript":[^\n]*draftSchema[\s\S]*"field": "code"[\s\S]*"updateScript":[^\n]*draftSchema/,
+  'Editing workflow identity fields must keep the submitted draft schema in sync.',
 );
 
 console.log('Trigger workflow persistence regression test passed.');

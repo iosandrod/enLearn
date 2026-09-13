@@ -373,10 +373,10 @@ export class LowCodePageScriptRuntime {
       case 'form.baseline':
         return cloneRuntimeValue(formBaselines[block.id] ?? {});
       case 'form.patch':
-        runtime.patchForm(block.id, this.readScriptRecordArg([payload.values], 0));
+        runtime.patchForm(block.id, this.readScriptRecordArg([payload?.values ?? payload], 0));
         return cloneRuntimeValue(runtime.state.forms[block.id] ?? {});
       case 'form.replace':
-        runtime.replaceForm(block.id, this.readScriptRecordArg([payload.values], 0));
+        runtime.replaceForm(block.id, this.readScriptRecordArg([payload?.values ?? payload], 0));
         return cloneRuntimeValue(runtime.state.forms[block.id] ?? {});
       case 'form.validate':
         return runtime.getFormController(block.id)?.validate() ??
@@ -441,7 +441,12 @@ export class LowCodePageScriptRuntime {
       case 'material.loadData':
         return executeLowCodeMaterialRuntimeAction(block.id, 'loadData', payload);
       case 'material.setData':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'setData', payload.value, payload);
+        return executeLowCodeMaterialRuntimeAction(
+          block.id,
+          'setData',
+          payload.value ?? payload.data,
+          payload,
+        );
       case 'material.getData':
         return executeLowCodeMaterialRuntimeAction(block.id, 'getData');
       case 'material.validate':
@@ -572,6 +577,8 @@ export class LowCodePageScriptRuntime {
       'cancelLabel',
       'confirmAction',
       'submitOnConfirm',
+      'formInitialValues',
+      'disableFormAutoLoad',
       'includeEventHistory',
       'maxEventHistory',
       'dialog',
@@ -589,9 +596,11 @@ export class LowCodePageScriptRuntime {
     return cloneScriptValue({
       action: result.action,
       ...(payload?.row ? { row: payload.row } : {}),
+      ...(payload?.savedRecord ? { savedRecord: payload.savedRecord } : {}),
+      formModels: payload?.formModels ?? {},
       selectedRows: payload?.selectedRows ?? [],
       rows: payload?.rows ?? [],
-    }, { action: result.action, selectedRows: [], rows: [] });
+    }, { action: result.action, formModels: {}, selectedRows: [], rows: [] });
   }
 
   private sanitizeScriptAction(value: unknown) {
@@ -1256,6 +1265,20 @@ export class LowCodePageScriptRuntime {
         payload,
       });
       return true;
+    }
+
+    if (request.name === 'form.patch') {
+      const blockId = this.readScriptStringArg(request.args, 0, 'blockId');
+      const values = this.readScriptRecordArg(request.args, 1);
+      this.dependencies.runtime.patchForm(blockId, values);
+      return cloneRuntimeValue(this.dependencies.runtime.state.forms[blockId] ?? {});
+    }
+
+    if (request.name === 'form.replace') {
+      const blockId = this.readScriptStringArg(request.args, 0, 'blockId');
+      const values = this.readScriptRecordArg(request.args, 1);
+      this.dependencies.runtime.replaceForm(blockId, values);
+      return cloneRuntimeValue(this.dependencies.runtime.state.forms[blockId] ?? {});
     }
 
     if (this.primaryScriptExecutors.has(request.name)) {

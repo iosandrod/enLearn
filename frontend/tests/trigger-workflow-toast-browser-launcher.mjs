@@ -123,7 +123,7 @@ try {
     return button instanceof HTMLButtonElement && !button.disabled;
   }, undefined, { timeout: 30_000 });
 
-  const jobs = await workflowServiceRequest('listItems', { itemType: 'jobs' });
+  const jobs = await workflowServiceRequest('listItems', { tableName: 'wf_job' });
   const job = jobs.find((item) => item.code === workflowCode);
   assert.ok(job, 'Enabling the editor model must create its workflow Job.');
   jobId = job.id;
@@ -164,7 +164,7 @@ try {
   if (jobId && auth) {
     try {
       const runs = await workflowServiceRequest('listItems', {
-        itemType: 'jobRuns',
+        tableName: 'wf_job_run',
         jobId,
         limit: 5,
       });
@@ -245,7 +245,7 @@ async function waitForTerminalRun(targetJobId) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() <= deadline) {
     const runs = await workflowServiceRequest('listItems', {
-      itemType: 'jobRuns',
+      tableName: 'wf_job_run',
       jobId: targetJobId,
       limit: 10,
     });
@@ -259,7 +259,7 @@ async function waitForTerminalRun(targetJobId) {
 async function cleanup() {
   if (jobId) {
     const runs = await workflowServiceRequest('listItems', {
-      itemType: 'jobRuns',
+      tableName: 'wf_job_run',
       jobId,
       limit: 50,
     });

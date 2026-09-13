@@ -9,7 +9,37 @@ const source = await readFile(
   'utf8'
 );
 
+assert.match(source, /@node-click="onNodeClick"/);
+assert.match(source, /@node-double-click="onNodeDoubleClick"/);
+assert.match(source, /@edge-click="onEdgeClick"/);
+assert.match(source, /@edge-double-click="onEdgeDoubleClick"/);
+assert.match(
+  source,
+  /function onNodeClick\([\s\S]*?activeInspectorTab\.value = 'config';\s*}\s*function onNodeDoubleClick\([\s\S]*?openSelectedInspectorDialog\(\)/,
+  'A node click should only select it; a node double-click should open its form.'
+);
+assert.match(
+  source,
+  /function onEdgeClick\([\s\S]*?activeInspectorTab\.value = 'config';\s*}\s*function onEdgeDoubleClick\([\s\S]*?openSelectedInspectorDialog\(\)/,
+  'An edge click should only select it; an edge double-click should open its form.'
+);
+
 assert.match(source, /role="toolbar" aria-label="画布工具"/);
+assert.match(source, /class="trigger-editor__workflow-info" aria-label="当前流程信息"/);
+for (const workflowField of [
+  'currentModel.name',
+  'currentModel.id',
+  'currentModel.code',
+  'currentKindLabel',
+  'currentModel.description',
+  'currentModel.nodes.length',
+  'currentModel.edges.length'
+]) {
+  assert.ok(
+    source.includes(workflowField),
+    `The current workflow information box should display ${workflowField}.`
+  );
+}
 
 for (const action of ['撤销', '重做', '缩小', '放大', '适应画布', '自动整理节点', '清空画布']) {
   assert.match(source, new RegExp(`aria-label="${action}"`), `Canvas toolbar should expose ${action}.`);

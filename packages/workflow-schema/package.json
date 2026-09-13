@@ -19,7 +19,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "tsx src/validator/validate.spec.ts"
+    "test": "tsx src/validator/validate.spec.ts && tsx src/canonical.spec.ts"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

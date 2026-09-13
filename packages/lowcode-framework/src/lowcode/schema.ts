@@ -147,10 +147,6 @@ function tableNameFromEntityCode(entityCode: string) {
   return knownTables[entityCode] ?? entityCode;
 }
 
-function hasDataSourceTableTarget(source: Pick<LowCodePageDataSource, 'entityCode' | 'entity_code' | 'tableName' | 'table_name'>) {
-  return Boolean(source.entityCode || source.entity_code || source.tableName || source.table_name);
-}
-
 function normalizeDataSource(
   key: string,
   value: unknown
@@ -570,21 +566,6 @@ function pushIssue(
   issues.push({ level, path, message });
 }
 
-function validateDataSourceDependencyCycles(
-  schema: LowCodePageSchema,
-  issues: LowCodeSchemaIssue[]
-) {
-  
-}
-
-function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
-  if(1==1){
-    return //
-  }
- 
-  validateDataSourceDependencyCycles(schema, issues);
-}
-
 function validateDirectives(
   directives: unknown,
   issues: LowCodeSchemaIssue[],
@@ -707,10 +688,6 @@ function validateScriptPolicy(schema: LowCodePageSchema, issues: LowCodeSchemaIs
   });
 }
 
-function dataSourceExists(schema: LowCodePageSchema, key?: unknown) {
-  return true//
-}
-
 function validateFields(
   fields: unknown,
   issues: LowCodeSchemaIssue[],
@@ -753,7 +730,6 @@ function validateColumns(
 
 function validateNestedBlocks(
   blocks: unknown,
-  schema: LowCodePageSchema,
   issues: LowCodeSchemaIssue[],
   blockIds: Set<string>,
   path: string
@@ -761,13 +737,12 @@ function validateNestedBlocks(
   if (!Array.isArray(blocks)) return;
 
   blocks.forEach((child, index) =>
-    validateBlock(child, schema, issues, blockIds, `${path}.${index}`)
+    validateBlock(child, issues, blockIds, `${path}.${index}`)
   );
 }
 
 function validateBlock(
   block: unknown,
-  schema: LowCodePageSchema,
   issues: LowCodeSchemaIssue[],
   blockIds: Set<string>,
   path: string
@@ -803,64 +778,17 @@ function validateBlock(
   if (kind === 'form') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     validateFields(schemaRecord.fields, issues, `${path}.schema.fields`);
-    if (isRecord(block.dataSource)) {
-      const source = block.dataSource as LowCodePageDataSource;
-      if (source.key !== id) {
-        pushIssue(issues, 'error', `${path}.dataSource.key`, 'Form data source key must equal the block ID.');
-      }
-      if (!source.serviceName && !hasDataSourceTableTarget(source)) {
-        pushIssue(issues, 'error', `${path}.dataSource.serviceName`, 'Service name is required.');
-      }
-      if (!source.serviceMethod && !hasDataSourceTableTarget(source)) {
-        pushIssue(issues, 'error', `${path}.dataSource.serviceMethod`, 'Service method is required.');
-      }
-    }
   }
 
   if (kind === 'searchForm') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     validateFields(schemaRecord.fields, issues, `${path}.schema.fields`);
-
-    if (!dataSourceExists(schema, block.targetSourceKey)) {
-      pushIssue(
-        issues,
-        'error',
-        `${path}.targetSourceKey`,
-        `Target data source "${block.targetSourceKey}" does not exist.`
-      );
-    }
-
-    if (Array.isArray(block.targetSourceKeys)) {
-      block.targetSourceKeys.forEach((sourceKey, index) => {
-        if (!dataSourceExists(schema, sourceKey)) {
-          pushIssue(
-            issues,
-            'error',
-            `${path}.targetSourceKeys.${index}`,
-            `Target data source "${sourceKey}" does not exist.`
-          );
-        }
-      });
-    }
   }
 
   if (kind === 'grid') {
     const schemaRecord = isRecord(block.schema) ? block.schema : {};
     const grid = isRecord(schemaRecord.grid) ? schemaRecord.grid : {};
     validateColumns(grid.columns, issues, `${path}.schema.grid.columns`);
-
-    if (!dataSourceExists(schema, block.sourceKey)) {
-      pushIssue(issues, 'error', `${path}.sourceKey`, `Data source "${block.sourceKey}" does not exist.`);
-    }
-
-    if (!dataSourceExists(schema, block.deleteSourceKey)) {
-      pushIssue(
-        issues,
-        'error',
-        `${path}.deleteSourceKey`,
-        `Delete data source "${block.deleteSourceKey}" does not exist.`
-      );
-    }
   }
 
   if (kind === 'tabs') {
@@ -893,7 +821,7 @@ function validateBlock(
         pushIssue(issues, 'error', `${panePath}.label`, 'Tab label is required.');
       }
 
-      validateNestedBlocks(tab.blocks, schema, issues, blockIds, `${panePath}.blocks`);
+      validateNestedBlocks(tab.blocks, issues, blockIds, `${panePath}.blocks`);
     });
   }
 
@@ -903,10 +831,10 @@ function validateBlock(
     kind === 'modal' ||
     kind === 'drawer'
   ) {
-    validateNestedBlocks(block.blocks, schema, issues, blockIds, `${path}.blocks`);
+    validateNestedBlocks(block.blocks, issues, blockIds, `${path}.blocks`);
 
     if (kind === 'modal' || kind === 'drawer') {
-      validateNestedBlocks(block.overlays, schema, issues, blockIds, `${path}.overlays`);
+      validateNestedBlocks(block.overlays, issues, blockIds, `${path}.overlays`);
     }
   }
 }
@@ -935,7 +863,6 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
     pushIssue(issues, 'error', 'title', 'Page title is required.');
   }
 
-  validateDataSources(schema, issues);
   validatePageApis(schema, issues);
   validatePageFunctions(schema, issues);
   validateEventHandlers(schema, issues);
@@ -943,10 +870,10 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
 
   const blockIds = new Set<string>();
   schema.blocks.forEach((block, index) =>
-    validateBlock(block, schema, issues, blockIds, `blocks.${index}`)
+    validateBlock(block, issues, blockIds, `blocks.${index}`)
   );
   (schema.overlays ?? []).forEach((block, index) =>
-    validateBlock(block, schema, issues, blockIds, `overlays.${index}`)
+    validateBlock(block, issues, blockIds, `overlays.${index}`)
   );
 
   return issues;

@@ -115,6 +115,35 @@ export type WorkflowHistoryEventRecord = {
   createdAt: string;
 };
 
+export type WorkflowExecutionTokenStatus = 'ready' | 'running' | 'waiting' | 'completed' | 'failed';
+
+export type WorkflowExecutionTokenRecord = {
+  id: string;
+  processInstanceId: string;
+  parentTokenId?: string;
+  branchId?: string;
+  joinScopeId?: string;
+  nodeId: string;
+  status: WorkflowExecutionTokenStatus;
+  joinKey?: string;
+  waitpointId?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkflowExecutionEventRecord = {
+  id: string;
+  processInstanceId: string;
+  tokenId?: string;
+  sequence: number;
+  eventType: string;
+  nodeId?: string;
+  payload: Record<string, unknown>;
+  idempotencyKey?: string;
+  createdAt: string;
+};
+
 export type WorkflowNodeSnapshot = {
   id: string;
   type: string;

@@ -1212,15 +1212,16 @@ export class AdminService extends BaseService {
     const parentField = readConfigString(sourceConfig, ['parentField', 'parent_field']);
     const colorField = readConfigString(sourceConfig, ['colorField', 'color_field']);
     const orderBy = readConfigString(sourceConfig, ['orderBy', 'order_by'], labelField);
+    const scopedToAccount = sourceConfig.accountScoped === true || sourceConfig.account_scoped === true;
     const filters = {
       ...readJsonObject(sourceConfig.filters),
       ...readJsonObject(postData.filters)
     };
-    if (sourceConfig.accountScoped === true || sourceConfig.account_scoped === true) {
+    if (scopedToAccount) {
       if (!context.accountId) {
         throw new ForbiddenException('An active account set is required.');
       }
-      filters.account_id = context.accountId;
+      delete filters.account_id;
     }
 
     [labelField, valueField, disabledField, parentField, colorField, orderBy, ...Object.keys(filters)]
@@ -1234,7 +1235,11 @@ export class AdminService extends BaseService {
     const baseQuery = relation.schema === 'public'
       ? client.from(relation.name).select(selectFields)
       : client.schema(relation.schema).from(relation.name).select(selectFields);
-    const query = applyOptionFilters(baseQuery, filters)
+    let query = applyOptionFilters(baseQuery, filters);
+    if (scopedToAccount) {
+      query = query.or(`account_id.is.null,account_id.eq.${context.accountId}`) as typeof query;
+    }
+    query = query
       .order(orderBy, { ascending: sourceConfig.ascending !== false })
       .limit(readPositiveLimit(postData.limit ?? sourceConfig.limit));
     const { data, error } = await query;

@@ -1,21 +1,25 @@
 export const TRIGGER_WORKFLOW_RUNNER_TASK_ID = 'workflow.trigger-workflow.run';
 
+import type { CanonicalWorkflow } from '@enlearn/workflow-schema';
+
 export const TRIGGER_WORKFLOW_ADAPTER_TASK_IDS = {
   frontendCommand: 'workflow.adapter.frontend-command',
   backendCommand: 'workflow.adapter.backend-command',
-  storedProcedure: 'workflow.adapter.stored-procedure'
+  storedProcedure: 'workflow.adapter.stored-procedure',
+  humanTask: 'workflow.adapter.human-task'
 } as const;
 
 export type TriggerWorkflowTaskType =
   | 'frontendCommand'
   | 'backendCommand'
   | 'storedProcedure'
-  | 'registeredTask';
+  | 'humanTask';
 
 export type TriggerWorkflowTaskJobAdapter = {
   type: TriggerWorkflowTaskType;
   executorTaskId: string;
   input: Record<string, unknown>;
+  commandCode?: string;
   functionSource?: string;
   procedureName?: string;
   procedureSchema?: string;
@@ -62,6 +66,7 @@ export type TriggerWorkflowJobDefinitionPayload = {
   modelName: string;
   planSignature: string;
   executionPlan: TriggerWorkflowJobExecutionPlan;
+  canonical?: CanonicalWorkflow;
 };
 
 export type TriggerWorkflowRunnerPayload = Record<string, unknown> & {
@@ -85,4 +90,6 @@ export type TriggerWorkflowAdapterPayload = {
   variables: Record<string, unknown>;
   previousOutput?: unknown;
   adapter: TriggerWorkflowTaskJobAdapter;
+  processInstanceId?: string;
+  nodeInstanceId?: string;
 };

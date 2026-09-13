@@ -46,10 +46,17 @@ export class JobService {
     }
 
     const payload = normalizeJobPayload(dto);
-    assertTriggerWorkflowJobPayload(
-      dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
-      payload
-    );
+    try {
+      assertTriggerWorkflowJobPayload(
+        dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
+        payload
+      );
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Invalid Trigger.dev workflow job payload.'
+      );
+    }
     if (dto.type === 'interval') {
       intervalCron(readIntervalSeconds(payload) ?? 60);
     }
@@ -83,10 +90,17 @@ export class JobService {
     }
 
     const payload = normalizeJobPayload(dto);
-    assertTriggerWorkflowJobPayload(
-      dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
-      payload
-    );
+    try {
+      assertTriggerWorkflowJobPayload(
+        dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
+        payload
+      );
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Invalid Trigger.dev workflow job payload.'
+      );
+    }
     if (dto.type === 'interval') {
       intervalCron(readIntervalSeconds(payload) ?? 60);
     }

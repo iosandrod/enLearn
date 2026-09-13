@@ -10,8 +10,9 @@ import {
 export function normalizeTriggerWorkflow(value: unknown): TriggerWorkflowModel {
   const record = isRecord(value) ? value : {};
   const kind = readKind(record.kind);
+  const workflowCode = readString(record.code, `${kind}_workflow`);
   const nodes = Array.isArray(record.nodes)
-    ? record.nodes.filter(isRecord).map((node, index) => normalizeNode(node, index))
+    ? record.nodes.filter(isRecord).map((node, index) => normalizeNode(node, index, workflowCode))
     : [];
   const edges = Array.isArray(record.edges)
     ? record.edges.filter(isRecord).map((edge, index) => normalizeEdge(edge, index))
@@ -23,7 +24,7 @@ export function normalizeTriggerWorkflow(value: unknown): TriggerWorkflowModel {
         ? record.schemaVersion
         : TRIGGER_WORKFLOW_SCHEMA_VERSION,
     ...(readString(record.id) ? { id: readString(record.id) } : {}),
-    code: readString(record.code, `${kind}_workflow`),
+    code: workflowCode,
     name: readString(record.name, defaultWorkflowName(kind)),
     ...(readString(record.description) ? { description: readString(record.description) } : {}),
     kind,
@@ -43,15 +44,20 @@ export function isRecord(value: unknown): value is Record<string, any> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflowNode {
+function normalizeNode(
+  node: Record<string, any>,
+  index: number,
+  workflowCode: string
+): TriggerWorkflowNode {
   const type = readString(node.type, 'task');
+  const nodeId = readString(node.id, `${type}_${index + 1}`);
   const config = isRecord(node.config)
-    ? normalizeNodeConfig(node.config, type)
+    ? normalizeNodeConfig(node.config, type, nodeId, workflowCode)
     : type === 'webhook'
       ? normalizeNodeConfig({}, type)
       : undefined;
   return {
-    id: readString(node.id, `${type}_${index + 1}`),
+    id: nodeId,
     type,
     name: readString(node.name, type),
     ...(readString(node.description) ? { description: readString(node.description) } : {}),
@@ -69,7 +75,12 @@ function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflo
   };
 }
 
-function normalizeNodeConfig(config: Record<string, any>, nodeType: string) {
+function normalizeNodeConfig(
+  config: Record<string, any>,
+  nodeType: string,
+  nodeId = '',
+  workflowCode = ''
+) {
   const normalizedConfig = nodeType === 'webhook'
     ? { ...config, webhook: normalizeWebhookConfig(config.webhook) }
     : config;
@@ -78,15 +89,24 @@ function normalizeNodeConfig(config: Record<string, any>, nodeType: string) {
   const explicitType = readTaskType(normalizedConfig.task.type);
   const inferredType = readString(normalizedConfig.task.frontendFunction)
     ? 'frontendCommand'
-    : readString(normalizedConfig.task.backendFunction)
+    : readString(normalizedConfig.task.commandCode)
       ? 'backendCommand'
       : readString(normalizedConfig.task.procedureName)
         ? 'storedProcedure'
-        : readString(normalizedConfig.task.id)
-          ? 'registeredTask'
+      : readString(normalizedConfig.task.id)
+          ? 'backendCommand'
           : '';
   const type = explicitType || inferredType;
   if (!type) return normalizedConfig;
+  if (type === 'backendCommand' && !readString(normalizedConfig.task.commandCode)) {
+    return {
+      ...normalizedConfig,
+      task: normalizeTaskForType(
+        { ...normalizedConfig.task, commandCode: readString(normalizedConfig.task.commandCode) || readString(normalizedConfig.task.id) },
+        'backendCommand'
+      )
+    };
+  }
   return {
     ...normalizedConfig,
     task: normalizeTaskForType(normalizedConfig.task, type)
@@ -128,16 +148,13 @@ function normalizeTaskForType(
 
   switch (type) {
     case 'frontendCommand':
-      deleteFields(['id', 'importPath', 'backendFunction', 'procedureName', 'procedureSchema']);
+      deleteFields(['id', 'importPath', 'procedureName', 'procedureSchema', 'backendFunction', 'commandCode']);
       break;
     case 'backendCommand':
-      deleteFields(['id', 'importPath', 'frontendFunction', 'procedureName', 'procedureSchema']);
+      deleteFields(['id', 'importPath', 'frontendFunction', 'backendFunction', 'procedureName', 'procedureSchema']);
       break;
     case 'storedProcedure':
-      deleteFields(['id', 'importPath', 'frontendFunction', 'backendFunction']);
-      break;
-    case 'registeredTask':
-      deleteFields(['frontendFunction', 'backendFunction', 'procedureName', 'procedureSchema']);
+      deleteFields(['id', 'importPath', 'frontendFunction']);
       break;
   }
 
@@ -167,8 +184,7 @@ function readString(value: unknown, fallback = '') {
 function readTaskType(value: unknown): TriggerWorkflowTaskType | '' {
   return value === 'frontendCommand' ||
     value === 'backendCommand' ||
-    value === 'storedProcedure' ||
-    value === 'registeredTask'
+    value === 'storedProcedure'
     ? value
     : '';
 }

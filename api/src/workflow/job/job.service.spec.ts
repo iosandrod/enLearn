@@ -72,7 +72,11 @@ async function testUpsertRejectsUnregisteredWorkflowTask() {
       triggerTaskId: 'workflow.trigger-workflow.run',
       payload: { triggerWorkflow }
     }, actor),
-    /not registered for workflow-node execution/
+    (error: unknown) => {
+      assert.ok(error instanceof BadRequestException);
+      assert.match(error.message, /not registered for workflow-node execution/);
+      return true;
+    }
   );
   assert.equal(rpcCalled, false);
 }

@@ -39,6 +39,11 @@ const missingBlockSourceFixture = {
     id: 'missing-source-form',
     kind: 'form',
     sourceKey: 'missing',
+    dataSource: {
+      key: 'mismatched-form-source',
+      serviceName: '',
+      serviceMethod: '',
+    },
     schema: {
       fields: [{ field: 'name', label: 'Name', component: 'vxe-input' }],
       actions: [],
@@ -88,31 +93,35 @@ try {
 
     const missingDependency = structuredClone(normalized);
     missingDependency.dataSources.options.loadAfterSourceKeys = ['missing'];
-    assert.ok(
-      schemaModule.validateLowCodePageSchema(missingDependency).some(
-        (issue) => issue.message.includes('does not exist'),
-      ),
+    assert.deepEqual(
+      schemaModule.validateLowCodePageSchema(missingDependency)
+        .filter((issue) => issue.path.startsWith('dataSources.')),
+      [],
+      `${moduleName}: lowcode_pages data-source dependencies must not be schema validation errors.`,
     );
 
     const cyclicDependency = structuredClone(normalized);
     cyclicDependency.dataSources.record.loadAfterSourceKeys = ['options'];
-    assert.ok(
-      schemaModule.validateLowCodePageSchema(cyclicDependency).some(
-        (issue) => issue.message.includes('dependency cycle'),
-      ),
+    assert.deepEqual(
+      schemaModule.validateLowCodePageSchema(cyclicDependency)
+        .filter((issue) => issue.path.startsWith('dataSources.')),
+      [],
+      `${moduleName}: lowcode_pages data-source cycles must not be schema validation errors.`,
     );
 
     const missingBlockIssues = schemaModule.validateLowCodePageSchema(missingBlockSourceFixture);
-    assert.ok(
-      missingBlockIssues.some(
-        (issue) => issue.path === 'blocks.0.sourceKey' && issue.message.includes('does not exist'),
-      ),
+    assert.equal(
+      missingBlockIssues.some((issue) => (
+        issue.path === 'blocks.0.sourceKey'
+        || issue.path.startsWith('blocks.0.dataSource.')
+      )),
+      false,
       `${moduleName}: ${JSON.stringify(missingBlockIssues)}`,
     );
 
   }
 
-  console.log('Low-code data-source dependency regression test passed.');
+  console.log('Low-code data-source validation removal regression test passed.');
 } finally {
   await Promise.all([
     rm(apiBundle.outputDir, { recursive: true, force: true }),

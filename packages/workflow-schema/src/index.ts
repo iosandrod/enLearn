@@ -3,3 +3,4 @@ export * from './schema/normalize';
 export * from './node-registry';
 export * from './compiler';
 export * from './validator/validate';
+export * from './canonical';

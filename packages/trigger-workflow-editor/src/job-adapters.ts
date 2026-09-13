@@ -3,6 +3,8 @@ import {
   type TriggerWorkflowExecutionPlan,
   type TriggerWorkflowOperation
 } from './compiler/trigger';
+import { compileTriggerWorkflowCanonical } from './compiler/canonical';
+import type { CanonicalWorkflow } from '@enlearn/workflow-schema';
 import type {
   TriggerWorkflowModel,
   TriggerWorkflowTaskRef,
@@ -44,7 +46,7 @@ export type FrontendCommandJobAdapter = TaskAdapterBase & {
 export type BackendCommandJobAdapter = TaskAdapterBase & {
   type: 'backendCommand';
   executorTaskId: typeof TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand;
-  functionSource: string;
+  commandCode: string;
 };
 
 export type StoredProcedureJobAdapter = TaskAdapterBase & {
@@ -54,17 +56,10 @@ export type StoredProcedureJobAdapter = TaskAdapterBase & {
   procedureSchema: string;
 };
 
-export type RegisteredTaskJobAdapter = TaskAdapterBase & {
-  type: 'registeredTask';
-  executorTaskId: string;
-  importPath?: string;
-};
-
 export type TriggerWorkflowTaskJobAdapter =
   | FrontendCommandJobAdapter
   | BackendCommandJobAdapter
-  | StoredProcedureJobAdapter
-  | RegisteredTaskJobAdapter;
+  | StoredProcedureJobAdapter;
 
 export type TriggerWorkflowJobOperation = Omit<TriggerWorkflowOperation, 'task'> & {
   adapter?: TriggerWorkflowTaskJobAdapter;
@@ -72,6 +67,7 @@ export type TriggerWorkflowJobOperation = Omit<TriggerWorkflowOperation, 'task'>
 
 export type TriggerWorkflowJobExecutionPlan = Omit<TriggerWorkflowExecutionPlan, 'operations'> & {
   operations: TriggerWorkflowJobOperation[];
+  canonical: CanonicalWorkflow;
 };
 
 export type TriggerWorkflowJobDefinitionPayload = {
@@ -111,12 +107,16 @@ const taskJobAdapterBuilders: {
     executorTaskId: TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.frontendCommand,
     functionSource: requireString(task.frontendFunction, 'frontendFunction')
   }),
-  backendCommand: (task) => ({
-    ...buildCommonAdapter(task),
-    type: 'backendCommand',
-    executorTaskId: TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand,
-    functionSource: requireString(task.backendFunction, 'backendFunction')
-  }),
+  backendCommand: (task) => {
+    const commandCode = task.commandCode?.trim();
+    if (!commandCode) throw new Error('Backend command requires commandCode.');
+    return {
+      ...buildCommonAdapter(task),
+      type: 'backendCommand' as const,
+      executorTaskId: TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand,
+      commandCode
+    };
+  },
   storedProcedure: (task) => ({
     ...buildCommonAdapter(task),
     type: 'storedProcedure',
@@ -124,12 +124,6 @@ const taskJobAdapterBuilders: {
     procedureName: requireString(task.procedureName, 'procedureName'),
     procedureSchema: task.procedureSchema?.trim() || 'public'
   }),
-  registeredTask: (task) => ({
-    ...buildCommonAdapter(task),
-    type: 'registeredTask',
-    executorTaskId: requireString(task.id, 'id'),
-    ...(task.importPath?.trim() ? { importPath: task.importPath.trim() } : {})
-  })
 };
 
 const supportedJobOperationTypes = new Set<TriggerWorkflowOperation['type']>([
@@ -141,6 +135,9 @@ const supportedJobOperationTypes = new Set<TriggerWorkflowOperation['type']>([
   'wait.for',
   'wait.until',
   'condition',
+  'parallel',
+  'parallelJoin',
+  'human.approval',
   'complete'
 ]);
 
@@ -158,8 +155,6 @@ export function buildTriggerWorkflowTaskJobAdapter(
       return taskJobAdapterBuilders.backendCommand({ ...resolvedTask, type: resolvedTask.type });
     case 'storedProcedure':
       return taskJobAdapterBuilders.storedProcedure({ ...resolvedTask, type: resolvedTask.type });
-    case 'registeredTask':
-      return taskJobAdapterBuilders.registeredTask({ ...resolvedTask, type: resolvedTask.type });
   }
 }
 
@@ -167,6 +162,7 @@ export function buildTriggerWorkflowJobExecutionPlan(
   model: TriggerWorkflowModel
 ): TriggerWorkflowJobExecutionPlan {
   const plan = compileTriggerWorkflow(model);
+  const canonical = compileTriggerWorkflowCanonical(model);
   const operations = plan.operations.map((operation): TriggerWorkflowJobOperation => {
     if (!supportedJobOperationTypes.has(operation.type)) {
       throw new Error(
@@ -189,7 +185,7 @@ export function buildTriggerWorkflowJobExecutionPlan(
     };
   });
 
-  return { ...plan, operations };
+  return { ...plan, operations, canonical };
 }
 
 function applyTaskDefaults(
@@ -272,7 +268,7 @@ function buildCommonAdapter(task: TriggerWorkflowTaskRef): TaskAdapterBase {
   }
 
   return {
-    type: task.type ?? 'registeredTask',
+    type: task.type ?? 'backendCommand',
     executorTaskId: '',
     input: cloneRecord(task.input),
     failureStrategy: task.failureStrategy ?? 'failWorkflow',

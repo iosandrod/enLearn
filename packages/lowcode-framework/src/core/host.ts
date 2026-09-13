@@ -15,6 +15,7 @@ export type LowCodeHostServiceApi = {
     payload?: Record<string, unknown>,
     options?: { requestId?: string }
   ): Promise<T>;
+  listPublishedLowCodeMaterials?<T = unknown>(): Promise<T[]>;
 };
 
 export type LowCodeHostRoute = {

@@ -27,6 +27,10 @@ import {
   LowCodeTreeItem,
 } from '../../packages/lowcode-framework/src/runtime/index.ts';
 import {
+  createLowCodeBrowserScriptExecutor,
+  registerLowCodeScriptExecutor,
+} from '../../packages/lowcode-framework/src/runtime/scripts.ts';
+import {
   LowCodeVisualDesigner,
   VisualEditorProvider,
 } from '../../packages/lowcode-framework/src/designer/index.ts';
@@ -79,6 +83,16 @@ async function cleanupDevServiceWorkers() {
 }
 
 await cleanupDevServiceWorkers();
+
+if (
+  import.meta.env.DEV &&
+  import.meta.env.VITE_LOWCODE_SCRIPT_RUNTIME === 'browser'
+) {
+  registerLowCodeScriptExecutor(createLowCodeBrowserScriptExecutor());
+  console.warn(
+    '[LowCode] Browser script runtime enabled for local debugging. Scripts run in the page realm.',
+  );
+}
 
 VxeUI.use(TableSearchPanel, {
   defaultExpanded: true,

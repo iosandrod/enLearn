@@ -19,6 +19,8 @@ import {
   TRIGGER_TASK_IDENTIFIERS,
   type TriggerTaskCatalogItem
 } from '../trigger/trigger-task-catalog';
+import { TRIGGER_WORKFLOW_ADAPTER_TASK_IDS } from '../trigger/trigger-workflow.types';
+import { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 
 const RECENT_RUN_LIMIT = 200;
 const SNAPSHOT_CACHE_TTL_MS = 10_000;
@@ -114,7 +116,9 @@ export class TaskConsoleService {
     @Inject(TASK_CONSOLE_JOB_SERVICE)
     private readonly jobs: Pick<JobService, 'listJobs' | 'listRuns'>,
     @Inject(TriggerRuntimeStatusService)
-    private readonly runtimeStatus: TriggerRuntimeStatusService
+    private readonly runtimeStatus: TriggerRuntimeStatusService,
+    @Inject(WorkflowSupabaseService)
+    private readonly persistence?: WorkflowSupabaseService
   ) {}
 
   async getConsole(tenantId: string, forceRefresh = false): Promise<TaskConsoleResponse> {
@@ -162,9 +166,11 @@ export class TaskConsoleService {
       this.jobs.listJobs({}, actor),
       this.jobs.listRuns({ limit: RECENT_RUN_LIMIT }, actor)
     ]);
+    const registryTasks = await this.loadRegistryTasks(tenantId);
     const taskIdentifiers = [...new Set([
       ...TRIGGER_TASK_IDENTIFIERS,
-      ...jobs.map((job) => job.triggerTaskId)
+      ...jobs.map((job) => job.triggerTaskId),
+      ...registryTasks.map((task) => task.triggerTaskId)
     ])];
     const runtime = await this.runtimeStatus.getStatus(tenantId, {
       includeSchedules: true,
@@ -173,7 +179,7 @@ export class TaskConsoleService {
       scheduleDeduplicationKeys: jobs.map((job) => `workflow-job:${job.id}`),
       taskIdentifiers
     });
-    const rows = buildRows(jobs, runs, runtime);
+    const rows = buildRows(jobs, runs, runtime, registryTasks);
 
     const response: TaskConsoleResponse = {
       generatedAt: runtime.generatedAt,
@@ -196,6 +202,31 @@ export class TaskConsoleService {
       workers: runtime.workers
     };
     return { response, jobs, runs, runtime };
+  }
+
+  private async loadRegistryTasks(tenantId: string) {
+    type RegistryTask = { id: string; name: string; description: string; commandCode: string; triggerTaskId: string };
+    if (!this.persistence?.isConfigured) return [] as RegistryTask[];
+    const { data, error } = await this.persistence.client
+      .from('wf_task_registry')
+      .select('id, name, description, command_code, task_type')
+      .eq('status', 'enabled')
+      .or(`account_id.eq.${tenantId},account_id.is.null`)
+      .order('account_id', { ascending: false, nullsFirst: false })
+      .order('updated_at', { ascending: false });
+    if (error) return [];
+    const seen = new Set<string>();
+    return (data ?? []).flatMap((row): RegistryTask[] => {
+      const commandCode = String(row.command_code ?? '').trim();
+      if (!commandCode || seen.has(commandCode)) return [];
+      seen.add(commandCode);
+      const triggerTaskId = row.task_type === 'storedProcedure'
+        ? TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.storedProcedure
+        : row.task_type === 'frontendCommand'
+          ? TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.frontendCommand
+          : TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand;
+      return [{ id: String(row.id), name: String(row.name ?? commandCode), description: String(row.description ?? '数据库注册的工作流任务。'), commandCode, triggerTaskId }];
+    });
   }
 
   async getDetail(tenantId: string, taskId: string): Promise<TaskConsoleDetail> {
@@ -234,7 +265,8 @@ export class TaskConsoleService {
 function buildRows(
   jobs: WorkflowJobRecord[],
   runs: WorkflowJobRunRecord[],
-  runtime: TriggerRuntimeStatus
+  runtime: TriggerRuntimeStatus,
+  registryTasks: Array<{ id: string; name: string; description: string; commandCode: string; triggerTaskId: string }> = []
 ) {
   const catalogById = new Map(TRIGGER_TASK_CATALOG.map((task) => [task.id, task]));
   const schedulesById = new Map(runtime.schedules.map((schedule) => [schedule.id, schedule]));
@@ -260,10 +292,27 @@ function buildRows(
       return buildJobRow(job, jobRuns, runtime, schedule, catalog);
     });
   const discoveredTasks = discoverRuntimeTasks(runtime, knownTaskIds);
+  const registryRows: TaskConsoleRow[] = registryTasks.map((task) => ({
+    id: `registry:${task.id}`,
+    source: 'system',
+    name: task.name,
+    code: task.commandCode,
+    description: task.description,
+    category: 'custom',
+    type: 'system',
+    status: 'registered',
+    triggerTaskId: task.triggerTaskId,
+    scheduleText: '由数据库注册并通过工作流适配器执行',
+    runCounts: emptyRunCounts(),
+    queuedCount: 0,
+    runningCount: 0,
+    queuePaused: false,
+    workerConnected: runtime.engine.workerConnected
+  }));
   const systemRows = [...TRIGGER_TASK_CATALOG, ...discoveredTasks]
     .filter((task) => !jobTaskIds.has(task.id))
     .map((task) => buildSystemRow(task, runtime));
-  return [...jobRows, ...systemRows].sort(taskRowSort);
+  return [...jobRows, ...registryRows, ...systemRows].sort(taskRowSort);
 }
 
 function buildJobRow(

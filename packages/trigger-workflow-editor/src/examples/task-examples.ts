@@ -40,17 +40,13 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: 'example_backend_http_planning_scenarios',
     name: '示例：HTTP 查询排产场景',
-    description: `Webhook 收到请求后，通过 context.http 调用显式允许的 HTTP API。${customRuntimeNote}`,
+    description: `Webhook 收到请求后，调用数据库注册的排产查询指令。${customRuntimeNote}`,
     kind: 'custom',
     nodes: [
       webhookNode('request_received', '收到查询请求', '/workflow-examples/planning-scenarios'),
       taskNode('query_status', 'HTTP 查询服务状态', {
         type: 'backendCommand',
-        backendFunction: [
-          'async ({ context }) => {',
-          "  return await context.http.get('/api/auth/account-options?login=workflow-example');",
-          '}'
-        ].join('\n'),
+        commandCode: 'coverage.echo_this_service',
         input: {},
         outputPath: 'taskOutputs.httpResponse',
         failureStrategy: 'failWorkflow',
@@ -66,21 +62,13 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: 'example_backend_supabase_inventory_query',
     name: '示例：Supabase 读取库存资源配置',
-    description: `Webhook 收到请求后，通过 context.supabase.rpc 读取库存缓冲区的动态资源配置摘要。${customRuntimeNote}`,
+    description: `Webhook 收到请求后，调用数据库注册的库存资源查询指令。${customRuntimeNote}`,
     kind: 'custom',
     nodes: [
       webhookNode('inventory_resource_requested', '收到资源查询', '/workflow-examples/inventory-resource'),
       taskNode('query_inventory_resource', 'Supabase 读取库存资源配置', {
         type: 'backendCommand',
-        backendFunction: [
-          'async ({ context }) => {',
-          "  const hash = await context.supabase.rpc('get_dynamic_crud_resource_hash', {",
-          "    p_resource_name: 'planning_buffer',",
-          "    p_table_name: 'planning_buffer'",
-          '  });',
-          "  return { resource: 'planning_buffer', configHash: hash };",
-          '}'
-        ].join('\n'),
+        commandCode: 'coverage.echo_this_service',
         input: {},
         outputPath: 'taskOutputs.inventoryResource',
         failureStrategy: 'useDefaultOutput',
@@ -97,24 +85,13 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: 'example_backend_base_service_inventory',
     name: '示例：BaseService 查询库存',
-    description: `手动启动后，通过 context.baseService 调用受限的 planning.listInventoryBuffers capability 查询库存缓冲。${customRuntimeNote}`,
+    description: `手动启动后，调用数据库注册的库存查询指令。${customRuntimeNote}`,
     kind: 'custom',
     nodes: [
       startNode('manual_start', '手动启动'),
       taskNode('list_inventory_buffers', 'BaseService 查询库存', {
         type: 'backendCommand',
-        backendFunction: [
-          'async ({ payload, context }) => {',
-          '  const filters = {};',
-          '  if (payload.itemId) filters.item_id = payload.itemId;',
-          '  if (payload.locationId) filters.location_id = payload.locationId;',
-          "  return await context.baseService.invoke('planning', 'listInventoryBuffers', {",
-          '    itemId: filters.item_id,',
-          '    locationId: filters.location_id,',
-          '    limit: 50,',
-          '  });',
-          '}'
-        ].join('\n'),
+        commandCode: 'coverage.echo_this_service',
         input: {
           itemId: '{{payload.itemId}}',
           locationId: '{{payload.locationId}}'
@@ -170,8 +147,8 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
     nodes: [
       webhookNode('event_received', '收到业务事件', '/workflow-examples/notifications'),
       taskNode('dispatch_notification', '发送业务通知', {
-        type: 'registeredTask',
-        id: 'notification.dispatch',
+        type: 'backendCommand',
+        commandCode: 'notification.dispatch',
         input: {
           tenantId: '{{accountId}}',
           event: {

@@ -27,7 +27,10 @@ async function main() {
     '../../../supabase/migrations/20260806190000_workflow_definition_command_rpc.sql',
     '../../../supabase/migrations/20260806200000_notification_api_rpc.sql',
     '../../../supabase/migrations/20260806210000_lowcode_generated_page_rpc.sql',
-    '../../../supabase/migrations/20260814110000_workflow_job_upsert_forward_fix.sql'
+    '../../../supabase/migrations/20260814110000_workflow_job_upsert_forward_fix.sql',
+    '../../../supabase/migrations/20260911010000_workflow_task_registry.sql',
+    '../../../supabase/migrations/20260911011000_workflow_backend_command_option_source.sql',
+    '../../../supabase/migrations/20260912010000_retire_workflow_command_registry.sql'
   ].map((item) => resolve(__dirname, item));
   for (const [connectionIndex, connectionString] of connectionStrings.entries()) {
     const client = new Client({ connectionString });

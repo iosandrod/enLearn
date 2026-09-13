@@ -1,5 +1,6 @@
 import { inject, provide } from 'vue';
 import type { CSSProperties } from 'vue';
+import { cloneDeep } from 'lodash-es';
 import type { RequestEnum, ContentTypeEnum } from '../enums/httpEnum';
 import { generateNanoid } from './utils';
 import type { LowCodeExecuteActionHook } from '../types/lowcode';
@@ -287,6 +288,8 @@ export type VisualEditorComponent = {
   }) => () => JSX.Element;
   /** 组件是否可以被拖拽 */
   draggable?: boolean;
+  /** 拖入画布时写入的新组件默认属性 */
+  defaultProps?: Record<string, unknown>;
   /** 是否显示组件的样式配置项 */
   showStyleConfig?: boolean;
   /** 动画集 */
@@ -304,7 +307,7 @@ export type VisualEditorMarkLines = {
 
 export function createNewBlock(component: VisualEditorComponent): VisualEditorBlockData {
   const vid = `vid_${generateNanoid()}`;
-  const props: Record<string, any> = {};
+  const props: Record<string, any> = cloneDeep(component.defaultProps ?? {});
 
   return {
     _vid: vid,

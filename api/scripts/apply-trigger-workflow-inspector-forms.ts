@@ -78,7 +78,7 @@ async function main() {
     const requiredFields = [
       'taskType',
       'frontendFunction',
-      'backendFunction',
+      'commandCode',
       'procedureName',
       'taskInput',
       'outputMapping',

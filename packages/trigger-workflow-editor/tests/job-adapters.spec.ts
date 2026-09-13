@@ -41,7 +41,7 @@ const model: TriggerWorkflowModel = {
       config: {
         task: {
           type: 'backendCommand',
-          backendFunction: "async ({ context }) => context.http.get('/health')"
+          commandCode: 'coverage.echo_this_service'
         }
       }
     },
@@ -62,7 +62,7 @@ const model: TriggerWorkflowModel = {
       type: 'task',
       name: 'Registered task',
       config: {
-        task: { type: 'registeredTask', id: 'notification.dispatch' }
+        task: { type: 'backendCommand', commandCode: 'notification.dispatch' }
       }
     },
     { id: 'end', type: 'end', name: 'End' }
@@ -97,18 +97,31 @@ assert.deepEqual(adapters.map((adapter) => adapter.type), [
   'frontendCommand',
   'backendCommand',
   'storedProcedure',
-  'registeredTask'
+  'backendCommand'
 ]);
 assert.deepEqual(adapters.map((adapter) => adapter.executorTaskId), [
   TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.frontendCommand,
   TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand,
   TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.storedProcedure,
-  'notification.dispatch'
+  TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand
 ]);
+assert.equal(
+  adapters[3] && 'commandCode' in adapters[3] ? adapters[3].commandCode : undefined,
+  'notification.dispatch'
+);
 assert.equal(JSON.stringify(job).includes('frontend.command.message.loop'), false);
 assert.equal(JSON.stringify(job).includes('接受指令成功'), false);
 assert.equal(JSON.stringify(job).includes('repeatCount'), false);
 assert.equal(JSON.stringify(job).includes('intervalSeconds'), false);
+
+const registryModel = structuredClone(model);
+const registryTask = registryModel.nodes.find((node) => node.id === 'backend')?.config?.task;
+assert.ok(registryTask);
+registryTask.commandCode = 'planning.coverage.echo_this_service';
+const registryAdapter = buildTriggerWorkflowJob(registryModel).payload.triggerWorkflow.executionPlan.operations
+  .find((operation) => operation.nodeId === 'backend')?.adapter;
+assert.equal(registryAdapter?.type, 'backendCommand');
+assert.equal(registryAdapter && 'commandCode' in registryAdapter ? registryAdapter.commandCode : undefined, 'planning.coverage.echo_this_service');
 
 const queued = structuredClone(model);
 const queuedTask = queued.nodes.find((node) => node.id === 'registered')?.config?.task;
@@ -203,6 +216,10 @@ unsupported.nodes[1] = {
   name: 'Approval',
   config: { approval: { assigneeType: 'role' } }
 };
-assert.throws(() => buildTriggerWorkflowJob(unsupported), /human\.approval is not supported/);
+const humanJob = buildTriggerWorkflowJob(unsupported);
+assert.equal(
+  humanJob.payload.triggerWorkflow.executionPlan.operations.find((operation) => operation.nodeId === 'frontend')?.type,
+  'human.approval'
+);
 
 console.log('trigger-workflow-editor typed Job adapter tests passed');

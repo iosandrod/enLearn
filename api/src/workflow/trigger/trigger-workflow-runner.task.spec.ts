@@ -29,6 +29,7 @@ async function main() {
   );
   await testRuntimePolicyRejectsTamperedAdapter();
   await testRunnerProjectsInvalidDefinitionAsFailed();
+  await testParallelJoinExecutesEndOnce();
   const calls: Array<{
     type: string;
     executorTaskId: string;
@@ -61,8 +62,8 @@ async function main() {
       payload: { message: '当前节点函数消息' }
     },
     {
-      type: 'registeredTask',
-      executorTaskId: 'notification.dispatch',
+      type: 'backendCommand',
+      executorTaskId: 'workflow.adapter.backend-command',
       payload: { sourceId: 'record-1', commandId: 'command-1' }
     }
   ]);
@@ -74,6 +75,27 @@ async function main() {
     registered: { registered: true }
   });
   console.log('workflow-api Trigger workflow runner dispatch tests passed');
+}
+
+async function testParallelJoinExecutesEndOnce() {
+  const definition = createParallelJoinDefinition();
+  const executed: string[] = [];
+  const output = await executeTriggerWorkflowJobPlan({
+    runId: 'run-parallel',
+    tenantId: 'account-1',
+    payload: {},
+    definition,
+    executeAdapter: async (operation) => {
+      executed.push(operation.nodeId);
+      return { nodeId: operation.nodeId };
+    }
+  });
+
+  assert.deepEqual(executed, ['left', 'right']);
+  assert.deepEqual(output.operationOutputs, {
+    left: { nodeId: 'left' },
+    right: { nodeId: 'right' }
+  });
 }
 
 async function testRuntimePolicyRejectsTamperedAdapter() {
@@ -138,8 +160,9 @@ function createDefinition(): TriggerWorkflowJobDefinitionPayload {
     outputPath: 'taskOutputs.command'
   };
   const registered: TriggerWorkflowTaskJobAdapter = {
-    type: 'registeredTask',
-    executorTaskId: 'notification.dispatch',
+    type: 'backendCommand',
+    executorTaskId: 'workflow.adapter.backend-command',
+    commandCode: 'notification.dispatch',
     input: {
       sourceId: '{{payload.recordId}}',
       commandId: '{{variables.taskOutputs.command.commandId}}'
@@ -168,6 +191,47 @@ function createDefinition(): TriggerWorkflowJobDefinitionPayload {
     definition.executionPlan
   );
   return definition;
+}
+
+function createParallelJoinDefinition(): TriggerWorkflowJobDefinitionPayload {
+  const definition: TriggerWorkflowJobDefinitionPayload = {
+    version: 1,
+    modelId: 'parallel-model',
+    modelCode: 'parallel-model',
+    modelName: 'Parallel model',
+    planSignature: '',
+    executionPlan: {
+      workflowId: 'parallel-model',
+      workflowCode: 'parallel-model',
+      workflowName: 'Parallel model',
+      entryNodeId: 'start',
+      operations: [
+        operation('start', 'entry', ['fork']),
+        operation('fork', 'parallel', ['left', 'right']),
+        {
+          ...operation('left', 'task.trigger', ['join']),
+          adapter: testRegisteredAdapter('left')
+        },
+        {
+          ...operation('right', 'task.trigger', ['join']),
+          adapter: testRegisteredAdapter('right')
+        },
+        { ...operation('join', 'parallelJoin', ['end']), options: { joinKey: 'parallel-review' } },
+        operation('end', 'complete', [])
+      ]
+    }
+  };
+  definition.planSignature = getTriggerWorkflowExecutionPlanSignature(definition.executionPlan);
+  return definition;
+}
+
+function testRegisteredAdapter(nodeId: string): TriggerWorkflowTaskJobAdapter {
+  return {
+    type: 'backendCommand',
+    executorTaskId: 'workflow.adapter.backend-command',
+    commandCode: 'notification.dispatch',
+    input: { nodeId }
+  };
 }
 
 function operation(nodeId: string, type: string, next: string[]) {

@@ -9,6 +9,7 @@ export type TriggerNodeType =
   | 'manualApproval'
   | 'condition'
   | 'parallel'
+  | 'parallelJoin'
   | 'task'
   | 'triggerAndWait'
   | 'batchTrigger'
@@ -48,8 +49,7 @@ export type TriggerWorkflowQueueConfig = {
 export type TriggerWorkflowTaskType =
   | 'frontendCommand'
   | 'backendCommand'
-  | 'storedProcedure'
-  | 'registeredTask';
+  | 'storedProcedure';
 
 export type TriggerWorkflowTaskFailureStrategy =
   | 'failWorkflow'
@@ -59,9 +59,10 @@ export type TriggerWorkflowTaskFailureStrategy =
 export type TriggerWorkflowTaskRef = {
   type?: TriggerWorkflowTaskType;
   id?: string;
+  /** Code of a database-backed backend command. */
+  commandCode?: string;
   importPath?: string;
   frontendFunction?: string;
-  backendFunction?: string;
   procedureName?: string;
   procedureSchema?: string;
   input?: Record<string, unknown>;

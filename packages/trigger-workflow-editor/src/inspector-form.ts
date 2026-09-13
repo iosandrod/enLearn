@@ -17,6 +17,7 @@ export const triggerInspectorNodeTypes = [
   'manualApproval',
   'condition',
   'parallel',
+  'parallelJoin',
   'task',
   'triggerAndWait',
   'batchTrigger',
@@ -40,6 +41,7 @@ export const triggerNodeFormSchemaCodeByType = {
   manualApproval: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}manual-approval`,
   condition: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}condition`,
   parallel: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}parallel`,
+  parallelJoin: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}parallel-join`,
   task: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}task`,
   triggerAndWait: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}trigger-and-wait`,
   batchTrigger: `${TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX}batch-trigger`,
@@ -164,10 +166,9 @@ const nodeFieldPaths: Record<string, string[]> = {
   webhookMethod: ['webhook', 'method'],
   webhookBody: ['webhook', 'body'],
   taskType: ['task', 'type'],
-  taskId: ['task', 'id'],
-  taskImportPath: ['task', 'importPath'],
+  taskId: ['task', 'commandCode'],
   frontendFunction: ['task', 'frontendFunction'],
-  backendFunction: ['task', 'backendFunction'],
+  commandCode: ['task', 'commandCode'],
   procedureName: ['task', 'procedureName'],
   procedureSchema: ['task', 'procedureSchema'],
   taskInput: ['task', 'input'],
@@ -189,6 +190,8 @@ const nodeFieldPaths: Record<string, string[]> = {
   assigneeIds: ['approval', 'assigneeIds'],
   approvalTimeoutSeconds: ['approval', 'timeoutSeconds'],
   onTimeout: ['approval', 'onTimeout'],
+  completionStrategy: ['approval', 'completionStrategy'],
+  passRatio: ['approval', 'passRatio'],
   waitMode: ['wait', 'mode'],
   waitDuration: ['wait', 'duration'],
   waitUntil: ['wait', 'until'],
@@ -208,6 +211,7 @@ const nodeFieldPaths: Record<string, string[]> = {
   memoryKey: ['ai', 'memoryKey'],
   expression: ['expression'],
   branches: ['branches'],
+  joinKey: ['joinKey'],
   metadata: ['metadata']
 };
 
@@ -348,10 +352,9 @@ export function createTriggerNodeFormModel(node: TriggerWorkflowNode) {
       postData: {}
     }),
     taskType: resolveTaskType(config.task),
-    taskId: config.task?.id ?? '',
-    taskImportPath: config.task?.importPath ?? '',
+    taskId: config.task?.commandCode ?? config.task?.id ?? '',
     frontendFunction: config.task?.frontendFunction ?? '',
-    backendFunction: config.task?.backendFunction ?? '',
+    commandCode: config.task?.commandCode ?? '',
     procedureName: config.task?.procedureName ?? '',
     procedureSchema: config.task?.procedureSchema ?? 'public',
     taskInput: cloneValue(config.task?.input ?? {}),
@@ -682,7 +685,16 @@ function createNodeConfigSection(type: TriggerNodeType): FormSection {
           { label: '自动通过', value: 'autoApprove' },
           { label: '自动驳回', value: 'autoReject' },
           { label: '继续执行', value: 'continue' }
-        ])
+        ]),
+        selectField('completionStrategy', '完成策略', [
+          { label: '任一人完成', value: 'any' },
+          { label: '全部完成', value: 'all' },
+          { label: '达到比例', value: 'ratio' }
+        ]),
+        {
+          ...numberField('passRatio', '通过比例', 0.01, 0.01, 1),
+          props: { min: 0.01, max: 1, step: 0.01, controls: true, visibleWhen: { field: 'completionStrategy', equals: 'ratio' } }
+        }
       ]
     };
   }
@@ -776,11 +788,14 @@ function createNodeConfigSection(type: TriggerNodeType): FormSection {
     };
   }
 
-  if (type === 'parallel') {
+  if (type === 'parallel' || type === 'parallelJoin') {
     return {
       key: 'branch',
-      label: '并行设置',
-      fields: [jsonField('branches', '分支元数据', '编辑并行分支元数据', 'array')]
+      label: type === 'parallelJoin' ? '汇聚设置' : '并行设置',
+      fields: [
+        textField('joinKey', 'Join 标识', { placeholder: '可选；用于持久化分支汇聚' }),
+        jsonField('branches', '分支元数据', '编辑并行分支元数据', 'array')
+      ]
     };
   }
 
@@ -798,7 +813,6 @@ function createTaskSections(type: TriggerNodeType): FormSection[] {
           { label: '发送前端指令', value: 'frontendCommand' },
           { label: '执行后端指令', value: 'backendCommand' },
           { label: '执行存储过程', value: 'storedProcedure' },
-          { label: '已注册 Trigger.dev 任务', value: 'registeredTask' }
         ], true),
         codeField(
           'frontendFunction',
@@ -807,13 +821,21 @@ function createTaskSections(type: TriggerNodeType): FormSection[] {
           'frontendCommand',
           'async ({ payload, variables, previousOutput, context }) => {\n  return { code: \'message.show\', params: { message: \'执行成功\', type: \'success\' } };\n}'
         ),
-        codeField(
-          'backendFunction',
-          '后端指令函数',
-          '编辑后端指令函数',
-          'backendCommand',
-          'async ({ payload, variables, previousOutput, context }) => {\n  return await context.http.get(\'/api/example\');\n}'
-        ),
+        {
+          field: 'commandCode',
+          label: '后端指令编码',
+          component: 'vxe-select',
+          props: {
+            clearable: false,
+            filterable: true,
+            placeholder: '选择数据库中已启用的后端指令',
+            visibleWhen: { field: 'taskType', equals: 'backendCommand' }
+          },
+          optionsCode: 'workflow_backend_command',
+          ...(requiresTaskId
+            ? { rules: [{ required: true, message: '后端指令编码不能为空' }] }
+            : {})
+        },
         textField(
           'procedureName',
           '存储过程名称',
@@ -826,19 +848,6 @@ function createTaskSections(type: TriggerNodeType): FormSection[] {
         textField('procedureSchema', '存储过程架构', {
           placeholder: 'public',
           visibleWhen: { field: 'taskType', equals: 'storedProcedure' }
-        }),
-        textField(
-          'taskId',
-          '任务 ID',
-          {
-            placeholder: 'Trigger.dev 任务标识',
-            visibleWhen: { field: 'taskType', equals: 'registeredTask' }
-          },
-          requiresTaskId
-        ),
-        textField('taskImportPath', '任务导入路径', {
-          placeholder: '由后端任务注册表解析',
-          visibleWhen: { field: 'taskType', equals: 'registeredTask' }
         }),
         jsonField('taskInput', '输入参数', '编辑任务输入参数', 'object'),
         textField('outputPath', '输出变量路径', { placeholder: '例如：taskOutputs.sendMessage' }),
@@ -1145,9 +1154,9 @@ function normalizeNodeFieldValue(field: string, value: unknown) {
 function resolveTaskType(task?: TriggerWorkflowTaskRef): TriggerWorkflowTaskType {
   if (task?.type) return task.type;
   if (task?.frontendFunction) return 'frontendCommand';
-  if (task?.backendFunction) return 'backendCommand';
+  if (task?.commandCode) return 'backendCommand';
   if (task?.procedureName) return 'storedProcedure';
-  return 'registeredTask';
+  return 'backendCommand';
 }
 
 function enhanceTaskFormSchema(

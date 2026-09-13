@@ -9,7 +9,6 @@ import {
 import {
   BaseService,
   type HookContext,
-  type ListItemsHandler,
   type ResourceConfigMap,
   type ServiceHooks
 } from '../common/base.service';
@@ -17,8 +16,6 @@ import type { ServiceContext } from '../common/interfaces/service-executor';
 import { assertAccountUsers } from '../common/utils/account-context';
 import {
   getCurrentUser,
-  getUserAuthorization,
-  hasRequiredPermission
 } from '../common/utils/supabase';
 import { createSupabaseClient } from '../common/utils/supabase';
 import type {
@@ -45,21 +42,15 @@ import { RuntimeService } from './runtime/runtime.service';
 import { TriggerRuntimeStatusService } from './trigger/trigger-runtime-status.service';
 import { TaskConsoleService } from './runtime/task-console.service';
 import { workflowResources } from './workflow.resources';
+import { parseRegisteredCommandFunction, validateRegisteredCommandSource } from './runtime/registered-command.runtime';
 
 type PostData = Record<string, unknown>;
 
 const WORKFLOW_JOB_TYPES = new Set(['once', 'cron', 'interval', 'manual', 'service_task']);
 const TRIGGER_WORKFLOW_RUNNER_TASK_ID = 'workflow.trigger-workflow.run';
 
-const WORKFLOW_JOB_RUN_STATUS_LABELS: Record<string, string> = {
-  queued: '排队中',
-  running: '运行中',
-  succeeded: '成功',
-  failed: '失败',
-  canceled: '已取消'
-};
-
 const RESOURCE_LIST_FIELDS: Record<string, string[]> = {
+  wf_task_registry: ['id', 'serviceName', 'commandCode', 'name', 'taskType', 'status', 'version', 'updatedAt'],
   wf_model: ['id', 'code', 'name', 'documentType', 'status'],
   wf_model_version: ['id', 'modelId', 'version'],
   wf_process_definition: ['id', 'modelId', 'code', 'name', 'version', 'documentType', 'status'],
@@ -175,15 +166,6 @@ function mapWorkflowResult(resourceName: string, value: unknown) {
     : mapWorkflowRow(resourceName, value);
 }
 
-function timestampDurationMs(startedAt: unknown, finishedAt: unknown) {
-  if (typeof startedAt !== 'string' || typeof finishedAt !== 'string') return null;
-  const started = Date.parse(startedAt);
-  const finished = Date.parse(finishedAt);
-  return Number.isFinite(started) && Number.isFinite(finished)
-    ? Math.max(0, finished - started)
-    : null;
-}
-
 function resolveListQuery(postData: PostData) {
   const filters = isRecord(postData.filters) ? postData.filters : {};
   const { tenantId: _tenantId, account_id: _tenantIdSnake, ...safePostData } = postData;
@@ -268,6 +250,7 @@ export class WorkflowService extends BaseService {
       wf_model: {
         ...outputHooks
       },
+      wf_task_registry: outputHooks,
       wf_model_version: outputHooks,
       wf_process_definition: outputHooks,
       wf_process_instance: outputHooks,
@@ -277,53 +260,6 @@ export class WorkflowService extends BaseService {
         ...outputHooks
       },
       wf_job_run: outputHooks
-    };
-  }
-
-  protected override listItemHandlers(): Record<string, ListItemsHandler> {
-    return {
-      models: (postData, context) => this.listResource('wf_model', postData, context),
-      definitions: (postData, context) =>
-        this.listResource('wf_process_definition', postData, context),
-      instances: (postData, context) =>
-        this.listResource('wf_process_instance', postData, context),
-      nodeInstances: (postData, context) =>
-        this.listResource('wf_node_instance', postData, context),
-      tasks: (postData, context) => this.listResource('wf_task', postData, context),
-      startedInstances: (postData, context) =>
-        this.listResource(
-          'wf_process_instance',
-          {
-            ...postData,
-            filters: {
-              ...(isRecord(postData.filters) ? postData.filters : {}),
-              initiatorId: context.userId
-            }
-          },
-          context
-        ),
-      jobs: (postData, context) => this.listResource('wf_job', postData, context),
-      jobRuns: (postData, context) => this.listJobRuns(postData, context),
-      todoTasks: (postData, context) =>
-        this.runtimeService.listTodoTasks(
-          this.resolveActor(context),
-          resolveListQuery(postData) as WorkflowTaskQuery
-        ),
-      doneTasks: (postData, context) =>
-        this.runtimeService.listDoneTasks(
-          this.resolveActor(context),
-          resolveListQuery(postData) as WorkflowTaskQuery
-        ),
-      ccTasks: (postData, context) =>
-        this.runtimeService.listCc(
-          this.resolveActor(context),
-          resolveListQuery(postData) as WorkflowCcQuery
-        ),
-      startedTasks: (postData, context) =>
-        this.runtimeService.listStarted(
-          this.resolveActor(context),
-          resolveListQuery(postData) as WorkflowInstanceQuery
-        )
     };
   }
 
@@ -354,7 +290,6 @@ export class WorkflowService extends BaseService {
         );
       }
       case 'publishModel':
-        await this.assertDefinitionManagementAccess(context);
         return this.publishModelByRpc(
           readString(postData.modelId, 'modelId'),
           this.readPublishModelDto(postData),
@@ -363,16 +298,17 @@ export class WorkflowService extends BaseService {
       case 'getDefinitionCapabilities':
         return this.definitionService.getCapabilities();
       case 'getRuntimeStatus':
-        await this.assertRuntimeManagementAccess(context);
         return this.triggerRuntimeStatus.getStatus(this.resolveActor(context).tenantId);
+      case 'recoverOrphanedInstances':
+        return this.runtimeService.recoverOrphanedInstances(
+          this.resolveActor(context).tenantId
+        );
       case 'getTaskConsole':
-        await this.assertRuntimeManagementAccess(context);
         return this.taskConsoleService.getConsole(
           this.resolveActor(context).tenantId,
           postData.forceRefresh === true
         );
       case 'getTaskConsoleDetail':
-        await this.assertRuntimeManagementAccess(context);
         return postData.forceRefresh === true
           ? this.taskConsoleService.refreshDetail(
               this.resolveActor(context).tenantId,
@@ -383,13 +319,11 @@ export class WorkflowService extends BaseService {
               readString(postData.taskId, 'taskId')
             );
       case 'getApprovalConsole':
-        await this.assertRuntimeManagementAccess(context);
         return this.approvalConsoleService.listInstances(
           this.resolveActor(context).tenantId,
           resolveListQuery(postData)
         );
       case 'getApprovalConsoleDetail':
-        await this.assertRuntimeManagementAccess(context);
         return this.approvalConsoleService.getInstanceDetail(
           readString(postData.instanceId, 'instanceId'),
           this.resolveActor(context).tenantId
@@ -417,14 +351,12 @@ export class WorkflowService extends BaseService {
           this.resolveActor(context)
         );
       case 'terminateInstance':
-        await this.assertRuntimeManagementAccess(context);
         return this.runtimeService.terminateInstance(
           readString(postData.instanceId, 'instanceId'),
           this.readInstanceActionDto(postData),
           this.resolveActor(context)
         );
       case 'createJob': {
-        await this.assertRuntimeManagementAccess(context);
         const createJobActor = this.resolveActor(context);
         const job = await this.jobService.createJob(
           this.readCreateJobDto(postData),
@@ -434,7 +366,6 @@ export class WorkflowService extends BaseService {
         return job;
       }
       case 'upsertJob': {
-        await this.assertRuntimeManagementAccess(context);
         const upsertJobActor = this.resolveActor(context);
         const job = await this.jobService.upsertJob(
           this.readCreateJobDto(postData),
@@ -446,7 +377,6 @@ export class WorkflowService extends BaseService {
       case 'getJob':
         return this.getJobByCrud(readString(postData.jobId ?? postData.id, 'jobId'), context);
       case 'deleteJob':
-        await this.assertRuntimeManagementAccess(context);
         const deleteJobActor = this.resolveActor(context);
         const deletedJob = await this.jobService.deleteJob(
           readString(postData.jobId ?? postData.id, 'jobId'),
@@ -455,7 +385,6 @@ export class WorkflowService extends BaseService {
         this.taskConsoleService.invalidate(deleteJobActor.tenantId);
         return deletedJob;
       case 'updateJobStatus':
-        await this.assertRuntimeManagementAccess(context);
         const updateJobActor = this.resolveActor(context);
         const updatedJob = await this.jobService.updateJobStatus(
           readString(postData.jobId, 'jobId'),
@@ -465,7 +394,6 @@ export class WorkflowService extends BaseService {
         this.taskConsoleService.invalidate(updateJobActor.tenantId);
         return updatedJob;
       case 'runJob':
-        await this.assertRuntimeManagementAccess(context);
         const runJobActor = this.resolveActor(context);
         const jobRun = await this.jobService.runJob(
           readString(postData.jobId, 'jobId'),
@@ -554,16 +482,19 @@ export class WorkflowService extends BaseService {
   }
 
   protected override async createItem(postData: PostData, context: ServiceContext) {
+    this.validateRegisteredCommandWrite(postData);
     const normalizedPostData = this.normalizeCrudPostData(postData);
     return super.createItem(normalizedPostData, context);
   }
 
   protected override async updateItem(postData: PostData, context: ServiceContext) {
+    this.validateRegisteredCommandWrite(postData);
     const normalizedPostData = this.normalizeCrudPostData(postData);
     return super.updateItem(normalizedPostData, context);
   }
 
   protected override async saveItem(postData: PostData, context: ServiceContext) {
+    this.validateRegisteredCommandWrite(postData);
     const normalizedPostData = this.normalizeCrudPostData(postData);
     return super.saveItem(normalizedPostData, context);
   }
@@ -571,6 +502,21 @@ export class WorkflowService extends BaseService {
   private normalizeResourceResult = (ctx: HookContext) => {
     ctx.result = mapWorkflowResult(ctx.resourceName, ctx.result);
   };
+
+  private validateRegisteredCommandWrite(postData: PostData) {
+    const resourceName = this.resolveWorkflowResourceName(postData);
+    if (resourceName !== 'wf_task_registry') return;
+    const raw = isRecord(postData.data) ? postData.data : postData;
+    const taskType = readOptionalString(raw.taskType ?? raw.task_type);
+    const source = raw.functionSource ?? raw.function_source;
+    if (taskType === 'storedProcedure' && (source === undefined || source === null || source === '')) {
+      return;
+    }
+    if (source !== undefined) {
+      validateRegisteredCommandSource(readString(source, 'functionSource'));
+      parseRegisteredCommandFunction(readString(source, 'functionSource'));
+    }
+  }
 
   private async saveModelByCrud(postData: PostData, context: ServiceContext) {
     this.resolveActor(context);
@@ -709,8 +655,6 @@ export class WorkflowService extends BaseService {
       : Object.fromEntries(
           Object.entries(postData).filter(([field]) => ![
             'resource',
-            'itemType',
-            'item_type',
             'tableName',
             'table_name',
             'id',
@@ -751,50 +695,6 @@ export class WorkflowService extends BaseService {
     return this.listItems(normalizeResourceListInput(resourceName, postData), context);
   }
 
-  private async listJobRuns(postData: PostData, context: ServiceContext) {
-    const rows = (await this.listResource(
-      'wf_job_run',
-      postData,
-      context
-    )) as Array<Record<string, unknown>>;
-    const jobIds = [...new Set(
-      rows
-        .map((row) => readOptionalString(row.jobId ?? row.job_id))
-        .filter(Boolean)
-    )];
-    const jobs = jobIds.length
-      ? (await this.listResource(
-          'wf_job',
-          {
-            filters: { id: { op: 'in', value: jobIds } },
-            limit: Math.min(jobIds.length, 200)
-          },
-          context
-        )) as Array<Record<string, unknown>>
-      : [];
-    const jobsById = new Map(jobs.map((job) => [String(job.id ?? ''), job]));
-
-    return rows.map((row) => {
-      const jobId = readOptionalString(row.jobId ?? row.job_id);
-      const job = jobsById.get(jobId);
-      const status = readOptionalString(row.status);
-      const startedAt = row.startedAt ?? row.started_at;
-      const finishedAt = row.finishedAt ?? row.finished_at;
-      return {
-        ...row,
-        job_name: job?.name ?? '',
-        job_code: job?.code ?? '',
-        status_label: WORKFLOW_JOB_RUN_STATUS_LABELS[status] ?? status,
-        duration_ms: timestampDurationMs(startedAt, finishedAt),
-        trigger_run_id: row.triggerRunId ?? row.trigger_run_id ?? null,
-        error_message: row.errorMessage ?? row.error_message ?? null,
-        started_at: startedAt ?? null,
-        finished_at: finishedAt ?? null,
-        created_at: row.createdAt ?? row.created_at ?? null
-      };
-    });
-  }
-
   private async assertTargetAccountUser(
     postData: PostData,
     context: ServiceContext
@@ -805,25 +705,6 @@ export class WorkflowService extends BaseService {
       [targetUserId],
       'The workflow target user must belong to the active account set.'
     );
-  }
-
-  private async assertRuntimeManagementAccess(context: ServiceContext) {
-    await this.assertWorkflowPermission(context, 'workflow.runtime.manage');
-  }
-
-  private async assertDefinitionManagementAccess(context: ServiceContext) {
-    await this.assertWorkflowPermission(context, 'workflow.definitions.manage');
-  }
-
-  protected async assertWorkflowPermission(context: ServiceContext, permission: string) {
-    const { client, user } = await getCurrentUser(context);
-    const authorization = await getUserAuthorization(client, user.id, {
-      accountId: context.accountId,
-      refresh: true
-    });
-    if (!hasRequiredPermission(authorization, permission)) {
-      throw new ForbiddenException(`Permission required: ${permission}`);
-    }
   }
 
   private resolveActor(context: ServiceContext): RuntimeActor {

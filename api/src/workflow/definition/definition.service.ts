@@ -17,6 +17,10 @@ import {
   normalizeWorkflowDraftSchema,
   validateWorkflowDraftSchema
 } from '../workflow.model';
+import {
+  canonicalWorkflowCapabilities,
+  compileCanonicalWorkflow
+} from '@enlearn/workflow-schema';
 
 const WORKFLOW_DEFINITION_COMMAND_RPC = 'workflow_definition_command';
 
@@ -28,6 +32,7 @@ export type WorkflowCapability = {
   }>;
   assigneeStrategies: string[];
   conditionTypes: string[];
+  canonicalNodes: typeof canonicalWorkflowCapabilities;
 };
 
 @Injectable()
@@ -65,7 +70,8 @@ export class DefinitionService {
         'field',
         'expression'
       ],
-      conditionTypes: ['always', 'expression', 'field']
+      conditionTypes: ['always', 'expression', 'field'],
+      canonicalNodes: canonicalWorkflowCapabilities
     };
   }
 
@@ -132,8 +138,12 @@ export class DefinitionService {
 
   async saveModel(dto: SaveWorkflowModelDto, actor: WorkflowRequestActor, modelId?: string) {
     const now = new Date().toISOString();
-    const schema = normalizeWorkflowDraftSchema(dto);
-    validateWorkflowDraftSchema(schema, false);
+    const draftSchema = normalizeWorkflowDraftSchema(dto);
+    validateWorkflowDraftSchema(draftSchema, false);
+    const schema = {
+      ...draftSchema,
+      canonical: compileCanonicalWorkflow(draftSchema)
+    };
 
     if (this.persistence?.isConfigured) {
       const { data, error } = await this.persistence.client.rpc(WORKFLOW_DEFINITION_COMMAND_RPC, {

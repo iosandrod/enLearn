@@ -102,6 +102,10 @@ defineSlots<{
 }>();
 
 const activeTabKeys = reactive<Record<string, string>>({});
+const requestFormRecalculate = inject<() => void>(
+  'low-code-form-request-recalculate',
+  () => undefined
+);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -142,6 +146,7 @@ function setActiveTab(
 ) {
   if (node.tabs.some((tab) => tab.key === key)) {
     activeTabKeys[nodeKey(node, index)] = key;
+    requestFormRecalculate();
   }
 }
 

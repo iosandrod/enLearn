@@ -100,16 +100,18 @@ function resolveCompiledSource(_sourcePath: string, request: string) {
 }
 
 async function fetchMaterialRows(serviceApi: LowCodeMaterialServiceApi) {
-  const result = await serviceApi.invoke<unknown[]>('lowcode', 'listItems', {
-    resource: 'lowcode_materials',
-    filters: { enabled: true, status: 'published' },
-    sorts: [
-      { field: 'material_kind', direction: 'asc' },
-      { field: 'sort_order', direction: 'asc' },
-      { field: 'code', direction: 'asc' },
-    ],
-    limit: 100,
-  });
+  const result = serviceApi.listPublishedLowCodeMaterials
+    ? await serviceApi.listPublishedLowCodeMaterials<unknown>()
+    : await serviceApi.invoke<unknown[]>('lowcode', 'listItems', {
+        resource: 'lowcode_materials',
+        filters: { enabled: true, status: 'published' },
+        sorts: [
+          { field: 'material_kind', direction: 'asc' },
+          { field: 'sort_order', direction: 'asc' },
+          { field: 'code', direction: 'asc' },
+        ],
+        limit: 100,
+      });
   return (Array.isArray(result) ? result : [])
     .map(normalizeMaterialRow)
     .filter((row): row is LowCodeMaterialRow => Boolean(row));

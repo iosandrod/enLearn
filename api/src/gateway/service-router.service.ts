@@ -91,4 +91,28 @@ export class ServiceRouterService {
 
     return response.data;
   }
+
+  async invokeRegisteredCommand(
+    serviceName: string,
+    commandCode: string,
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    if (!isDomainServiceName(serviceName)) {
+      throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
+    }
+    const pattern = resolveServiceExecutePattern(serviceName, this.independentServices);
+    const response = await firstValueFrom(
+      this.domainClient.send<ServiceBusResponse>(pattern, {
+        serviceName,
+        serviceMethod: '__workflow_registered_command__',
+        postData: { ...postData, __commandCode: commandCode },
+        context: { ...context, serviceName }
+      }).pipe(timeout(DOMAIN_SERVICE_TIMEOUT_MS))
+    );
+    if (!response || response.success === false) {
+      throw new BadGatewayException(response?.error?.message ?? 'Registered workflow command failed.');
+    }
+    return response.data;
+  }
 }

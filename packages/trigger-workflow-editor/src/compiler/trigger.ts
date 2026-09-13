@@ -18,6 +18,7 @@ export type TriggerWorkflowOperationType =
   | 'wait.forToken'
   | 'condition'
   | 'parallel'
+  | 'parallelJoin'
   | 'human.approval'
   | 'ai.agent'
   | 'data.connector'
@@ -78,8 +79,8 @@ export function compileTriggerWorkflow(model: TriggerWorkflowModel): TriggerWork
   const taskIds = Array.from(
     new Set(
       operations
-        .filter((operation) => operation.task?.type === 'registeredTask')
-        .map((operation) => operation.task?.id)
+        .filter((operation) => operation.task?.type === 'backendCommand')
+        .map((operation) => operation.task?.commandCode)
         .filter((taskId): taskId is string => Boolean(taskId))
     )
   );
@@ -134,6 +135,8 @@ function compileNodeOperation(
       return { ...base, type: 'condition', options: { branches: outgoingEdges } };
     case 'parallel':
       return { ...base, type: 'parallel', options: { branches: outgoingEdges.map((edge) => edge.target) } };
+    case 'parallelJoin':
+      return { ...base, type: 'parallelJoin', options: node.config ?? {} };
     case 'triggerAndWait':
       return { ...base, type: 'task.triggerAndWait', task: node.config?.task };
     case 'batchTrigger':

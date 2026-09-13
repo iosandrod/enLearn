@@ -278,10 +278,12 @@ async function handleGithub() {
 
 <style scoped>
 .erp-signin {
+  --erp-signin-workspace-background: #f6f8fa;
+
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(0, 1.25fr) minmax(430px, 0.75fr);
-  background: #f4f7fa;
+  background: var(--erp-signin-workspace-background);
 }
 
 .erp-signin__brand {
@@ -413,7 +415,7 @@ async function handleGithub() {
   display: grid;
   min-height: 100vh;
   align-content: center;
-  background: #f6f8fa;
+  background: var(--erp-signin-workspace-background);
   padding: 36px clamp(32px, 5vw, 76px);
 }
 
@@ -447,6 +449,7 @@ async function handleGithub() {
 }
 
 .erp-login-panel :deep(.lc-form) {
+  background: var(--erp-signin-workspace-background);
   gap: 16px;
 }
 

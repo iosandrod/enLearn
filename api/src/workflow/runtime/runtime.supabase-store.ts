@@ -24,6 +24,8 @@ import type {
   ProcessInstanceStatus,
   RuntimeActor,
   WorkflowCcRecord,
+  WorkflowExecutionEventRecord,
+  WorkflowExecutionTokenRecord,
   WorkflowCommentRecord,
   WorkflowHistoryEventRecord,
   WorkflowTaskCandidateRecord,
@@ -364,6 +366,149 @@ export class SupabaseWorkflowRuntimeStore implements WorkflowRuntimeStore {
     await this.command('set_instance_status', { instance_id: instanceId, status, payload });
   }
 
+  async createExecutionToken(input: {
+    id: string;
+    processInstanceId: string;
+    parentTokenId?: string;
+    branchId?: string;
+    joinScopeId?: string;
+    nodeId: string;
+    status: WorkflowExecutionTokenRecord['status'];
+    joinKey?: string;
+    waitpointId?: string;
+  }) {
+    const client = this.client();
+    const { data, error } = await client.from('wf_execution_token').insert({
+      id: input.id,
+      process_instance_id: input.processInstanceId,
+      parent_token_id: input.parentTokenId ?? null,
+      branch_id: input.branchId ?? null,
+      join_scope_id: input.joinScopeId ?? null,
+      node_id: input.nodeId,
+      status: input.status,
+      join_key: input.joinKey ?? null,
+      waitpoint_id: input.waitpointId ?? null
+    }).select('*').single();
+    if (error?.code === '23505') {
+      const { data: existing, error: existingError } = await client
+        .from('wf_execution_token')
+        .select('*')
+        .eq('id', input.id)
+        .single();
+      if (existingError) throw new BadRequestException(existingError.message);
+      return mapExecutionToken(assertRecord(existing, 'Workflow token lookup returned an invalid row.'));
+    }
+    if (error) throw new BadRequestException(error.message);
+    return mapExecutionToken(assertRecord(data, 'Workflow token insert returned an invalid row.'));
+  }
+
+  async updateExecutionToken(tokenId: string, patch: {
+    status?: WorkflowExecutionTokenRecord['status'];
+    nodeId?: string;
+    waitpointId?: string;
+    version: number;
+  }) {
+    const client = this.client();
+    const update = {
+      ...(patch.status ? { status: patch.status } : {}),
+      ...(patch.nodeId ? { node_id: patch.nodeId } : {}),
+      ...(patch.waitpointId ? { waitpoint_id: patch.waitpointId } : {}),
+      version: patch.version + 1,
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await client.from('wf_execution_token')
+      .update(update)
+      .eq('id', tokenId)
+      .eq('version', patch.version)
+      .select('*')
+      .single();
+    if (error) throw new BadRequestException(error.message);
+    return mapExecutionToken(assertRecord(data, 'Workflow token update returned an invalid row.'));
+  }
+
+  async listExecutionTokens(processInstanceId: string, joinKey?: string) {
+    const client = this.client();
+    let request = client.from('wf_execution_token').select('*').eq('process_instance_id', processInstanceId);
+    if (joinKey) request = request.eq('join_key', joinKey);
+    const { data, error } = await request.order('created_at', { ascending: true });
+    if (error) throw new BadRequestException(error.message);
+    return (data ?? []).map((row) => mapExecutionToken(assertRecord(row, 'Workflow token list returned an invalid row.')));
+  }
+
+  async claimExecutionJoin(input: {
+    processInstanceId: string;
+    joinKey: string;
+    joinScopeId?: string;
+    tokenId: string;
+    expectedBranches: number;
+  }) {
+    const client = this.client();
+    const { data, error } = await client.rpc('workflow_claim_join', {
+      p_process_instance_id: input.processInstanceId,
+      p_join_key: input.joinKey,
+      p_join_scope_id: input.joinScopeId ?? null,
+      p_token_id: input.tokenId,
+      p_expected_branches: input.expectedBranches
+    });
+    if (error) throw new BadRequestException(error.message);
+    return data === true;
+  }
+
+  async appendExecutionEvent(input: {
+    id: string;
+    processInstanceId: string;
+    tokenId?: string;
+    eventType: string;
+    nodeId?: string;
+    payload: Record<string, unknown>;
+    idempotencyKey?: string;
+  }) {
+    const client = this.client();
+    const { data, error } = await client.from('wf_execution_event').insert({
+      id: input.id,
+      process_instance_id: input.processInstanceId,
+      token_id: input.tokenId ?? null,
+      event_type: input.eventType,
+      node_id: input.nodeId ?? null,
+      payload: input.payload,
+      idempotency_key: input.idempotencyKey ?? null
+    }).select('*').single();
+    if (error?.code === '23505' && input.idempotencyKey) {
+      const { data: existing, error: existingError } = await client
+        .from('wf_execution_event')
+        .select('*')
+        .eq('process_instance_id', input.processInstanceId)
+        .eq('idempotency_key', input.idempotencyKey)
+        .single();
+      if (existingError) throw new BadRequestException(existingError.message);
+      return mapExecutionEvent(assertRecord(existing, 'Workflow event lookup returned an invalid row.'));
+    }
+    if (error) throw new BadRequestException(error.message);
+    return mapExecutionEvent(assertRecord(data, 'Workflow execution event insert returned an invalid row.'));
+  }
+
+  async claimRecoveryCandidate(input: { instanceId: string; leaseSeconds: number }) {
+    const client = this.client();
+    const { data, error } = await client.rpc('workflow_claim_recovery_candidate', {
+      p_instance_id: input.instanceId,
+      p_lease_seconds: input.leaseSeconds
+    });
+    if (error) throw new BadRequestException(error.message);
+    return data === true;
+  }
+
+  async releaseRecoveryLease(instanceId: string, succeeded: boolean, error?: string) {
+    const { error: updateError } = await this.client()
+      .from('wf_process_instance')
+      .update({
+        recovery_status: succeeded ? 'succeeded' : 'failed',
+        recovery_lease_until: null,
+        last_recovery_error: error ?? null
+      })
+      .eq('id', instanceId);
+    if (updateError) throw new BadRequestException(updateError.message);
+  }
+
   private async listTaskAction(
     action: 'list_tasks' | 'list_todo_tasks' | 'list_done_tasks',
     actor: RuntimeActor | undefined,
@@ -376,6 +521,10 @@ export class SupabaseWorkflowRuntimeStore implements WorkflowRuntimeStore {
       status: query.status ?? null
     });
     return assertRecordArray(rows, 'Workflow runtime RPC returned an invalid task list.').map(mapTask);
+  }
+
+  private client() {
+    return isSupabaseService(this.persistence) ? this.persistence.client : this.persistence;
   }
 
   private async command(action: string, payload: JsonRecord) {
@@ -427,6 +576,37 @@ function readNestedRows(value: unknown) {
 
 function readOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function mapExecutionToken(row: JsonRecord): WorkflowExecutionTokenRecord {
+  return {
+    id: readRequiredString(row.id, 'id'),
+    processInstanceId: readRequiredString(row.process_instance_id, 'process_instance_id'),
+    ...(readOptionalString(row.parent_token_id) ? { parentTokenId: readOptionalString(row.parent_token_id) } : {}),
+    ...(readOptionalString(row.branch_id) ? { branchId: readOptionalString(row.branch_id) } : {}),
+    ...(readOptionalString(row.join_scope_id) ? { joinScopeId: readOptionalString(row.join_scope_id) } : {}),
+    nodeId: readRequiredString(row.node_id, 'node_id'),
+    status: readRequiredString(row.status, 'status') as WorkflowExecutionTokenRecord['status'],
+    ...(readOptionalString(row.join_key) ? { joinKey: readOptionalString(row.join_key) } : {}),
+    ...(readOptionalString(row.waitpoint_id) ? { waitpointId: readOptionalString(row.waitpoint_id) } : {}),
+    version: readNumber(row.version),
+    createdAt: toIso(row.created_at as string | Date | null | undefined) ?? '',
+    updatedAt: toIso(row.updated_at as string | Date | null | undefined) ?? ''
+  };
+}
+
+function mapExecutionEvent(row: JsonRecord): WorkflowExecutionEventRecord {
+  return {
+    id: readRequiredString(row.id, 'id'),
+    processInstanceId: readRequiredString(row.process_instance_id, 'process_instance_id'),
+    ...(readOptionalString(row.token_id) ? { tokenId: readOptionalString(row.token_id) } : {}),
+    sequence: readNumber(row.sequence),
+    eventType: readRequiredString(row.event_type, 'event_type'),
+    ...(readOptionalString(row.node_id) ? { nodeId: readOptionalString(row.node_id) } : {}),
+    payload: isRecord(row.payload) ? row.payload : {},
+    ...(readOptionalString(row.idempotency_key) ? { idempotencyKey: readOptionalString(row.idempotency_key) } : {}),
+    createdAt: toIso(row.created_at as string | Date | null | undefined) ?? ''
+  };
 }
 
 function readRequiredString(value: unknown, field: string) {

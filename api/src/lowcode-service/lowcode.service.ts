@@ -36,7 +36,8 @@ import {
 import {
   LowCodeSchemaValidationError,
   migrateLowCodePageSchema,
-  prepareLowCodePageSchema
+  prepareLowCodePageSchema,
+  type LowCodeBlockMaterialVersions
 } from './lowcode.schema';
 import {
   buildTableListPageSchemaFromMetadata,
@@ -51,7 +52,8 @@ export class LowCodeService extends BaseService {
     postData: Parameters<BaseService['execute']>[1],
     context: ServiceContext
   ) {
-    const prepared = this.preparePageWrite(postData);
+    const registeredMaterialVersions = await this.readPublishedPageMaterialVersions(postData, context);
+    const prepared = this.preparePageWrite(postData, registeredMaterialVersions);
     const result = await super.saveItem(prepared, context);
     if (readString(prepared.resource) !== 'lowcode_pages' || !this.isRecord(result)) {
       return result;
@@ -65,7 +67,10 @@ export class LowCodeService extends BaseService {
     };
   }
 
-  private preparePageWrite(postData: Parameters<BaseService['execute']>[1]) {
+  private preparePageWrite(
+    postData: Parameters<BaseService['execute']>[1],
+    registeredMaterialVersions?: LowCodeBlockMaterialVersions
+  ) {
     const resource = readString(postData.resource);
     if (resource !== 'lowcode_pages') return postData;
 
@@ -84,7 +89,7 @@ export class LowCodeService extends BaseService {
     let schema;
     try {
       this.assertRuntimeBlockArrays(normalizedData.schema);
-      schema = prepareLowCodePageSchema(normalizedData.schema);
+      schema = prepareLowCodePageSchema(normalizedData.schema, registeredMaterialVersions);
     } catch (error) {
       if (error instanceof LowCodeSchemaValidationError) {
         throw new BadRequestException({
@@ -100,6 +105,55 @@ export class LowCodeService extends BaseService {
 
     if (data === postData) return { ...normalizedData, schema };
     return { ...postData, data: { ...normalizedData, schema } };
+  }
+
+  private async readPublishedPageMaterialVersions(
+    postData: Parameters<BaseService['execute']>[1],
+    context: ServiceContext
+  ): Promise<LowCodeBlockMaterialVersions> {
+    const resource = readString(postData.resource);
+    const data = this.isRecord(postData.data) ? postData.data : postData;
+    if (resource !== 'lowcode_pages' || !Object.prototype.hasOwnProperty.call(data, 'schema')) {
+      return {};
+    }
+
+    const activeAccount = await requireActiveAccount(context);
+    const client = createSupabaseClient('admin', activeAccount.context);
+    const { data: rows, error } = await client
+      .from('lowcode_materials')
+      .select('code,material_version,aliases')
+      .eq('material_kind', 'page')
+      .eq('enabled', true)
+      .eq('status', 'published')
+      .limit(1000);
+
+    if (error) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'LOW_CODE_MATERIAL_REGISTRY_LOAD_FAILED',
+        error: 'Low-code material registry could not be loaded',
+        message: error.message
+      });
+    }
+
+    return this.toPageMaterialVersions(rows);
+  }
+
+  private toPageMaterialVersions(rows: unknown): LowCodeBlockMaterialVersions {
+    const versions: Record<string, string> = {};
+    for (const row of asRows(rows)) {
+      const code = readString(row.code);
+      if (!code) continue;
+      const version = readString(row.material_version) || '1.0.0';
+      versions[code] = version;
+      if (Array.isArray(row.aliases)) {
+        for (const alias of row.aliases) {
+          const normalizedAlias = readString(alias);
+          if (normalizedAlias) versions[normalizedAlias] = version;
+        }
+      }
+    }
+    return versions;
   }
 
   private normalizePageTableName(value: unknown) {

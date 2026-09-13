@@ -80,8 +80,12 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
     if (!isEntry && (incoming.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少入线。');
     if (node.type !== 'end' && (outgoing.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少出线。');
     if (node.type === 'condition' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, '条件节点至少需要两个分支。');
+    if ((node.type === 'parallel' || node.type === 'parallelJoin') && (incoming.get(node.id) ?? 0) < 2 && node.type === 'parallelJoin') {
+      push(issues, 'error', path, '并行汇聚节点至少需要两条入线。');
+    }
     if (node.type === 'parallel' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, '并行节点至少需要两个分支。');
-    if (!isEntry && node.type !== 'end' && node.type !== 'condition' && node.type !== 'parallel' && (outgoing.get(node.id) ?? 0) > 1) {
+    if (node.type === 'parallelJoin' && (outgoing.get(node.id) ?? 0) !== 1) push(issues, 'error', path, '并行汇聚节点必须只有一条出线。');
+    if (!isEntry && node.type !== 'end' && node.type !== 'condition' && node.type !== 'parallel' && node.type !== 'parallelJoin' && (outgoing.get(node.id) ?? 0) > 1) {
       push(issues, 'error', path, `${node.type} 节点只能有一条出线。`);
     }
   });
@@ -113,14 +117,11 @@ function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIs
   } else if (['task', 'triggerAndWait', 'batchTrigger', 'tool'].includes(node.type) && !taskType) {
     push(issues, 'error', `${path}.config.task.type`, `${node.type} 节点必须选择任务类型。`);
   }
-  if (taskType === 'registeredTask' && !task?.id?.trim()) {
-    push(issues, 'error', `${path}.config.task.id`, '已注册任务必须填写 Trigger.dev 任务 ID。');
-  }
   if (taskType === 'frontendCommand' && !task?.frontendFunction?.trim()) {
     push(issues, 'error', `${path}.config.task.frontendFunction`, '发送前端指令必须填写前端指令函数。');
   }
-  if (taskType === 'backendCommand' && !task?.backendFunction?.trim()) {
-    push(issues, 'error', `${path}.config.task.backendFunction`, '执行后端指令必须填写后端指令函数。');
+  if (taskType === 'backendCommand' && !task?.commandCode?.trim()) {
+    push(issues, 'error', `${path}.config.task.commandCode`, '执行后端指令必须填写已注册指令编码。');
   }
   if (taskType === 'storedProcedure') {
     if (!task?.procedureName?.trim()) {

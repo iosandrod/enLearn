@@ -78,6 +78,22 @@ export class DomainServiceRouter {
     });
   }
 
+  async invokeRegisteredCommand(
+    serviceName: string,
+    commandCode: string,
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const executor = this.resolveExecutor(serviceName);
+    if (!executor.executeRegisteredCommand) {
+      throw new BadRequestException(`Service ${serviceName} does not support registered workflow commands.`);
+    }
+    return executor.executeRegisteredCommand(commandCode, postData, {
+      ...context,
+      serviceName
+    });
+  }
+
   private resolveExecutor(serviceName: string): ServiceExecutor {
     if (!isDomainServiceName(serviceName)) {
       throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);

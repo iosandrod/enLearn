@@ -10,4 +10,10 @@ assert.doesNotMatch(controllerSource, /dev-impersonate|impersonateDevUser/);
 assert.doesNotMatch(dtoSource, /DevImpersonateAuthDto/);
 assert.doesNotMatch(serviceSource, /impersonateDevUser|generateLink|verifyOtp/);
 
-console.log('auth development impersonation route removal tests passed');
+assert.match(controllerSource, /@Get\('lowcode-materials'\)[\s\S]*listPublishedLowCodeMaterials\(\)/);
+assert.match(serviceSource, /async listPublishedLowCodeMaterials\(\)/);
+assert.match(serviceSource, /\.from\('lowcode_materials'\)/);
+assert.match(serviceSource, /\.eq\('enabled', true\)[\s\S]*\.eq\('status', 'published'\)/);
+assert.match(serviceSource, /\.order\('material_kind',[\s\S]*\.order\('sort_order',[\s\S]*\.order\('code',/);
+
+console.log('auth route regression tests passed');

@@ -28,6 +28,12 @@
       ],
       "@enlearn/trigger-workflow-editor/*": [
         "src/*"
+      ],
+      "@enlearn/workflow-schema": [
+        "../workflow-schema/src/index.ts"
+      ],
+      "@enlearn/workflow-schema/*": [
+        "../workflow-schema/src/*"
       ]
     }
   },

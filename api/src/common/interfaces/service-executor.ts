@@ -25,4 +25,9 @@ export interface ServiceExecutor {
     postData: Record<string, unknown>,
     context: ServiceContext
   ): Promise<unknown>;
+  executeRegisteredCommand?(
+    commandCode: string,
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ): Promise<unknown>;
 }

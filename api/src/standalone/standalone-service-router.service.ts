@@ -31,4 +31,16 @@ export class StandaloneServiceRouter {
       serviceName
     });
   }
+
+  invokeRegisteredCommand(
+    serviceName: string,
+    commandCode: string,
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    return this.domainRouter.invokeRegisteredCommand(serviceName, commandCode, postData, {
+      ...context,
+      serviceName
+    });
+  }
 }

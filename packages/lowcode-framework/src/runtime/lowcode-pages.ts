@@ -343,7 +343,6 @@ export async function ensureLowCodeEditPage(
     await linkEditPage(serviceApi, page, existingPage);
     return existingPage;
   }
-
   const schema = buildEmptyEditPageSchema(page);
   const data = buildEditPageSaveData(page, schema);
 

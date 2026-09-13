@@ -48,4 +48,7 @@ export type LowCodeCompiledMaterial = {
   styleId?: string;
 };
 
-export type LowCodeMaterialServiceApi = Pick<LowCodeHostServiceApi, 'invoke'>;
+export type LowCodeMaterialServiceApi = Pick<
+  LowCodeHostServiceApi,
+  'invoke' | 'listPublishedLowCodeMaterials'
+>;

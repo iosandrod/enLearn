@@ -525,11 +525,6 @@ import {
   normalizePageInfoDesignForm,
   type PageInfoDesignForm,
 } from '../utils/lowCodePageInfoDesign';
-import {
-  hydratePageInfoDesignSchema,
-  loadLowCodeFormDefinition,
-  PAGE_INFO_DESIGN_FORM_CODE,
-} from '../utils/lowCodeFormDefinitions';
 import type { DashboardTabCloseScope } from '../utils/dashboardTabs';
 import { getLowCodePage } from '../utils/lowCodePages';
 import type { AppAccountSummary } from '../composables/useAuthState';
@@ -1048,37 +1043,28 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
       code: pageCode,
       includeData: true,
     });
-    const pageManagement = await getLowCodePage(serviceApi, {
-      code: 'lowcode-pages',
-      includeData: false,
+    const editorPage = await getLowCodePage(serviceApi, {
+      code: 'lowcode-pages-edit',
+      includeData: true,
     });
-    const editorPage = await ensureLowCodeEditPage(serviceApi, pageManagement);
     const formBlock = editorPage.schema.blocks.find(
       (block) => block.kind === 'form',
     );
     if (!formBlock || formBlock.kind !== 'form') {
-      throw new Error('页面信息编辑页中没有可用的表单。');
+      throw new Error('lowcode-pages-edit 页面中没有可用的配置表单。');
     }
-    // The management edit page is only the dialog container. Its form can be
-    // customized independently, so always use the canonical page-info schema.
-    const pageInfoFormDefinition = await loadLowCodeFormDefinition(
-      serviceApi,
-      PAGE_INFO_DESIGN_FORM_CODE,
-    );
-    const formSchema = hydratePageInfoDesignSchema(
-      pageInfoFormDefinition.schema,
-      currentPage,
-    );
+
     const pageWithCurrentForm = structuredClone(editorPage);
-    const runtimeForm = pageWithCurrentForm.schema.blocks.find(
-      (block) => block.kind === 'form',
-    );
-    if (!runtimeForm || runtimeForm.kind !== 'form') {
-      throw new Error('页面信息编辑页中没有可用的表单。');
-    }
-    runtimeForm.schema = formSchema;
+    const runtimeForm = structuredClone(formBlock);
     runtimeForm.initialValues = createPageInfoDesignForm(currentPage);
+    runtimeForm.dataSource = undefined;
+    delete (runtimeForm as unknown as { sourceKey?: unknown }).sourceKey;
+    delete (runtimeForm as unknown as { submitSourceKey?: unknown }).submitSourceKey;
     runtimeForm.schema.actions = [];
+    pageWithCurrentForm.schema.blocks = [runtimeForm];
+    pageWithCurrentForm.schema.overlays = undefined;
+    pageWithCurrentForm.schema.dataSources = {};
+    delete pageWithCurrentForm.schema.visualEditor;
 
     const result = await confirmLowCodePage({
       page: pageWithCurrentForm,
@@ -1101,6 +1087,7 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
       },
     });
     if (result.action !== 'confirm' || !result.payload) return;
+
     const model = result.payload.formModels[runtimeForm.id];
     if (model) {
       const value = normalizePageInfoDesignForm(model as PageInfoDesignForm, currentPage);

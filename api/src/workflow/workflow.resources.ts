@@ -1,14 +1,34 @@
 import type { ResourceConfigMap } from '../common/base.service';
 
-function crudPermissions(permission: string) {
-  return { list: permission, create: permission, update: permission, delete: permission };
-}
-
-const definitionPermissions = crudPermissions('workflow.definitions.manage');
-const runtimePermissions = crudPermissions('workflow.runtime.manage');
-const runtimeReadPermissions = { list: 'workflow.runtime.manage' };
-
 export const workflowResources: ResourceConfigMap = {
+  wf_task_registry: {
+    tableName: 'wf_task_registry',
+    clientMode: 'admin',
+    accountField: 'account_id',
+    list: {
+      defaultSorts: [{ field: 'updated_at', direction: 'desc' }],
+      defaultPageSize: 200,
+      maxPageSize: 1000
+    },
+    create: {
+      allowedFields: [
+        'service_name', 'command_code', 'name', 'description', 'task_type',
+        'function_source', 'input_schema', 'output_schema', 'config',
+        'status', 'version', 'timeout_seconds'
+      ],
+      requiredFields: ['service_name', 'command_code', 'name', 'task_type'],
+      userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+    },
+    update: {
+      allowedFields: [
+        'service_name', 'command_code', 'name', 'description', 'task_type',
+        'function_source', 'input_schema', 'output_schema', 'config',
+        'status', 'version', 'timeout_seconds'
+      ],
+      userFields: { updatedBy: 'updated_by' }
+    },
+    delete: {}
+  },
   wf_model: {
     tableName: 'wf_model',
     clientMode: 'admin',
@@ -22,7 +42,6 @@ export const workflowResources: ResourceConfigMap = {
       'code', 'name', 'document_type', 'documentType',
       'draft_schema', 'draftSchema', 'schema'
     ],
-    permissions: definitionPermissions,
     defaults: {
       status: 'draft',
       current_version: 0
@@ -46,7 +65,6 @@ export const workflowResources: ResourceConfigMap = {
   wf_model_version: {
     tableName: 'wf_model_version',
     clientMode: 'user',
-    permissions: definitionPermissions,
     list: {
       defaultSorts: [{ field: 'version', direction: 'asc' }],
       defaultPageSize: 200,
@@ -68,7 +86,6 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_process_definition',
     clientMode: 'user',
     accountField: 'account_id',
-    permissions: definitionPermissions,
     list: {
       defaultSorts: [{ field: 'published_at', direction: 'desc' }],
       defaultPageSize: 200,
@@ -100,7 +117,6 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_process_instance',
     clientMode: 'user',
     accountField: 'account_id',
-    permissions: runtimePermissions,
     list: {
       defaultSorts: [{ field: 'started_at', direction: 'desc' }],
       defaultPageSize: 200,
@@ -133,7 +149,6 @@ export const workflowResources: ResourceConfigMap = {
   wf_node_instance: {
     tableName: 'wf_node_instance',
     clientMode: 'user',
-    permissions: runtimeReadPermissions,
     list: {
       defaultSorts: [
         { field: 'started_at', direction: 'asc', nulls: 'last' },
@@ -147,7 +162,6 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_task',
     clientMode: 'user',
     accountField: 'account_id',
-    permissions: runtimeReadPermissions,
     list: {
       defaultSorts: [{ field: 'created_at', direction: 'asc' }],
       defaultPageSize: 200,
@@ -170,7 +184,6 @@ export const workflowResources: ResourceConfigMap = {
       'retryPolicy', 'retry_policy', 'timeoutSeconds', 'timeout_seconds',
       'concurrencyKey', 'concurrency_key'
     ],
-    permissions: runtimePermissions,
     defaults: {
       status: 'draft',
       timezone: 'Asia/Shanghai',
@@ -218,7 +231,6 @@ export const workflowResources: ResourceConfigMap = {
     clientMode: 'admin',
     accountField: 'account_id',
     select: 'id, account_id, job_id, trigger_run_id, status, attempt, input, output, error_message, started_at, finished_at, created_at',
-    permissions: runtimePermissions,
     list: {
       defaultSorts: [{ field: 'created_at', direction: 'desc' }],
       defaultPageSize: 20,

@@ -2,10 +2,6 @@ import { isIP } from 'node:net';
 import { lookup } from 'node:dns/promises';
 import { getEnv } from '../../common/utils/env';
 import {
-  TRIGGER_TASK_CATALOG,
-  TRIGGER_WORKFLOW_REGISTERED_TASK_IDS
-} from './trigger-task-catalog';
-import {
   TRIGGER_WORKFLOW_ADAPTER_TASK_IDS,
   TRIGGER_WORKFLOW_RUNNER_TASK_ID
 } from './trigger-workflow.types';
@@ -15,9 +11,10 @@ const DEFAULT_ALLOWED_RPC_NAMES = [
   'planning_publish_plan_version'
 ] as const;
 
-const REGISTERED_WORKFLOW_QUEUES = new Set(
-  TRIGGER_TASK_CATALOG.flatMap((item) => item.queueNames ?? [])
-);
+const REGISTERED_WORKFLOW_QUEUES = new Set([
+  'trigger-workflow-jobs',
+  'planning-supply'
+]);
 const WORKFLOW_HTTP_DNS_CACHE_TTL_MS = 60_000;
 const workflowHttpDnsCache = new Map<
   string,
@@ -121,15 +118,20 @@ export function resolveAllowedWorkflowRpcName(
   return name;
 }
 
+/**
+ * A registeredTask is a database task reference, not a dynamic Trigger.dev
+ * task identifier. The value is retained as a command code for old workflow
+ * documents and is dispatched through the fixed backend adapter at runtime.
+ */
 export function assertWorkflowRegisteredTaskId(value: string) {
-  if (!TRIGGER_WORKFLOW_REGISTERED_TASK_IDS.includes(
-    value as (typeof TRIGGER_WORKFLOW_REGISTERED_TASK_IDS)[number]
-  )) {
-    throw new Error(
-      `Trigger.dev task "${value}" is not registered for workflow-node execution.`
-    );
+  const commandCode = value.trim();
+  if (!commandCode || !/^[A-Za-z0-9_.:-]+$/.test(commandCode)) {
+    throw new Error('Workflow database task requires a valid command code.');
   }
-  return value;
+  if (commandCode.startsWith('workflow.adapter.') || commandCode === TRIGGER_WORKFLOW_RUNNER_TASK_ID) {
+    throw new Error(`Trigger.dev task "${commandCode}" is not registered for workflow-node execution.`);
+  }
+  return commandCode;
 }
 
 export function assertTriggerWorkflowJobPayload(
@@ -220,8 +222,11 @@ export function assertTriggerWorkflowJobPayload(
         if (executorTaskId !== TRIGGER_WORKFLOW_ADAPTER_TASK_IDS[adapterType]) {
           throw new Error(`Workflow ${adapterType} adapter has an invalid executor Task ID.`);
         }
-        if (!readString(adapter.functionSource)) {
-          throw new Error(`Workflow ${adapterType} adapter requires functionSource.`);
+        if (adapterType === 'backendCommand' && !readString(adapter.commandCode)) {
+          throw new Error('Workflow backendCommand adapter requires commandCode.');
+        }
+        if (adapterType === 'frontendCommand' && !readString(adapter.functionSource)) {
+          throw new Error('Workflow frontendCommand adapter requires functionSource.');
         }
         break;
       }
@@ -234,8 +239,10 @@ export function assertTriggerWorkflowJobPayload(
           readString(adapter.procedureSchema) || 'public'
         );
         break;
-      case 'registeredTask':
-        assertWorkflowRegisteredTaskId(executorTaskId);
+      case 'humanTask':
+        if (executorTaskId !== TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.humanTask) {
+          throw new Error('Workflow humanTask adapter has an invalid executor Task ID.');
+        }
         break;
       default:
         throw new Error(`Unsupported Trigger workflow adapter type: ${adapterType || '(empty)'}.`);
@@ -267,6 +274,9 @@ const SUPPORTED_WORKFLOW_OPERATION_TYPES = new Set([
   'wait.for',
   'wait.until',
   'condition',
+  'parallel',
+  'parallelJoin',
+  'human.approval',
   'complete'
 ]);
 

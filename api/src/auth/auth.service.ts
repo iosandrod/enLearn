@@ -80,6 +80,44 @@ function toPublicSession(session: Session): PublicSession {
 
 @Injectable()
 export class AuthService {
+  async listPublishedLowCodeMaterials() {
+    const admin = createSupabaseClient('admin');
+    const { data, error } = await admin
+      .from('lowcode_materials')
+      .select([
+        'id',
+        'material_kind',
+        'code',
+        'label',
+        'description',
+        'category',
+        'renderer_type',
+        'source_path',
+        'source_text',
+        'source_hash',
+        'material_version',
+        'aliases',
+        'sort_order',
+        'manifest',
+        'dependencies',
+        'status',
+        'enabled',
+        'is_system'
+      ].join(','))
+      .eq('enabled', true)
+      .eq('status', 'published')
+      .order('material_kind', { ascending: true })
+      .order('sort_order', { ascending: true })
+      .order('code', { ascending: true })
+      .limit(100);
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return { materials: data ?? [] };
+  }
+
   async listLoginAccountOptions(login?: string) {
     const normalizedLogin = normalizeLoginEmail(login ?? '');
     if (!normalizedLogin) return { accounts: [] };

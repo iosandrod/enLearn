@@ -21,12 +21,10 @@ import {
   type TriggerWorkflowAdapterPayload
 } from './trigger-workflow.types';
 import {
-  assertWorkflowHttpTarget,
   getWorkflowCapabilityTimeoutMs,
   getWorkflowHttpMaxResponseBytes,
   getWorkflowInternalKey,
-  resolveAllowedWorkflowRpcName,
-  resolveWorkflowHttpUrl
+  resolveAllowedWorkflowRpcName
 } from './trigger-workflow-policy';
 import {
   createTriggerWorkflowSupabaseClient,
@@ -101,47 +99,50 @@ export async function executeBackendCommandAdapter(
   input: TriggerWorkflowAdapterPayload,
   dependencies: {
     fetch?: typeof fetch;
-    supabase?: SupabaseClient;
-    assertHttpTarget?: typeof assertWorkflowHttpTarget;
   } = {}
 ) {
   assertAdapterType(input, 'backendCommand');
-  const functionSource = readRequiredString(input.adapter.functionSource, 'adapter.functionSource');
-  const fetchImplementation = dependencies.fetch ?? fetch;
-  const capabilityTimeoutMs = getWorkflowCapabilityTimeoutMs(input.adapter.timeoutSeconds);
-  const supabase = dependencies.supabase ?? createTriggerWorkflowSupabaseClient(
-    TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand
-  );
+  if (input.adapter.commandCode?.trim()) {
+    return executeRegisteredBackendCommand(
+      dependencies.fetch ?? fetch,
+      input,
+      input.adapter.commandCode.trim(),
+      getWorkflowCapabilityTimeoutMs(input.adapter.timeoutSeconds)
+    );
+  }
+  throw new Error('Backend command adapter requires a database-registered commandCode.');
+}
 
-  return executeTriggerWorkflowFunction(
-    functionSource,
-    scriptSnapshot(input),
-    async (name, args) => {
-      switch (name) {
-        case 'http.request':
-          return executeHttpRequest(
-            fetchImplementation,
-            args,
-            capabilityTimeoutMs,
-            dependencies.assertHttpTarget
-          );
-        case 'supabase.rpc':
-          return executeSupabaseRpc(supabase, args);
-        case 'supabase.operation':
-          return executeSupabaseOperation(supabase, args);
-        case 'baseService.invoke':
-          return executeBaseServiceInvoke(
-            fetchImplementation,
-            input,
-            args,
-            capabilityTimeoutMs
-          );
-        default:
-          throw new Error(`Unsupported backend workflow capability: ${name}.`);
-      }
+async function executeRegisteredBackendCommand(
+  fetchImplementation: typeof fetch,
+  input: TriggerWorkflowAdapterPayload,
+  commandCode: string,
+  timeoutMs: number
+) {
+  const env = getEnv();
+  const apiBaseUrl = String(env.WORKFLOW_INTERNAL_API_URL ?? env.API_BASE_URL ?? 'http://127.0.0.1:3002/api')
+    .replace(/\/+$/, '');
+  const response = await fetchWithTimeout(fetchImplementation, `${apiBaseUrl}/internal/workflow-command`, {
+    method: 'POST',
+    redirect: 'error',
+    headers: {
+      'content-type': 'application/json',
+      'x-workflow-internal-key': getWorkflowInternalKey()
     },
-    Math.max(1, input.adapter.timeoutSeconds ?? 30) * 1000
-  );
+    body: JSON.stringify({
+      commandCode,
+      postData: input.payload,
+      context: {
+        accountId: input.tenantId,
+        userId: input.userId,
+        requestId: `workflow:${input.runId}:${input.operationId}`
+      }
+    })
+  }, timeoutMs);
+  const text = await readBoundedResponseText(response, getWorkflowHttpMaxResponseBytes());
+  const parsed = parseResponseBody(text);
+  if (!response.ok) throw new Error(`Registered backend command ${commandCode} failed with HTTP ${response.status}: ${text}`);
+  return isRecord(parsed) && 'data' in parsed ? parsed.data : parsed;
 }
 
 export async function executeStoredProcedureAdapter(
@@ -221,151 +222,6 @@ function readFrontendCommandTarget(
   throw new Error('Frontend command requires a target userId or socketId.');
 }
 
-async function executeHttpRequest(
-  fetchImplementation: typeof fetch,
-  args: unknown[],
-  timeoutMs: number,
-  assertHttpTarget: typeof assertWorkflowHttpTarget = assertWorkflowHttpTarget
-) {
-  const url = resolveWorkflowHttpUrl(readRequiredString(args[0], 'http.request url'));
-  await assertHttpTarget(url);
-  const rawInit = isRecord(args[1]) ? args[1] : {};
-  const method = (readString(rawInit.method) || 'GET').toUpperCase();
-  if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    throw new Error(`Unsupported workflow HTTP method: ${method}.`);
-  }
-  const headers = isRecord(rawInit.headers)
-    ? Object.fromEntries(Object.entries(rawInit.headers).map(([key, value]) => [key, String(value)]))
-    : {};
-  assertSafeWorkflowHeaders(headers);
-  const body = rawInit.body;
-  const response = await fetchWithTimeout(fetchImplementation, url, {
-    method,
-    redirect: 'error',
-    headers: {
-      ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
-      ...headers
-    },
-    ...(body !== undefined
-      ? { body: typeof body === 'string' ? body : JSON.stringify(body) }
-      : {})
-  }, timeoutMs);
-  const text = await readBoundedResponseText(response, getWorkflowHttpMaxResponseBytes());
-  const parsed = parseResponseBody(text);
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
-  return parsed;
-}
-
-async function executeSupabaseRpc(client: SupabaseClient, args: unknown[]) {
-  const name = resolveAllowedWorkflowRpcName(
-    readRequiredString(args[0], 'supabase.rpc name')
-  );
-  const parameters = isRecord(args[1]) ? args[1] : {};
-  return executeTriggerWorkflowRpc(client, name, parameters);
-}
-
-type SupabaseOperation =
-  | { kind: 'property'; name: string }
-  | { kind: 'method'; name: string; args: unknown[] };
-
-async function executeSupabaseOperation(client: SupabaseClient, args: unknown[]) {
-  if (!Array.isArray(args) || !args.length) {
-    throw new Error('supabase.operation requires a non-empty operation path.');
-  }
-
-  const path = args[0];
-  if (!Array.isArray(path)) {
-    throw new Error('supabase.operation path must be an array.');
-  }
-
-  let current: unknown = client;
-  for (const rawOperation of path) {
-    const operation = assertSupabaseOperation(rawOperation);
-    if (operation.kind === 'property') {
-      if (current === null || current === undefined) {
-        throw new Error(`Supabase property "${operation.name}" cannot be read.`);
-      }
-      current = (current as Record<string, unknown>)[operation.name];
-      continue;
-    }
-
-    if (current === null || current === undefined) {
-      throw new Error(`Supabase method "${operation.name}" has no receiver.`);
-    }
-    const method = (current as Record<string, unknown>)[operation.name];
-    if (typeof method !== 'function') {
-      throw new Error(`Supabase method "${operation.name}" is not available.`);
-    }
-
-    if (operation.name === 'rpc') {
-      const rpcName = resolveAllowedWorkflowRpcName(
-        readRequiredString(operation.args[0], 'supabase.rpc name')
-      );
-      const parameters = isRecord(operation.args[1]) ? operation.args[1] : {};
-      current = await executeTriggerWorkflowRpc(
-        current as SupabaseClient,
-        rpcName,
-        parameters
-      );
-      continue;
-    }
-
-    current = method.apply(current, operation.args);
-  }
-
-  return await Promise.resolve(current);
-}
-
-function assertSupabaseOperation(value: unknown): SupabaseOperation {
-  const operation = assertRecord(value, 'supabase.operation contains an invalid operation.');
-  const kind = readString(operation.kind);
-  const name = readRequiredString(operation.name, 'supabase operation name');
-  if (kind === 'property') return { kind, name };
-  if (kind === 'method') {
-    if (!Array.isArray(operation.args)) {
-      throw new Error(`Supabase method "${name}" arguments must be an array.`);
-    }
-    return { kind, name, args: operation.args };
-  }
-  throw new Error(`Unsupported Supabase operation kind: ${kind || 'unknown'}.`);
-}
-
-async function executeBaseServiceInvoke(
-  fetchImplementation: typeof fetch,
-  input: TriggerWorkflowAdapterPayload,
-  args: unknown[],
-  timeoutMs: number
-) {
-  const serviceName = readRequiredString(args[0], 'baseService serviceName');
-  const serviceMethod = readRequiredString(args[1], 'baseService serviceMethod');
-  const postData = isRecord(args[2]) ? args[2] : {};
-  const env = getEnv();
-  const apiBaseUrl = String(env.WORKFLOW_INTERNAL_API_URL ?? env.API_BASE_URL ?? 'http://127.0.0.1:3002/api')
-    .replace(/\/+$/, '');
-  const response = await fetchWithTimeout(fetchImplementation, `${apiBaseUrl}/internal/service`, {
-    method: 'POST',
-    redirect: 'error',
-    headers: {
-      'content-type': 'application/json',
-      'x-workflow-internal-key': getWorkflowInternalKey()
-    },
-    body: JSON.stringify({
-      serviceName,
-      serviceMethod,
-      postData,
-      context: {
-        accountId: input.tenantId,
-        userId: input.userId,
-        requestId: `workflow:${input.runId}:${input.operationId}`
-      }
-    })
-  }, timeoutMs);
-  const text = await readBoundedResponseText(response, getWorkflowHttpMaxResponseBytes());
-  const parsed = parseResponseBody(text);
-  if (!response.ok) throw new Error(`Internal service ${response.status}: ${text}`);
-  return isRecord(parsed) && 'data' in parsed ? parsed.data : parsed;
-}
-
 function parseResponseBody(text: string): unknown {
   if (!text) return {};
   try {
@@ -425,16 +281,4 @@ async function readBoundedResponseText(response: Response, maxBytes: number) {
     offset += chunk.byteLength;
   }
   return new TextDecoder().decode(bytes);
-}
-
-function assertSafeWorkflowHeaders(headers: Record<string, string>) {
-  const blocked = new Set([
-    'authorization',
-    'cookie',
-    'host',
-    'proxy-authorization',
-    'x-workflow-internal-key'
-  ]);
-  const invalid = Object.keys(headers).find((name) => blocked.has(name.toLowerCase()));
-  if (invalid) throw new Error(`Workflow HTTP header is not allowed: ${invalid}.`);
 }

@@ -34,6 +34,21 @@ export class ServiceRpcController {
   @MessagePattern(SERVICE_EXECUTE_PATTERN)
   async execute(@Payload() request: ServiceBusRequest): Promise<ServiceBusResponse> {
     try {
+      if (request.serviceMethod === '__workflow_registered_command__') {
+        const commandCode = typeof request.postData?.__commandCode === 'string'
+          ? request.postData.__commandCode
+          : '';
+        const { __commandCode: _ignored, ...postData } = request.postData ?? {};
+        return {
+          success: true,
+          data: await this.router.invokeRegisteredCommand(
+            request.serviceName,
+            commandCode,
+            postData,
+            request.context
+          )
+        };
+      }
       return {
         success: true,
         data: await this.router.invoke(

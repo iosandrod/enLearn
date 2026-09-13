@@ -30,6 +30,25 @@ export default {
   key: 'lowcode-edit-form',
   moduleName: 'businessComponents',
   label: '编辑表单',
+  defaultProps: {
+    blockId: 'edit-form',
+    formType: 'edit',
+    title: '编辑信息',
+    sourceKey: '',
+    submitSourceKey: '',
+    serviceName: 'admin',
+    serviceMethod: 'listItems',
+    saveMethod: 'saveItem',
+    postDataJson: {},
+    initialValuesJson: {},
+    submitText: '保存',
+    resetText: '重置',
+    formActions: [
+      { code: 'submit', label: '保存', status: 'primary', type: 'submit', eventName: 'form.submit', directivesJson: [] },
+      { code: 'reset', label: '重置', type: 'reset', eventName: 'form.reset', directivesJson: [] },
+    ],
+    fields: [],
+  },
   preview: () => (
     <div style={{ width: '220px', border: '1px solid #dcdfe6', minHeight: '100px', borderRadius: '6px', padding: '10px', background: '#fff' }}>
       {renderFields([])}

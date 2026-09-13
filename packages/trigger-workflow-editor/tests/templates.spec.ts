@@ -95,7 +95,7 @@ const taskKindsWorkflow: TriggerWorkflowModel = {
       config: {
         task: {
           type: 'backendCommand',
-          backendFunction: 'async ({ context }) => context.http.get("/health")'
+          commandCode: 'coverage.echo_this_service'
         }
       }
     },
@@ -115,7 +115,7 @@ const taskKindsWorkflow: TriggerWorkflowModel = {
       id: 'registered',
       type: 'task',
       name: 'Registered',
-      config: { task: { type: 'registeredTask', id: 'custom.registered' } }
+      config: { task: { type: 'backendCommand', commandCode: 'custom.registered' } }
     },
     { id: 'end', type: 'end', name: 'End' }
   ],
@@ -128,7 +128,7 @@ const taskKindsWorkflow: TriggerWorkflowModel = {
   ]
 };
 const taskKindsPlan = compileTriggerWorkflow(taskKindsWorkflow);
-assert.deepEqual(taskKindsPlan.taskIds, ['custom.registered']);
+assert.deepEqual(taskKindsPlan.taskIds, ['coverage.echo_this_service', 'custom.registered']);
 assert.equal(
   taskKindsPlan.operations.find((operation) => operation.nodeId === 'procedure')?.task?.procedureName,
   'publish_plan'
@@ -156,8 +156,42 @@ const normalizedLegacyWorkflow = normalizeTriggerWorkflow({
 });
 assert.equal(
   normalizedLegacyWorkflow.nodes.find((node) => node.id === 'registered')?.config?.task?.type,
-  'registeredTask'
+  'backendCommand'
 );
+
+const normalizedGeneratedLegacyWorkflow = normalizeTriggerWorkflow({
+  schemaVersion: 1,
+  code: 'trigger_workflow_legacy',
+  name: 'Legacy generated task ID',
+  kind: 'custom',
+  nodes: [
+    { id: 'start', type: 'start', name: 'Start' },
+    {
+      id: 'task_1',
+      type: 'task',
+      name: 'Task',
+      config: {
+        task: {
+          type: 'backendCommand',
+          id: 'trigger_workflow_legacy.task_1',
+          failureStrategy: 'failWorkflow'
+        }
+      }
+    },
+    { id: 'end', type: 'end', name: 'End' }
+  ],
+  edges: [
+    { id: 'e1', source: 'start', target: 'task_1' },
+    { id: 'e2', source: 'task_1', target: 'end' }
+  ]
+});
+const normalizedGeneratedTask = normalizedGeneratedLegacyWorkflow.nodes.find(
+  (node) => node.id === 'task_1'
+)?.config?.task;
+assert.equal(normalizedGeneratedTask?.type, 'backendCommand');
+assert.equal(normalizedGeneratedTask?.id, undefined);
+assert.equal(normalizedGeneratedTask?.commandCode, 'trigger_workflow_legacy.task_1');
+assert.doesNotThrow(() => assertValidTriggerWorkflow(normalizedGeneratedLegacyWorkflow));
 
 const normalizedTypedWorkflow = normalizeTriggerWorkflow({
   ...taskKindsWorkflow,
@@ -170,7 +204,7 @@ const normalizedTypedWorkflow = normalizeTriggerWorkflow({
               type: 'frontendCommand',
               id: 'stale.registered.task',
               importPath: './stale-task',
-              backendFunction: 'async () => null',
+              commandCode: 'coverage.echo_this_service',
               procedureName: 'stale_procedure',
               frontendFunction: 'async () => ({ code: "message.show" })'
             }
@@ -184,7 +218,7 @@ const normalizedFrontendTask = normalizedTypedWorkflow.nodes.find(
 )?.config?.task;
 assert.equal(normalizedFrontendTask?.id, undefined);
 assert.equal(normalizedFrontendTask?.importPath, undefined);
-assert.equal(normalizedFrontendTask?.backendFunction, undefined);
+assert.equal(normalizedFrontendTask?.commandCode, undefined);
 assert.equal(normalizedFrontendTask?.procedureName, undefined);
 assert.match(normalizedFrontendTask?.frontendFunction ?? '', /message\.show/);
 

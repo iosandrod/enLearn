@@ -13,6 +13,8 @@ import {
 } from '../lowcode/builtin-pages';
 import { getLowCodePage } from './lowcode-pages';
 import type {
+  LowCodePageBlock,
+  LowCodePageFormBlock,
   LowCodePageRecord,
   LowCodeRuntimeEvent,
 } from '../types/lowcode';
@@ -99,6 +101,7 @@ export type LowCodePageConfirmPayload = {
   event?: LowCodeRuntimeEvent;
   lastEvent?: LowCodeRuntimeEvent;
   events: LowCodeRuntimeEvent[];
+  savedRecord?: Record<string, unknown>;
   blockId?: string;
   blockKind?: string;
 };
@@ -108,6 +111,8 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
   cancelLabel?: string;
   confirmAction?: string;
   submitOnConfirm?: boolean;
+  formInitialValues?: Record<string, Record<string, unknown>>;
+  disableFormAutoLoad?: boolean;
   includeEventHistory?: boolean;
   maxEventHistory?: number;
   onRuntimeEvent?: (
@@ -124,6 +129,7 @@ export type LowCodePageConfirmDialogResult =
 type LowCodePageRendererExpose = {
   getSnapshot: () => LowCodePageConfirmSnapshot;
   submitForms: () => Promise<boolean>;
+  getLastSavedFormRecord: () => Record<string, unknown> | undefined;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -253,6 +259,70 @@ function cloneRows(value: Record<string, unknown>[]) {
   return value.map((row) => ({ ...row }));
 }
 
+function cloneValue<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function prepareConfirmPage(
+  page: LowCodePageRecord,
+  config: LowCodePageConfirmDialogConfig,
+) {
+  const initialValues = config.formInitialValues ?? {};
+  if (!Object.keys(initialValues).length && !config.disableFormAutoLoad) return page;
+
+  const prepareBlocks = (blocks: LowCodePageBlock[]): LowCodePageBlock[] => blocks.map((block) => {
+    if (block.kind === 'form') {
+      const values = initialValues[block.id];
+      return {
+        ...block,
+        ...(values
+          ? {
+              initialValues: {
+                ...(block.initialValues ?? {}),
+                ...cloneValue(values),
+              },
+            }
+          : {}),
+        ...(config.disableFormAutoLoad && block.dataSource
+          ? {
+              dataSource: {
+                ...block.dataSource,
+                autoLoad: false,
+              },
+            }
+          : {}),
+      } satisfies LowCodePageFormBlock;
+    }
+    if (block.kind === 'tabs') {
+      return {
+        ...block,
+        tabs: block.tabs.map((tab) => ({ ...tab, blocks: prepareBlocks(tab.blocks) })),
+      };
+    }
+    if (block.kind === 'section' || block.kind === 'container') {
+      return { ...block, blocks: prepareBlocks(block.blocks) };
+    }
+    if (block.kind === 'modal' || block.kind === 'drawer') {
+      return { ...block, blocks: prepareBlocks(block.blocks) };
+    }
+    return block;
+  });
+
+  return {
+    ...page,
+    schema: {
+      ...page.schema,
+      dataSources: config.disableFormAutoLoad
+        ? Object.fromEntries(Object.entries(page.schema.dataSources ?? {}).map(([key, source]) => [
+            key,
+            { ...source, autoLoad: false },
+          ]))
+        : page.schema.dataSources,
+      blocks: prepareBlocks(page.schema.blocks),
+    },
+  };
+}
+
 function createReferencePayload(
   row: Record<string, unknown>,
   event: LowCodeRuntimeEvent,
@@ -368,7 +438,7 @@ export async function openLowCodePageReferenceDialog(
 export async function openLowCodePageConfirmDialog(
   config: LowCodePageConfirmDialogConfig,
 ): Promise<LowCodePageConfirmDialogResult> {
-  const page = await resolveReferencePage(config);
+  const page = prepareConfirmPage(await resolveReferencePage(config), config);
   const resultAction = readString(config.confirmAction ?? config.resultAction, 'confirm');
   const requireSelection = config.requireSelection === true;
   const includeEventHistory = config.includeEventHistory !== false;
@@ -400,6 +470,9 @@ export async function openLowCodePageConfirmDialog(
       rows: cloneRows(rows),
       ...(lastEvent ? { event: lastEvent, lastEvent } : {}),
       events: [...events],
+      ...(rendererRef.value?.getLastSavedFormRecord()
+        ? { savedRecord: cloneRecord(rendererRef.value.getLastSavedFormRecord()) }
+        : {}),
       ...(lastEvent?.blockId ? { blockId: lastEvent.blockId } : {}),
       ...(lastEvent?.blockKind ? { blockKind: lastEvent.blockKind } : {}),
     };

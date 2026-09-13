@@ -1,4 +1,7 @@
-import ScriptRuntimeWorker from './script-runtime.worker.ts?worker&inline';
+// Keep this worker as a standalone HTTP asset. QuickJS resolves its emitted
+// WASM file against self.location.href, which is not a valid URL base when
+// Vite inlines the worker as a blob: or data: URL in production builds.
+import ScriptRuntimeWorker from './script-runtime.worker.ts?worker';
 
 export const DEFAULT_LOW_CODE_SCRIPT_TIMEOUT_MS = 2_000;
 export const DEFAULT_LOW_CODE_SCRIPT_STARTUP_TIMEOUT_MS = 15_000;
@@ -592,6 +595,87 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
         },
       }));
     });
+  };
+}
+
+/**
+ * Development-only executor for debugging scripts in the browser DevTools.
+ * Callers must gate registration behind an explicit local-development flag.
+ */
+export function createLowCodeBrowserScriptExecutor(): LowCodeScriptExecutor {
+  return async (request, handleCapability) => {
+    let capabilityId = 0;
+    const call = async (name: LowCodeScriptCapabilityName, ...args: unknown[]) => {
+      const serializedArgs = toLowCodeScriptSerializable(args);
+      const requestArgs = Array.isArray(serializedArgs) ? serializedArgs : [];
+      return handleCapability({ id: ++capabilityId, name, args: requestArgs });
+    };
+    const context = toLowCodeScriptSerializable(request.context) as LowCodeScriptContextSnapshot;
+    const scriptThis = Object.freeze({
+      context,
+      page: context.page,
+      route: context.route,
+      data: context.data,
+      forms: context.forms,
+      searches: context.searches,
+      grids: context.grids,
+      event: context.event,
+      $api: Object.freeze({
+        invoke: (name: string, payload = {}) => call('api.invoke', name, payload),
+      }),
+      $form: Object.freeze({
+        get: (blockId: string) => context.forms[blockId],
+        patch: (blockId: string, values: Record<string, unknown>) => call('form.patch', blockId, values),
+        replace: (blockId: string, values: Record<string, unknown>) => call('form.replace', blockId, values),
+      }),
+      $grid: Object.freeze({
+        get: (blockId: string) => context.grids[blockId],
+        setRows: (blockId: string, rows: unknown[]) => call('grid.setRows', blockId, rows),
+      }),
+      $search: Object.freeze({
+        get: (sourceKey: string) => context.searches[sourceKey],
+        patch: (sourceKey: string, values: Record<string, unknown>) => call('search.patch', sourceKey, values),
+        replace: (sourceKey: string, values: Record<string, unknown>) => call('search.replace', sourceKey, values),
+      }),
+      $source: Object.freeze({
+        get: (sourceKey: string) => context.data[sourceKey],
+        set: (sourceKey: string, value: unknown) => call('source.set', sourceKey, value),
+        refresh: (sourceKey: string) => call('source.refresh', sourceKey),
+        refreshAll: () => call('source.refreshAll'),
+      }),
+      $page: Object.freeze({ refresh: () => call('page.refresh') }),
+      $router: Object.freeze({ push: (to: unknown) => call('router.push', to) }),
+      $message: Object.freeze({
+        success: (value: string) => call('message.success', value),
+        info: (value: string) => call('message.info', value),
+        warning: (value: string) => call('message.warning', value),
+        error: (value: string) => call('message.error', value),
+      }),
+      $node: Object.freeze({
+        call: (command: string, payload = {}) => call('node.runtime', command, payload),
+      }),
+      $dialog: Object.freeze({
+        confirmLowCodePage: (config: unknown) => call('dialog.confirmLowCodePage', config),
+        open: (config: unknown) => call('dialog.open', config),
+      }),
+      $events: Object.freeze({
+        emit: (name: string, payload = {}) => call('event.emit', name, payload),
+      }),
+      executeAction: (options: Record<string, unknown>) => call('action.execute', options),
+      executeHttp: (options: Record<string, unknown>) => call('http.execute', options),
+      executeFunction: (options: Record<string, unknown>) => call('pageFunction.execute', options),
+    });
+    const functionSource = request.executionMode === 'function'
+      ? `const __configuredFunction = (\n${request.script.trim().replace(/;\s*$/, '')}\n);\nif (typeof __configuredFunction !== 'function') throw new TypeError('Configured value must be a function.');\nreturn await __configuredFunction.call(this, this.event);`
+      : `"use strict";\n${request.script}\nif (typeof main === 'function') return await main.call(this, this.event);`;
+    const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as new (...args: string[]) => (...args: unknown[]) => Promise<unknown>;
+    const userScript = new AsyncFunction('console', functionSource);
+    const value = await userScript.call(scriptThis, console);
+    return {
+      value: toLowCodeScriptSerializable(value),
+      apiCalls: capabilityId,
+      durationMs: 0,
+    };
   };
 }
 

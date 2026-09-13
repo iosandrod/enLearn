@@ -1,19 +1,30 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
-const migration = await readFile(
-  new URL('../../supabase/migrations/20260813130000_trigger_workflow_inspector_forms.sql', import.meta.url),
-  'utf8',
-);
-const scheduleMigration = await readFile(
-  new URL('../../supabase/migrations/20260815120000_trigger_workflow_schedule_sub_form.sql', import.meta.url),
-  'utf8',
-);
-const webhookMigration = await readFile(
-  new URL('../../supabase/migrations/20260815130000_trigger_workflow_webhook_service_form.sql', import.meta.url),
-  'utf8',
-);
+async function readMigration(name) {
+  const candidates = [
+    new URL(`../../supabase/migrations/${name}`, import.meta.url),
+    new URL(`../../artifacts/migration-backups/migrations-20260907-174149/supabase-migrations/${name}`, import.meta.url),
+  ];
+  for (const candidate of candidates) {
+    try {
+      await access(candidate);
+      return readFile(candidate, 'utf8');
+    } catch {
+      // The historical baseline may be archived from the active migrations directory.
+    }
+  }
+  throw new Error(`Unable to locate migration ${name}`);
+}
+
+const [migration, scheduleMigration, webhookMigration, parallelJoinMigration] = await Promise.all([
+  readMigration('20260813130000_trigger_workflow_inspector_forms.sql'),
+  readMigration('20260815120000_trigger_workflow_schedule_sub_form.sql'),
+  readMigration('20260815130000_trigger_workflow_webhook_service_form.sql'),
+  readMigration('20260909040000_trigger_workflow_parallel_join_inspector.sql'),
+]);
+const inspectorMigrations = `${migration}\n${parallelJoinMigration}`;
 const designer = await readFile(
   new URL('../pages/dashboard/trigger-workflow/designer.vue', import.meta.url),
   'utf8',
@@ -59,14 +70,18 @@ const compiledFormDefinitions = ts.transpileModule(formDefinitionSource, {
 const formDefinitionsUrl = `data:text/javascript;base64,${Buffer.from(compiledFormDefinitions).toString('base64')}`;
 const formDefinitions = await import(formDefinitionsUrl);
 
-assert.equal(inspector.triggerInspectorNodeTypes.length, 18);
-assert.equal(Object.keys(inspector.triggerNodeFormSchemaCodeByType).length, 18);
+assert.equal(inspector.triggerInspectorNodeTypes.length, 19);
+assert.equal(Object.keys(inspector.triggerNodeFormSchemaCodeByType).length, 19);
 
 for (const type of inspector.triggerInspectorNodeTypes) {
   const code = inspector.triggerNodeFormSchemaCodeByType[type];
   assert.match(code, /^[a-z][a-z0-9._-]*$/);
-  assert.match(migration, new RegExp(`'${code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
+  assert.match(inspectorMigrations, new RegExp(`'${code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
 }
+
+assert.match(parallelJoinMigration, /'trigger-workflow\.node\.parallel-join'/);
+assert.match(parallelJoinMigration, /'trigger-workflow\.node\.parallel'/);
+assert.match(parallelJoinMigration, /['"]field['"], 'joinKey'/);
 
 assert.match(migration, /'trigger-workflow\.edge'/);
 assert.match(migration, /on conflict \(code\) do update set/g);

@@ -99,7 +99,8 @@ function canRefreshForPath(apiPath: string) {
   return !apiPath.startsWith('/auth/refresh') &&
     !apiPath.startsWith('/auth/signin') &&
     !apiPath.startsWith('/auth/signup') &&
-    !apiPath.startsWith('/auth/account-options');
+    !apiPath.startsWith('/auth/account-options') &&
+    !apiPath.startsWith('/auth/lowcode-materials');
 }
 
 function resolveRequestMethod(
@@ -190,7 +191,8 @@ export async function authenticatedFetchResponse(
     accountId &&
     !headers.has('X-Account-Id') &&
     !apiPath.startsWith('/auth/select-account') &&
-    !apiPath.startsWith('/auth/account-options')
+    !apiPath.startsWith('/auth/account-options') &&
+    !apiPath.startsWith('/auth/lowcode-materials')
   ) {
     headers.set('X-Account-Id', accountId);
   }

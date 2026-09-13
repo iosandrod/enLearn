@@ -1,4 +1,4 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
@@ -115,10 +115,13 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       runtime.pageType = pageType;
     },
   );
+  const editPageModeEnabled = inject(lowCodeEditPageModeScopeKey, true);
   runtime.state.status.formMode =
-    props.page.page_type === 'edit'
+    props.page.page_type === 'edit' && editPageModeEnabled
       ? resolveLowCodeEditPageMode(host.getRoute().query?.id)
-      : 'scan';
+      : props.page.page_type === 'edit'
+        ? 'edit'
+        : 'scan';
   provide(lowCodePageRuntimeKey, runtime);
   provide(lowCodeEditPageModeScopeKey, true);
 
@@ -210,6 +213,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     message,
     messageClass,
     builtinPageFunctionMode,
+    editPageModeEnabled,
     formBaselines,
     sourceRequestVersions,
     getDataSource,
@@ -337,6 +341,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       gridStates: cloneRuntimeValue(gridStates.value),
     }),
     submitForms,
+    getLastSavedFormRecord: pageDataController.getLastSavedFormRecord,
   };
 
   const page = computed(() => props.page);
@@ -730,14 +735,20 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     const eventAction = isRecord(event.payload?.action) ? event.payload.action : undefined;
     const actionScript = readString(event.payload?.script ?? eventAction?.script);
     const isButtonActionEvent = event.blockKind === 'buttonGroup' || event.blockKind === 'toolbar';
-    if (isButtonActionEvent && eventAction && !actionScript && event.payload?.scriptExecuted !== true) {
+    const directives = resolveEventDirectives(event, props.page.schema.eventHandlers);
+    if (
+      isButtonActionEvent &&
+      eventAction &&
+      !actionScript &&
+      directives.length === 0 &&
+      event.payload?.scriptExecuted !== true
+    ) {
       const label = readString(eventAction.label ?? eventAction.code) || '当前按钮';
       reportButtonRuntimeError(new Error(`按钮“${label}”未配置脚本。`));
       return;
     }
 
     let eventSucceeded = true;
-    const directives = resolveEventDirectives(event, props.page.schema.eventHandlers);
     const executionContext: RuntimeDirectiveExecutionContext = {
       mesCommandStarted: false,
       mesCommandCompleted: false,
@@ -765,6 +776,29 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
           eventSucceeded = false;
           reportRuntimeDirectiveError(error);
         }
+      }
+
+      // Older grid pages model refresh as a grid toolbar action without a
+      // script or explicit refresh directive. The grid material publishes
+      // `grid.toolbarClick`, so there is no toolbarAction callback to trigger
+      // the legacy full-page refresh. Preserve that behavior here while
+      // allowing configured directives/scripts to own the refresh.
+      if (
+        eventSucceeded &&
+        event.name === 'grid.toolbarClick' &&
+        readString(event.payload?.actionCode ?? eventAction?.code) === 'refresh' &&
+        !actionScript &&
+        !directives.some((directive) =>
+          !directive.disabled && [
+            'refreshDataSource',
+            'refreshDataSources',
+            'refreshPage',
+          ].includes(directive.type.trim())
+        )
+      ) {
+        await loadPageData(props.page);
+        message.value = '数据已刷新。';
+        messageClass.value = 'lc-help';
       }
 
       if (

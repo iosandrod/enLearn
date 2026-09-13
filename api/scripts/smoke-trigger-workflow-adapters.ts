@@ -183,23 +183,12 @@ function createCases(): AdapterSmokeCase[] {
         type: 'backendCommand',
         executorTaskId: TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand,
         input: {},
-        functionSource: `async ({ context }) => ({
-          configHash: await context.supabase.rpc('get_dynamic_crud_resource_hash', {
-            p_resource_name: 'planning_buffer',
-            p_table_name: 'planning_buffer'
-          }),
-          inventoryBuffers: await context.baseService.invoke(
-            'planning',
-            'listInventoryBuffers',
-            { limit: 1 }
-          )
-        })`
+        commandCode: 'coverage.echo_this_service'
       },
       assertOutput(output) {
         const result = requireRecord(output, 'backendCommand output');
-        assert.match(String(result.configHash), /^[0-9a-f]{64}$/);
-        assert.ok(Array.isArray(result.inventoryBuffers));
-        assert.ok(result.inventoryBuffers.length <= 1);
+        assert.equal(result.serviceInstance, true);
+        assert.deepEqual(result.payload, {});
       }
     },
     {

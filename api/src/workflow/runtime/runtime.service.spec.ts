@@ -23,6 +23,8 @@ async function main() {
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
   await testTriggerSuccessStoresPersistentRunId();
   await testRunIsCanceledWhenRunIdProjectionFails();
+  await testRecoveryRedeliversOnlyOrphanedInstances();
+  await testRecoveryRecordsAttemptAndSuccessEvents();
   await testTerminateInstanceCancelsTriggerRun();
   await testAddSignDoesNotFallBackWhenWaitpointCreationFails();
   await testApprovalRecordsWaitpointFailureWithoutContinuing();
@@ -133,6 +135,82 @@ async function testRunIsCanceledWhenRunIdProjectionFails() {
     /run projection failed/
   );
   assert.equal(canceledRunId, 'trigger-run-1');
+}
+
+async function testRecoveryRedeliversOnlyOrphanedInstances() {
+  const orphan = createInstance();
+  orphan.id = 'instance-orphan';
+  const active = createInstance();
+  active.id = 'instance-active';
+  active.triggerRunId = 'existing-trigger-run';
+  const recoveredRunIds: Array<{ instanceId: string; runId: string }> = [];
+  const triggeredIds: string[] = [];
+  const store = createStore({
+    listInstances: async () => [orphan, active],
+    getVariables: async () => ({ amount: 100 }),
+    setTriggerRun: async (instanceId, runId) => {
+      recoveredRunIds.push({ instanceId, runId });
+    }
+  });
+  const service = new RuntimeService(
+    createDefinitionService(),
+    store,
+    createTriggerClient({
+      triggerWorkflow: async (payload) => {
+        triggeredIds.push(payload.instanceId);
+        return { id: `trigger:${payload.instanceId}` };
+      }
+    })
+  );
+
+  const result = await service.recoverOrphanedInstances(actor.tenantId);
+
+  assert.deepEqual(triggeredIds, ['instance-orphan']);
+  assert.deepEqual(recoveredRunIds, [{
+    instanceId: 'instance-orphan',
+    runId: 'trigger:instance-orphan'
+  }]);
+  assert.deepEqual(result, {
+    recovered: ['instance-orphan'],
+    skipped: ['instance-active'],
+    failed: []
+  });
+}
+
+async function testRecoveryRecordsAttemptAndSuccessEvents() {
+  const orphan = createInstance();
+  orphan.id = 'instance-recovery-events';
+  const events: Array<{ eventType: string; payload: Record<string, unknown>; key?: string }> = [];
+  const store = createStore({
+    listInstances: async () => [orphan],
+    getVariables: async () => ({}),
+    setTriggerRun: async (_instanceId, runId) => {
+      orphan.triggerRunId = runId;
+    },
+    recordHistory: async (_tenantId, _instanceId, eventType, _operatorId, payload, idempotencyKey) => {
+      events.push({ eventType, payload, ...(idempotencyKey ? { key: idempotencyKey } : {}) });
+    }
+  });
+  const service = new RuntimeService(
+    createDefinitionService(),
+    store,
+    createTriggerClient({ triggerWorkflow: async () => ({ id: 'recovery-run-1' }) })
+  );
+
+  await service.recoverOrphanedInstances(actor.tenantId);
+
+  assert.deepEqual(events, [
+    {
+      eventType: 'RECOVERY_ATTEMPTED',
+      payload: { reason: 'orphaned_instance', status: 'running' },
+      key: 'workflow-recovery:instance-recovery-events:attempt'
+    },
+    {
+      eventType: 'RECOVERY_SUCCEEDED',
+      payload: { triggerRunId: 'recovery-run-1' },
+      key: 'workflow-recovery:instance-recovery-events:succeeded:recovery-run-1'
+    }
+  ]);
 }
 
 async function testTerminateInstanceCancelsTriggerRun() {

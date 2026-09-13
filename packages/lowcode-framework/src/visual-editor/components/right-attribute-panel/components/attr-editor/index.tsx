@@ -156,6 +156,7 @@ export const AttrEditor = defineComponent({
       );
       if (injectedTableFieldOptions) {
         sources.__visualTableFields = injectedTableFieldOptions.value;
+        sources['grid-designer-source-fields'] = cloneValue(injectedTableFieldOptions.value);
       }
       return sources;
     });

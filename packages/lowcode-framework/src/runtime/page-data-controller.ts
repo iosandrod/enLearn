@@ -86,6 +86,7 @@ export type PageDataControllerDependencies = {
   message: ValueRef<string>;
   messageClass: ValueRef<string>;
   builtinPageFunctionMode: ValueRef<BuiltinLowCodePageFunctionMode>;
+  editPageModeEnabled: boolean;
   formBaselines: Record<string, Record<string, unknown>>;
   sourceRequestVersions: Map<string, number>;
   getDataSource(key?: string): LowCodePageDataSource | undefined;
@@ -983,8 +984,7 @@ export class PageDataController {
       key,
       this.dependencies.props.page.node_actions,
     );
-    if (nodeAction) {
-      if (source.autoLoad === false) return '';
+    if (nodeAction) {//
       return this.dependencies.executeNodeAction({
         node: nodeAction.block.id,
         method: nodeAction.action.method,
@@ -1030,6 +1030,7 @@ export class PageDataController {
   }
 
   readonly loadPageData = async (nextPage: LowCodePageRecord) => {
+    // debugger//
     const pageBlocks = this.dependencies.flattenPageBlocks(nextPage.schema);
     const sources = this.collectConfiguredDataSources(nextPage.schema, pageBlocks);
     const entries = Object.entries(sources);
@@ -1037,7 +1038,7 @@ export class PageDataController {
     const preserveGrids = this.runtimePageId === nextPage.id;
     const gridInteractionState = preserveGrids ? this.captureGridInteractionState() : {};
 
-    if (!preserveGrids) {
+    if (!preserveGrids && this.dependencies.editPageModeEnabled) {
       this.dependencies.builtinPageFunctionMode.value = resolveLowCodeEditPageMode(
         this.dependencies.host.getRoute().query?.id,
       );

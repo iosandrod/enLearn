@@ -47,7 +47,6 @@ for (const code of Object.values(triggerNodeFormSchemaCodeByType)) {
 const approvalSchema = createTriggerNodeFormSchema(approvalNode);
 assert.ok(approvalSchema.fields.some((field) => field.field === 'assigneeType'));
 assert.ok(approvalSchema.fields.some((field) => field.field === 'taskType'));
-assert.ok(approvalSchema.fields.some((field) => field.field === 'taskImportPath'));
 assert.ok(approvalSchema.fields.some((field) => field.field === 'retryFactor'));
 assert.ok(approvalSchema.fields.some((field) => field.component === 'lc-json-editor'));
 
@@ -57,15 +56,18 @@ assert.deepEqual(taskTypeField?.options?.map((option) => option.value), [
   'frontendCommand',
   'backendCommand',
   'storedProcedure',
-  'registeredTask'
 ]);
+const backendCommandField = taskSchema.fields.find((field) => field.field === 'commandCode');
+assert.equal(backendCommandField?.component, 'vxe-select');
+assert.equal(backendCommandField?.optionsCode, 'workflow_backend_command');
+assert.equal(backendCommandField?.props?.filterable, true);
 assert.equal(
   taskSchema.fields.find((field) => field.field === 'frontendFunction')?.component,
   'lc-monaco-editor'
 );
 assert.equal(
-  taskSchema.fields.find((field) => field.field === 'backendFunction')?.component,
-  'lc-monaco-editor'
+  taskSchema.fields.find((field) => field.field === 'backendFunction'),
+  undefined
 );
 for (const field of [
   'procedureName',
@@ -292,11 +294,11 @@ assert.equal(renamed.name, '主管审批');
 const reassigned = updateTriggerNodeFromFormField(approvalNode, 'assigneeIds', 'manager, finance');
 assert.deepEqual(reassigned.config?.approval?.assigneeIds, ['manager', 'finance']);
 
-let configured = updateTriggerNodeFromFormField(approvalNode, 'taskImportPath', './tasks/approval');
+let configured = updateTriggerNodeFromFormField(approvalNode, 'commandCode', 'approval.manager.wait');
 configured = updateTriggerNodeFromFormField(configured, 'retryFactor', 2.5);
 configured = updateTriggerNodeFromFormField(configured, 'retryMinTimeoutMs', 500);
 configured = updateTriggerNodeFromFormField(configured, 'retryMaxTimeoutMs', 30_000);
-assert.equal(configured.config?.task?.importPath, './tasks/approval');
+assert.equal(configured.config?.task?.commandCode, 'approval.manager.wait');
 assert.equal(configured.config?.task?.retry?.factor, 2.5);
 assert.equal(configured.config?.task?.retry?.minTimeoutMs, 500);
 assert.equal(configured.config?.task?.retry?.maxTimeoutMs, 30_000);
