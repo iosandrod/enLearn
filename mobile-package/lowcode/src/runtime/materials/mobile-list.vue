@@ -54,8 +54,8 @@ import type {
 import {
   isLowCodeRowActionDisabled,
   visibleLowCodeRowActions,
-} from '../../../../packages/lowcode-framework/src/runtime/row-action-state';
-import { isLowCodeEditPageReadonly } from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
+} from '../row-action-state';
+import { isLowCodeEditPageReadonly } from '../edit-page-mode';
 
 const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();

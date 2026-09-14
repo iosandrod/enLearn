@@ -60,9 +60,17 @@ Port 3301 is in use, trying another one...
 09:11:42 [vite] (client) hmr update /@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue
 09:18:30 [vite] (client) page reload E:/enLearn/packages/lowcode-framework/src/runtime/page-reference-dialog.tsx
 09:19:32 [vite] (client) hmr update /assets/styles/app.css
-39:41 [vite] (client) hmr update /assets/styles/app.css
-09:09:29 [vite] (client) page reload E:/enLearn/packages/lowcode-framework/src/runtime/page-reference-dialog.tsx
-09:11:42 [vite] (client) hmr update /assets/styles/app.css
-09:11:42 [vite] (client) hmr update /@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue
-09:18:30 [vite] (client) page reload E:/enLearn/packages/lowcode-framework/src/runtime/page-reference-dialog.tsx
-09:19:32 [vite] (client) hmr update /assets/styles/app.css
+11:11:00 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:11:29 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:16:25 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:21:41 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:26:51 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:27:09 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:28:00 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:52:50 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:53:13 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+lowEditor.vue
+11:27:09 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:28:00 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:52:50 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue
+11:53:13 [vite] (client) hmr update /@fs/E:/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue

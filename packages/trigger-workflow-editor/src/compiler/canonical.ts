@@ -12,7 +12,9 @@ import type { TriggerWorkflowModel, TriggerWorkflowNode } from '../schema/types'
 export function compileTriggerWorkflowCanonical(model: TriggerWorkflowModel): CanonicalWorkflow {
   assertValidTriggerWorkflow(model);
   const nodes = model.nodes.map(compileNode);
-  const entry = nodes.find((node) => node.type === 'start');
+  const configuredEntryId = model.settings?.entryNodeId;
+  const entry = nodes.find((node) => node.id === configuredEntryId && isEntryNode(node))
+    ?? nodes.find(isEntryNode);
   const workflow: CanonicalWorkflow = {
     schemaVersion: 1,
     id: model.id ?? model.code,
@@ -29,6 +31,10 @@ export function compileTriggerWorkflowCanonical(model: TriggerWorkflowModel): Ca
     metadata: { sourceKind: model.kind }
   };
   return assertCanonicalWorkflowCapabilities(workflow);
+}
+
+function isEntryNode(node: { sourceType: string }) {
+  return node.sourceType === 'start' || node.sourceType === 'schedule' || node.sourceType === 'webhook';
 }
 
 function compileNode(node: TriggerWorkflowNode): CanonicalNode {

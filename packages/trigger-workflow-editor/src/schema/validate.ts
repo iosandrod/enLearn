@@ -49,7 +49,15 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
 
   const entryNodes = model.nodes.filter((node) => node.type === 'start' || node.type === 'schedule' || node.type === 'webhook');
   const endNodes = model.nodes.filter((node) => node.type === 'end');
-  if (entryNodes.length !== 1) push(issues, 'error', 'nodes', '工作流必须且只能有一个入口节点。');
+  const configuredEntryId = model.settings?.entryNodeId?.trim();
+  if (configuredEntryId) {
+    const configuredEntry = model.nodes.find((node) => node.id === configuredEntryId);
+    if (!configuredEntry || !['start', 'schedule', 'webhook'].includes(configuredEntry.type)) {
+      push(issues, 'error', 'settings.entryNodeId', '启动节点必须是开始、Webhook 或定时器节点。');
+    }
+  } else if (entryNodes.length !== 1) {
+    push(issues, 'error', 'nodes', '工作流必须且只能有一个入口节点。');
+  }
   if (!endNodes.length) push(issues, 'error', 'nodes', '工作流至少需要一个结束节点。');
 
   model.edges.forEach((edge, index) => {
@@ -74,11 +82,13 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
 
   const incoming = countEdges(model, 'target');
   const outgoing = countEdges(model, 'source');
+  const activeEntryId = configuredEntryId || (entryNodes.length === 1 ? entryNodes[0].id : undefined);
   model.nodes.forEach((node, index) => {
     const path = `nodes.${index}`;
-    const isEntry = node.type === 'start' || node.type === 'schedule' || node.type === 'webhook';
-    if (!isEntry && (incoming.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少入线。');
-    if (node.type !== 'end' && (outgoing.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少出线。');
+    const isEntryCandidate = node.type === 'start' || node.type === 'schedule' || node.type === 'webhook';
+    const isEntry = node.id === activeEntryId;
+    if (!isEntryCandidate && (incoming.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少入线。');
+    if (node.type !== 'end' && (!isEntryCandidate || isEntry) && (outgoing.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少出线。');
     if (node.type === 'condition' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, '条件节点至少需要两个分支。');
     if ((node.type === 'parallel' || node.type === 'parallelJoin') && (incoming.get(node.id) ?? 0) < 2 && node.type === 'parallelJoin') {
       push(issues, 'error', path, '并行汇聚节点至少需要两条入线。');
@@ -90,9 +100,13 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
     }
   });
 
-  if (entryNodes.length === 1) {
-    const reachable = collectReachable(model, entryNodes[0].id);
+  const reachabilityEntry = configuredEntryId
+    ? model.nodes.find((node) => node.id === configuredEntryId)
+    : entryNodes.length === 1 ? entryNodes[0] : undefined;
+  if (reachabilityEntry) {
+    const reachable = collectReachable(model, reachabilityEntry.id);
     model.nodes.forEach((node, index) => {
+      if (node.id !== reachabilityEntry.id && (node.type === 'start' || node.type === 'schedule' || node.type === 'webhook')) return;
       if (!reachable.has(node.id)) push(issues, 'error', `nodes.${index}`, `无法从入口到达节点“${node.id}”。`);
     });
   }
@@ -109,12 +123,14 @@ export function assertValidTriggerWorkflow(model: TriggerWorkflowModel) {
 
 function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIssue[], path: string) {
   const config = node.config ?? {};
-  const task = config.task;
+  const isApprovalNode = node.type === 'manualApproval' || node.type === 'humanReview';
+  const requiresTaskType = ['task', 'triggerAndWait', 'batchTrigger', 'tool'].includes(node.type);
+  const task = isApprovalNode ? undefined : config.task;
   const taskType = task?.type;
 
-  if (task && !taskType) {
+  if (!isApprovalNode && task && !taskType) {
     push(issues, 'error', `${path}.config.task.type`, '任务配置必须选择任务类型。');
-  } else if (['task', 'triggerAndWait', 'batchTrigger', 'tool'].includes(node.type) && !taskType) {
+  } else if (requiresTaskType && !taskType) {
     push(issues, 'error', `${path}.config.task.type`, `${node.type} 节点必须选择任务类型。`);
   }
   if (taskType === 'frontendCommand' && !task?.frontendFunction?.trim()) {

@@ -351,6 +351,8 @@ function onNodeContextMenu(event: NodeMouseEvent) {
   const node = currentModel.value.nodes.find((item) => item.id === event.node.id);
   if (!node) return;
   const definition = getTriggerNodeDefinition(node.type);
+  const isEntryCandidate = isEntryCanvasNode(node);
+  const activeEntryNodeId = getActiveEntryNodeId();
 
   selectedNodeId.value = node.id;
   selectedEdgeId.value = null;
@@ -361,6 +363,14 @@ function onNodeContextMenu(event: NodeMouseEvent) {
     className: 'enlearn-context-menu',
     options: [
       [
+        ...(isEntryCandidate
+          ? [{
+              code: 'set-entry',
+              name: activeEntryNodeId === node.id ? '当前启动节点' : '切换为启动节点',
+              prefixIcon: 'ri-play-circle-line',
+              disabled: props.readonly || activeEntryNodeId === node.id
+            }]
+          : []),
         {
           code: 'node-summary',
           name: `${node.name} · ${definition?.label ?? '自定义节点'}`,
@@ -409,12 +419,23 @@ function onNodeContextMenu(event: NodeMouseEvent) {
           addNodeAt(option.code.slice(4) as TriggerNodeType);
         }
         if (option.code === 'inspect') inspectContextNode(node);
+        if (option.code === 'set-entry') setEntryNode(node);
         if (option.code === 'duplicate') duplicateContextNode(node);
         if (option.code === 'copy-id') void copyContextNodeId(node);
         if (option.code === 'delete') deleteContextNode(node);
       }
     }
   });
+}
+
+function setEntryNode(node: TriggerWorkflowNode) {
+  if (props.readonly || !isEntryCanvasNode(node)) return;
+  closeNodeContextMenu();
+  replaceModel({
+    ...currentModel.value,
+    settings: { ...currentModel.value.settings, entryNodeId: node.id }
+  }, { fitCanvas: false });
+  void VxeUI.modal.message({ content: `已切换“${node.name}”为启动节点。`, status: 'success' });
 }
 
 function closeNodeContextMenu() {
@@ -672,7 +693,12 @@ function deleteNodeById(nodeId: string) {
 }
 
 function canDeleteNode(node: TriggerWorkflowNode) {
-  return !['start', 'schedule', 'webhook', 'end'].includes(node.type);
+  return node.type !== 'end' && node.id !== getActiveEntryNodeId();
+}
+
+function getActiveEntryNodeId() {
+  return currentModel.value.settings?.entryNodeId
+    ?? currentModel.value.nodes.find(isEntryCanvasNode)?.id;
 }
 
 function updateWorkflowField(field: 'code' | 'name', event: Event) {
@@ -801,7 +827,16 @@ function prepareEditorModel(value: unknown) {
   const model = normalizeTriggerWorkflow(value);
   const hasEntryNode = model.nodes.some(isEntryCanvasNode);
   const hasEndNode = model.nodes.some((node) => node.type === 'end');
-  if (hasEntryNode && hasEndNode) return model;
+  if (hasEntryNode && hasEndNode) {
+    const entryNodeId = model.settings?.entryNodeId;
+    const entryNode = model.nodes.find((node) => node.id === entryNodeId);
+    const candidates = model.nodes.filter(isEntryCanvasNode);
+    if (entryNodeId && entryNode && isEntryCanvasNode(entryNode)) return model;
+    if (candidates.length >= 1) {
+      return { ...model, settings: { ...model.settings, entryNodeId: candidates[0].id } };
+    }
+    return model;
+  }
 
   const nodes = [...model.nodes];
   if (!hasEntryNode) {

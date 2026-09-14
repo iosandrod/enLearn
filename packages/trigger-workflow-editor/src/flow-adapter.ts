@@ -61,12 +61,15 @@ export type TriggerFlowEdge = {
 };
 
 export function triggerWorkflowToFlowNodes(model: TriggerWorkflowModel): TriggerFlowNode[] {
+  const configuredEntry = model.nodes.find((node) => node.id === model.settings?.entryNodeId && isEntryType(node.type));
+  const entryNodeId = configuredEntry?.id
+    ?? model.nodes.find((node) => isEntryType(node.type))?.id;
   return model.nodes.map((node, index) => ({
     id: node.id,
     label: node.name,
     position: node.position ?? { x: 380, y: 40 + index * 150 },
     type: TRIGGER_FLOW_NODE_RENDER_TYPE,
-    data: getTriggerNodePresentation(node),
+    data: getTriggerNodePresentation(node, entryNodeId),
     draggable: !isEntryType(node.type) || node.type === 'start' || node.type === 'schedule',
     deletable: !isEntryType(node.type) && node.type !== 'end',
     selectable: true,
@@ -214,7 +217,7 @@ export function autoLayoutTriggerFlowNodes(nodes: TriggerFlowNode[], edges: Trig
   });
 }
 
-export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFlowNodeData {
+export function getTriggerNodePresentation(node: TriggerWorkflowNode, entryNodeId?: string): TriggerFlowNodeData {
   const definition = getTriggerNodeDefinition(node.type);
   return {
     workflowType: node.type,
@@ -226,7 +229,7 @@ export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFl
     accentSoft: definition?.accentSoft ?? '#f8fafc',
     accentBorder: definition?.accentBorder ?? '#cbd5e1',
     summary: summarizeNode(node),
-    isEntry: isEntryType(node.type),
+    isEntry: entryNodeId ? node.id === entryNodeId : isEntryType(node.type),
     isEnd: node.type === 'end'
   };
 }

@@ -66,7 +66,9 @@ export function compileTriggerWorkflow(model: TriggerWorkflowModel): TriggerWork
     outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge.target]);
   });
 
-  const entry = model.nodes.find((node) => node.type === 'start' || node.type === 'schedule' || node.type === 'webhook');
+  const configuredEntryId = model.settings?.entryNodeId;
+  const entry = model.nodes.find((node) => node.id === configuredEntryId && isEntryNode(node))
+    ?? model.nodes.find(isEntryNode);
   if (!entry) {
     throw new Error('触发器工作流必须包含入口节点。');
   }
@@ -84,7 +86,7 @@ export function compileTriggerWorkflow(model: TriggerWorkflowModel): TriggerWork
         .filter((taskId): taskId is string => Boolean(taskId))
     )
   );
-  const scheduleNode = model.nodes.find((node) => node.type === 'schedule');
+  const scheduleNode = entry.type === 'schedule' ? entry : undefined;
 
   return {
     workflowId: model.id ?? model.code,
@@ -105,6 +107,10 @@ export function compileTriggerWorkflow(model: TriggerWorkflowModel): TriggerWork
         }
       : {})
   };
+}
+
+function isEntryNode(node: TriggerWorkflowNode) {
+  return node.type === 'start' || node.type === 'schedule' || node.type === 'webhook';
 }
 
 function compileNodeOperation(
@@ -130,7 +136,7 @@ function compileNodeOperation(
       return { ...base, type: 'webhook', options: node.config?.webhook ?? {} };
     case 'manualApproval':
     case 'humanReview':
-      return { ...base, type: 'human.approval', task: node.config?.task, options: node.config?.approval ?? {} };
+      return { ...base, type: 'human.approval', options: node.config?.approval ?? {} };
     case 'condition':
       return { ...base, type: 'condition', options: { branches: outgoingEdges } };
     case 'parallel':

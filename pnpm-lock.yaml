@@ -229,6 +229,12 @@ importers:
 
   mobile-app:
     dependencies:
+      '@enlearn/mobile-lowcode':
+        specifier: workspace:*
+        version: link:../mobile-package/lowcode
+      '@enlearn/mobile-table':
+        specifier: workspace:*
+        version: link:../mobile-package/table
       '@hippy/vue-next':
         specifier: 3.3.2
         version: 3.3.2(@vue/runtime-core@3.4.32)(@vue/shared@3.4.32)
@@ -344,6 +350,71 @@ importers:
       webpack-dev-server:
         specifier: ^5.2.0
         version: 5.2.6(webpack-cli@7.2.2)(webpack@5.109.2)
+
+  mobile-package/lowcode:
+    dependencies:
+      '@babel/runtime':
+        specifier: ^7.28.0
+        version: 7.29.7
+      '@enlearn/lowcode-framework':
+        specifier: workspace:*
+        version: link:../../packages/lowcode-framework
+      '@enlearn/mobile-table':
+        specifier: workspace:*
+        version: link:../table
+    devDependencies:
+      '@hippy/vue-next':
+        specifier: 3.3.2
+        version: 3.3.2(@vue/runtime-core@3.4.32)(@vue/shared@3.4.32)
+      '@hippy/vue-router-next-history':
+        specifier: 0.0.1
+        version: 0.0.1(@vue/runtime-core@3.4.32)(@vue/shared@3.4.32)(vue@3.4.32(typescript@5.9.3))
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      '@vue/runtime-core':
+        specifier: 3.4.32
+        version: 3.4.32
+      '@vue/shared':
+        specifier: 3.4.32
+        version: 3.4.32
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+      vue:
+        specifier: 3.4.32
+        version: 3.4.32(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^2.2.12
+        version: 2.2.12(typescript@5.9.3)
+
+  mobile-package/table:
+    dependencies:
+      '@babel/runtime':
+        specifier: ^7.28.0
+        version: 7.29.7
+    devDependencies:
+      '@hippy/vue-next':
+        specifier: 3.3.2
+        version: 3.3.2(@vue/runtime-core@3.4.32)(@vue/shared@3.4.32)
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.43
+      '@vue/runtime-core':
+        specifier: 3.4.32
+        version: 3.4.32
+      '@vue/shared':
+        specifier: 3.4.32
+        version: 3.4.32
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+      vue:
+        specifier: 3.4.32
+        version: 3.4.32(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^2.2.12
+        version: 2.2.12(typescript@5.9.3)
 
   packages/approval-workflow:
     dependencies:

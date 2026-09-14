@@ -44,7 +44,7 @@ import MobileBlockRenderer from '../mobile-block-renderer.vue';
 import {
   createLayoutWidthScheduler,
   getWebLayoutFrameDriver,
-} from '../layout-width';
+} from '@enlearn/mobile-table/layout-width';
 import { readFormNumber, resolveResponsiveFormColumns } from '../mobile-form';
 import { resolveMobileBlockStyle } from '../block-style';
 import type { MobileMaterialEmits, MobileMaterialProps } from '../types';

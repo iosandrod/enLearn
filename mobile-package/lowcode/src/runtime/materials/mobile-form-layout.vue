@@ -84,9 +84,9 @@ import type { CSSProperties } from 'vue';
 
 import MobileFormField from './mobile-form-field.vue';
 import type { SharedLowCodeField } from '../types';
-import type { LowCodeFormLayoutNode } from '../../../../packages/lowcode-framework/src/types/lowcode';
-import type { LowCodeEditPageMode } from '../../../../packages/lowcode-framework/src/types/lowcode';
-import { isLowCodeEditPageFieldDisabled } from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
+import type { LowCodeFormLayoutNode } from '@enlearn/lowcode-framework/types/lowcode';
+import type { LowCodeEditPageMode } from '@enlearn/lowcode-framework/types/lowcode';
+import { isLowCodeEditPageFieldDisabled } from '../edit-page-mode';
 import { readFormNumber } from '../mobile-form';
 
 defineOptions({

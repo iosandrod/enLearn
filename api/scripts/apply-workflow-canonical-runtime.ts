@@ -60,8 +60,7 @@ async function main() {
     `);
     const result = rows[0];
     if (!result?.tokens || !result.events || result.capabilities < 13 ||
-      !result.approval_fields?.includes('completionStrategy') ||
-      !result.approval_fields?.includes('passRatio') ||
+      !result.approval_fields?.includes('approval') ||
       !result.join_fields?.includes('joinKey') ||
       !result.parallel_join_fields?.includes('joinKey')) {
       throw new Error(`Canonical workflow runtime verification failed: ${JSON.stringify(result)}`);

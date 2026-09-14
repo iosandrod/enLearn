@@ -1,0 +1,25 @@
+{
+  "name": "@enlearn/mobile-lowcode",
+  "version": "0.1.0",
+  "description": "Reusable Vue/Hippy low-code runtime and mobile material controls for EnLearn.",
+  "type": "module",
+  "private": false,
+  "files": ["src", "README.md"],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./runtime/mobile-back": "./src/runtime/mobile-back.ts",
+    "./runtime/push-notifications": "./src/runtime/push-notifications.ts",
+    "./runtime/demo-page": "./src/runtime/demo-page.ts",
+    "./controls": "./src/controls.ts",
+    "./types": "./src/runtime/types.ts"
+  },
+  "dependencies": {"@babel/runtime": "^7.28.0", "@enlearn/mobile-table": "workspace:*", "@enlearn/lowcode-framework": "workspace:*"},
+  "peerDependencies": {"@hippy/vue-next": "^3.3.0", "@hippy/vue-router-next-history": "^0.0.1", "@vue/runtime-core": "^3.4.0", "@vue/shared": "^3.4.0", "vue": "^3.4.0"},
+  "devDependencies": {"@enlearn/mobile-table": "workspace:*", "@enlearn/lowcode-framework": "workspace:*", "@hippy/vue-next": "3.3.2", "@hippy/vue-router-next-history": "0.0.1", "@types/node": "^20.19.0", "@vue/runtime-core": "3.4.32", "@vue/shared": "3.4.32", "typescript": "^5.4.5", "vue": "3.4.32", "vue-tsc": "^2.2.12"},
+  "scripts": {"typecheck": "vue-tsc --noEmit -p tsconfig.json"},
+  "license": "UNLICENSED"
+}

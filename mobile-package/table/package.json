@@ -1,0 +1,39 @@
+{
+  "name": "@enlearn/mobile-table",
+  "version": "0.1.0",
+  "description": "Hippy/Vue virtual table control and headless virtualization algorithms for EnLearn mobile apps.",
+  "type": "module",
+  "private": false,
+  "files": ["src", "README.md"],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./virtual-table": "./src/virtual-table.ts",
+    "./layout-width": "./src/layout-width.ts",
+    "./component": "./src/MobileVirtualTable.vue",
+    "./controls": "./src/controls.ts",
+    "./types": "./src/types.ts",
+    "./row-action-state": "./src/row-action-state.ts"
+    ,"./edit-page-mode": "./src/edit-page-mode.ts"
+  },
+  "dependencies": {"@babel/runtime": "^7.28.0"},
+  "peerDependencies": {
+    "@hippy/vue-next": "^3.3.0",
+    "@vue/runtime-core": "^3.4.0",
+    "@vue/shared": "^3.4.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vue/runtime-core": "3.4.32",
+    "@vue/shared": "3.4.32",
+    "@hippy/vue-next": "3.3.2",
+    "@types/node": "^20.19.0",
+    "typescript": "^5.4.5",
+    "vue": "3.4.32",
+    "vue-tsc": "^2.2.12"
+  },
+  "scripts": {"typecheck": "vue-tsc --noEmit -p tsconfig.json"},
+  "license": "UNLICENSED"
+}

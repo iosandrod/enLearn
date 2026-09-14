@@ -18,7 +18,8 @@ const repoRoot = process.cwd().toLowerCase().endsWith('api')
 const migrationPaths = [
   resolve(repoRoot, 'supabase/migrations/20260813130000_trigger_workflow_inspector_forms.sql'),
   resolve(repoRoot, 'supabase/migrations/20260815120000_trigger_workflow_schedule_sub_form.sql'),
-  resolve(repoRoot, 'supabase/migrations/20260815130000_trigger_workflow_webhook_service_form.sql')
+  resolve(repoRoot, 'supabase/migrations/20260815130000_trigger_workflow_webhook_service_form.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260914110000_trigger_workflow_approval_sub_form.sql')
 ];
 
 function connectionString(value: string) {
@@ -75,6 +76,20 @@ async function main() {
       where code = 'trigger-workflow.node.task'
     `);
     const taskResult = taskRows[0];
+    const { rows: approvalRows } = await client.query<{
+      field_names: string[];
+      approval_fields: string[];
+      approval_component: string;
+    }>(`
+      select
+        array(select field->>'field' from jsonb_array_elements(schema->'fields') field) as field_names,
+        array(select nested->>'field' from jsonb_array_elements(coalesce((select field->'props'->'schema'->'fields' from jsonb_array_elements(schema->'fields') field where field->>'field' = 'approval' limit 1), '[]'::jsonb)) nested) as approval_fields,
+        coalesce((select field->>'component' from jsonb_array_elements(schema->'fields') field where field->>'field' = 'approval' limit 1), '') as approval_component
+      from public.lowcode_form_definitions
+      where code = 'trigger-workflow.node.manual-approval'
+      limit 1
+    `);
+    const approvalResult = approvalRows[0];
     const requiredFields = [
       'taskType',
       'frontendFunction',
@@ -184,13 +199,18 @@ async function main() {
       !requiredWebhookBodyFields.every((field) =>
         webhookResult.webhook_body_fields.includes(field)
       ) ||
-      !webhookResult.webhook_layout_has_body
+      !webhookResult.webhook_layout_has_body ||
+      !approvalResult ||
+      approvalResult.approval_component !== 'lc-sub-form' ||
+      !approvalResult.field_names.includes('approval') ||
+      approvalResult.approval_fields.includes('taskType')
     ) {
       throw new Error(
         `Trigger workflow inspector verification failed: ${JSON.stringify({
           task: taskResult,
           schedule: scheduleResult,
-          webhook: webhookResult
+          webhook: webhookResult,
+          approval: approvalResult
         })}`
       );
     }

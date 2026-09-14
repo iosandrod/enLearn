@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import MobileList from './mobile-list.vue';
-import MobileVirtualTable from './mobile-virtual-table.vue';
+import MobileVirtualTable from '@enlearn/mobile-table/component';
 import type {
   MobileMaterialEmits,
   MobileMaterialProps,

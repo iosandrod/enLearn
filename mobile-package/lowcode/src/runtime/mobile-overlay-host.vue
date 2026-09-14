@@ -1,9 +1,8 @@
 <template>
-  <div class="mobile-block-children">
+  <template v-for="overlay in overlays" :key="overlay.id">
     <MobileBlockRenderer
-      v-for="child in blocks"
-      :key="child.id"
-      :block="child"
+      v-if="overlay.open !== false"
+      :block="overlay"
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
@@ -13,7 +12,19 @@
       :service-api="serviceApi"
       @runtime-event="forwardRuntimeEvent"
     />
-  </div>
+    <MobileOverlayHost
+      v-if="overlay.open !== false && overlay.overlays?.length"
+      :overlays="overlay.overlays"
+      :resolved-data="resolvedData"
+      :form-models="formModels"
+      :active-action-codes="activeActionCodes"
+      :executing-action-keys="executingActionKeys"
+      :edit-page-mode="editPageMode"
+      :grid-states="gridStates"
+      :service-api="serviceApi"
+      @runtime-event="forwardRuntimeEvent"
+    />
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -27,31 +38,21 @@ import type {
 } from './types';
 import type { MobileServiceApi } from './service-api';
 
+defineOptions({ name: 'MobileOverlayHost' });
+
 defineProps<{
-  blocks: MobileRuntimeBlock[];
+  overlays: MobileRuntimeBlock[];
   resolvedData: Record<string, unknown>;
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
   executingActionKeys: Set<string>;
-  editPageMode?: import('../../../packages/lowcode-framework/src/types/lowcode').LowCodeEditPageMode;
+  editPageMode?: import('@enlearn/lowcode-framework/types/lowcode').LowCodeEditPageMode;
   gridStates: MobileGridRuntimeStates;
   serviceApi: MobileServiceApi;
 }>();
-
 const emit = defineEmits<MobileMaterialEmits>();
 
 function forwardRuntimeEvent(event: MobileRuntimeEvent) {
   emit('runtimeEvent', event);
 }
 </script>
-
-<style scoped>
-.mobile-block-children {
-  display: flex;
-  flex-direction: column;
-}
-
-.mobile-block-children > * + * {
-  margin-top: 10px;
-}
-</style>

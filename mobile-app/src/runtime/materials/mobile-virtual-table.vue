@@ -341,13 +341,13 @@ import type {
   MobileMaterialEmits,
   MobileMaterialProps,
   MobileRuntimeEvent,
-  SharedLowCodeAction,
 } from '../types';
+import type { SharedLowCodeAction } from '@enlearn/mobile-table/types';
 import {
-  isLowCodeRowActionDisabled,
-  visibleLowCodeRowActions,
-} from '../../../../packages/lowcode-framework/src/runtime/row-action-state';
-import { isLowCodeEditPageReadonly } from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
+  isRowActionDisabled as isRowActionDisabledPredicate,
+  visibleRowActions as visibleRowActionsForRow,
+} from '@enlearn/mobile-table/row-action-state';
+import { isEditPageReadonly } from '@enlearn/mobile-table/edit-page-mode';
 import {
   createLayoutWidthScheduler,
   getWebLayoutFrameDriver,
@@ -527,12 +527,12 @@ const rowActions = computed<SharedLowCodeAction[]>(() => {
 });
 
 function visibleRowActions(row: Record<string, unknown>) {
-  return visibleLowCodeRowActions(rowActions.value, row);
+  return visibleRowActionsForRow(rowActions.value, row);
 }
 
 function isRowActionDisabled(action: SharedLowCodeAction, row: Record<string, unknown>) {
-  return isLowCodeEditPageReadonly(props.editPageMode)
-    || isLowCodeRowActionDisabled(action, row);
+  return isEditPageReadonly(props.editPageMode)
+    || isRowActionDisabledPredicate(action, row);
 }
 
 function isRowActionExecuting(_action: SharedLowCodeAction) {
@@ -1347,7 +1347,7 @@ function publishRowAction(action: SharedLowCodeAction, row: Record<string, unkno
     blockKind: props.block.kind,
     timestamp: Date.now(),
     payload: {
-      action,
+      action: action as any,
       actionCode: action.code,
       directives: action.directives ?? [],
       row,

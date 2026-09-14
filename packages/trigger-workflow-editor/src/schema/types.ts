@@ -99,6 +99,8 @@ export type TriggerWorkflowNodeConfig = {
     assigneeIds?: string[];
     timeoutSeconds?: number;
     onTimeout?: 'fail' | 'autoApprove' | 'autoReject' | 'continue';
+    completionStrategy?: 'any' | 'all' | 'ratio';
+    passRatio?: number;
   };
   wait?: {
     mode?: 'duration' | 'until' | 'token';
@@ -172,6 +174,7 @@ export type TriggerWorkflowModel = {
   edges: TriggerWorkflowEdge[];
   variables?: TriggerWorkflowVariable[];
   settings?: {
+    entryNodeId?: string;
     defaultQueue?: TriggerWorkflowQueueConfig;
     defaultRetry?: TriggerWorkflowRetryConfig;
     defaultTimeoutSeconds?: number;

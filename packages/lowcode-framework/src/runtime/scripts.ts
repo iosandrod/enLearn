@@ -1,6 +1,7 @@
 // Keep this worker as a standalone HTTP asset. QuickJS resolves its emitted
 // WASM file against self.location.href, which is not a valid URL base when
 // Vite inlines the worker as a blob: or data: URL in production builds.
+// @ts-expect-error The ?worker suffix is provided by Vite/Webpack loaders.
 import ScriptRuntimeWorker from './script-runtime.worker.ts?worker';
 
 export const DEFAULT_LOW_CODE_SCRIPT_TIMEOUT_MS = 2_000;

@@ -28,6 +28,8 @@
     "test:navigation": "node ./tests/navigation-regression.mjs"
   },
   "dependencies": {
+    "@enlearn/mobile-lowcode": "workspace:*",
+    "@enlearn/mobile-table": "workspace:*",
     "@hippy/vue-next": "3.3.2",
     "@hippy/vue-router-next-history": "0.0.1",
     "@hippy/web-renderer": "3.3.2",

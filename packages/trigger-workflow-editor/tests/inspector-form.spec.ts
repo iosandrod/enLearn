@@ -45,9 +45,14 @@ for (const code of Object.values(triggerNodeFormSchemaCodeByType)) {
 }
 
 const approvalSchema = createTriggerNodeFormSchema(approvalNode);
-assert.ok(approvalSchema.fields.some((field) => field.field === 'assigneeType'));
-assert.ok(approvalSchema.fields.some((field) => field.field === 'taskType'));
-assert.ok(approvalSchema.fields.some((field) => field.field === 'retryFactor'));
+const approvalField = approvalSchema.fields.find((field) => field.field === 'approval');
+assert.equal(approvalField?.component, 'lc-sub-form');
+const approvalSubFields = (approvalField?.props?.schema as TriggerInspectorFormSchema).fields;
+assert.ok(approvalSubFields.some((field) => field.field === 'assigneeType'));
+assert.ok(approvalSubFields.some((field) => field.field === 'completionStrategy'));
+assert.ok(approvalSubFields.some((field) => field.field === 'passRatio'));
+assert.ok(!approvalSchema.fields.some((field) => field.field === 'taskType'));
+assert.ok(!approvalSchema.fields.some((field) => field.field === 'retryFactor'));
 assert.ok(approvalSchema.fields.some((field) => field.component === 'lc-json-editor'));
 
 const taskSchema = createTriggerNodeFormSchema({ id: 'task', type: 'task', name: 'Task' });
@@ -278,12 +283,12 @@ const invalidOverride = {
   actions: []
 } as TriggerInspectorFormSchema;
 const fallbackSchema = resolveTriggerNodeFormSchema(approvalNode, { manualApproval: invalidOverride });
-assert.ok(fallbackSchema.fields.some((field) => field.field === 'assigneeType'));
+assert.equal(fallbackSchema.fields.find((field) => field.field === 'approval')?.component, 'lc-sub-form');
 
 const model = createTriggerNodeFormModel(approvalNode);
 assert.equal(model.name, '经理审批');
 assert.equal(model.assigneeIds, 'manager');
-assert.equal((model.task as Record<string, unknown>).commandCode, approvalNode.config?.task?.commandCode ?? '');
+assert.equal((model.approval as Record<string, unknown>).assigneeIds, 'manager');
 
 const renamed = updateTriggerNodeFromFormField(approvalNode, 'name', '主管审批');
 assert.equal(renamed.name, '主管审批');
@@ -291,14 +296,12 @@ assert.equal(renamed.name, '主管审批');
 const reassigned = updateTriggerNodeFromFormField(approvalNode, 'assigneeIds', 'manager, finance');
 assert.deepEqual(reassigned.config?.approval?.assigneeIds, ['manager', 'finance']);
 
-let configured = updateTriggerNodeFromFormField(approvalNode, 'commandCode', 'approval.manager.wait');
-configured = updateTriggerNodeFromFormField(configured, 'retryFactor', 2.5);
-configured = updateTriggerNodeFromFormField(configured, 'retryMinTimeoutMs', 500);
-configured = updateTriggerNodeFromFormField(configured, 'retryMaxTimeoutMs', 30_000);
-assert.equal(configured.config?.task?.commandCode, 'approval.manager.wait');
-assert.equal(configured.config?.task?.retry?.factor, 2.5);
-assert.equal(configured.config?.task?.retry?.minTimeoutMs, 500);
-assert.equal(configured.config?.task?.retry?.maxTimeoutMs, 30_000);
+const configured = updateTriggerNodeFromFormField(approvalNode, 'approval', {
+  assigneeType: 'role', assigneeIds: 'manager, finance', timeoutSeconds: 3600,
+  onTimeout: 'autoReject', completionStrategy: 'any'
+});
+assert.deepEqual(configured.config?.approval?.assigneeIds, ['manager', 'finance']);
+assert.equal(configured.config?.task, undefined);
 
 const nestedTask = updateTriggerNodeFromFormField(
   { id: 'nested', type: 'task', name: 'Nested' },

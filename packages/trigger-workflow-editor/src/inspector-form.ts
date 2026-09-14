@@ -136,8 +136,6 @@ const taskNodeTypes = new Set([
   'agent',
   'dataSource',
   'dataSink',
-  'manualApproval',
-  'humanReview',
   'transform',
   'memory'
 ]);
@@ -376,6 +374,16 @@ export function createTriggerNodeFormModel(node: TriggerWorkflowNode) {
     assigneeIds: config.approval?.assigneeIds?.join(', ') ?? '',
     approvalTimeoutSeconds: config.approval?.timeoutSeconds,
     onTimeout: config.approval?.onTimeout ?? 'fail',
+    completionStrategy: config.approval?.completionStrategy ?? 'any',
+    passRatio: config.approval?.passRatio,
+    approval: {
+      assigneeType: config.approval?.assigneeType ?? 'role',
+      assigneeIds: config.approval?.assigneeIds?.join(', ') ?? '',
+      timeoutSeconds: config.approval?.timeoutSeconds,
+      onTimeout: config.approval?.onTimeout ?? 'fail',
+      completionStrategy: config.approval?.completionStrategy ?? 'any',
+      passRatio: config.approval?.passRatio
+    },
     waitMode: config.wait?.mode ?? 'duration',
     waitDuration: config.wait?.duration ?? '',
     waitUntil: config.wait?.until ?? '',
@@ -525,6 +533,22 @@ export function updateTriggerNodeFromFormField(
         updateTriggerNodeFromFormField(current, taskField, taskValue),
       node
     );
+  }
+  if (field === 'approval') {
+    const approvalValues = isRecord(value) ? value : {};
+    const config = cloneValue(node.config ?? {});
+    const approval = {
+      ...(isRecord(config.approval) ? config.approval : {}),
+      assigneeType: isApprovalAssigneeType(approvalValues.assigneeType) ? approvalValues.assigneeType : undefined,
+      assigneeIds: toStringList(approvalValues.assigneeIds),
+      timeoutSeconds: toOptionalInteger(approvalValues.timeoutSeconds, 1),
+      onTimeout: isApprovalTimeout(approvalValues.onTimeout) ? approvalValues.onTimeout : undefined,
+      completionStrategy: isCompletionStrategy(approvalValues.completionStrategy) ? approvalValues.completionStrategy : undefined,
+      passRatio: toOptionalNumber(approvalValues.passRatio, 0.01)
+    };
+    delete config.task;
+    config.approval = approval;
+    return { ...node, config };
   }
   if (field === 'rawConfig') {
     return { ...node, config: isRecord(value) ? cloneValue(value) : {} };
@@ -692,31 +716,42 @@ function createNodeConfigSection(type: TriggerNodeType): FormSection {
     return {
       key: 'approval',
       label: type === 'humanReview' ? '复核设置' : '审批设置',
-      fields: [
-        selectField('assigneeType', '处理人类型', [
-          { label: '用户', value: 'user' },
-          { label: '角色', value: 'role' },
-          { label: '团队', value: 'team' },
-          { label: '表达式', value: 'expression' }
-        ], true),
-        textField('assigneeIds', '处理人标识', { placeholder: '多个标识使用逗号分隔' }),
-        numberField('approvalTimeoutSeconds', '审批超时秒数', 1),
-        selectField('onTimeout', '超时策略', [
-          { label: '标记失败', value: 'fail' },
-          { label: '自动通过', value: 'autoApprove' },
-          { label: '自动驳回', value: 'autoReject' },
-          { label: '继续执行', value: 'continue' }
-        ]),
-        selectField('completionStrategy', '完成策略', [
-          { label: '任一人完成', value: 'any' },
-          { label: '全部完成', value: 'all' },
-          { label: '达到比例', value: 'ratio' }
-        ]),
-        {
-          ...numberField('passRatio', '通过比例', 0.01, 0.01, 1),
-          props: { min: 0.01, max: 1, step: 0.01, controls: true, visibleWhen: { field: 'completionStrategy', equals: 'ratio' } }
+      fields: [{
+        field: 'approval',
+        label: type === 'humanReview' ? '复核配置' : '审批配置',
+        component: 'lc-sub-form',
+        props: {
+          schema: {
+            columns: 1,
+            fields: [
+              selectField('assigneeType', '处理人类型', [
+                { label: '用户', value: 'user' },
+                { label: '角色', value: 'role' },
+                { label: '团队', value: 'team' },
+                { label: '表达式', value: 'expression' }
+              ], true),
+              textField('assigneeIds', '处理人标识', { placeholder: '多个标识使用逗号分隔' }),
+              numberField('timeoutSeconds', '审批超时秒数', 1),
+              selectField('onTimeout', '超时策略', [
+                { label: '标记失败', value: 'fail' },
+                { label: '自动通过', value: 'autoApprove' },
+                { label: '自动驳回', value: 'autoReject' },
+                { label: '继续执行', value: 'continue' }
+              ]),
+              selectField('completionStrategy', '完成策略', [
+                { label: '任一人完成', value: 'any' },
+                { label: '全部完成', value: 'all' },
+                { label: '达到比例', value: 'ratio' }
+              ]),
+              {
+                ...numberField('passRatio', '通过比例', 0.01, 0.01, 1),
+                props: { min: 0.01, max: 1, step: 0.01, controls: true, visibleWhen: { field: 'completionStrategy', equals: 'ratio' } }
+              }
+            ],
+            actions: []
+          }
         }
-      ]
+      }]
     };
   }
 
@@ -1178,6 +1213,18 @@ function resolveTaskType(task?: TriggerWorkflowTaskRef): TriggerWorkflowTaskType
   if (task?.commandCode) return 'backendCommand';
   if (task?.procedureName) return 'storedProcedure';
   return 'backendCommand';
+}
+
+function isApprovalAssigneeType(value: unknown): value is 'user' | 'role' | 'team' | 'expression' {
+  return value === 'user' || value === 'role' || value === 'team' || value === 'expression';
+}
+
+function isApprovalTimeout(value: unknown): value is 'fail' | 'autoApprove' | 'autoReject' | 'continue' {
+  return value === 'fail' || value === 'autoApprove' || value === 'autoReject' || value === 'continue';
+}
+
+function isCompletionStrategy(value: unknown): value is 'any' | 'all' | 'ratio' {
+  return value === 'any' || value === 'all' || value === 'ratio';
 }
 
 function toStringList(value: unknown) {

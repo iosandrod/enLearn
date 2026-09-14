@@ -81,6 +81,10 @@ function normalizeNodeConfig(
   nodeId = '',
   workflowCode = ''
 ) {
+  if (nodeType === 'manualApproval' || nodeType === 'humanReview') {
+    const { task: _task, ...approvalConfig } = config;
+    return approvalConfig;
+  }
   const normalizedConfig = nodeType === 'webhook'
     ? { ...config, webhook: normalizeWebhookConfig(config.webhook) }
     : config;
