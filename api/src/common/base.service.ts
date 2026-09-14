@@ -280,19 +280,33 @@ export abstract class BaseService implements ServiceExecutor {
 
     const source = String(data.function_source ?? '').trim();
     validateRegisteredCommandSource(source);
-    const handler = parseRegisteredCommandFunction(source);
+    const logPrefix = `workflow-command ${serviceName}.${code}`;
+    console.info(`[${logPrefix}] start`, {
+      accountId: context.accountId,
+      version: data.version
+    });
+    const handler = parseRegisteredCommandFunction(source, { logPrefix });
 
-    const invocation = Promise.resolve(handler.call(this, {
-      payload: postData,
-      context: context as unknown as Record<string, unknown>,
-      service: this,
-      command: {
-        id: data.id,
-        serviceName,
-        commandCode: code,
-        version: data.version
-      }
-    }));
+    const invocation = Promise.resolve()
+      .then(() => handler.call(this, {
+        payload: postData,
+        context: context as unknown as Record<string, unknown>,
+        service: this,
+        command: {
+          id: data.id,
+          serviceName,
+          commandCode: code,
+          version: data.version
+        }
+      }))
+      .then((result) => {
+        console.info(`[${logPrefix}] success`);
+        return result;
+      })
+      .catch((error) => {
+        console.error(`[${logPrefix}] failed`, error instanceof Error ? error.stack ?? error.message : error);
+        throw error;
+      });
     const timeoutMs = Math.max(1, Number(data.timeout_seconds ?? 30)) * 1000;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_, reject) => {

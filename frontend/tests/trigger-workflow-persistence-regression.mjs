@@ -19,6 +19,13 @@ const migrationSource = await readFile(
   ),
   'utf8',
 );
+const pageScriptRuntimeSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/runtime/lowcode-page-script-runtime.ts',
+    import.meta.url,
+  ),
+  'utf8',
+);
 const saveDialogMigrationSource = await readFile(
   new URL(
     '../../supabase/migrations/20260910050000_trigger_workflow_save_dialog.sql',
@@ -46,6 +53,16 @@ assert.match(
   pageSource,
   /const triggerWorkflowDocumentType = 'trigger-workflow'[\s\S]*async function saveWorkflow[\s\S]*confirmLowCodePage\(\{[\s\S]*pageCode: 'workflow-model-management-edit'[\s\S]*submitOnConfirm: true[\s\S]*disableFormAutoLoad: true[\s\S]*draftSchema: schema/,
   'Save must open the workflow model edit page for both new and existing workflows.',
+);
+assert.match(
+  pageSource,
+  /disableFormAutoLoad: true,[\s\S]*\.\.\.\(schema\.id \? \{ filters: \{ id: schema\.id \} \} : \{\}\),/,
+  'Save must pass the current workflow ID as the edit form filter instead of relying on the dialog route query.',
+);
+assert.match(
+  pageScriptRuntimeSource,
+  /'formInitialValues',[\s\S]*'filters',[\s\S]*'disableFormAutoLoad'/,
+  'Script-driven low-code dialogs must preserve the filters option when sanitizing their configuration.',
 );
 assert.match(
   pageSource,

@@ -106,7 +106,7 @@ async function main() {
     field: 'id',
     id: 'page-1',
     tableName: 'lowcode_pages',
-    clientMode: undefined,
+    clientMode: 'admin',
   });
   assert.deepEqual(result, {
     id: 'page-1',
@@ -114,6 +114,20 @@ async function main() {
     title: '系统表单',
     page_type: 'list',
   });
+
+  const filterIdService = new TestAdminService();
+  await filterIdService.execute(
+    'saveItem',
+    {
+      tableName: 'lowcode_pages',
+      filters: { id: 'page-by-filter' },
+      title: '通过 filters 定位'
+    },
+    {} as ServiceContext,
+  );
+  assert.equal(filterIdService.call.operation, 'update');
+  assert.equal(filterIdService.call.field, 'id');
+  assert.equal(filterIdService.call.id, 'page-by-filter');
 
   const uuidService = new TestUuidAdminService();
   await uuidService.execute(

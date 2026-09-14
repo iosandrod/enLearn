@@ -71,48 +71,29 @@ const renderField = computed<LowCodeField>(() => {
   delete fieldProps.visibleWhen;
   delete fieldProps.onChange;
 
+  if (props.field.component === 'vxe-select') {
+    applyDefaultSelectProps(fieldProps);
+  }
+
+  if (props.field.component === 'lc-array-table' && Array.isArray(fieldProps.columns)) {
+    fieldProps.columns = fieldProps.columns.map((column) => {
+      if (!isRecord(column) || column.component !== 'vxe-select') return column;
+
+      const columnProps = isRecord(column.props) ? { ...column.props } : {};
+      applyDefaultSelectProps(columnProps);
+      return {
+        ...column,
+        props: columnProps,
+      };
+    });
+  }
+
   if (props.field.component === 'lc-monaco-editor') {
     fieldProps.dialog = fieldProps.dialog !== false;
     fieldProps.dialogTitle ||= `编辑${props.field.label || '代码'}`;
     fieldProps.language ||= 'javascript';
     fieldProps.theme ||= 'vs';
     fieldProps.scriptThisType ||= 'LowCodeButtonScriptThis';
-  }
-
-  if (props.field.component === 'lc-array-table' && Array.isArray(fieldProps.toolbarButtons)) {
-    fieldProps.toolbarButtons = fieldProps.toolbarButtons.map((button) => {
-      if (
-        typeof button !== 'object' ||
-        button === null ||
-        Array.isArray(button) ||
-        button.command !== 'add' ||
-        typeof button.execute === 'function'
-      ) {
-        return button;
-      }
-
-      return {
-        ...button,
-        execute: ({ action, addRow }: {
-          action?: { row?: Record<string, unknown> };
-          addRow?: (row?: Record<string, unknown>) => unknown;
-        }) => addRow?.(action?.row),
-      };
-    });
-
-    const configuredToolbarAction = fieldProps.onToolbarAction;
-    fieldProps.onToolbarAction = (payload: {
-      action?: { command?: unknown; row?: Record<string, unknown> };
-      rows?: unknown[];
-    }) => {
-      if (payload?.action?.command === 'add' && Array.isArray(payload.rows)) {
-        payload.rows.push({
-          ...(payload.action.row ?? {}),
-          children: [],
-        });
-      }
-      if (typeof configuredToolbarAction === 'function') configuredToolbarAction(payload);
-    };
   }
 
   if (props.disabled) {
@@ -193,6 +174,11 @@ function handleSelect(payload: LowCodeFormMaterialSelectPayload) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function applyDefaultSelectProps(fieldProps: Record<string, unknown>) {
+  fieldProps.filterable = fieldProps.filterable !== false;
+  fieldProps.allowCreate = fieldProps.allowCreate !== false;
 }
 
 function handleNestedFieldChange(payload: {

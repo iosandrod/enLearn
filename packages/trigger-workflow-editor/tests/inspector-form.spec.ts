@@ -219,11 +219,7 @@ assert.equal(
     ?.field,
   'kind'
 );
-assert.notEqual(
-  resolvedDatabaseScheduleSchema,
-  databaseScheduleSchema,
-  'Database schemas must be cloned before rendering.'
-);
+assert.equal(resolvedDatabaseScheduleSchema, databaseScheduleSchema);
 
 const legacyScheduleSchema: TriggerInspectorFormSchema = {
   columns: 1,
@@ -273,7 +269,7 @@ const override: TriggerInspectorFormSchema = {
 };
 const resolvedOverride = resolveTriggerNodeFormSchema(approvalNode, { manualApproval: override });
 assert.equal(resolvedOverride.fields[0]?.label, '数据库节点名称');
-assert.notEqual(resolvedOverride, override, 'Database schemas must be cloned before rendering.');
+assert.equal(resolvedOverride, override);
 
 const invalidOverride = {
   columns: 1,
@@ -287,6 +283,7 @@ assert.ok(fallbackSchema.fields.some((field) => field.field === 'assigneeType'))
 const model = createTriggerNodeFormModel(approvalNode);
 assert.equal(model.name, '经理审批');
 assert.equal(model.assigneeIds, 'manager');
+assert.equal((model.task as Record<string, unknown>).commandCode, approvalNode.config?.task?.commandCode ?? '');
 
 const renamed = updateTriggerNodeFromFormField(approvalNode, 'name', '主管审批');
 assert.equal(renamed.name, '主管审批');
@@ -302,6 +299,14 @@ assert.equal(configured.config?.task?.commandCode, 'approval.manager.wait');
 assert.equal(configured.config?.task?.retry?.factor, 2.5);
 assert.equal(configured.config?.task?.retry?.minTimeoutMs, 500);
 assert.equal(configured.config?.task?.retry?.maxTimeoutMs, 30_000);
+
+const nestedTask = updateTriggerNodeFromFormField(
+  { id: 'nested', type: 'task', name: 'Nested' },
+  'task',
+  { taskType: 'backendCommand', commandCode: 'nested.command', procedureSchema: 'public' }
+);
+assert.equal(nestedTask.config?.task?.type, 'backendCommand');
+assert.equal(nestedTask.config?.task?.commandCode, 'nested.command');
 
 let frontendTask = updateTriggerNodeFromFormField(
   { id: 'front', type: 'task', name: 'Front' },

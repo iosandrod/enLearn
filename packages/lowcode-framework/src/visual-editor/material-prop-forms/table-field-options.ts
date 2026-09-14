@@ -457,7 +457,10 @@ export async function loadFormDesignerTableFieldOptions(
     limit: 1,
   });
   const parentPage = Array.isArray(parentPages) ? parentPages[0] : undefined;
-  if (!parentPage) return localOptions;
+  if (!parentPage) {
+    const metadataOptions = await loadMainTableMetadataOptions(serviceApi, currentPage);
+    return mergeTableFieldOptions(localOptions, metadataOptions);
+  }
 
   const parentOptions = collectPageTableFieldOptions(parentPage);
   const mainGridOptions = collectMainGridFieldOptions(parentPage);

@@ -38,6 +38,13 @@ export class StandaloneServiceRouter {
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
+    if (serviceName === 'workflow') {
+      return this.workflowService.executeRegisteredCommand(commandCode, postData, {
+        ...context,
+        serviceName
+      });
+    }
+
     return this.domainRouter.invokeRegisteredCommand(serviceName, commandCode, postData, {
       ...context,
       serviceName

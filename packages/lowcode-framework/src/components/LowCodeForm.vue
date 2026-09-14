@@ -285,7 +285,7 @@ const formItemPropsByField = computed(() =>
     prev[field.field] = {
       field: field.field,
       title: field.label,
-      showTitle: field.showTitle,
+      showTitle: resolveFieldShowTitle(field),
       span,
       rules: formRules.value[field.field],
       ...(readFieldVisibilityCondition(field)
@@ -617,11 +617,29 @@ function fieldGridCellStyle(field: LowCodeField) {
   };
 }
 
+function resolveFieldShowTitle(field: LowCodeField) {
+  if (field.showTitle === false) return false;
+
+  // Composite controls render their own content. Do not leave an empty VXE
+  // title row when their configured label is empty or still uses the generic
+  // material name.
+  if (field.component === 'lc-array-table' || field.component === 'lc-sub-form') {
+    return (
+      typeof field.label === 'string' &&
+      field.label.length > 0 &&
+      field.label !== '数组表格' &&
+      field.label !== '子表单'
+    );
+  }
+
+  return field.showTitle;
+}
+
 function resolveFormItemProps(field: LowCodeField) {
   return formItemPropsByField.value[field.field] ?? {
     field: field.field,
     title: field.label,
-    showTitle: field.showTitle,
+    showTitle: resolveFieldShowTitle(field),
     span: getFieldVxeSpan(field),
     className: 'lc-form-item',
     contentClassName: 'lc-form-item__content',

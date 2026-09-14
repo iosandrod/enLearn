@@ -578,6 +578,7 @@ export class LowCodePageScriptRuntime {
       'confirmAction',
       'submitOnConfirm',
       'formInitialValues',
+      'filters',
       'disableFormAutoLoad',
       'includeEventHistory',
       'maxEventHistory',

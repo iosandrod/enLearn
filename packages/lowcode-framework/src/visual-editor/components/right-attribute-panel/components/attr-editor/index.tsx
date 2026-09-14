@@ -475,17 +475,35 @@ export const AttrEditor = defineComponent({
       );
     };
 
-    const formState = computed(() => {
-      const block = currentBlock.value;
-      if (!block || !definition.value) return null;
-      const schema = createMaterialPropForm(definition.value, block);
+    const formState = ref<{
+      schema: ReturnType<typeof createMaterialPropForm>;
+      model: Record<string, unknown>;
+    } | null>(null);
 
-      return {
-        schema,
-        model: createMaterialPropModel(block, schema.fields),
-        optionSources: optionSources.value,
-      };
-    });
+    // Keep incomplete nested edits (for example a newly added filter row) in the
+    // mounted form until the selected block or restored history state changes.
+    watch(
+      [
+        () => currentBlock.value?._vid,
+        () => currentBlock.value?.componentKey,
+        () => historyState.restoreVersion,
+        definition,
+      ],
+      () => {
+        const block = currentBlock.value;
+        if (!block?._vid || !definition.value) {
+          formState.value = null;
+          return;
+        }
+
+        const schema = createMaterialPropForm(definition.value, block);
+        formState.value = {
+          schema,
+          model: createMaterialPropModel(block, schema.fields),
+        };
+      },
+      { immediate: true },
+    );
 
     const handleFieldChange = (payload: {
       field: LowCodeField;
@@ -518,7 +536,7 @@ export const AttrEditor = defineComponent({
                   key={`${currentBlock.value._vid}-${currentBlock.value.componentKey}-${historyState.restoreVersion}`}
                   schema={formState.value!.schema}
                   modelValue={formState.value!.model}
-                  optionSources={formState.value!.optionSources}
+                  optionSources={optionSources.value}
                   vertical={true}
                   onFieldChange={handleFieldChange}
                 />

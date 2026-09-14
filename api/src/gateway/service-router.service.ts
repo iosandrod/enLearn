@@ -98,6 +98,16 @@ export class ServiceRouterService {
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
+    if (serviceName === 'workflow') {
+      if (!this.workflowService.executeRegisteredCommand) {
+        throw new BadRequestException('Service workflow does not support registered workflow commands.');
+      }
+      return this.workflowService.executeRegisteredCommand(commandCode, postData, {
+        ...context,
+        serviceName
+      });
+    }
+
     if (!isDomainServiceName(serviceName)) {
       throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
     }

@@ -17,12 +17,33 @@ export type RegisteredCommandInput = {
 
 export type RegisteredCommandHandler = (input: RegisteredCommandInput) => unknown | Promise<unknown>;
 
+export type RegisteredCommandRuntimeOptions = {
+  /** Prefix used when forwarding logs from the isolated function sandbox. */
+  logPrefix?: string;
+};
+
 /** Parse a database-stored function without exposing Node's module globals. */
-export function parseRegisteredCommandFunction(source: string): RegisteredCommandHandler {
+export function parseRegisteredCommandFunction(
+  source: string,
+  options: RegisteredCommandRuntimeOptions = {}
+): RegisteredCommandHandler {
   validateRegisteredCommandSource(source);
   let value: unknown;
   try {
-    const sandbox = Object.create(null) as Record<string, unknown>;
+    const prefix = options.logPrefix?.trim() || 'workflow-registered-command';
+    const forward = (level: 'log' | 'info' | 'warn' | 'error') => (...args: unknown[]) => {
+      // The VM context has its own console implementation. Forwarding explicitly
+      // keeps database-defined command logs visible in the API/worker thread.
+      console[level](`[${prefix}]`, ...args);
+    };
+    const sandbox = {
+      console: {
+        log: forward('log'),
+        info: forward('info'),
+        warn: forward('warn'),
+        error: forward('error')
+      }
+    } as Record<string, unknown>;
     value = new vm.Script(`(${source.trim().replace(/;\s*$/, '')})`, {
       filename: 'workflow-registered-command.js'
     }).runInNewContext(sandbox, {

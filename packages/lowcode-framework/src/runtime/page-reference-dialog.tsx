@@ -112,6 +112,8 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
   confirmAction?: string;
   submitOnConfirm?: boolean;
   formInitialValues?: Record<string, Record<string, unknown>>;
+  /** Explicit filters for form data sources. These replace page-internal filters. */
+  filters?: Record<string, unknown>;
   disableFormAutoLoad?: boolean;
   includeEventHistory?: boolean;
   maxEventHistory?: number;
@@ -268,11 +270,27 @@ function prepareConfirmPage(
   config: LowCodePageConfirmDialogConfig,
 ) {
   const initialValues = config.formInitialValues ?? {};
-  if (!Object.keys(initialValues).length && !config.disableFormAutoLoad) return page;
+  const hasFilterOverride = isRecord(config.filters);
+  if (!Object.keys(initialValues).length && !config.disableFormAutoLoad && !hasFilterOverride) return page;
+  const formSourceKeys = new Set<string>();
 
   const prepareBlocks = (blocks: LowCodePageBlock[]): LowCodePageBlock[] => blocks.map((block) => {
     if (block.kind === 'form') {
+      formSourceKeys.add(block.id);
       const values = initialValues[block.id];
+      const dataSource = block.dataSource
+        ? {
+            ...block.dataSource,
+            ...(hasFilterOverride
+              ? {
+                  postData: {
+                    ...(block.dataSource.postData ?? {}),
+                    filters: cloneValue(config.filters),
+                  },
+                }
+              : {}),
+          }
+        : undefined;
       return {
         ...block,
         ...(values
@@ -283,12 +301,12 @@ function prepareConfirmPage(
               },
             }
           : {}),
-        ...(config.disableFormAutoLoad && block.dataSource
+        ...(dataSource
+          ? { dataSource }
+          : {}),
+        ...(config.disableFormAutoLoad && dataSource
           ? {
-              dataSource: {
-                ...block.dataSource,
-                autoLoad: false,
-              },
+              dataSource: { ...dataSource, autoLoad: false },
             }
           : {}),
       } satisfies LowCodePageFormBlock;
@@ -308,17 +326,28 @@ function prepareConfirmPage(
     return block;
   });
 
+  const preparedBlocks = prepareBlocks(page.schema.blocks);
+  const preparedDataSources = page.schema.dataSources
+    ? Object.fromEntries(Object.entries(page.schema.dataSources).map(([key, source]) => {
+        const nextSource = config.disableFormAutoLoad
+          ? { ...source, autoLoad: false }
+          : { ...source };
+        if (hasFilterOverride && formSourceKeys.has(key)) {
+          nextSource.postData = {
+            ...(nextSource.postData ?? {}),
+            filters: cloneValue(config.filters),
+          };
+        }
+        return [key, nextSource];
+      }))
+    : page.schema.dataSources;
+
   return {
     ...page,
     schema: {
       ...page.schema,
-      dataSources: config.disableFormAutoLoad
-        ? Object.fromEntries(Object.entries(page.schema.dataSources ?? {}).map(([key, source]) => [
-            key,
-            { ...source, autoLoad: false },
-          ]))
-        : page.schema.dataSources,
-      blocks: prepareBlocks(page.schema.blocks),
+      dataSources: preparedDataSources,
+      blocks: preparedBlocks,
     },
   };
 }

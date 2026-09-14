@@ -48,6 +48,8 @@ type ContentNodeMeta = {
 
 type DialogFormController = {
   validate: () => Promise<boolean>;
+  /** Commit values buffered by controls such as vxe-input before validation. */
+  commitPendingValues: () => void;
   setForm: (form: InstanceType<typeof LowCodeForm> | null) => void;
 };
 
@@ -82,6 +84,11 @@ function unregisterDialogFormController(
 
 async function validateDialogForms(dialogId: string) {
   const controllers = [...(dialogFormControllers.get(dialogId) ?? [])];
+  // A dialog confirm action validates the form directly instead of going
+  // through LowCodeForm.submit(). Flush control-local pending values first so
+  // the confirm result (and any onUpdate:modelValue listeners) contains the
+  // value currently visible in the editor.
+  controllers.forEach((controller) => controller.commitPendingValues());
   const results = await Promise.all(controllers.map((controller) => controller.validate()));
   return results.every(Boolean);
 }
@@ -95,6 +102,7 @@ function ensureDialogFormController(dialogId: string, key: string) {
   let formInstance: InstanceType<typeof LowCodeForm> | null = null;
   const controller: DialogFormController = {
     validate: () => formInstance?.validate() ?? Promise.resolve(false),
+    commitPendingValues: () => formInstance?.commitPendingValues(),
     setForm: (value) => {
       formInstance = value;
     },

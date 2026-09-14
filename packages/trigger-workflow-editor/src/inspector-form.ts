@@ -264,7 +264,7 @@ export function resolveTriggerNodeFormSchema(
   if (databaseSchema) {
     try {
       assertTriggerInspectorFormSchema(databaseSchema);
-      return enhanceTaskFormSchema(node, databaseSchema);
+      return databaseSchema;
     } catch {
       // A malformed database definition must not make the workflow editor unusable.
     }
@@ -279,7 +279,7 @@ export function resolveTriggerEdgeFormSchema(
   if (schema) {
     try {
       assertTriggerInspectorFormSchema(schema);
-      return cloneValue(schema);
+      return schema;
     } catch {
       // Keep the built-in edge inspector available when a database definition is invalid.
     }
@@ -396,7 +396,20 @@ export function createTriggerNodeFormModel(node: TriggerWorkflowNode) {
     expression: config.expression ?? '',
     branches: cloneValue(config.branches ?? []),
     metadata: cloneValue(config.metadata ?? {}),
-    rawConfig: cloneValue(config)
+    rawConfig: cloneValue(config),
+    // Database-backed task forms use an lc-sub-form bound to the task object.
+    // Keep the legacy flat values above for older definitions, but also expose
+    // the nested model so the current database schema can populate on reopen.
+    task: {
+      taskType: resolveTaskType(config.task),
+      frontendFunction: config.task?.frontendFunction ?? '',
+      commandCode: config.task?.commandCode ?? '',
+      procedureName: config.task?.procedureName ?? '',
+      procedureSchema: config.task?.procedureSchema ?? 'public',
+      taskInput: cloneValue(config.task?.input ?? {}),
+      outputPath: config.task?.outputPath ?? '',
+      outputMapping: cloneValue(config.task?.outputMapping ?? {})
+    }
   };
 }
 
@@ -504,6 +517,14 @@ export function updateTriggerNodeFromFormField(
   if (field === 'description') {
     const description = String(value ?? '');
     return description ? { ...node, description } : omitDescription(node);
+  }
+  if (field === 'task') {
+    const taskValues = isRecord(value) ? value : {};
+    return Object.entries(taskValues).reduce(
+      (current, [taskField, taskValue]) =>
+        updateTriggerNodeFromFormField(current, taskField, taskValue),
+      node
+    );
   }
   if (field === 'rawConfig') {
     return { ...node, config: isRecord(value) ? cloneValue(value) : {} };
@@ -1157,48 +1178,6 @@ function resolveTaskType(task?: TriggerWorkflowTaskRef): TriggerWorkflowTaskType
   if (task?.commandCode) return 'backendCommand';
   if (task?.procedureName) return 'storedProcedure';
   return 'backendCommand';
-}
-
-function enhanceTaskFormSchema(
-  node: TriggerWorkflowNode,
-  schema: TriggerInspectorFormSchema
-) {
-  const cloned = cloneValue(schema);
-  if (!taskNodeTypes.has(node.type)) return cloned;
-
-  const builtIn = createTriggerNodeFormSchema(node);
-  const requiredFields = new Set(
-    createTaskSections(node.type).flatMap((section) => section.fields.map((field) => field.field))
-  );
-  const taskFields = builtIn.fields.filter((field) => requiredFields.has(field.field));
-  const firstTaskIndex = cloned.fields.findIndex((field) => requiredFields.has(field.field));
-  const insertionIndex = firstTaskIndex < 0 ? cloned.fields.length : firstTaskIndex;
-  cloned.fields = [
-    ...cloned.fields.slice(0, insertionIndex).filter((field) => !requiredFields.has(field.field)),
-    ...taskFields,
-    ...cloned.fields.slice(insertionIndex).filter((field) => !requiredFields.has(field.field))
-  ];
-  const tabsLayout = cloned.layout?.find((item) => item.kind === 'tabs');
-  if (!tabsLayout || tabsLayout.kind !== 'tabs') return createTriggerNodeFormSchema(node);
-
-  const builtInTabs = builtIn.layout?.find((item) => item.kind === 'tabs');
-  if (!builtInTabs || builtInTabs.kind !== 'tabs') return cloned;
-  for (const key of ['task', 'execution']) {
-    const sourceTab = builtInTabs.tabs.find((tab) => tab.key === key);
-    if (!sourceTab) continue;
-    const targetTab = tabsLayout.tabs.find(
-      (tab) => tab.key === key || (key === 'execution' && tab.key === 'queue-retry')
-    );
-    if (targetTab) {
-      targetTab.key = key;
-      targetTab.label = sourceTab.label;
-      targetTab.blocks = sourceTab.blocks;
-    } else {
-      const advancedIndex = tabsLayout.tabs.findIndex((tab) => tab.key === 'advanced');
-      tabsLayout.tabs.splice(advancedIndex < 0 ? tabsLayout.tabs.length : advancedIndex, 0, sourceTab);
-    }
-  }
-  return cloned;
 }
 
 function toStringList(value: unknown) {

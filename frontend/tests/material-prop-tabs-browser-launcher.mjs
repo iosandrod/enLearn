@@ -12,6 +12,10 @@ const browserExecutable = process.env.MATERIAL_PROP_BROWSER ||
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 const artifactDir = join(workspaceDir, 'artifacts');
+const tableFieldOptionsModuleUrl = `/@fs/${join(
+  workspaceDir,
+  'packages/lowcode-framework/src/visual-editor/material-prop-forms/table-field-options.ts',
+).replaceAll('\\', '/')}`;
 const playwrightModule = await import(pathToFileURL(playwrightPath).href);
 const browser = await playwrightModule.default.chromium.launch({
   executablePath: browserExecutable,
@@ -90,7 +94,7 @@ async function verifyTabs(expectedLabels) {
   for (const label of expectedLabels) {
     assert.ok(labels.some((value) => value.trim() === label), `missing inner tab ${label}`);
   }
-  const metrics = await page.locator('.material-prop-form .lc-form-tabs').evaluate((element) => {
+  const metrics = await page.locator('.material-prop-form .lc-form-tabs').first().evaluate((element) => {
     const rectangle = element.getBoundingClientRect();
     const panel = element.closest('[class*="panelBody"]')?.getBoundingClientRect();
     return {
@@ -124,6 +128,37 @@ try {
   await mkdir(artifactDir, { recursive: true });
   await waitForDesigner();
 
+  const standaloneFieldOptions = await page.evaluate(async (moduleUrl) => {
+    const { loadFormDesignerTableFieldOptions } = await import(moduleUrl);
+    return loadFormDesignerTableFieldOptions(
+      {
+        async invoke(service, method, payload) {
+          if (service === 'lowcode' && method === 'listItems') return [];
+          if (service === 'lowcode' && method === 'listTableColumns') {
+            return [
+              { name: 'id', comment: 'Order ID' },
+              { name: 'status', comment: 'Status' },
+            ];
+          }
+          throw new Error(`Unexpected API call ${service}.${method}: ${JSON.stringify(payload)}`);
+        },
+      },
+      {
+        id: 'standalone-orders-form',
+        schema: {
+          dataSources: {
+            orderForm: { key: 'orderForm', tableName: 'public.orders' },
+          },
+          blocks: [{ kind: 'form', sourceKey: 'orderForm', schema: { fields: [] } }],
+        },
+      },
+    );
+  }, tableFieldOptionsModuleUrl);
+  assert.deepEqual(standaloneFieldOptions, [
+    { label: 'Order ID (id)', value: 'id' },
+    { label: 'Status (status)', value: 'status' },
+  ]);
+
   const selectedForm =
     await selectTreeNode('数据源信息', 'form') ||
     await selectTreeNode('普通表单', 'form');
@@ -142,6 +177,47 @@ try {
     'Designer did not query the selected form material property definition by exact code.',
   );
   await verifyTabs(['基础', '数据', '结构', '按钮', '行为']);
+  await innerTab('请求参数').click();
+  const requestParamsField = page.locator(
+    '.material-prop-form [data-lc-field="postDataJson"]',
+  );
+  await requestParamsField.waitFor({ state: 'visible' });
+  await requestParamsField.locator('.vxe-tabs-header--item').filter({ hasText: '筛选条件' }).click();
+  const filtersTable = requestParamsField.locator('[data-lc-field="filters"] .lc-array-table');
+  await filtersTable.waitFor({ state: 'visible' });
+  const readFilterRowCount = () => filtersTable.locator('.vxe-body--row').evaluateAll((rows) => (
+    new Set(rows.map((row) => row.getAttribute('rowid')).filter(Boolean)).size
+  ));
+  const filterRowsBefore = await readFilterRowCount();
+  await filtersTable.getByText('新增条件', { exact: true }).click();
+  await page.waitForTimeout(100);
+  assert.equal(
+    await readFilterRowCount(),
+    filterRowsBefore + 1,
+    'Adding a request filter must keep the incomplete row mounted for editing.',
+  );
+  const newestFilterRow = filtersTable
+    .locator('.vxe-table--main-wrapper .vxe-body--row')
+    .last();
+  const fieldSelect = newestFilterRow.locator('.vxe-select').nth(1);
+  await fieldSelect.click();
+  const visibleSelectPanel = page.locator('.vxe-select--panel:visible').last();
+  await visibleSelectPanel.waitFor({ state: 'visible' });
+  assert.ok(
+    await visibleSelectPanel.locator('.vxe-select-option').count() > 0,
+    'The request-filter field select should expose page/table fields.',
+  );
+  const customField = `custom_filter_${Date.now()}`;
+  const fieldInput = fieldSelect.locator('input').first();
+  const searchInput = visibleSelectPanel.locator('.vxe-select-search--input input');
+  await searchInput.fill(customField);
+  await page.waitForTimeout(450);
+  await visibleSelectPanel.getByText(customField, { exact: true }).click();
+  assert.equal(
+    await fieldInput.inputValue(),
+    customField,
+    'The request-filter field select should accept a custom field name.',
+  );
   await innerTab('结构').click();
   await page.getByText('表单字段', { exact: true }).last().waitFor({ state: 'visible' });
   const formFieldsTable = page.locator(

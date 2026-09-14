@@ -37,6 +37,7 @@ import {
   createApprovalTriggerWorkflow,
   getTriggerWorkflowJobPlanSignature,
   normalizeTriggerWorkflow,
+  validateTriggerWorkflow,
   triggerInspectorNodeTypes,
   triggerNodeFormSchemaCodeByType,
   type TriggerInspectorFormSchema,
@@ -193,6 +194,18 @@ async function newWorkflow() {
 
 async function saveWorkflow() {
   if (isJobBusy.value) return;
+  const validationErrors = validateTriggerWorkflow(model.value)
+    .filter((issue) => issue.level === 'error');
+  if (validationErrors.length) {
+    await VxeUI.modal.alert({
+      title: '流程校验失败',
+      status: 'error',
+      content: validationErrors
+        .map((issue) => `${issue.path}：${issue.message}`)
+        .join('\n')
+    });
+    return;
+  }
   isJobBusy.value = true;
   try {
     const schema = { ...model.value };
@@ -203,6 +216,7 @@ async function saveWorkflow() {
       cancelLabel: '取消',
       submitOnConfirm: true,
       disableFormAutoLoad: true,
+      ...(schema.id ? { filters: { id: schema.id } } : {}),
       formInitialValues: {
         'edit-form': {
           id: schema.id ?? '',

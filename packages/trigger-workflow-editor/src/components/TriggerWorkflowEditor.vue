@@ -563,8 +563,8 @@ async function openSelectedInspectorDialog() {
         size: 'mini'
       },
       onUpdateModel(values) {
-        if (node) replaceNodeFromFormModel(node, values);
-        else if (edge) replaceEdgeFromFormModel(edge, values);
+        if (node) replaceNodeFromFormModel(node, values, schema);
+        else if (edge) replaceEdgeFromFormModel(edge, values, schema);
       }
     },
     actions: [
@@ -588,11 +588,22 @@ function closeInspectorDialog() {
 
 function replaceNodeFromFormModel(
   node: TriggerWorkflowNode,
-  values: Record<string, unknown>
+  values: Record<string, unknown>,
+  formSchema?: TriggerInspectorFormSchema
 ) {
   if (props.readonly) return;
-  let next = node;
-  Object.entries(values).forEach(([field, value]) => {
+  // The dialog keeps the node object captured when it was opened. Each form
+  // update replaces the node in currentModel, so resolve the latest instance
+  // before applying the next field; otherwise editing a second field can
+  // rebuild from stale config and discard the first edit.
+  const latestNode = currentModel.value.nodes.find((item) => item.id === node.id) ?? node;
+  let next = latestNode;
+  const fields = formSchema?.fields.map((item) => item.field) ?? Object.keys(values);
+  // rawConfig is a full snapshot. Apply it first, otherwise it can overwrite
+  // the newer task/sub-form values that follow it in the database schema.
+  fields.sort((left, right) => Number(right === 'rawConfig') - Number(left === 'rawConfig'));
+  fields.forEach((field) => {
+    const value = values[field];
     next = updateTriggerNodeFromFormField(next, field, value);
     if (field === 'taskType') next = applyTaskTypeDefaults(next);
   });
@@ -601,11 +612,15 @@ function replaceNodeFromFormModel(
 
 function replaceEdgeFromFormModel(
   edge: TriggerWorkflowModel['edges'][number],
-  values: Record<string, unknown>
+  values: Record<string, unknown>,
+  formSchema?: TriggerInspectorFormSchema
 ) {
   if (props.readonly) return;
-  let next = edge;
-  Object.entries(values).forEach(([field, value]) => {
+  const latestEdge = currentModel.value.edges.find((item) => item.id === edge.id) ?? edge;
+  let next = latestEdge;
+  const fields = formSchema?.fields.map((item) => item.field) ?? Object.keys(values);
+  fields.forEach((field) => {
+    const value = values[field];
     next = updateTriggerEdgeFromFormField(next, field, value);
   });
   replaceEdge(next);
@@ -669,24 +684,16 @@ function updateWorkflowField(field: 'code' | 'name', event: Event) {
   );
 }
 
-function updateSelectedNodeFromLowCodeForm(payload: {
-  field: { field: string };
-  value: unknown;
-}) {
+function updateSelectedNodeFromLowCodeForm(values: Record<string, unknown>) {
   const node = selectedNode.value;
   if (!node || props.readonly) return;
-  let next = updateTriggerNodeFromFormField(node, payload.field.field, payload.value);
-  if (payload.field.field === 'taskType') next = applyTaskTypeDefaults(next);
-  replaceNode(next);
+  replaceNodeFromFormModel(node, values, selectedNodeFormSchema.value);
 }
 
-function updateSelectedEdgeFromLowCodeForm(payload: {
-  field: { field: string };
-  value: unknown;
-}) {
+function updateSelectedEdgeFromLowCodeForm(values: Record<string, unknown>) {
   const edge = selectedEdge.value;
   if (!edge || props.readonly) return;
-  replaceEdge(updateTriggerEdgeFromFormField(edge, payload.field.field, payload.value));
+  replaceEdgeFromFormModel(edge, values, selectedEdgeFormSchema.value);
 }
 
 function replaceNode(node: TriggerWorkflowNode) {
@@ -1296,7 +1303,7 @@ defineExpose({
             :readonly="readonly"
             vertical
             size="mini"
-            @field-change="updateSelectedNodeFromLowCodeForm"
+            @update:model-value="updateSelectedNodeFromLowCodeForm"
           />
         </div>
 
@@ -1314,7 +1321,7 @@ defineExpose({
             :readonly="readonly"
             vertical
             size="mini"
-            @field-change="updateSelectedEdgeFromLowCodeForm"
+            @update:model-value="updateSelectedEdgeFromLowCodeForm"
           />
           <button type="button" class="trigger-editor__danger" :disabled="readonly" @click="deleteSelection">
             <i class="ri-delete-bin-line" />删除连接

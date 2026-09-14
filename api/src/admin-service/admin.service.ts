@@ -274,10 +274,22 @@ export class AdminService extends BaseService {
     const payload = { ...this.readDataPayload(postData) };
     // __details is a low-code transport envelope, never a generic table field.
     delete payload.__details;
-    const id = postData.id ?? postData[primaryKey] ?? payload[primaryKey];
-    const hasId =
-      (typeof id === 'string' && Boolean(id.trim())) ||
-      (typeof id === 'number' && Number.isFinite(id));
+    // Older low-code clients send the record identity in filters while
+    // leaving the top-level id empty. Treat that as an update target too.
+    const filters = isRecord(postData.filters)
+      ? postData.filters as Record<string, unknown>
+      : {};
+    const id = [
+      postData.id,
+      postData[primaryKey],
+      filters[primaryKey],
+      filters.id,
+      payload[primaryKey]
+    ].find((value) =>
+      (typeof value === 'string' && Boolean(value.trim())) ||
+      (typeof value === 'number' && Number.isFinite(value))
+    );
+    const hasId = id !== undefined;
 
     delete payload.primaryKey;
     delete payload.primary_key;
@@ -334,7 +346,11 @@ export class AdminService extends BaseService {
     }
 
     // Generic admin CRUD still uses the authenticated client so table RLS remains authoritative.
-    const client = await this.createCrudClient({ tableName }, context);
+    // admin.saveItem is the generic administrative CRUD endpoint. Use the
+    // service-role client here; the authenticated user is still validated by
+    // the gateway, while table-specific RLS policies must not turn a valid
+    // admin update into a false "record was not found" response.
+    const client = await this.createCrudClient({ tableName, clientMode: 'admin' }, context);
     const table = this.fromTable(client, tableName);
     const query = hasId
       ? table.update(payload).eq(primaryKey, id)

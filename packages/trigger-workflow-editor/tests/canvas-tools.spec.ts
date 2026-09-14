@@ -80,6 +80,11 @@ assert.match(
   /@node-drag-start="onNodeDragStart"[\s\S]*@node-drag-stop="onNodeDragStop"/,
   'Node moves should be recorded as a single history action.'
 );
+assert.match(
+  source,
+  /const latestNode = currentModel\.value\.nodes\.find\(\(item\) => item\.id === node\.id\)/,
+  'Inspector updates must apply to the latest node after each form change.'
+);
 
 for (const kind of ['approval', 'dataSync', 'aiAgent', 'custom'] as const) {
   const types = getTriggerNodeDefinitionsForKind(kind).map((definition) => definition.type);
