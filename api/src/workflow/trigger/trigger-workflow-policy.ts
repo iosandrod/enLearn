@@ -244,6 +244,10 @@ export function assertTriggerWorkflowJobPayload(
           throw new Error('Workflow humanTask adapter has an invalid executor Task ID.');
         }
         break;
+      case 'registeredTask':
+        throw new Error(
+          `Trigger.dev task "${executorTaskId}" is not registered for workflow-node execution.`
+        );
       default:
         throw new Error(`Unsupported Trigger workflow adapter type: ${adapterType || '(empty)'}.`);
     }

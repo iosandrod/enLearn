@@ -8,12 +8,6 @@ export type TriggerTaskCatalogItem = {
 
 export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
   {
-    id: 'workflow.instance.run',
-    name: '审批流程实例执行',
-    category: 'workflow',
-    description: '执行审批流程实例并管理等待点。'
-  },
-  {
     id: 'workflow.job.run',
     name: '通用后台作业',
     category: 'workflow',

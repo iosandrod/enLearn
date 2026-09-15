@@ -52,7 +52,36 @@ async function main() {
   assert.equal(completed.filter((id) => id === 'end').length, 1);
   assert.deepEqual(result.waiting, [{ nodeId: 'join', waitpointId: 'join:review' }]);
   await testDefaultJoinClaim();
+  await testExecutionTokenIsolation();
   console.log('workflow canonical execution kernel tests passed');
+}
+
+async function testExecutionTokenIsolation() {
+  const tokenIds: string[] = [];
+  const handlers = () => ({
+    complete: async ({ token }: { token: { id: string } }) => { tokenIds.push(token.id); },
+    waitHuman: async () => 'continued' as const,
+    createCc: async () => undefined,
+    executeService: async () => undefined,
+    waitTimer: async () => undefined,
+    recordSubProcess: async () => undefined,
+    selectNext: async () => [] as string[]
+  });
+  const minimalWorkflow: CanonicalWorkflow = {
+    schemaVersion: 1,
+    id: 'execution-isolation',
+    code: 'execution-isolation',
+    name: 'Execution isolation',
+    entryNodeId: 'end',
+    nodes: [node('end', 'end')],
+    edges: []
+  };
+
+  await new CanonicalExecutionKernel().execute(minimalWorkflow, handlers(), { executionId: 'run-1' });
+  await new CanonicalExecutionKernel().execute(minimalWorkflow, handlers(), { executionId: 'run-2' });
+
+  assert.equal(tokenIds.length, 2);
+  assert.notEqual(tokenIds[0], tokenIds[1]);
 }
 
 async function testDefaultJoinClaim() {

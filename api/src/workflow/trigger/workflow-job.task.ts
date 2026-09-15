@@ -164,7 +164,7 @@ export const workflowLegacyTimerTask = task({
   run: async (payload: Record<string, unknown>) => ({
     handledBy: 'workflow.timer.fire',
     deprecated: true,
-    message: 'Workflow timer nodes are now executed inside workflow.instance.run with Trigger.dev wait APIs.',
+    message: 'Workflow timer nodes are executed inside workflow.trigger-workflow.run with Trigger.dev wait APIs.',
     payload
   })
 });

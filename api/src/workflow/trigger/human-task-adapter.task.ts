@@ -66,11 +66,15 @@ export async function executeHumanTaskAdapterTask(
     waitFor: async ({ seconds, idempotencyKey }) => {
       await wait.for({ seconds, idempotencyKey });
     },
+    supportsParallelWait: false,
     triggerTask: async (taskId, taskPayload, options) => {
       const { tasks } = await import('@trigger.dev/sdk');
       await tasks.trigger(taskId, taskPayload, options);
     }
   });
+  if (result.status === 'continued') {
+    await store.completeNodeInstance(readRequiredString(payload.nodeInstanceId, 'nodeInstanceId'));
+  }
   return {
     handledBy: TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.humanTask,
     ...result

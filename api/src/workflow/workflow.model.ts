@@ -71,7 +71,9 @@ export function validateWorkflowDraftSchema(
     }
   });
 
-  const startCount = Array.from(nodeTypes.values()).filter((type) => type === 'start').length;
+  const startCount = Array.from(nodeTypes.values())
+    .filter((type) => type === 'start' || type === 'webhook' || type === 'schedule')
+    .length;
   const endCount = Array.from(nodeTypes.values()).filter((type) => type === 'end').length;
   if (startCount !== 1) {
     throw new BadRequestException('Workflow schema must contain exactly one start node.');

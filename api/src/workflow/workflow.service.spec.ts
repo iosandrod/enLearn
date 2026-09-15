@@ -11,6 +11,7 @@ type TestWorkflowService = {
   resources(): ResourceConfigMap;
   normalizeCrudPostData(postData: Record<string, unknown>): Record<string, unknown>;
   hooks(): Record<string, Record<string, unknown>>;
+  tryResolveResource(postData: Record<string, unknown>): { name: string } | undefined;
 };
 
 type PublicWorkflowService = {
@@ -46,7 +47,6 @@ const service = new WorkflowServiceProbe(
     'getInstance',
     'getTimeline',
     'startInstance',
-    'recoverOrphanedInstances',
     'withdrawInstance',
     'terminateInstance',
     'getTask',
@@ -94,6 +94,8 @@ assert.ok(resources.wf_node_instance);
 assert.ok(resources.wf_task);
 assert.ok(resources.wf_job);
 assert.ok(resources.wf_job_run);
+assert.equal(service.tryResolveResource({ tableName: 'wf_job', itemType: 'jobs' })?.name, 'wf_job');
+assert.equal(service.tryResolveResource({ tableName: 'wf_job_run', itemType: 'jobRuns' })?.name, 'wf_job_run');
 for (const resource of Object.values(resources)) {
   assert.equal(resource.permissions, undefined);
 }
@@ -234,13 +236,6 @@ async function testDirectDelegation() {
   }, serviceContext);
   assert.equal(delegatedCalls.pop()?.method, 'startInstance');
 
-  await service.execute('recoverOrphanedInstances', {}, serviceContext);
-  assert.deepEqual(delegatedCalls.pop(), {
-    service: 'runtime',
-    method: 'recoverOrphanedInstances',
-    args: [serviceContext.accountId]
-  });
-
   await service.execute('approveTask', {
     taskId: 'task-1',
     comment: 'Approved'
@@ -313,6 +308,10 @@ async function testWebhookTriggerRequiresMatchingEnabledJob() {
         calls.push({ method: 'getJob', args });
         return job;
       },
+      runJob: async (...args: unknown[]) => {
+        calls.push({ method: 'runJob', args });
+        return { status: 'queued' };
+      },
       runJobAndWait: async (...args: unknown[]) => {
         calls.push({ method: 'runJobAndWait', args });
         return { variables: { taskOutputs: { inventory: ['row-1'] } } };
@@ -333,14 +332,14 @@ async function testWebhookTriggerRequiresMatchingEnabledJob() {
     postData: { resource: 'inventory' }
   }, serviceContext);
 
-  assert.deepEqual(result, { variables: { taskOutputs: { inventory: ['row-1'] } } });
+  assert.deepEqual(result, { status: 'queued' });
   assert.deepEqual(calls, [
     {
       method: 'getJob',
       args: [job.id, { tenantId: serviceContext.accountId, userId: serviceContext.userId }]
     },
     {
-      method: 'runJobAndWait',
+      method: 'runJob',
       args: [
         job.id,
         {

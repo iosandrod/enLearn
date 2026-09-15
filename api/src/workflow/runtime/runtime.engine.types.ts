@@ -20,18 +20,6 @@ import type {
 } from './runtime.dto';
 
 export const WORKFLOW_RUNTIME_STORE = Symbol('WORKFLOW_RUNTIME_STORE');
-export const WORKFLOW_INSTANCE_TASK_ID = 'workflow.instance.run';
-
-export type WorkflowInstanceTaskPayload = {
-  instanceId: string;
-  tenantId: string;
-  definitionId: string;
-  definitionVersion: number;
-  title: string;
-  initiatorId?: string;
-  schema: Record<string, unknown>;
-  variables: Record<string, unknown>;
-};
 
 export type WorkflowTaskDecision = {
   action: 'approve' | 'reject';
@@ -240,15 +228,9 @@ export interface WorkflowRuntimeStore {
     payload: Record<string, unknown>;
     idempotencyKey?: string;
   }): Promise<WorkflowExecutionEventRecord>;
-  claimRecoveryCandidate?(input: {
-    instanceId: string;
-    leaseSeconds: number;
-  }): Promise<boolean>;
-  releaseRecoveryLease?(instanceId: string, succeeded: boolean, error?: string): Promise<void>;
 }
 
 export interface WorkflowTriggerClient {
-  triggerWorkflow(payload: WorkflowInstanceTaskPayload): Promise<{ id: string }>;
   triggerTask(
     taskId: string,
     payload: Record<string, unknown>,

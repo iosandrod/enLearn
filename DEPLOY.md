@@ -55,6 +55,43 @@ Windows 本机可以直接运行一键脚本：
 .\docker-stop.ps1
 ```
 
+## 远程 Windows Server 文件同步（FTP/FTPS）
+
+仓库提供了 `ftp-sync.cmd` 和 `scripts/ftp-sync.ps1`。默认只上传 Git 工作区相对 `HEAD` 的变更文件以及未跟踪文件，并自动跳过 `.env`、依赖目录、构建目录和日志。
+
+先复制配置模板（该文件已被 Git 忽略）：
+
+```powershell
+Copy-Item .ftp-sync.local.example.ps1 .ftp-sync.local.ps1
+notepad .ftp-sync.local.ps1
+```
+
+将 `RemoteRoot` 改成 IIS FTP 用户对应的虚拟目录。密码不要写入配置文件，运行时输入即可；也可以在当前 PowerShell 会话设置环境变量：
+
+```powershell
+$secure = Read-Host 'FTP password' -AsSecureString
+$env:ENLEARN_FTP_PASSWORD = [Net.NetworkCredential]::new('', $secure).Password
+```
+
+同步命令：
+
+```powershell
+.\ftp-sync.cmd                  # 只同步变更文件（默认）
+.\ftp-sync.cmd -Mode All        # 同步所有非排除文件
+.\ftp-sync.cmd -Mode Path -Path frontend\src,api\src
+```
+
+脚本默认使用 FTPS（端口 21）。服务器必须已安装 IIS FTP、创建 FTP 用户/授权规则，并绑定证书启用 SSL；如果服务器只有普通 FTP，可将 `Protocol` 改为 `Ftp`，但账号、密码和代码会明文传输，不建议在公网使用。若服务器启用了 OpenSSH，建议改用 SFTP（需 WinSCP/类似客户端），不要把普通 FTP 暴露到公网。
+
+在 Windows Server 上可由管理员先确认 IIS FTP 组件和控制端口（被动模式端口范围、FTP 用户授权和站点物理目录仍需按你的站点规划配置）：
+
+```powershell
+Install-WindowsFeature Web-Server,Web-Ftp-Server,Web-Ftp-Service,Web-Mgmt-Console
+New-NetFirewallRule -DisplayName 'IIS FTP control' -Direction Inbound -Protocol TCP -LocalPort 21 -Action Allow
+```
+
+不要把 FTP 目录直接指向包含 `.env`、数据库密钥或私钥的项目根目录；建议只授予一个专用部署目录的写权限，并让 IIS/Caddy/Docker 从该目录读取部署产物。
+
 ## 3. 启动和更新
 
 ```bash

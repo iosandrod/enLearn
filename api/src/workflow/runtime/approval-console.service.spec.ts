@@ -92,7 +92,7 @@ async function testConsoleDetailBuildsNodeStatesAndTriggerRun() {
       status: 'running',
       initiatorId: 'user-1',
       triggerRunId: 'run-1',
-      triggerTaskId: 'workflow.instance.run',
+      triggerTaskId: 'workflow.trigger-workflow.run',
       startedAt: '2026-08-05T00:00:00.000Z',
       variables: [],
       comments: [],
@@ -160,7 +160,7 @@ async function testConsoleDetailBuildsNodeStatesAndTriggerRun() {
     getRun: async () => ({
       id: 'run-1',
       status: 'WAITING',
-      taskIdentifier: 'workflow.instance.run',
+      taskIdentifier: 'workflow.trigger-workflow.run',
       tags: [],
       isQueued: false,
       isExecuting: false,

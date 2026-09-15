@@ -12,6 +12,7 @@ export type HumanTaskWaitDriver = {
   waitForToken<T>(tokenId: string): Promise<T>;
   waitFor?(input: { seconds: number; idempotencyKey: string }): Promise<void>;
   triggerTask?(taskId: string, payload: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
+  supportsParallelWait?: boolean;
 };
 
 /** Shared durable human-task adapter used by approval and Trigger workflows. */
@@ -125,6 +126,10 @@ async function waitForPolicy(
     if (!task.waitpointTokenId) throw new Error(`Human task "${task.id}" has no waitpoint token.`);
     const pending = waits.waitForToken<WorkflowTaskDecision>(task.waitpointTokenId);
     if (!timeoutSeconds || timeoutSeconds <= 0 || !waits.waitFor) return pending;
+    // Trigger.dev forbids starting wait.forToken and wait.for in parallel in
+    // one task. Its adapter task maxDuration supplies the upper bound there;
+    // other wait drivers retain the explicit timeout policy.
+    if (waits.supportsParallelWait === false) return pending;
     return Promise.race([
       pending,
       waits.waitFor({ seconds: timeoutSeconds, idempotencyKey: `human-task-timeout:${task.id}` })

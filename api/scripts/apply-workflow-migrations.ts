@@ -30,7 +30,8 @@ async function main() {
     '../../../supabase/migrations/20260814110000_workflow_job_upsert_forward_fix.sql',
     '../../../supabase/migrations/20260911010000_workflow_task_registry.sql',
     '../../../supabase/migrations/20260911011000_workflow_backend_command_option_source.sql',
-    '../../../supabase/migrations/20260912010000_retire_workflow_command_registry.sql'
+    '../../../supabase/migrations/20260912010000_retire_workflow_command_registry.sql',
+    '../../../supabase/migrations/20260915110000_unify_workflow_trigger_task.sql'
   ].map((item) => resolve(__dirname, item));
   for (const [connectionIndex, connectionString] of connectionStrings.entries()) {
     const client = new Client({ connectionString });

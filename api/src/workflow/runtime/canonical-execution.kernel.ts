@@ -45,14 +45,17 @@ export class CanonicalExecutionKernel {
 
   async execute(
     workflow: CanonicalWorkflow,
-    handlers: CanonicalExecutionHandlers
+    handlers: CanonicalExecutionHandlers,
+    options: { executionId?: string } = {}
   ): Promise<CanonicalExecutionOutput> {
     const nodeMap = new Map(workflow.nodes.map((node) => [node.id, node]));
     const incoming = countIncoming(workflow);
     const joinArrivals = new Map<string, Set<string>>();
     const releasedJoins = new Set<string>();
     const queue: CanonicalExecutionToken[] = [{
-      id: stableTokenId(`token:${workflow.id}:${workflow.entryNodeId}`),
+      id: stableTokenId(
+        `token:${workflow.id}:${options.executionId ?? 'default'}:${workflow.entryNodeId}`
+      ),
       nodeId: workflow.entryNodeId,
       branchId: 'root'
     }];

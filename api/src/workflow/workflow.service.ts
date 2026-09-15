@@ -31,6 +31,7 @@ import type {
   CompleteTaskDto,
   InstanceActionDto,
   RejectTaskDto,
+  StartWorkflowDto,
   StartWorkflowInstanceDto,
   TransferTaskDto,
   WorkflowCcQuery,
@@ -101,21 +102,33 @@ function readRecord(value: unknown, name: string) {
   throw new BadRequestException(`Missing required field: ${name}`);
 }
 
-function hasMatchingWebhookTrigger(
-  payload: Record<string, unknown>,
-  serviceName: string,
-  serviceMethod: string
-) {
+function readWorkflowEntryType(payload: Record<string, unknown>) {
   const triggerWorkflow = isRecord(payload.triggerWorkflow)
     ? payload.triggerWorkflow
     : undefined;
   const executionPlan = isRecord(triggerWorkflow?.executionPlan)
     ? triggerWorkflow.executionPlan
     : undefined;
+  const entryNodeId = typeof executionPlan?.entryNodeId === 'string'
+    ? executionPlan.entryNodeId
+    : '';
   const operations = Array.isArray(executionPlan?.operations)
     ? executionPlan.operations
     : [];
+  const entry = operations.find((rawOperation) =>
+    isRecord(rawOperation) && rawOperation.nodeId === entryNodeId
+  );
+  const type = isRecord(entry) && typeof entry.type === 'string' ? entry.type : '';
+  if (type === 'webhook') return 'webhook' as const;
+  if (type === 'schedule') return 'schedule' as const;
+  if (type === 'entry') return 'start' as const;
+  return undefined;
+}
 
+function hasMatchingWebhookTrigger(payload: Record<string, unknown>, serviceName: string, serviceMethod: string) {
+  const triggerWorkflow = isRecord(payload.triggerWorkflow) ? payload.triggerWorkflow : undefined;
+  const executionPlan = isRecord(triggerWorkflow?.executionPlan) ? triggerWorkflow.executionPlan : undefined;
+  const operations = Array.isArray(executionPlan?.operations) ? executionPlan.operations : [];
   return operations.some((rawOperation) => {
     if (!isRecord(rawOperation) || rawOperation.type !== 'webhook') return false;
     const options = isRecord(rawOperation.options) ? rawOperation.options : undefined;
@@ -299,10 +312,6 @@ export class WorkflowService extends BaseService {
         return this.definitionService.getCapabilities();
       case 'getRuntimeStatus':
         return this.triggerRuntimeStatus.getStatus(this.resolveActor(context).tenantId);
-      case 'recoverOrphanedInstances':
-        return this.runtimeService.recoverOrphanedInstances(
-          this.resolveActor(context).tenantId
-        );
       case 'getTaskConsole':
         return this.taskConsoleService.getConsole(
           this.resolveActor(context).tenantId,
@@ -342,6 +351,11 @@ export class WorkflowService extends BaseService {
       case 'startInstance':
         return this.runtimeService.startInstance(
           this.readStartInstanceDto(postData),
+          this.resolveActor(context)
+        );
+      case 'startWorkflow':
+        return this.runtimeService.startWorkflow(
+          this.readStartWorkflowDto(postData),
           this.resolveActor(context)
         );
       case 'withdrawInstance':
@@ -394,51 +408,10 @@ export class WorkflowService extends BaseService {
         this.taskConsoleService.invalidate(updateJobActor.tenantId);
         return updatedJob;
       case 'runJob':
-        const runJobActor = this.resolveActor(context);
-        const jobRun = await this.jobService.runJob(
-          readString(postData.jobId, 'jobId'),
-          this.readRunJobDto(postData),
-          runJobActor
-        );
-        this.taskConsoleService.invalidate(runJobActor.tenantId);
-        return jobRun;
+        return this.executeRunJob(postData, context);
       case 'triggerWebhook': {
-        // Webhook 回退入口不要求“运行时管理”权限，但只允许运行已启用、
-        // 且自身配置明确匹配当前 serviceName/serviceMethod 的类型化工作流作业。
-        const webhookActor = this.resolveActor(context);
-        const webhookJobId = readString(postData.jobId, 'jobId');
-        const webhookServiceName = readString(postData.serviceName, 'serviceName');
-        const webhookServiceMethod = readString(postData.serviceMethod, 'serviceMethod');
-        const webhookJob = await this.jobService.getJob(webhookJobId, webhookActor);
-
-        if (
-          webhookJob.status !== 'enabled' ||
-          webhookJob.triggerTaskId !== TRIGGER_WORKFLOW_RUNNER_TASK_ID ||
-          !hasMatchingWebhookTrigger(
-            webhookJob.payload,
-            webhookServiceName,
-            webhookServiceMethod
-          )
-        ) {
-          throw new NotFoundException(
-            `Enabled Webhook workflow not found for ${webhookServiceName}.${webhookServiceMethod}.`
-          );
-        }
-
-        const webhookPostData = readRecord(postData.postData, 'postData');
-        const webhookOutput = await this.jobService.runJobAndWait(
-          webhookJob.id,
-          {
-            payload: {
-              serviceName: webhookServiceName,
-              serviceMethod: webhookServiceMethod,
-              postData: webhookPostData
-            }
-          },
-          webhookActor
-        );
-        this.taskConsoleService.invalidate(webhookActor.tenantId);
-        return webhookOutput;
+        // 兼容旧客户端：Webhook 也统一走 runJob，入口类型由作业定义决定。
+        return this.executeRunJob(postData, context);
       }
       case 'getTask':
         return this.runtimeService.getTask(
@@ -479,6 +452,48 @@ export class WorkflowService extends BaseService {
       default:
         return super.executeAction(method, postData, context);
     }
+  }
+
+  /**
+   * 统一的作业入口。开始、Webhook、定时器在执行计划中都属于入口节点，
+   * 因此外部只需要调用 runJob；Webhook 调用上下文仅在入口确实为 Webhook
+   * 时才会被包装进运行输入。
+   */
+  private async executeRunJob(postData: PostData, context: ServiceContext) {
+    const actor = this.resolveActor(context);
+    const jobId = readString(postData.jobId, 'jobId');
+    const needsEntryInspection =
+      typeof postData.serviceName === 'string' && typeof postData.serviceMethod === 'string';
+    const job = needsEntryInspection ? await this.jobService.getJob(jobId, actor) : undefined;
+    const entryType = job ? readWorkflowEntryType(job.payload) : undefined;
+    const hasWebhookInvocation =
+      typeof postData.serviceName === 'string' &&
+      typeof postData.serviceMethod === 'string' &&
+      (entryType === 'webhook' || entryType === undefined);
+
+    if (hasWebhookInvocation && job && (
+      (job.status && job.status !== 'enabled') ||
+      (job.triggerTaskId && job.triggerTaskId !== TRIGGER_WORKFLOW_RUNNER_TASK_ID) ||
+      !hasMatchingWebhookTrigger(job.payload, postData.serviceName as string, postData.serviceMethod as string)
+    )) {
+      throw new NotFoundException(
+        `Enabled Webhook workflow not found for ${postData.serviceName}.${postData.serviceMethod}.`
+      );
+    }
+
+    const dto = hasWebhookInvocation
+      ? {
+          payload: {
+            serviceName: readString(postData.serviceName, 'serviceName'),
+            serviceMethod: readString(postData.serviceMethod, 'serviceMethod'),
+            postData: readRecord(postData.postData, 'postData')
+          }
+        }
+      : this.readRunJobDto(postData);
+
+    const result = await this.jobService.runJob(jobId, dto, actor);
+    this.taskConsoleService.invalidate(actor.tenantId);
+    return result;
   }
 
   protected override async createItem(postData: PostData, context: ServiceContext) {
@@ -737,6 +752,26 @@ export class WorkflowService extends BaseService {
     const variables = readOptionalRecord(postData.variables, 'variables');
     return {
       definitionId: readString(postData.definitionId, 'definitionId'),
+      businessKey: readString(postData.businessKey, 'businessKey'),
+      title: readString(postData.title, 'title'),
+      ...(documentType ? { documentType } : {}),
+      ...(documentId ? { documentId } : {}),
+      ...(variables ? { variables } : {})
+    };
+  }
+
+  private readStartWorkflowDto(postData: PostData): StartWorkflowDto {
+    const workflowId = readOptionalString(postData.workflowId);
+    const definitionId = readOptionalString(postData.definitionId);
+    if (!workflowId && !definitionId) {
+      throw new BadRequestException('Missing required field: workflowId');
+    }
+    const documentType = readOptionalString(postData.documentType);
+    const documentId = readOptionalString(postData.documentId);
+    const variables = readOptionalRecord(postData.variables, 'variables');
+    return {
+      ...(workflowId ? { workflowId } : {}),
+      ...(definitionId ? { definitionId } : {}),
       businessKey: readString(postData.businessKey, 'businessKey'),
       title: readString(postData.title, 'title'),
       ...(documentType ? { documentType } : {}),

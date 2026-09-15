@@ -352,7 +352,6 @@ function onNodeContextMenu(event: NodeMouseEvent) {
   if (!node) return;
   const definition = getTriggerNodeDefinition(node.type);
   const isEntryCandidate = isEntryCanvasNode(node);
-  const activeEntryNodeId = getActiveEntryNodeId();
 
   selectedNodeId.value = node.id;
   selectedEdgeId.value = null;
@@ -363,20 +362,24 @@ function onNodeContextMenu(event: NodeMouseEvent) {
     className: 'enlearn-context-menu',
     options: [
       [
-        ...(isEntryCandidate
-          ? [{
-              code: 'set-entry',
-              name: activeEntryNodeId === node.id ? '当前启动节点' : '切换为启动节点',
-              prefixIcon: 'ri-play-circle-line',
-              disabled: props.readonly || activeEntryNodeId === node.id
-            }]
-          : []),
         {
           code: 'node-summary',
           name: `${node.name} · ${definition?.label ?? '自定义节点'}`,
           disabled: true
         }
       ],
+      ...(isEntryCandidate
+        ? [[{
+            code: 'set-entry',
+            name: '切换启动节点',
+            prefixIcon: 'ri-play-circle-line',
+            children: [
+              { code: 'set-entry:start', name: '开始', prefixIcon: 'ri-play-circle-line', disabled: props.readonly || node.type === 'start' },
+              { code: 'set-entry:webhook', name: 'Webhook', prefixIcon: 'ri-webhook-line', disabled: props.readonly || node.type === 'webhook' },
+              { code: 'set-entry:schedule', name: '定时器', prefixIcon: 'ri-calendar-event-line', disabled: props.readonly || node.type === 'schedule' }
+            ]
+          }]]
+        : []),
       ...(props.readonly
         ? []
         : [[...palette.value
@@ -419,7 +422,7 @@ function onNodeContextMenu(event: NodeMouseEvent) {
           addNodeAt(option.code.slice(4) as TriggerNodeType);
         }
         if (option.code === 'inspect') inspectContextNode(node);
-        if (option.code === 'set-entry') setEntryNode(node);
+        if (typeof option.code === 'string' && option.code.startsWith('set-entry:')) switchEntryNodeType(node, option.code.slice('set-entry:'.length));
         if (option.code === 'duplicate') duplicateContextNode(node);
         if (option.code === 'copy-id') void copyContextNodeId(node);
         if (option.code === 'delete') deleteContextNode(node);
@@ -428,14 +431,20 @@ function onNodeContextMenu(event: NodeMouseEvent) {
   });
 }
 
-function setEntryNode(node: TriggerWorkflowNode) {
+function switchEntryNodeType(node: TriggerWorkflowNode, type: string) {
   if (props.readonly || !isEntryCanvasNode(node)) return;
+  if (type !== 'start' && type !== 'webhook' && type !== 'schedule') return;
+  if (node.type === type) return;
   closeNodeContextMenu();
+  const converted = createConfiguredNode(type, node.id, node.name, node.position ?? { x: 380, y: 40 });
   replaceModel({
     ...currentModel.value,
+    nodes: currentModel.value.nodes.map((item) => item.id === node.id
+      ? { ...converted, ...(node.description ? { description: node.description } : {}) }
+      : item),
     settings: { ...currentModel.value.settings, entryNodeId: node.id }
   }, { fitCanvas: false });
-  void VxeUI.modal.message({ content: `已切换“${node.name}”为启动节点。`, status: 'success' });
+  void VxeUI.modal.message({ content: `已将“${node.name}”切换为${getTriggerNodeDefinition(type)?.label ?? type}。`, status: 'success' });
 }
 
 function closeNodeContextMenu() {
@@ -2124,5 +2133,27 @@ defineExpose({
   .trigger-editor__canvas {
     min-height: 620px;
   }
+}
+
+:global(.enlearn-context-menu),
+:global(.enlearn-context-menu .vxe-context-menu--wrapper),
+:global(.enlearn-context-menu .vxe-context-menu--option-wrapper) {
+  max-width: none !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+:global(.enlearn-context-menu .vxe-context-menu--option) {
+  min-width: 180px;
+  white-space: nowrap;
+}
+
+:global(.enlearn-context-menu .vxe-context-menu--children-wrapper) {
+  position: absolute;
+  z-index: 10000;
+  min-width: 170px;
+  max-width: none !important;
+  overflow: visible !important;
 }
 </style>

@@ -38,11 +38,11 @@ const legacyAdminListMethodTables: Record<string, string> = {
   listOptionItems: 'system_option_items',
 };
 
-const legacyWorkflowListItemTypes: Record<string, string> = {
-  listSystemExecutionTasks: 'jobs',
-  listWorkflowJobs: 'jobs',
-  listWorkflowJobRuns: 'jobRuns',
-  listWorkflowTimerJobs: 'jobs',
+const legacyWorkflowListTables: Record<string, string> = {
+  listSystemExecutionTasks: 'wf_job',
+  listWorkflowJobs: 'wf_job',
+  listWorkflowJobRuns: 'wf_job_run',
+  listWorkflowTimerJobs: 'wf_job',
 };
 
 const legacyLowCodeListMethodTables: Record<string, string> = {
@@ -101,20 +101,23 @@ export function normalizeMobileServiceRequest(
     };
   }
 
-  if (serviceName === 'admin' && legacyWorkflowListItemTypes[serviceMethod]) {
-    const itemType = readString(
-      postData.itemType ?? postData.item_type ?? postData.type,
-      legacyWorkflowListItemTypes[serviceMethod],
+  if (serviceName === 'admin' && legacyWorkflowListTables[serviceMethod]) {
+    const tableName = readString(
+      postData.tableName ?? postData.table_name,
+      legacyWorkflowListTables[serviceMethod],
     );
     const rawLimit = Number(postData.limit ?? postData.pageSize ?? postData.page_size);
-    const boundedLimit = itemType === 'jobRuns'
+    const boundedLimit = serviceMethod === 'listWorkflowJobRuns'
       ? Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : 50, 100)
       : undefined;
+    const safePostData = Object.fromEntries(
+      Object.entries(postData).filter(([key]) => !['resource', 'itemType', 'item_type', 'type'].includes(key)),
+    );
     return {
       serviceName: 'workflow',
       serviceMethod: 'listItems',
       postData: {
-        ...postData,
+        ...safePostData,
         ...(boundedLimit ? { limit: boundedLimit, pageSize: boundedLimit } : {}),
         ...(serviceMethod === 'listWorkflowTimerJobs'
           ? {
@@ -128,7 +131,7 @@ export function normalizeMobileServiceRequest(
               },
             }
           : {}),
-        itemType,
+        tableName,
       },
     };
   }

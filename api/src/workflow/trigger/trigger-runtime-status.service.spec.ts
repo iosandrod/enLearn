@@ -134,7 +134,7 @@ function createRuntimeService() {
 function createOperations(): TriggerRuntimeStatusOperations {
   return {
     listQueues: async () => [
-      { id: 'queue-1', name: 'workflow.instance.run', type: 'task', running: 1, queued: 2, paused: false, concurrencyLimit: 5 },
+      { id: 'queue-1', name: 'workflow.trigger-workflow.run', type: 'task', running: 1, queued: 2, paused: false, concurrencyLimit: 5 },
       { id: 'queue-2', name: 'notification.dispatch', type: 'task', running: 0, queued: 1, paused: false, concurrencyLimit: 5 }
     ],
     listSchedules: async () => [],
@@ -164,7 +164,7 @@ function run(id: string, tags: string[]) {
   return {
     id,
     status: 'WAITING',
-    taskIdentifier: 'workflow.instance.run',
+    taskIdentifier: 'workflow.trigger-workflow.run',
     tags,
     isQueued: false,
     isExecuting: false,

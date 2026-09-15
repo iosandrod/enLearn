@@ -67,6 +67,7 @@ api/.trigger/**
 frontend/dist/index.html
 /api/.trigger/**
 api/.trigger/tmp/**/*
+/.ftp-sync.local.ps1
 /.codex-server-logs/**
 
 .tmp-ai-pgdata/**/*

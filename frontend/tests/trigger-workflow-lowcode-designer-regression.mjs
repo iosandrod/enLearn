@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const migration = await readFile(
-  new URL('../../supabase/migrations/20260909020000_trigger_workflow_current_info.sql', import.meta.url),
+  new URL('../../supabase/migrations/20260915090000_fix_trigger_workflow_refresh_v105.sql', import.meta.url),
   'utf8',
 );
 const editor = await readFile(
@@ -14,16 +14,26 @@ const page = await readFile(
   new URL('../pages/dashboard/trigger-workflow/lowcode-designer.vue', import.meta.url),
   'utf8',
 );
+const designer = await readFile(
+  new URL('../pages/dashboard/trigger-workflow/designer.vue', import.meta.url),
+  'utf8',
+);
 const controller = await readFile(
   new URL('../../packages/lowcode-framework/src/runtime/material-controller-registry.ts', import.meta.url),
   'utf8',
 );
 
 assert.match(migration, /code = 'trigger-workflow-designer'/);
-assert.match(migration, /:show-workflow-info="true"/);
-assert.match(migration, /material_version = '1\.0\.1'/);
-assert.match(migration, /digest\(convert_to\(v_source_text, 'UTF8'\), 'sha256'\)/);
-assert.match(migration, /jsonb_set\(block, '\{materialVersion\}', '"1\.0\.1"'::jsonb/);
+assert.match(migration, /tableName: ''wf_job''/);
+assert.match(migration, /workflowJob\.value = jobs\.find\(\(item\) => item\.code === model\.value\.code\)/);
+assert.match(migration, /material_version = '1\.0\.5'/);
+assert.match(migration, /digest\(convert_to\(updated_source, 'UTF8'\), 'sha256'\)/);
+assert.match(migration, /jsonb_set\(block\.value, '\{materialVersion\}', '"1\.0\.5"'::jsonb/);
+assert.match(migration, /tableName: ''wf_job''/);
+assert.match(designer, /tableName: 'wf_job'/);
+assert.match(designer, /tableName: 'wf_job_run'/);
+assert.doesNotMatch(designer, /itemType: 'jobs'/);
+assert.doesNotMatch(designer, /itemType: 'jobRuns'/);
 
 assert.match(editor, /minimal\?: boolean/);
 assert.match(editor, /showWorkflowInfo\?: boolean/);

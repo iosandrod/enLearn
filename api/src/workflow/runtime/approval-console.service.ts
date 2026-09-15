@@ -171,13 +171,13 @@ export class ApprovalConsoleService {
       return run ?? {
         id: runId,
         status: 'UNKNOWN',
-        taskIdentifier: taskIdentifier ?? 'workflow.instance.run'
+        taskIdentifier: taskIdentifier ?? 'workflow.trigger-workflow.run'
       };
     } catch (error) {
       return {
         id: runId,
         status: 'UNKNOWN',
-        taskIdentifier: taskIdentifier ?? 'workflow.instance.run',
+        taskIdentifier: taskIdentifier ?? 'workflow.trigger-workflow.run',
         error: error instanceof Error ? error.message : String(error)
       };
     }

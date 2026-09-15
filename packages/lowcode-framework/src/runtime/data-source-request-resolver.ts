@@ -226,10 +226,10 @@ export class DataSourceRequestResolver {
       listEntities: 'admin_entities',
       listPages: 'lowcode_pages',
       listOptionSources: 'system_option_sources',
-      listSystemExecutionTasks: 'system_execution_tasks',
-      listWorkflowJobs: 'workflow_jobs',
-      listWorkflowJobRuns: 'workflow_job_runs',
-      listWorkflowTimerJobs: 'workflow_timer_jobs',
+      listSystemExecutionTasks: 'wf_job',
+      listWorkflowJobs: 'wf_job',
+      listWorkflowJobRuns: 'wf_job_run',
+      listWorkflowTimerJobs: 'wf_job',
     };
 
     const legacyDynamicOptionListMethods = new Set([
@@ -311,11 +311,23 @@ export class DataSourceRequestResolver {
         return { serviceName, serviceMethod, postData };
       }
 
+      const isWorkflowList = serviceName === 'admin' && [
+        'listSystemExecutionTasks',
+        'listWorkflowJobs',
+        'listWorkflowJobRuns',
+        'listWorkflowTimerJobs',
+      ].includes(serviceMethod);
+      const normalizedPostData = isWorkflowList
+        ? Object.fromEntries(
+            Object.entries(postData).filter(([key]) => !['resource', 'itemType', 'item_type', 'type'].includes(key)),
+          )
+        : postData;
+
       return {
         serviceName,
         serviceMethod: 'listItems',
         postData: {
-          ...postData,
+          ...normalizedPostData,
           tableName: readString(postData.tableName ?? postData.table_name, tableName),
         },
       };

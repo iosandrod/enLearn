@@ -80,6 +80,11 @@ assert.match(
   /@node-drag-start="onNodeDragStart"[\s\S]*@node-drag-stop="onNodeDragStop"/,
   'Node moves should be recorded as a single history action.'
 );
+assert.match(source, /code: 'set-entry'[\s\S]*children: \[/);
+assert.match(source, /code: 'set-entry:start'/);
+assert.match(source, /code: 'set-entry:webhook'/);
+assert.match(source, /code: 'set-entry:schedule'/);
+assert.match(source, /function switchEntryNodeType\(/);
 assert.match(
   source,
   /const latestNode = currentModel\.value\.nodes\.find\(\(item\) => item\.id === node\.id\)/,

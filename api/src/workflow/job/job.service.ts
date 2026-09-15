@@ -5,8 +5,10 @@ import {
   HttpException,
   Inject,
   Injectable,
-  NotFoundException
+  NotFoundException,
+  Optional
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import { type CreateJobDto, type JobQueryDto, type JobRunQueryDto, type RunJobDto } from './job.dto';
 import {
@@ -17,9 +19,12 @@ import {
 } from './job.types';
 import { TriggerDevClient } from '../trigger/trigger-dev.client';
 import { assertTriggerWorkflowJobPayload } from '../trigger/trigger-workflow-policy';
+import { WorkflowStartService } from '../runtime/workflow-start.service';
+import { TRIGGER_WORKFLOW_RUNNER_TASK_ID } from '../trigger/trigger-workflow.types';
 
 const WORKFLOW_SCHEDULED_JOB_TASK_ID = 'workflow.job.scheduled';
 const WORKFLOW_JOB_RPC = 'workflow_job_command';
+const WORKFLOW_RUNTIME_RPC = 'workflow_runtime_command';
 const WORKFLOW_DELETE_JOB_RPC = 'workflow_delete_job';
 const WORKFLOW_SYNC_RUN_TIMEOUT_MS = 120_000;
 const WORKFLOW_SYNC_RUN_POLL_INTERVAL_MS = 100;
@@ -31,7 +36,8 @@ export class JobService {
   constructor(
     @Inject(WorkflowSupabaseService)
     private readonly persistence: WorkflowSupabaseService,
-    @Inject(TriggerDevClient) private readonly triggerClient: TriggerDevClient
+    @Inject(TriggerDevClient) private readonly triggerClient: TriggerDevClient,
+    @Inject(WorkflowStartService) @Optional() private readonly workflowStartService?: WorkflowStartService
   ) {}
 
   async createJob(dto: CreateJobDto, actor: WorkflowJobActor) {
@@ -263,16 +269,34 @@ export class JobService {
     assertTriggerWorkflowJobPayload(job.triggerTaskId, job.payload);
 
     const input = buildJobRunInput(job, dto, actor);
-    const run = await this.createRun({
-      tenantId: job.tenantId,
-      jobId: job.id,
-      status: 'queued',
-      input
-    });
+    if (job.triggerTaskId === TRIGGER_WORKFLOW_RUNNER_TASK_ID && this.workflowStartService) {
+      const started = await this.workflowStartService.submitJob(job, input, actor);
+      return this.getRun(started.jobRunId, actor);
+    }
+    const instanceId = requiresDurableWorkflowInstance(job)
+      ? await this.createDurableWorkflowInstance(job, input, actor)
+      : undefined;
+
+    let run: WorkflowJobRunRecord;
+    try {
+      run = await this.createRun({
+        tenantId: job.tenantId,
+        jobId: job.id,
+        status: 'queued',
+        input: {
+          ...input,
+          ...(instanceId ? { instanceId } : {})
+        }
+      });
+    } catch (error) {
+      if (instanceId) await this.deleteDurableWorkflowInstance(instanceId);
+      throw error;
+    }
 
     const triggerInput = {
       ...input,
-      runId: run.id
+      runId: run.id,
+      ...(instanceId ? { instanceId } : {})
     };
 
     let handle: { id: string };
@@ -292,6 +316,9 @@ export class JobService {
       } catch {
         // Preserve the Trigger.dev failure returned to the caller.
       }
+      if (instanceId) {
+        await this.failDurableWorkflowInstance(instanceId, error);
+      }
       // Trigger.dev's SDK exposes transport failures as a plain Error. Letting
       // that error escape makes Nest return an opaque 500 even though the
       // request itself is valid and the dependency is simply unavailable.
@@ -299,6 +326,12 @@ export class JobService {
     }
 
     try {
+      if (instanceId) {
+        await this.runtimeCommand('set_trigger_run', {
+          instance_id: instanceId,
+          trigger_run_id: handle.id
+        });
+      }
       const row = await this.command('project_trigger_run', {
         account_id: actor.tenantId,
         run_id: run.id,
@@ -308,8 +341,90 @@ export class JobService {
       return mapRun(assertRecord(row, 'Workflow job RPC returned an invalid run.'));
     } catch (error) {
       await this.cancelRunAfterProjectionFailure(handle.id);
+      if (instanceId) {
+        await this.failDurableWorkflowInstance(instanceId, error);
+      }
       throw error;
     }
+  }
+
+  private async createDurableWorkflowInstance(
+    job: WorkflowJobRecord,
+    input: Record<string, unknown>,
+    actor: WorkflowJobActor
+  ) {
+    const definition = readRecord(job.payload.triggerWorkflow);
+    const modelId = readOptionalString(definition.modelId);
+    if (!modelId) {
+      throw new BadRequestException('Human approval workflow is missing triggerWorkflow.modelId.');
+    }
+
+    const { data: definitionRow, error: definitionError } = await this.persistence.client
+      .from('wf_process_definition')
+      .select('id,version')
+      .eq('account_id', actor.tenantId)
+      .eq('model_id', modelId)
+      .eq('status', 'active')
+      .order('version', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (definitionError) throw new BadGatewayException(definitionError.message);
+    if (!definitionRow) {
+      throw new BadRequestException(
+        `Workflow model "${modelId}" must be published before a human approval job can run.`
+      );
+    }
+
+    const instanceId = randomUUID();
+    const row = await this.runtimeCommand('create_instance', {
+      id: instanceId,
+      account_id: actor.tenantId,
+      definition_id: definitionRow.id,
+      definition_version: definitionRow.version,
+      business_key: `workflow-job-instance:${instanceId}`,
+      title: readOptionalString(definition.modelName) ?? job.name,
+      initiator_id: actor.userId ?? null,
+      variables: isRecord(input.variables) ? input.variables : {},
+      variable_types: {}
+    });
+    if (!isRecord(row) || readOptionalString(row.id) !== instanceId) {
+      throw new BadGatewayException('Workflow runtime RPC returned an invalid instance.');
+    }
+    return instanceId;
+  }
+
+  private async deleteDurableWorkflowInstance(instanceId: string) {
+    try {
+      await this.runtimeCommand('delete_unstarted_instance', { instance_id: instanceId });
+    } catch {
+      // Preserve the original run-creation error.
+    }
+  }
+
+  private async failDurableWorkflowInstance(instanceId: string, error: unknown) {
+    try {
+      await this.runtimeCommand('set_instance_status', {
+        instance_id: instanceId,
+        status: 'failed',
+        payload: { message: error instanceof Error ? error.message : String(error) }
+      });
+    } catch {
+      // Preserve the original Trigger.dev error.
+    }
+  }
+
+  private async runtimeCommand(action: string, payload: JsonRecord) {
+    if (!this.persistence.isConfigured) {
+      throw new BadRequestException(
+        'Supabase service-role configuration is required for workflow runtime persistence.'
+      );
+    }
+    const { data, error } = await this.persistence.client.rpc(WORKFLOW_RUNTIME_RPC, {
+      p_action: action,
+      p_payload: payload
+    });
+    if (error) throw new BadRequestException(error.message);
+    return data;
   }
 
   /**
@@ -590,6 +705,16 @@ function buildJobRunInput(
   input.tenantId = job.tenantId;
   if (actor.userId) input.userId = actor.userId;
   return input;
+}
+
+function requiresDurableWorkflowInstance(job: WorkflowJobRecord) {
+  if (job.triggerTaskId !== 'workflow.trigger-workflow.run') return false;
+  const definition = readRecord(job.payload.triggerWorkflow);
+  const plan = readRecord(definition.executionPlan);
+  const operations = Array.isArray(plan.operations) ? plan.operations : [];
+  return operations.some((operation) =>
+    isRecord(operation) && operation.type === 'human.approval'
+  );
 }
 
 function readIntervalSeconds(payload: Record<string, unknown> | null | undefined) {

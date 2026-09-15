@@ -360,12 +360,12 @@ async function runWorkflowJob() {
 async function refreshWorkflowJob() {
   try {
     const jobs = await workflowApi<WorkflowJobRecord[]>('listItems', {
-      itemType: 'jobs'
+      tableName: 'wf_job'
     });
     workflowJob.value = jobs.find((job) => job.code === model.value.code);
     workflowRuns.value = workflowJob.value
       ? await workflowApi<WorkflowJobRunRecord[]>('listItems', {
-          itemType: 'jobRuns',
+          tableName: 'wf_job_run',
           jobId: workflowJob.value.id,
           limit: 20
         })

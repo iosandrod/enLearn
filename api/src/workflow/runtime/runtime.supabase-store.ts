@@ -487,28 +487,6 @@ export class SupabaseWorkflowRuntimeStore implements WorkflowRuntimeStore {
     return mapExecutionEvent(assertRecord(data, 'Workflow execution event insert returned an invalid row.'));
   }
 
-  async claimRecoveryCandidate(input: { instanceId: string; leaseSeconds: number }) {
-    const client = this.client();
-    const { data, error } = await client.rpc('workflow_claim_recovery_candidate', {
-      p_instance_id: input.instanceId,
-      p_lease_seconds: input.leaseSeconds
-    });
-    if (error) throw new BadRequestException(error.message);
-    return data === true;
-  }
-
-  async releaseRecoveryLease(instanceId: string, succeeded: boolean, error?: string) {
-    const { error: updateError } = await this.client()
-      .from('wf_process_instance')
-      .update({
-        recovery_status: succeeded ? 'succeeded' : 'failed',
-        recovery_lease_until: null,
-        last_recovery_error: error ?? null
-      })
-      .eq('id', instanceId);
-    if (updateError) throw new BadRequestException(updateError.message);
-  }
-
   private async listTaskAction(
     action: 'list_tasks' | 'list_todo_tasks' | 'list_done_tasks',
     actor: RuntimeActor | undefined,

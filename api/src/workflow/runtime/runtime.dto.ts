@@ -23,6 +23,34 @@ export class StartWorkflowInstanceDto {
   variables?: Record<string, unknown>;
 }
 
+export class StartWorkflowDto {
+  @IsOptional()
+  @IsString()
+  workflowId?: string;
+
+  @IsOptional()
+  @IsString()
+  definitionId?: string;
+
+  @IsString()
+  businessKey!: string;
+
+  @IsOptional()
+  @IsString()
+  documentType?: string;
+
+  @IsOptional()
+  @IsString()
+  documentId?: string;
+
+  @IsString()
+  title!: string;
+
+  @IsOptional()
+  @IsObject()
+  variables?: Record<string, unknown>;
+}
+
 export class CompleteTaskDto {
   @IsOptional()
   @IsString()

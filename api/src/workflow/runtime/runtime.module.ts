@@ -15,7 +15,6 @@ import { JobService } from '../job/job.service';
 import { WORKFLOW_RUNTIME_STORE } from './runtime.engine.types';
 import { SupabaseWorkflowRuntimeStore } from './runtime.supabase-store';
 import { RuntimeService } from './runtime.service';
-import { WorkflowRecoveryWorker } from './workflow-recovery.worker';
 
 @Module({
   imports: [DefinitionModule, JobModule],
@@ -28,7 +27,6 @@ import { WorkflowRecoveryWorker } from './workflow-recovery.worker';
       inject: [WorkflowSupabaseService]
     },
     RuntimeService,
-    WorkflowRecoveryWorker,
     ApprovalConsoleService,
     {
       provide: TASK_CONSOLE_JOB_SERVICE,
@@ -45,6 +43,6 @@ import { WorkflowRecoveryWorker } from './workflow-recovery.worker';
     },
     TriggerRuntimeStatusService
   ],
-  exports: [RuntimeService, WorkflowRecoveryWorker, ApprovalConsoleService, TaskConsoleService, TriggerRuntimeStatusService]
+  exports: [RuntimeService, ApprovalConsoleService, TaskConsoleService, TriggerRuntimeStatusService]
 })
 export class RuntimeModule {}

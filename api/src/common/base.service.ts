@@ -20,7 +20,7 @@ import { parseRegisteredCommandFunction, validateRegisteredCommandSource } from 
 
 const DYNAMIC_CRUD_RPC = 'execute_dynamic_crud';
 const WORKFLOW_WEBHOOK_LOOKUP_RPC = 'find_workflow_webhook_job';
-const WORKFLOW_TRIGGER_WEBHOOK_METHOD = 'triggerWebhook';
+const WORKFLOW_RUN_JOB_METHOD = 'runJob';
 
 export type ListFilterLogic = 'and' | 'or';
 
@@ -427,7 +427,7 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   /**
-   * 通过 API 网关调用受限的 workflow.triggerWebhook 方法。
+   * 通过 API 网关调用统一的 workflow.runJob 方法。
    *
    * BaseService 运行在领域服务进程中，不能直接注入 WorkflowService；
    * 走统一服务入口可以同时兼容 Redis 分布式部署和 standalone 部署。
@@ -462,7 +462,7 @@ export abstract class BaseService implements ServiceExecutor {
         headers,
         body: JSON.stringify({
           serviceName: 'workflow',
-          serviceMethod: WORKFLOW_TRIGGER_WEBHOOK_METHOD,
+          serviceMethod: WORKFLOW_RUN_JOB_METHOD,
           postData: {
             jobId,
             serviceName,
@@ -2401,7 +2401,10 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected readListItemsType(postData: ServicePostData) {
-    return this.readOptionalString(postData.resource ?? postData.itemType ?? postData.item_type ?? postData.type)
+    return this.readOptionalString(
+      postData.resource ?? postData.tableName ?? postData.table_name
+        ?? postData.itemType ?? postData.item_type ?? postData.type
+    )
       || this.defaultListItemsType();
   }
 

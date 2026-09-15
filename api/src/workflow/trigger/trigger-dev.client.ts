@@ -1,14 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { runs, schedules, tasks, wait } from '@trigger.dev/sdk';
-import type {
-  WorkflowInstanceTaskPayload,
-  WorkflowTaskDecision,
-  WorkflowTriggerClient
-} from '../runtime/runtime.engine.types';
-import {
-  WORKFLOW_INSTANCE_TASK_ID
-} from '../runtime/runtime.engine.types';
-import type { workflowInstanceTask } from './workflow-instance.task';
+import type { WorkflowTaskDecision, WorkflowTriggerClient } from '../runtime/runtime.engine.types';
 import { TriggerCredentialsService } from './trigger-credentials.service';
 
 @Injectable()
@@ -17,19 +9,6 @@ export class TriggerDevClient implements WorkflowTriggerClient {
     @Inject(TriggerCredentialsService)
     private readonly credentials: TriggerCredentialsService
   ) {}
-
-  async triggerWorkflow(payload: WorkflowInstanceTaskPayload) {
-    return this.withTriggerCredentials(() =>
-      tasks.trigger<typeof workflowInstanceTask>(WORKFLOW_INSTANCE_TASK_ID, payload, {
-        idempotencyKey: `workflow-instance:${payload.instanceId}`,
-        tags: [
-          `tenant:${payload.tenantId}`,
-          `workflow-instance:${payload.instanceId}`,
-          `definition:${payload.definitionId}`
-        ]
-      })
-    );
-  }
 
   async triggerTask(
     taskId: string,

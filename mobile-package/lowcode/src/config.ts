@@ -27,6 +27,7 @@ const storageKeys = {
   userId: 'enlearn_user_id',
   loginAccount: 'enlearn_login_account',
   loginAccountId: 'enlearn_login_account_set_id',
+  appRole: 'enlearn_app_role',
 } as const;
 
 export type MobileStorageKey = keyof typeof storageKeys;

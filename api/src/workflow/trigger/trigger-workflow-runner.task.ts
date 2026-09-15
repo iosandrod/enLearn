@@ -71,6 +71,7 @@ export async function runTriggerWorkflowRunner(
       payload: runtimePayload,
       definition
     });
+    await markDurableWorkflowInstanceCompleted(supabase, payload, output);
     await command(supabase, 'finish_run', {
       run_id: runId,
       status: 'succeeded',
@@ -79,7 +80,46 @@ export async function runTriggerWorkflowRunner(
     return output;
   } catch (error) {
     if (started) await markJobRunFailedBestEffort(supabase, runId, error);
+    await markDurableWorkflowInstanceFailed(supabase, payload, error);
     throw error;
+  }
+}
+
+async function markDurableWorkflowInstanceCompleted(
+  supabase: SupabaseClient,
+  payload: TriggerWorkflowRunnerPayload,
+  output: Record<string, unknown>
+) {
+  const instanceId = readString(payload.instanceId);
+  if (!instanceId) return;
+  await executeTriggerWorkflowRpc(supabase, 'workflow_runtime_command', {
+    p_action: 'set_instance_status',
+    p_payload: {
+      instance_id: instanceId,
+      status: 'approved',
+      payload: { triggerWorkflow: true, output }
+    }
+  });
+}
+
+async function markDurableWorkflowInstanceFailed(
+  supabase: SupabaseClient,
+  payload: TriggerWorkflowRunnerPayload,
+  error: unknown
+) {
+  const instanceId = readString(payload.instanceId);
+  if (!instanceId) return;
+  try {
+    await executeTriggerWorkflowRpc(supabase, 'workflow_runtime_command', {
+      p_action: 'set_instance_status',
+      p_payload: {
+        instance_id: instanceId,
+        status: 'failed',
+        payload: { message: error instanceof Error ? error.message : String(error) }
+      }
+    });
+  } catch {
+    // Preserve the original workflow error if the failure projection is unavailable.
   }
 }
 
@@ -116,8 +156,13 @@ export async function executeTriggerWorkflowJobPlan(input: {
       const operation = operationsByNodeId.get(context.node.id);
       const human = context.node.human;
       const approval = isRecord(context.node.config.approval) ? context.node.config.approval : {};
-      const candidates = isRecord(human?.assigneeStrategy) && Array.isArray(human.assigneeStrategy.ids)
-        ? human.assigneeStrategy.ids.filter((id): id is string => typeof id === 'string').map((id) => ({ type: 'user' as const, id }))
+      const configuredCandidates = isRecord(human?.assigneeStrategy) && Array.isArray(human.assigneeStrategy.ids)
+        ? human.assigneeStrategy.ids
+          .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
+          .map((id) => ({ type: 'user' as const, id }))
+        : [];
+      const candidates = configuredCandidates.length
+        ? configuredCandidates
         : [{ type: 'user' as const, id: input.userId ?? input.tenantId }];
       const humanPayload = {
         runId: input.runId,
@@ -193,7 +238,7 @@ export async function executeTriggerWorkflowJobPlan(input: {
       if (!target) throw new Error(`Condition ${operation.id} did not match any branch.`);
       return [target];
     }
-  });
+  }, { executionId: input.runId });
 
   return {
     handledBy: TRIGGER_WORKFLOW_RUNNER_TASK_ID,
