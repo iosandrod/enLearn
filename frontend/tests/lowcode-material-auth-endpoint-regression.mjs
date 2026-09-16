@@ -18,9 +18,19 @@ assert.match(
   'The frontend material loader must call the dedicated Auth endpoint.',
 );
 assert.match(
+  serviceApiSource,
+  /getPublicLowCodeCatalog[\s\S]*'\/api\/auth\/lowcode-catalog'/,
+  'The frontend service API must expose the anonymous low-code catalog.',
+);
+assert.match(
   fetchSource,
   /!apiPath\.startsWith\('\/auth\/lowcode-materials'\)/,
   'The public material endpoint must not trigger auth refresh.',
+);
+assert.match(
+  fetchSource,
+  /!apiPath\.startsWith\('\/auth\/lowcode-catalog'\)/,
+  'The public low-code catalog must not trigger auth refresh or receive account context.',
 );
 assert.match(
   fetchSource,

@@ -7,19 +7,24 @@
  * @FilePath: /vite-vue3-lowcode/src/visual-editor/components/left-aside/index.vue
 -->
 <template>
-  <vxe-tabs v-model="activeName" position="left" class="left-aside">
-    <template v-for="tabItem in tabs" :key="tabItem.name">
-      <vxe-tab-pane :name="tabItem.name" :title="tabItem.label" lazy>
-        <template #title>
-          <div class="tab-item">
-            <span class="tab-icon"><component :is="tabItem.icon" /></span>
-            {{ tabItem.label }}
-          </div>
-        </template>
-        <component :is="tabItem.comp" v-bind="$attrs" />
-      </vxe-tab-pane>
-    </template>
-  </vxe-tabs>
+  <div class="left-aside">
+    <nav class="left-aside__tabs" aria-label="设计器组件分类">
+      <button
+        v-for="tabItem in tabs"
+        :key="tabItem.name"
+        type="button"
+        :class="{ 'is-active': activeName === tabItem.name }"
+        :aria-pressed="activeName === tabItem.name"
+        @click="activeName = tabItem.name"
+      >
+        <span class="tab-icon"><component :is="tabItem.icon" /></span>
+        <span>{{ tabItem.label }}</span>
+      </button>
+    </nav>
+    <div class="left-aside__panel">
+      <component v-if="activeTab" :is="activeTab.comp" v-bind="$attrs" />
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -77,6 +82,7 @@
   );
 
   const activeName = ref('');
+  const activeTab = computed(() => tabs.value.find((tab) => tab.name === activeName.value));
 
   watch(
     tabs,
@@ -92,88 +98,79 @@
 
 <style lang="scss" scoped>
   .left-aside {
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
     height: 100%;
     background: #fff;
     contain: layout;
+  }
 
-    > :deep(.vxe-tabs--header),
-    > :deep(.vxe-tabs-header) {
-      flex: 0 0 80px;
-      width: 80px;
-      padding: 10px 6px;
-      margin-right: 0;
-      border-right: 1px solid #e2e8f0;
-      background: #f8fafc;
-      box-sizing: border-box;
+  .left-aside__tabs {
+    overflow: hidden auto;
+    border-right: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 10px 6px;
 
-      .vxe-tabs--header-wrapper,
-      .vxe-tabs-header--wrapper {
-        gap: 2px;
-      }
+    button {
+      position: relative;
+      display: flex;
+      width: 68px;
+      height: 68px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      margin: 0 0 4px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #475569;
+      cursor: pointer;
+      padding: 8px 5px;
+      font-size: 12px;
+      line-height: 1.2;
+      transition: color 0.15s ease, background-color 0.15s ease;
 
-      .vxe-tabs--item,
-      .vxe-tabs-header--item {
-        width: 68px;
-        height: 68px;
-        margin: 0 0 4px;
-        padding: 8px 5px;
-        border-radius: 8px;
-        color: #475569;
-        font-size: 12px;
-        line-height: 1.2;
-        transition:
-          color 0.15s ease,
-          background-color 0.15s ease;
+      &.is-active {
+        background: #eaf3ff;
+        color: #1d73d8;
+        font-weight: 600;
 
-        &.is-active,
-        &.is--active {
-          position: relative;
-          background: #eaf3ff;
-          color: #1d73d8;
-          font-weight: 600;
-
-          &::before {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 3px;
-            height: 28px;
-            border-radius: 0 3px 3px 0;
-            background: #2f80ed;
-            content: '';
-            transform: translateY(-50%);
-          }
-
-          .tab-item .tab-icon {
-            background: #dbeafe;
-          }
+        &::before {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          width: 3px;
+          height: 28px;
+          border-radius: 0 3px 3px 0;
+          background: #2f80ed;
+          content: '';
+          transform: translateY(-50%);
         }
 
-        .tab-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-
-          .tab-icon {
-            display: grid;
-            width: 28px;
-            height: 28px;
-            margin-bottom: 4px;
-            border-radius: 7px;
-            background: #eef2f7;
-            font-size: 17px;
-            place-items: center;
-          }
-        }
+        .tab-icon { background: #dbeafe; }
       }
     }
+  }
 
-    > :deep(.vxe-tabs--body),
-    > :deep(.vxe-tabs-pane--wrapper) {
-      height: 100%;
-      background: #ffffff;
-      overflow: hidden auto;
+  .tab-icon {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: #eef2f7;
+    font-size: 17px;
+    place-items: center;
+  }
+
+  .left-aside__panel {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden auto;
+    background: #ffffff;
+
+    > :deep(*) {
+      min-height: 100%;
     }
   }
 </style>

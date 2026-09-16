@@ -9,6 +9,11 @@ export type ServiceInvokeOptions = {
   requestId?: string;
 };
 
+export type PublicLowCodeCatalog<TMaterial = unknown, TFormDefinition = unknown> = {
+  materials: TMaterial[];
+  formDefinitions: TFormDefinition[];
+};
+
 function isServiceEnvelope<T>(value: unknown): value is ServiceEnvelope<T> {
   return (
     typeof value === 'object' &&
@@ -44,6 +49,16 @@ function createRequestId() {
 
 export function useServiceApi() {
   const { request } = useAuthenticatedFetch();
+
+  async function getPublicLowCodeCatalog<TMaterial = unknown, TFormDefinition = unknown>() {
+    const response = await request<PublicLowCodeCatalog<TMaterial, TFormDefinition>>(
+      '/api/auth/lowcode-catalog'
+    );
+    return {
+      materials: Array.isArray(response.materials) ? response.materials : [],
+      formDefinitions: Array.isArray(response.formDefinitions) ? response.formDefinitions : [],
+    };
+  }
 
   async function listPublishedLowCodeMaterials<TResponse = unknown>() {
     const response = await request<{ materials: TResponse[] }>('/api/auth/lowcode-materials');
@@ -91,5 +106,11 @@ export function useServiceApi() {
     return readRows<TResponse>(result)[0];
   }
 
-  return { invoke, listItems, firstItem, listPublishedLowCodeMaterials };
+  return {
+    invoke,
+    listItems,
+    firstItem,
+    listPublishedLowCodeMaterials,
+    getPublicLowCodeCatalog,
+  };
 }

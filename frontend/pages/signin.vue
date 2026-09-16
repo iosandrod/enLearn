@@ -1,13 +1,13 @@
 <template>
   <main class="erp-signin">
-    <section class="erp-signin__brand" aria-label="工厂制造管理平台">
+    <section class="erp-signin__brand" :aria-label="SITE_NAME">
       <div class="erp-signin__brand-copy">
         <div class="erp-signin__product">
           <span class="erp-signin__product-mark">M</span>
           <span>Manufacturing ERP</span>
         </div>
-        <p class="erp-signin__eyebrow">制造业一体化管理</p>
-        <h1>工厂制造管理平台</h1>
+        <p class="erp-signin__eyebrow">个人技术学习交流</p>
+        <h1>{{ SITE_NAME }}</h1>
         <p class="erp-signin__lead">
           从计划、采购到生产与交付，在同一套可信数据中协同工作。
         </p>
@@ -29,7 +29,7 @@
         <header class="erp-login-panel__header">
           <div>
             <p>欢迎回来</p>
-            <h2>{{ selectingAccountForSession ? '选择账套' : '登录管理平台' }}</h2>
+            <h2>{{ selectingAccountForSession ? '选择账套' : '登录学习空间' }}</h2>
           </div>
         </header>
 
@@ -84,7 +84,7 @@
         </p>
       </div>
 
-      <footer class="erp-signin__footer">EnLearn Manufacturing · 企业管理系统</footer>
+      <footer class="erp-signin__footer">{{ SITE_NAME }} · 个人学习交流站点</footer>
     </section>
   </main>
 </template>
@@ -92,6 +92,7 @@
 <script setup lang="ts">
 import { signInSchema } from '~/schemas/auth';
 import type { AppAccountSummary } from '~/composables/useAuthState';
+import { SITE_NAME } from '../config/site';
 
 type LoginAccountOption = Pick<
   AppAccountSummary,

@@ -2446,3 +2446,91 @@ if (
       'remark',
       'metadata'
     ];
+
+    <div class="post-grid post-grid-wide">
+        <RouterLink
+          v-for="post in posts"
+          :key="post.href"
+          class="post-card"
+          :to="post.href"
+        >
+          <span>{{ formatDate(post.date) }}</span>
+          <h2>{{ post.title }}</h2>
+          <p>{{ post.description }}</p>
+          <small>{{ post.author }}</small>
+        </RouterLink>
+      </div>
+
+
+       <div class="page-stack">
+    <section class="page-intro">
+      <p class="section-kicker">Pricing</p>
+      <h1>Plans for building with Hikari.</h1>
+      <p>
+        The original plan structure is now rendered in the SPA. Cards and the
+        comparison grid are both driven by data objects.
+      </p>
+    </section>
+
+    <section class="section-block">
+      <div class="pricing-grid">
+        <article
+          v-for="plan in pricingPlans"
+          :key="plan.name"
+          :class="['price-card', { 'price-card-featured': plan.featured }]"
+        >
+          <div>
+            <span v-if="plan.featured" class="plan-badge">Popular</span>
+            <h2>{{ plan.name }}</h2>
+            <p>{{ plan.description }}</p>
+          </div>
+          <div class="price-stack">
+            <p class="price-line">
+              <strong>{{ formatPrice(plan.monthlyPrice) }}</strong>
+              <span>/ month</span>
+            </p>
+            <p>{{ formatPrice(plan.yearlyPrice) }} billed yearly</p>
+          </div>
+          <ul>
+            <li v-for="feature in plan.features" :key="feature">
+              {{ feature }}
+            </li>
+          </ul>
+          <RouterLink class="site-button site-button-primary" to="/signup">
+            Start with {{ plan.name }}
+          </RouterLink>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Comparison</p>
+          <h2>VXE table rendered from one schema object.</h2>
+        </div>
+      </div>
+
+      <LowCodeGrid
+        :schema="comparisonGridSchema"
+        :rows="comparisonRows"
+      />
+    </section>
+  </div>
+
+
+  <RouterLink class="site-brand" to="/">
+      <span class="site-brand-mark">H</span>
+      <span>Hikari</span>
+    </RouterLink>
+
+    <nav class="site-nav" aria-label="Primary navigation">
+      <RouterLink
+        v-for="item in publicNav"
+        :key="item.href"
+        class="site-nav-link"
+        :to="item.href"
+      >
+        {{ item.label }}
+      </RouterLink>
+    </nav>
