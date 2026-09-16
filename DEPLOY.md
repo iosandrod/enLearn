@@ -83,6 +83,36 @@ $env:ENLEARN_FTP_PASSWORD = [Net.NetworkCredential]::new('', $secure).Password
 
 脚本默认使用 FTPS（端口 21）。服务器必须已安装 IIS FTP、创建 FTP 用户/授权规则，并绑定证书启用 SSL；如果服务器只有普通 FTP，可将 `Protocol` 改为 `Ftp`，但账号、密码和代码会明文传输，不建议在公网使用。若服务器启用了 OpenSSH，建议改用 SFTP（需 WinSCP/类似客户端），不要把普通 FTP 暴露到公网。
 
+当前服务器已启用 OpenSSH，推荐直接使用 SFTP：
+
+```powershell
+.\sftp-sync.cmd                         # 同步项目文件（默认排除密钥、依赖、构建产物和临时文件）
+.\sftp-sync.cmd -Mode Path -Path api,frontend
+```
+
+用于让服务器 Docker 直接构建运行的核心代码同步命令：
+
+```powershell
+.\deploy-sftp.cmd
+```
+
+上传时 `sftp` 会显示当前文件的实时百分比和速度；脚本启动时还会显示总文件数和总大小。Windows 自带 OpenSSH 不提供整个项目的聚合百分比。
+
+该命令上传核心源码目录和 Docker 配置文件，然后在服务器执行：
+
+```powershell
+cd C:\Users\Administrator\enlearn
+docker compose --env-file .env.production up -d --build --remove-orphans
+```
+
+请先在服务器的 `C:\Users\Administrator\enlearn\.env.production` 准备好生产环境变量；同步脚本会刻意跳过本地 `.env*` 文件。
+
+默认目标为 `C:\Users\Administrator\enlearn`，脚本会提示输入 SSH 密码。也可通过参数覆盖：
+
+```powershell
+.\sftp-sync.cmd -HostName 117.72.155.0 -User administrator -RemoteRoot enlearn
+```
+
 在 Windows Server 上可由管理员先确认 IIS FTP 组件和控制端口（被动模式端口范围、FTP 用户授权和站点物理目录仍需按你的站点规划配置）：
 
 ```powershell

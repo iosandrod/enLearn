@@ -2594,6 +2594,7 @@ $material_9c4ff75f779a$,
     >
       <vxe-button-group
         size="mini"
+        mode="button"
         :options="toolbarButtonOptions"
         @click="handleToolbarButtonClick"
       />
@@ -3646,6 +3647,7 @@ function readToolbarButtons(value: unknown): ArrayTableToolbarButton[] {
 
       return {
         ...(buttonProps as VxeButtonProps),
+        mode: buttonProps.mode ?? 'button',
         code,
         label,
         ...(command ? { command } : {}),
@@ -4068,6 +4070,38 @@ function cloneValue(value: unknown) {
   justify-content: flex-start;
 }
 
+.lc-array-table__toolbar-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.lc-array-table__toolbar-buttons > button,
+.lc-array-table__toolbar .vxe-button {
+  box-sizing: border-box;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.lc-array-table__toolbar-buttons > button:hover:not(:disabled),
+.lc-array-table__toolbar .vxe-button:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.lc-array-table__toolbar-buttons > button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
 .lc-array-table__toolbar.is-center {
   justify-content: center;
 }
@@ -4217,8 +4251,8 @@ function cloneValue(value: unknown) {
 }
 </style>
 $material_4e8c367c176d$,
-    '87348ed642227f7ea42fd07f2b9ad77298de75a008a6cc412a2f07d072bc6c45',
-    '1.2.0',
+    '93ca1c2cfa086ded6ff38e97548e51884e3a0737e7101aa7719c11b4340ad7b2',
+    '1.2.3',
     array[]::text[],
     35,
     '{"implementationKey":"lc-array-table","sourcePath":"lowcode/form-materials/lc-array-table/index.vue"}'::jsonb,
@@ -4747,6 +4781,7 @@ $material_55a10050c554$,
         v-for="action in runtimeActions"
         :key="action.code"
         :status="action.status"
+        :prefix-icon="action.prefixIcon ?? action.icon"
         :disabled="isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions)"
         @click="handleAction(action)"
       >
@@ -4875,7 +4910,7 @@ async function handleAction(action: LowCodeAction) {
 }
 </script>
 $material_27855d2f72ac$,
-    '27855d2f72acaa14ee232e1027a192b97135c16997bc2fd6548f6116faa9bee7',
+    'c0779db354bb3abad711f8782eca62f1d7d29fdd9540c3f519c2a51f08221ede',
     '1.0.0',
     array[]::text[],
     50,

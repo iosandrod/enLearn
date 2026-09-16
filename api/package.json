@@ -106,6 +106,7 @@
     "db:apply-canonical-sub-form-schema": "tsx scripts/apply-canonical-sub-form-schema.ts",
     "db:apply-search-form-material-schema": "tsx scripts/apply-search-form-material-schema.ts",
     "db:apply-grid-designer-form-schemas": "tsx scripts/apply-grid-designer-form-schemas.ts",
+    "db:apply-request-params-subform": "tsx scripts/apply-request-params-subform.ts",
     "db:apply-array-table-drag-configuration": "tsx scripts/apply-array-table-drag-configuration.ts",
     "db:apply-detail-grid-load-data-relation-filters": "tsx scripts/apply-detail-grid-load-data-relation-filters.ts",
     "db:apply-form-type-property": "tsx scripts/apply-form-type-property.ts",

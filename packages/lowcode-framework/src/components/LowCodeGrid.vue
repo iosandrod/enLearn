@@ -9,6 +9,7 @@
         v-for="action in schema.toolbar ?? []"
         :key="action.code"
         :status="action.status"
+        :prefix-icon="action.icon"
         :disabled="readonly || executing || action.disabled"
         @click="handleToolbar(action)"
       >
@@ -125,6 +126,7 @@ import type {
   LowCodeGridSchema,
 } from '../types/lowcode';
 import type { LowCodeFormMaterialPatchPayload } from '../lowcode/form-materials';
+import { openGridExportDialog } from './grid-export';
 
 const props = defineProps<{
   schema: LowCodeGridSchema;
@@ -563,8 +565,29 @@ function handleMenuClick(payload: unknown) {
   if (
     (props.readonly || props.executing) &&
     menuType === 'body' &&
-    actionCode !== ''
+    actionCode !== '' &&
+    actionCode !== 'exportData'
   ) return;
+
+  if (actionCode === 'exportData') {
+    const grid = vxeGridRef.value as (VxeGridInstance<Record<string, unknown>> & {
+      getCheckboxRecords?: () => Record<string, unknown>[];
+      getCurrentRecord?: () => Record<string, unknown> | null;
+    }) | undefined;
+    try {
+      void openGridExportDialog({
+        rows: props.rows,
+        columns: (props.schema.grid.columns ?? []) as LowCodeGridColumn[],
+        selectedRows: grid?.getCheckboxRecords?.() ?? [],
+        currentRow: grid?.getCurrentRecord?.() ?? row ?? null,
+        serviceApi: host.getServiceApi(),
+        title: props.schema.title,
+      });
+    } catch {
+      // Keep menu clicks harmless when a host has not configured a service API.
+    }
+    return;
+  }
 
   emit('gridEvent', {
     key,

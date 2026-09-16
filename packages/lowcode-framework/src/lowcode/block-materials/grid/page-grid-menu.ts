@@ -53,8 +53,20 @@ function createPageGridBodyMenuOptions() {
         name: '下载当前行附件',
         prefixIcon: 'ri-download-2-line',
       },
+      {
+        code: 'exportData',
+        name: '导出数据',
+        prefixIcon: 'ri-file-excel-2-line',
+      },
     ],
   ];
+}
+
+function ensureExportMenuOption(options: unknown) {
+  const groups = Array.isArray(options) ? options : [];
+  const flattened = groups.flatMap((group) => Array.isArray(group) ? group : []);
+  if (flattened.some((item) => isRecord(item) && item.code === 'exportData')) return groups;
+  return [...groups, [{ code: 'exportData', name: '导出数据', prefixIcon: 'ri-file-excel-2-line' }]];
 }
 
 export function createPageGridMenuConfig(value: unknown) {
@@ -73,15 +85,19 @@ export function createPageGridMenuConfig(value: unknown) {
     className: [PAGE_GRID_CONTEXT_MENU_CLASS, configuredClassName].filter(Boolean).join(' '),
     header: {
       ...headerConfig,
-      options: Array.isArray(headerConfig.options)
-        ? headerConfig.options
-        : createPageGridHeaderMenuOptions(),
+      options: ensureExportMenuOption(
+        Array.isArray(headerConfig.options)
+          ? headerConfig.options
+          : createPageGridHeaderMenuOptions(),
+      ),
     },
     body: {
       ...bodyConfig,
-      options: Array.isArray(bodyConfig.options)
-        ? bodyConfig.options
-        : createPageGridBodyMenuOptions(),
+      options: ensureExportMenuOption(
+        Array.isArray(bodyConfig.options)
+          ? bodyConfig.options
+          : createPageGridBodyMenuOptions(),
+      ),
     },
   };
 }

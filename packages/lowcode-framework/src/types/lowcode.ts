@@ -262,6 +262,9 @@ export type LowCodeAction = {
   label: string;
   type?: 'submit' | 'reset' | 'button';
   status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  icon?: string;
+  prefixIcon?: string;
+  suffixIcon?: string;
   route?: string;
   disabled?: boolean;
   eventName?: string;

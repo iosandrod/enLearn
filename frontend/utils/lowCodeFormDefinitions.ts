@@ -7,6 +7,7 @@ import type { LowCodeContextSource } from '@enlearn/lowcode-framework/runtime';
 export const PAGE_INFO_DESIGN_FORM_CODE = 'page-info-design';
 
 export const LOW_CODE_FORM_CODES = {
+  gridExport: 'grid-export',
   accountProfile: 'account-profile',
   accountEmail: 'account-email',
   dashboardSettings: 'dashboard-settings',

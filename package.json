@@ -4,6 +4,7 @@
     "dev": "pnpm --dir frontend dev",
     "start:redis": "\"C:/Program Files/Redis/redis-server.exe\" --service-run \"C:/Program Files/Redis/redis.windows-service.conf\"",
     "build": "pnpm --dir frontend build",
+    "deploy:sftp": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/deploy-sftp.ps1",
     "start": "pnpm --dir frontend preview",
     "typecheck": "pnpm --dir frontend typecheck",
     "lowcode:typecheck": "pnpm --dir packages/lowcode-framework typecheck",
