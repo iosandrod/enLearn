@@ -42,6 +42,7 @@ async function main() {
       events: boolean;
       capabilities: number;
       approval_fields: string[] | null;
+      approval_component: string | null;
       join_fields: string[] | null;
       parallel_join_fields: string[] | null;
     }>(`
@@ -51,6 +52,9 @@ async function main() {
         (select count(*)::int from public.wf_node_capability where enabled) as capabilities,
         (select array_agg(field->>'field') from jsonb_array_elements(schema->'fields') field
           where code = 'trigger-workflow.node.manual-approval') as approval_fields,
+        (select field->>'component' from jsonb_array_elements(schema->'fields') field
+          where code = 'trigger-workflow.node.manual-approval'
+            and field->>'field' = 'approval' limit 1) as approval_component,
         (select array_agg(field->>'field') from jsonb_array_elements(schema->'fields') field
           where code = 'trigger-workflow.node.parallel') as join_fields
         ,(select array_agg(field->>'field') from jsonb_array_elements(schema->'fields') field
@@ -61,6 +65,7 @@ async function main() {
     const result = rows[0];
     if (!result?.tokens || !result.events || result.capabilities < 13 ||
       !result.approval_fields?.includes('approval') ||
+      result.approval_component !== 'lc-sub-form' ||
       !result.join_fields?.includes('joinKey') ||
       !result.parallel_join_fields?.includes('joinKey')) {
       throw new Error(`Canonical workflow runtime verification failed: ${JSON.stringify(result)}`);

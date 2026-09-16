@@ -5,6 +5,7 @@ services:
     build:
       context: .
       target: api-runtime
+    command: ["node", "--import", "tsx/esm", "dist/standalone.js"]
     restart: unless-stopped
     env_file:
       - .env.production
@@ -41,6 +42,7 @@ services:
     ports:
       - "8081:80"
     volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
 
