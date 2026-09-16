@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { lowCodeResources } from './lowcode.resources';
+import { readServiceResourceMetadata } from '../common/service-resource-metadata.spec-helper';
 import { LowCodeService } from './lowcode.service';
 
 type RuntimeService = {
@@ -12,6 +12,7 @@ type RuntimeService = {
 };
 
 const service = new LowCodeService() as unknown as RuntimeService;
+const lowCodeResources = readServiceResourceMetadata('lowcode');
 const databaseAction = {
   id: 'action-1',
   node_type: 'grid',
@@ -80,10 +81,10 @@ assert.deepEqual(
   ]
 );
 assert.ok(
-  lowCodeResources.lowcode_node_actions.create?.allowedFields.includes('source_code')
+  lowCodeResources.lowcode_node_actions.create?.allowedFields?.includes('source_code')
 );
 assert.ok(
-  lowCodeResources.lowcode_node_actions.update?.allowedFields.includes('source_code')
+  lowCodeResources.lowcode_node_actions.update?.allowedFields?.includes('source_code')
 );
 assert.equal(
   lowCodeResources.lowcode_node_actions.permissions?.create,

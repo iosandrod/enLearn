@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ResourceConfigMap } from '../common/base.service';
+import { readServiceResourceMetadata } from '../common/service-resource-metadata.spec-helper';
 import { WorkflowService } from './workflow.service';
 
 type TestWorkflowService = {
@@ -22,7 +23,13 @@ type PublicWorkflowService = {
   ): Promise<unknown>;
 };
 
-class WorkflowServiceProbe extends WorkflowService {}
+const workflowTestResources = readServiceResourceMetadata('workflow');
+
+class WorkflowServiceProbe extends WorkflowService {
+  protected override resources() {
+    return workflowTestResources;
+  }
+}
 
 const delegatedCalls: Array<{ service: string; method: string; args: unknown[] }> = [];
 const delegate = (service: string, methods: string[]) => Object.fromEntries(

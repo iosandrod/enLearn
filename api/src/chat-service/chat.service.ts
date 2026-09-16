@@ -3,7 +3,6 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import {
   BaseService,
   type HookContext,
-  type ResourceConfigMap,
   type ServiceHooks,
   type ServicePostData
 } from '../common/base.service';
@@ -123,94 +122,6 @@ function normalizeMessage(row: ChatMessageRow) {
 
 @Injectable()
 export class ChatService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    return {
-      chat_conversations: {
-        tableName: 'chat_conversations',
-        internalActions: ['create', 'update', 'delete', 'action'],
-        clientMode: 'admin',
-        accountField: 'account_id',
-        transactionalHooks: true,
-        databaseHooks: { beforeCreate: 'public.dynamic_crud_normalize_chat_conversation' },
-        detailRelations: {
-          chat_conversation_members: {
-            foreignKey: 'conversation_id',
-            parentKey: 'id',
-            inheritFields: ['account_id']
-          }
-        },
-        defaults: { type: 'direct', metadata: {} },
-        list: { defaultSorts: [{ field: 'last_message_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
-        create: {
-          allowedFields: ['account_id', 'type', 'title', 'created_by', 'last_message_id', 'last_message_at', 'metadata'],
-          requiredFields: ['type'],
-          userFields: { createdBy: 'created_by' }
-        },
-        update: {
-          allowedFields: ['title', 'last_message_id', 'last_message_at', 'metadata']
-        }
-      },
-      chat_conversation_members: {
-        tableName: 'chat_conversation_members',
-        internalActions: ['create', 'update', 'delete', 'action'],
-        clientMode: 'admin',
-        accountField: 'account_id',
-        transactionalHooks: true,
-        databaseHooks: {
-          beforeCreate: 'public.dynamic_crud_validate_chat_conversation_member'
-        },
-        defaults: { role: 'member', status: 'active' },
-        list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
-        create: {
-          allowedFields: ['account_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
-          requiredFields: ['conversation_id'],
-          userFields: {}
-        },
-        update: {
-          allowedFields: ['role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at']
-        }
-      },
-      chat_messages: {
-        tableName: 'chat_messages',
-        internalActions: ['create', 'update', 'delete', 'action'],
-        accountField: 'account_id',
-        transactionalHooks: true,
-        databaseHooks: {
-          beforeCreate: 'public.dynamic_crud_normalize_chat_message',
-          beforeUpdate: 'public.dynamic_crud_normalize_chat_message_update'
-        },
-        databaseHookInputFields: [
-          'messageType', 'message_type', 'attachmentIds', 'attachment_ids',
-          'replyToId', 'reply_to_id', 'edit', 'edited', 'delete', 'deleted'
-        ],
-        defaults: { message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
-        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 30, maxPageSize: 100 },
-        create: {
-          allowedFields: ['account_id', 'conversation_id', 'sender_id', 'content', 'message_type', 'attachment_ids', 'reply_to_id', 'status', 'metadata'],
-          requiredFields: ['conversation_id'],
-          userFields: { owner: 'sender_id' }
-        },
-        update: {
-          allowedFields: ['content', 'status', 'edited_at', 'deleted_at', 'metadata']
-        }
-      },
-      chat_message_reads: {
-        tableName: 'chat_message_reads',
-        internalActions: ['create', 'update', 'delete', 'action'],
-        accountField: 'account_id',
-        ownerField: 'user_id',
-        create: {
-          allowedFields: ['account_id', 'message_id', 'conversation_id', 'user_id', 'read_at'],
-          requiredFields: ['message_id', 'conversation_id'],
-          userFields: { owner: 'user_id' }
-        },
-        update: {
-          allowedFields: ['read_at']
-        }
-      }
-    };
-  }
-
   protected override hooks(): ServiceHooks {
     return {
       chat_conversations: {

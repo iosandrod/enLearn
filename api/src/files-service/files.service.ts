@@ -9,7 +9,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   BaseService,
   type HookContext,
-  type ResourceConfigMap,
   type ServiceHooks
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
@@ -41,7 +40,6 @@ import {
   resolveConfig,
   sanitizeFolderSegment
 } from './files.helpers';
-import { fileResources } from './files.resources';
 
 type PostData = Record<string, unknown>;
 
@@ -123,10 +121,6 @@ const STORAGE_ENTITY_DEFINITIONS = [
 
 @Injectable()
 export class FilesService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    return fileResources();
-  }
-
   protected override hooks(): ServiceHooks {
     return {
       file_objects: {

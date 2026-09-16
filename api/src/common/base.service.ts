@@ -247,6 +247,74 @@ export type ListItemsHandler = (
 ) => Promise<unknown> | unknown;
 
 export abstract class BaseService implements ServiceExecutor {
+  private resourceMetadata?: ResourceConfigMap;
+  private resourceMetadataExpiresAt = 0;
+  private resourceMetadataRequest?: Promise<ResourceConfigMap>;
+
+  protected async readResourceMetadata(context: ServiceContext = {}): Promise<ResourceConfigMap> {
+    const injectedResources = this.resources();
+    if (!this.resourceMetadata && Object.keys(injectedResources).length) {
+      this.assertResourceMapMatchesTables(injectedResources);
+      this.resourceMetadata = injectedResources;
+      this.resourceMetadataExpiresAt = Number.POSITIVE_INFINITY;
+    }
+    const now = Date.now();
+    if (this.resourceMetadata && now < this.resourceMetadataExpiresAt) {
+      return this.resourceMetadata;
+    }
+    if (this.resourceMetadataRequest) return this.resourceMetadataRequest;
+
+    const serviceName = this.readOptionalString(context.serviceName) || this.serviceMetadataName();
+    this.resourceMetadataRequest = (async () => {
+      const client = createSupabaseClient('admin', context);
+      const { data, error } = await client
+        .from('service_resource_metadata')
+        .select('resource_name, table_name, config')
+        .eq('service_name', serviceName)
+        .eq('enabled', true)
+        .order('resource_name', { ascending: true });
+      if (error) {
+        throw new BadRequestException(
+          `Unable to load ${serviceName} resource metadata: ${error.message}`
+        );
+      }
+
+      const resources: ResourceConfigMap = {};
+      for (const row of data ?? []) {
+        const record = row as Record<string, unknown>;
+        const name = this.readOptionalString(record.resource_name);
+        const tableName = this.readOptionalString(record.table_name);
+        const config = record.config;
+        if (!name || !tableName || !this.isRecord(config)) continue;
+        if (config.tableName !== tableName) {
+          throw new BadRequestException(
+            `Resource metadata ${serviceName}.${name} has inconsistent table_name.`
+          );
+        }
+        resources[name] = config as ResourceConfig;
+      }
+
+      this.assertResourceMapMatchesTables(resources);
+      this.resourceMetadata = resources;
+      this.resourceMetadataExpiresAt = Date.now() + 30_000;
+      return resources;
+    })().finally(() => {
+      this.resourceMetadataRequest = undefined;
+    });
+
+    return this.resourceMetadataRequest;
+  }
+
+  protected resources(): ResourceConfigMap {
+    return this.resourceMetadata ?? {};
+  }
+
+  protected serviceMetadataName() {
+    const label = this.constructor.name.replace(/Service$/, '') || 'service';
+    if (label === 'LowCode') return 'lowcode';
+    return label.slice(0, 1).toLowerCase() + label.slice(1);
+  }
+
   async executeRegisteredCommand(
     commandCode: string,
     postData: Record<string, unknown>,
@@ -327,19 +395,24 @@ export abstract class BaseService implements ServiceExecutor {
     try {
       switch (method) {
         case 'listItems':
+          await this.readResourceMetadata(context);
           this.assertPublicResourceAccess(postData, 'list');
           return this.listItems(postData, context);
         case 'createItem':
+          await this.readResourceMetadata(context);
           this.assertPublicResourceAccess(postData, 'create');
           return this.createItem(postData, context);
         case 'updateItem':
+          await this.readResourceMetadata(context);
           this.assertPublicResourceAccess(postData, 'update');
           return this.updateItem(postData, context);
         case 'deleteItem':
+          await this.readResourceMetadata(context);
           this.assertPublicResourceAccess(postData, 'delete');
           return this.deleteItem(postData, context);
         case 'saveItem':
           {
+            await this.readResourceMetadata(context);
             const publicResource = this.tryResolveResource(postData);
             const primaryKey = publicResource
               ? this.primaryKey(publicResource.config)
@@ -356,6 +429,7 @@ export abstract class BaseService implements ServiceExecutor {
           }
           return this.saveItem(postData, context);
         case 'runAction':
+          await this.readResourceMetadata(context);
           this.assertPublicResourceAccess(postData, 'action');
           return this.runResourceAction(postData, context);
         default:
@@ -511,6 +585,7 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async listItems(postData: ServicePostData, context: ServiceContext) {
+    await this.readResourceMetadata(context);
     if (!this.hasRequiredListFilters(postData)) {
       return this.emptyListItemsResult(postData);
     }
@@ -590,6 +665,7 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async saveItem(postData: ServicePostData, context: ServiceContext) {
+    await this.readResourceMetadata(context);
     const resource = this.tryResolveResource(postData);
     const primaryKey = resource ? this.primaryKey(resource.config) : 'id';
     const id = resource
@@ -601,6 +677,7 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async runResourceAction(postData: ServicePostData, context: ServiceContext) {
+    await this.readResourceMetadata(context);
     const resource = this.resolveResource(postData);
     const ctx = await this.createCrudContext('action', postData, context, resource);
 
@@ -623,6 +700,7 @@ export abstract class BaseService implements ServiceExecutor {
     context: ServiceContext,
     resolvedResource?: { name: string; config: ResourceConfig }
   ) {
+    await this.readResourceMetadata(context);
     const resource = resolvedResource ?? this.resolveResource(postData);
     const ctx = await this.createCrudContext(action, postData, context, resource);
 
@@ -2373,10 +2451,6 @@ export abstract class BaseService implements ServiceExecutor {
     const id = this.readOptionalString(postData.id ?? data.id);
     const primaryId = this.readOptionalString(primaryValue);
     return [...ids.map((item) => this.readOptionalString(item)), id, primaryId].filter(Boolean);
-  }
-
-  protected resources(): ResourceConfigMap {
-    return {};
   }
 
   protected hooks(): ServiceHooks {

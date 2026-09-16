@@ -10,7 +10,6 @@ import {
   BaseService,
   type CrudContext,
   type HookContext,
-  type ResourceConfigMap,
   type ServiceHooks,
   type ServicePostData
 } from '../common/base.service';
@@ -44,11 +43,10 @@ import {
   loadPlanningConsoleDataset,
   parsePlanningConsoleRequest
 } from './planning-console';
-import { planningResources } from './planning.resources';
 import {
   PLANNING_MANAGE_PERMISSION,
   PLANNING_VIEW_PERMISSION
-} from './planning.resources';
+} from './planning.permissions';
 import {
   PLANNING_MODEL_BY_KEY,
   type PlanningModelDefinition
@@ -91,10 +89,6 @@ export class PlanningService extends BaseService {
     private readonly triggerCredentials?: TriggerCredentialsService
   ) {
     super();
-  }
-
-  protected override resources(): ResourceConfigMap {
-    return planningResources();
   }
 
   protected override async listItems(
@@ -502,6 +496,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'listRelationOptions') {
+      await this.readResourceMetadata(context);
       const relation = this.resolveResource(postData);
       const ctx = await this.createCrudContext('list', postData, context, relation);
       await this.assertPermission(ctx);
@@ -563,6 +558,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'getPlanningParameter') {
+      await this.readResourceMetadata(context);
       const name = this.readOptionalString(postData.name);
       if (!name) throw new BadRequestException('name is required.');
       const parameter = this.resolveResource({ resource: 'planning_parameter' });
@@ -579,6 +575,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'syncSalesOrderDemands') {
+      await this.readResourceMetadata(context);
       const relation = this.resolveResource({ resource: 'planning_demand' });
       const ctx = await this.createCrudContext('update', postData, context, relation);
       await this.assertPermission(ctx);
@@ -597,6 +594,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'publishPlanVersion') {
+      await this.readResourceMetadata(context);
       const relation = this.resolveResource({ resource: 'planning_plan_version' });
       const ctx = await this.createCrudContext('update', postData, context, relation);
       await this.assertPermission(ctx);

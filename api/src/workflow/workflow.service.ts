@@ -9,7 +9,6 @@ import {
 import {
   BaseService,
   type HookContext,
-  type ResourceConfigMap,
   type ServiceHooks
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
@@ -42,7 +41,6 @@ import type { RuntimeActor } from './runtime/runtime.types';
 import { RuntimeService } from './runtime/runtime.service';
 import { TriggerRuntimeStatusService } from './trigger/trigger-runtime-status.service';
 import { TaskConsoleService } from './runtime/task-console.service';
-import { workflowResources } from './workflow.resources';
 import { parseRegisteredCommandFunction, validateRegisteredCommandSource } from './runtime/registered-command.runtime';
 
 type PostData = Record<string, unknown>;
@@ -248,10 +246,6 @@ export class WorkflowService extends BaseService {
     private readonly taskConsoleService: TaskConsoleService
   ) {
     super();
-  }
-
-  protected override resources(): ResourceConfigMap {
-    return workflowResources;
   }
 
   protected override hooks(): ServiceHooks {
@@ -497,18 +491,21 @@ export class WorkflowService extends BaseService {
   }
 
   protected override async createItem(postData: PostData, context: ServiceContext) {
+    await this.readResourceMetadata(context);
     this.validateRegisteredCommandWrite(postData);
     const normalizedPostData = this.normalizeCrudPostData(postData);
     return super.createItem(normalizedPostData, context);
   }
 
   protected override async updateItem(postData: PostData, context: ServiceContext) {
+    await this.readResourceMetadata(context);
     this.validateRegisteredCommandWrite(postData);
     const normalizedPostData = this.normalizeCrudPostData(postData);
     return super.updateItem(normalizedPostData, context);
   }
 
   protected override async saveItem(postData: PostData, context: ServiceContext) {
+    await this.readResourceMetadata(context);
     this.validateRegisteredCommandWrite(postData);
     const normalizedPostData = this.normalizeCrudPostData(postData);
     return super.saveItem(normalizedPostData, context);
@@ -687,7 +684,7 @@ export class WorkflowService extends BaseService {
       Object.entries(rawData).map(([field, value]) => [toSnakeCase(field), value])
     );
     const hookInputFields = new Set(
-      workflowResources[resourceName]?.databaseHookInputFields ?? []
+      this.resources()[resourceName]?.databaseHookInputFields ?? []
     );
 
     return {

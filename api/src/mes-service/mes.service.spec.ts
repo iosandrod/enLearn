@@ -10,9 +10,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
   MES_MANAGE_PERMISSION,
-  MES_VIEW_PERMISSION,
-  mesResources
-} from './mes.resources';
+  MES_VIEW_PERMISSION
+} from './mes.permissions';
+import { readServiceResourceMetadata } from '../common/service-resource-metadata.spec-helper';
 import { MesService } from './mes.service';
 
 type RpcError = { code?: string; message: string; details?: string | null };
@@ -37,6 +37,12 @@ type TestableMesService = {
   throwDatabaseError(error: RpcError): never;
 };
 
+class MesServiceProbe extends MesService {
+  protected override resources() {
+    return readServiceResourceMetadata('mes');
+  }
+}
+
 function createHarness(result: RpcResult = { data: { ok: true }, error: null }) {
   const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
   const client = {
@@ -46,7 +52,7 @@ function createHarness(result: RpcResult = { data: { ok: true }, error: null }) 
     }
   } as unknown as SupabaseClient;
   const actor = { accountId: ACCOUNT_ID, client, userId: USER_ID };
-  const service = new MesService() as unknown as TestableMesService;
+  const service = new MesServiceProbe() as unknown as TestableMesService;
   service.authorize = async () => actor;
   return {
     calls,
@@ -59,7 +65,7 @@ function context(requestId = 'web-command-1'): ServiceContext {
 }
 
 async function testResourceBoundary() {
-  const resources = mesResources();
+  const resources = readServiceResourceMetadata('mes');
   assert.deepEqual(Object.keys(resources), [
     'mes_work_order',
     'mes_work_order_operation',

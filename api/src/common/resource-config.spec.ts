@@ -3,15 +3,7 @@ import assert from 'node:assert/strict';
 import type { ResourceConfigMap } from './base.service';
 import type { ServiceContext } from './interfaces/service-executor';
 import { AdminService } from '../admin-service/admin.service';
-import { ChatService } from '../chat-service/chat.service';
-import { EntityDesignService } from '../entity-design-service/entity-design.service';
-import { FilesService } from '../files-service/files.service';
-import { LowCodeService } from '../lowcode-service/lowcode.service';
-import { MesService } from '../mes-service/mes.service';
-import { NotificationService } from '../notification-service/notification.service';
-import { PostsService } from '../posts-service/posts.service';
-import { PlanningService } from '../planning-service/planning.service';
-import { workflowResources } from '../workflow/workflow.resources';
+import { readMigratedResourceMetadata } from './service-resource-metadata.spec-helper';
 
 type ServiceWithResources = {
   resources(): ResourceConfigMap;
@@ -21,21 +13,13 @@ type AdminServiceWithDynamicConfig = ServiceWithResources & {
   buildDynamicCrudConfig(ctx: Record<string, unknown>): Record<string, unknown>;
 };
 
-const services = [
-  new AdminService(),
-  new ChatService(),
-  new EntityDesignService(),
-  new FilesService(),
-  new LowCodeService(),
-  new MesService(),
-  new NotificationService(),
-  new PostsService(),
-  new PlanningService()
-] as unknown as ServiceWithResources[];
-
-const lowcodeService = services[4];
-
-services.push({ resources: () => workflowResources });
+const migratedResources = readMigratedResourceMetadata();
+const services = Object.entries(migratedResources).map(([name, resources]) => ({
+  constructor: { name },
+  resources: () => resources
+})) as unknown as ServiceWithResources[];
+const lowcodeResources = migratedResources.lowcode;
+const workflowResources = migratedResources.workflow;
 
 for (const service of services) {
   for (const [resourceName, config] of Object.entries(service.resources())) {
@@ -48,8 +32,13 @@ for (const service of services) {
   }
 }
 
-const adminService = new AdminService() as unknown as AdminServiceWithDynamicConfig;
-const adminResources = adminService.resources();
+const adminResources = migratedResources.admin;
+class AdminServiceProbe extends AdminService {
+  protected override resources() {
+    return adminResources;
+  }
+}
+const adminService = new AdminServiceProbe() as unknown as AdminServiceWithDynamicConfig;
 const roleResource = adminResources.admin_roles;
 const dynamicRoleConfig = adminService.buildDynamicCrudConfig({
   action: 'create',
@@ -137,7 +126,6 @@ for (const resourceName of transactionalResources) {
 }
 assert.ok(adminResources.admin_routes.databaseHookInputFields?.includes('type'));
 
-const lowcodeResources = lowcodeService.resources();
 assert.equal(lowcodeResources.lowcode_pages.transactionalHooks, true);
 assert.equal(
   (lowcodeResources.lowcode_pages.databaseHooks?.beforeCreate as string),

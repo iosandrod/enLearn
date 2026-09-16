@@ -4,10 +4,7 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common';
-import {
-  BaseService,
-  type ResourceConfigMap
-} from '../common/base.service';
+import { BaseService } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
   createSupabaseClient,
@@ -26,7 +23,6 @@ import {
   normalizeGeneratedStatus,
   readString
 } from './lowcode.helpers';
-import { lowCodeResources } from './lowcode.resources';
 import type { LowCodePageRow } from './lowcode.types';
 import {
   executeLowCodeRemoteRuntime,
@@ -211,10 +207,6 @@ export class LowCodeService extends BaseService {
     }
 
     return super.listItems(postData, context);
-  }
-
-  protected override resources(): ResourceConfigMap {
-    return lowCodeResources;
   }
 
   protected override async executeAction(method: string, postData: Record<string, unknown>, context: ServiceContext) {

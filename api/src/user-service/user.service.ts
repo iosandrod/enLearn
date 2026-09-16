@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   BaseService,
-  type ListItemsHandler,
-  type ResourceConfigMap
+  type ListItemsHandler
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { getCurrentUser } from '../common/utils/supabase';
@@ -23,21 +22,6 @@ function readString(value: unknown, name: string, fallback = '') {
 
 @Injectable()
 export class UserService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    return {
-      users: {
-        tableName: 'users',
-        internalActions: ['create', 'update', 'delete', 'action'],
-        primaryKey: 'id',
-        ownerField: 'id',
-        update: {
-          allowedFields: ['full_name', 'avatar_url'],
-          timestamp: true
-        }
-      }
-    };
-  }
-
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'updateProfile':
