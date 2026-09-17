@@ -7,11 +7,11 @@ import type {
   SiteNavItem,
   Testimonial
 } from '~/types/content';
+import { SITE_DESCRIPTION, SITE_NAME } from '../config/site';
 
-export const siteName = 'Hikari';
+export const siteName = SITE_NAME;
 
-export const siteDescription =
-  'A backend-connected SaaS starter with auth, dashboard, blog, and docs migrated to a Vue SPA.';
+export const siteDescription = SITE_DESCRIPTION;
 
 export const publicNav: SiteNavItem[] = [
   { label: 'Home', href: '/' },
@@ -22,7 +22,7 @@ export const publicNav: SiteNavItem[] = [
 
 export const homeHero = {
   eyebrow: 'Vite SPA migration',
-  title: 'Hikari',
+  title: SITE_NAME,
   description:
     'Keep the product flows while routing auth and data access through the backend, with the public site, dashboard, blog, and docs in a Vue-friendly SPA.',
   actions: [

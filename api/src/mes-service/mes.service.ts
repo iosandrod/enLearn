@@ -10,7 +10,6 @@ import {
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   BaseService,
-  type ResourceConfigMap,
   type ServicePostData
 } from '../common/base.service';
 import { fingerprintServiceWrite } from '../common/request-idempotency';
@@ -23,9 +22,8 @@ import {
 } from '../common/utils/supabase';
 import {
   MES_MANAGE_PERMISSION,
-  MES_VIEW_PERMISSION,
-  mesResources
-} from './mes.resources';
+  MES_VIEW_PERMISSION
+} from './mes.permissions';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -44,10 +42,6 @@ type MesCommandEnvelope = {
 
 @Injectable()
 export class MesService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    return mesResources();
-  }
-
   protected override async executeAction(
     method: string,
     postData: JsonRecord,

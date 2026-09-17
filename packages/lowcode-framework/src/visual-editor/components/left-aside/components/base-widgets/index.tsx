@@ -12,6 +12,7 @@ import { Edit } from '../../../common/remix-icons';
 import styles from './index.module.scss';
 import { visualConfig } from '../../../../../visual.config';
 import { createNewBlock } from '../../../../visual-editor.utils';
+import { useVisualData } from '../../../../hooks/useVisualData';
 import DraggableTransitionGroup from '../../../simulator-editor/draggable-transition-group.vue';
 
 const DraggableTransitionGroupView = DraggableTransitionGroup as any;
@@ -23,31 +24,38 @@ export default defineComponent({
   icon: Edit,
   setup() {
     const baseWidgets = ref(visualConfig.componentModules.baseWidgets);
+    const { currentPath, currentPage, currentBlock, setCurrentBlock, updatePageBlock } = useVisualData();
 
-    // 克隆组件
-    const cloneDog = (comp) => {
-      const newComp = cloneDeep(comp);
-      return createNewBlock(newComp);
+    const addMaterial = (component) => {
+      const block = createNewBlock(cloneDeep(component));
+      if (currentBlock.value?.focus) currentBlock.value.focus = false;
+      block.focus = true;
+      updatePageBlock(currentPath.value, [...(currentPage.value.blocks ?? []), block]);
+      setCurrentBlock(block);
     };
 
     return () => (
-      <>
-        <DraggableTransitionGroupView
-          class={styles.listGroup}
-          v-model={baseWidgets.value}
-          group={{ name: 'components', pull: 'clone', put: false }}
-          clone={cloneDog}
-          itemKey={'key'}
-        >
-          {{
-            item: ({ element }) => (
-              <div class={styles.listGroupItem} data-label={element.label}>
-                {element.preview()}
-              </div>
-            ),
-          }}
-        </DraggableTransitionGroupView>
-      </>
+      <DraggableTransitionGroupView
+        class={styles.listGroup}
+        v-model={baseWidgets.value}
+        group={{ name: 'components', pull: 'clone', put: false }}
+        clone={(component) => createNewBlock(cloneDeep(component))}
+        itemKey="key"
+      >
+        {{
+          item: ({ element }) => (
+            <button
+              type="button"
+              class={styles.listGroupItem}
+              data-label={element.label}
+              title={`添加${element.label}`}
+              onClick={() => addMaterial(element)}
+            >
+              <span>{String(element.label || element.key || '组件')}</span>
+            </button>
+          ),
+        }}
+      </DraggableTransitionGroupView>
     );
   },
 });

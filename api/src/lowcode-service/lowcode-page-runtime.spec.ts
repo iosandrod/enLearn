@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { LowCodeService } from './lowcode.service';
-import { lowCodeResources } from './lowcode.resources';
+import { readServiceResourceMetadata } from '../common/service-resource-metadata.spec-helper';
 
 type RuntimeService = {
   prepareRuntimePage(
@@ -13,6 +13,7 @@ type RuntimeService = {
 };
 
 const service = new LowCodeService() as unknown as RuntimeService;
+const lowCodeResources = readServiceResourceMetadata('lowcode');
 const runtimeFunction = {
   id: 'runtime-1',
   runtime_key: 'system:page:list.refresh',

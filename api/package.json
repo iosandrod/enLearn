@@ -139,6 +139,7 @@
     "db:apply-mes-mobile-navigation": "tsx scripts/apply-mes-mobile-navigation.ts",
     "db:apply-mes-command-conflicts": "tsx scripts/apply-mes-command-conflicts-and-refresh.ts",
     "db:apply-service-request-idempotency": "tsx scripts/apply-service-request-idempotency.ts",
+    "db:apply-service-resource-metadata": "tsx scripts/apply-service-resource-metadata.ts",
     "db:verify-mes-compensation": "tsx scripts/verify-mes-compensation.ts",
     "smoke:mes-core": "tsx scripts/smoke-mes-core.ts",
     "smoke:mes-compensation": "tsx scripts/smoke-mes-compensation.ts",

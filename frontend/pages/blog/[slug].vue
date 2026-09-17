@@ -14,7 +14,7 @@
     <aside v-if="post" class="content-aside">
       <section class="meta-panel">
         <p class="section-kicker">Written by</p>
-        <strong>{{ post.author ?? 'Hikari' }}</strong>
+        <strong>{{ post.author ?? SITE_NAME }}</strong>
       </section>
 
       <section v-if="post.toc.length" class="toc-panel">
@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import { SITE_NAME } from '../../config/site';
 import type { RenderedContent } from '~/types/content';
 
 const route = useRoute();
@@ -63,7 +64,7 @@ function formatDate(date?: string) {
 }
 
 useSeoMeta({
-  title: () => (post.value ? `${post.value.title} | Hikari` : 'Blog | Hikari'),
-  description: () => post.value?.description ?? 'Hikari blog post'
+  title: () => (post.value ? `${post.value.title} | ${SITE_NAME}` : `学习记录 | ${SITE_NAME}`),
+  description: () => post.value?.description ?? `${SITE_NAME}学习记录`
 });
 </script>

@@ -4,7 +4,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   BaseService,
   type HookContext,
-  type ResourceConfigMap,
   type ServiceHooks
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
@@ -140,129 +139,6 @@ function resolveAdminClient(fallback: SupabaseClient) {
 
 @Injectable()
 export class NotificationService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    return {
-      notification_messages: {
-        tableName: 'notification_messages',
-        accountField: 'account_id',
-        ownerField: 'recipient_id',
-        transactionalHooks: true,
-        databaseHooks: {
-          beforeCreate: 'public.dynamic_crud_normalize_notification_message',
-          beforeUpdate: 'public.dynamic_crud_normalize_notification_message_update'
-        },
-        databaseHookInputFields: [
-          'linkUrl', 'sourceType', 'sourceId', 'recipientId',
-          'markRead', 'mark_read', 'archive', 'archived', 'readAt', 'archivedAt'
-        ],
-        defaults: { category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
-        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
-        create: {
-          allowedFields: ['account_id', 'event_id', 'recipient_id', 'category', 'channel', 'title', 'content', 'link_url', 'priority', 'source_type', 'source_id', 'metadata'],
-          requiredFields: ['recipient_id', 'title'],
-          userFields: { owner: 'recipient_id' }
-        },
-        update: {
-          allowedFields: ['read_at', 'archived_at'],
-          timestamp: false
-        }
-      },
-      notification_preferences: {
-        tableName: 'notification_preferences',
-        accountField: 'account_id',
-        ownerField: 'user_id',
-        transactionalHooks: true,
-        databaseHooks: {
-          beforeCreate: 'public.dynamic_crud_normalize_notification_preference',
-          beforeUpdate: 'public.dynamic_crud_normalize_notification_preference'
-        },
-        databaseHookInputFields: [
-          'userId', 'user_id', 'category', 'inboxEnabled', 'emailEnabled',
-          'smsEnabled', 'quietHours', 'quiet_hours'
-        ],
-        defaults: { inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
-        list: { defaultSorts: [{ field: 'category', direction: 'asc' }], defaultPageSize: 100, maxPageSize: 100 },
-        create: {
-          allowedFields: ['account_id', 'user_id', 'category', 'inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours'],
-          requiredFields: ['user_id', 'category'],
-          userFields: { owner: 'user_id' }
-        },
-        update: {
-          allowedFields: ['inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours']
-        }
-      },
-      notification_deliveries: {
-        tableName: 'notification_deliveries',
-        accountField: 'account_id',
-        clientMode: 'admin',
-        transactionalHooks: true,
-        databaseHooks: {
-          beforeCreate: 'public.dynamic_crud_validate_account_recipient',
-          beforeUpdate: 'public.dynamic_crud_normalize_notification_delivery'
-        },
-        databaseHookInputFields: ['recipientId', 'retry'],
-        permissions: this.adminCrudPermissions('notification.deliveries.manage'),
-        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
-        create: {
-          allowedFields: ['account_id', 'event_id', 'message_id', 'recipient_id', 'channel', 'target', 'template_code', 'status', 'attempt_count', 'provider_message_id', 'error_message', 'next_retry_at', 'sent_at'],
-          requiredFields: ['recipient_id', 'channel']
-        },
-        update: {
-          allowedFields: ['status', 'error_message', 'next_retry_at', 'attempt_count', 'provider_message_id', 'sent_at']
-        }
-      },
-      notification_events: {
-        tableName: 'notification_events',
-        accountField: 'account_id',
-        clientMode: 'admin',
-        transactionalHooks: true,
-        databaseHooks: { beforeCreate: 'public.dynamic_crud_validate_notification_event' },
-        permissions: this.adminCrudPermissions('notification.messages.manage'),
-        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
-        create: {
-          allowedFields: ['account_id', 'event_type', 'source_type', 'source_id', 'actor_id', 'payload', 'idempotency_key', 'status', 'error_message', 'processed_at'],
-          requiredFields: ['event_type', 'idempotency_key']
-        },
-        update: {
-          allowedFields: ['status', 'error_message', 'processed_at']
-        }
-      },
-      notification_templates: {
-        tableName: 'notification_templates',
-        clientMode: 'admin',
-        permissions: this.adminCrudPermissions('notification.templates.manage'),
-        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
-        create: {
-          allowedFields: ['code', 'name', 'event_type', 'channel', 'title_template', 'content_template', 'status', 'metadata'],
-          requiredFields: ['code', 'name', 'event_type', 'channel', 'title_template']
-        },
-        update: {
-          allowedFields: ['code', 'name', 'event_type', 'channel', 'title_template', 'content_template', 'status', 'metadata'],
-          requiredFields: ['code', 'name', 'event_type', 'channel', 'title_template']
-        }
-      },
-      notification_push_devices: {
-        tableName: 'notification_push_devices',
-        accountField: 'account_id',
-        ownerField: 'user_id',
-        list: {
-          defaultSorts: [{ field: 'updated_at', direction: 'desc' }],
-          defaultPageSize: 20,
-          maxPageSize: 100
-        },
-        create: {
-          allowedFields: ['account_id', 'user_id', 'token', 'platform', 'provider', 'device_id', 'app_version', 'status', 'last_seen_at'],
-          requiredFields: ['account_id', 'user_id', 'token', 'platform'],
-          userFields: { owner: 'user_id' }
-        },
-        update: {
-          allowedFields: ['provider', 'device_id', 'app_version', 'status', 'last_seen_at']
-        },
-        delete: {}
-      }
-    };
-  }
-
   protected override hooks(): ServiceHooks {
     return {
       notification_messages: {

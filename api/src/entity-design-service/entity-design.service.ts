@@ -7,10 +7,7 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import {
-  BaseService,
-  type ResourceConfigMap
-} from '../common/base.service';
+import { BaseService } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { requireAdmin } from '../common/utils/supabase';
 
@@ -267,52 +264,6 @@ function entityMetadataRequiredMessage() {
 
 @Injectable()
 export class EntityDesignService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    const permissions = this.entityDesignCrudPermissions();
-    const userFields = { createdBy: 'created_by', updatedBy: 'updated_by' };
-    return {
-      entity_design_tables: {
-        tableName: 'entity_design_tables',
-        permissions,
-        create: {
-          allowedFields: ['code', 'schema_name', 'table_name', 'title', 'description', 'primary_key', 'status', 'position_x', 'position_y', 'metadata'],
-          requiredFields: ['code', 'schema_name', 'table_name', 'title'],
-          userFields
-        },
-        update: {
-          allowedFields: ['code', 'schema_name', 'table_name', 'title', 'description', 'primary_key', 'status', 'position_x', 'position_y', 'metadata'],
-          userFields: { updatedBy: 'updated_by' }
-        }
-      },
-      entity_design_columns: {
-        tableName: 'entity_design_columns',
-        permissions,
-        create: {
-          allowedFields: ['table_id', 'column_name', 'label', 'data_type', 'data_type_config', 'storage_kind', 'expression', 'is_required', 'is_primary_key', 'is_unique', 'default_value', 'sort_order', 'status', 'metadata'],
-          requiredFields: ['table_id', 'column_name', 'label', 'data_type'],
-          userFields
-        },
-        update: {
-          allowedFields: ['table_id', 'column_name', 'label', 'data_type', 'data_type_config', 'storage_kind', 'expression', 'is_required', 'is_primary_key', 'is_unique', 'default_value', 'sort_order', 'status', 'metadata'],
-          userFields: { updatedBy: 'updated_by' }
-        }
-      },
-      entity_design_relations: {
-        tableName: 'entity_design_relations',
-        permissions,
-        create: {
-          allowedFields: ['source_table_id', 'source_column_id', 'source_column_name', 'target_table_id', 'target_column_id', 'target_column_name', 'relation_type', 'is_enforced', 'constraint_name', 'on_delete', 'metadata'],
-          requiredFields: ['source_table_id', 'source_column_name', 'target_table_id', 'target_column_name'],
-          userFields
-        },
-        update: {
-          allowedFields: ['source_table_id', 'source_column_id', 'source_column_name', 'target_table_id', 'target_column_id', 'target_column_name', 'relation_type', 'is_enforced', 'constraint_name', 'on_delete', 'metadata'],
-          userFields: { updatedBy: 'updated_by' }
-        }
-      }
-    };
-  }
-
   private entityDesignCrudPermissions() {
     return {
       list: ['entity.design.manage', 'admin.entities.manage'],

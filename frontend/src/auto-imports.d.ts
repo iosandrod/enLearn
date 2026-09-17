@@ -127,7 +127,7 @@ declare global {
   export type { RouteCacheInvalidation } from '../composables/useRouteCache'
   import('../composables/useRouteCache')
   // @ts-ignore
-  export type { ServiceInvokeOptions } from '../composables/useServiceApi'
+  export type { ServiceInvokeOptions, PublicLowCodeCatalog } from '../composables/useServiceApi'
   import('../composables/useServiceApi')
 }
 

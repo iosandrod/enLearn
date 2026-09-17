@@ -5,13 +5,19 @@ import {
 } from './planning.models';
 import {
   PLANNING_MANAGE_PERMISSION,
-  PLANNING_VIEW_PERMISSION,
-  planningResources
-} from './planning.resources';
+  PLANNING_VIEW_PERMISSION
+} from './planning.permissions';
+import { readServiceResourceMetadata } from '../common/service-resource-metadata.spec-helper';
 import { PlanningService } from './planning.service';
 
-const resources = planningResources();
-const service = new PlanningService() as unknown as {
+const resources = readServiceResourceMetadata('planning');
+class PlanningServiceProbe extends PlanningService {
+  protected override resources() {
+    return resources;
+  }
+}
+
+const service = new PlanningServiceProbe() as unknown as {
   createItem(postData: Record<string, unknown>, context: unknown): Promise<unknown>;
   executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
   buildWritePayload(
@@ -101,7 +107,7 @@ async function testPlanningPayloadNormalization() {
   assert.equal(locationPayload.available_id, null);
 
   let capturedPayload: Record<string, unknown> | undefined;
-  const executableService = new PlanningService() as unknown as {
+  const executableService = new PlanningServiceProbe() as unknown as {
     createItem(postData: Record<string, unknown>, context: unknown): Promise<unknown>;
     createCrudContext: (...args: unknown[]) => Promise<Record<string, unknown>>;
     assertPermission: (...args: unknown[]) => Promise<void>;
@@ -158,7 +164,7 @@ async function testConsoleOptionBoundary() {
       return Promise.resolve({ data: rows.slice(0, value), error: null });
     }
   };
-  const optionService = new PlanningService() as unknown as {
+  const optionService = new PlanningServiceProbe() as unknown as {
     executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
     authorizeConsoleRead(context: unknown): Promise<{ client: { from(table: string): typeof query } }>;
     accountValue(context: unknown, field: string): string;
@@ -194,7 +200,7 @@ async function testConsoleScenarioOptionsUseSystemDropdownSource() {
     order() { return itemQuery; },
     limit() { return Promise.resolve({ data: itemRows, error: null }); }
   };
-  const optionService = new PlanningService() as unknown as {
+  const optionService = new PlanningServiceProbe() as unknown as {
     executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
     authorizeConsoleRead(context: unknown): Promise<{ client: { from(table: string): typeof sourceQuery | typeof itemQuery } }>;
     accountValue(context: unknown, field: string): string;
@@ -221,7 +227,7 @@ async function testConsoleScenarioOptionsUseSystemDropdownSource() {
 }
 
 async function testConsoleReadRequiresTheExactInternalCapability() {
-  const capabilityService = new PlanningService() as unknown as {
+  const capabilityService = new PlanningServiceProbe() as unknown as {
     authorizeConsoleRead(context: unknown): Promise<unknown>;
   };
   await assert.rejects(
@@ -249,7 +255,7 @@ async function testCategoryRelationOptions() {
     order() { return query; },
     limit() { return Promise.resolve({ data: rows, error: null }); }
   };
-  const optionService = new PlanningService() as unknown as {
+  const optionService = new PlanningServiceProbe() as unknown as {
     executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
     createCrudContext: (...args: unknown[]) => Promise<Record<string, unknown>>;
     assertPermission: (...args: unknown[]) => Promise<void>;
@@ -305,7 +311,7 @@ async function testCategoryRelationOptions() {
 }
 
 async function testCategoryDeleteRejectsChildren() {
-  const deleteService = new PlanningService() as unknown as {
+  const deleteService = new PlanningServiceProbe() as unknown as {
     execute(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
     createCrudContext: (...args: unknown[]) => Promise<Record<string, unknown>>;
     assertPermission: (...args: unknown[]) => Promise<void>;
@@ -347,7 +353,7 @@ async function testCategoryDeleteRejectsChildren() {
 async function testRouteOperationInsertUsesOneTransactionalRpc() {
   let capturedMethod = '';
   let capturedPayload: Record<string, unknown> | undefined;
-  const insertService = new PlanningService() as unknown as {
+  const insertService = new PlanningServiceProbe() as unknown as {
     executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
     authorizeExecution(context: unknown): Promise<{ client: { rpc: (method: string, payload: Record<string, unknown>) => Promise<unknown> } }>;
     accountValue(context: unknown, field: string): string;

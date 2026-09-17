@@ -1,31 +1,18 @@
 <template>
   <div class="page-stack">
     <section class="page-intro">
-      <p class="section-kicker">Blog</p>
-      <h1>Hikari Blog</h1>
-      <p>Design language, setup notes, and migration-friendly project updates.</p>
+      <p class="section-kicker">学习记录</p>
+      <h1>{{ SITE_NAME }}学习记录</h1>
+      <p>整理低代码、智能排程和工程实践中的笔记。</p>
     </section>
 
-    <section class="section-block">
-      <div class="post-grid post-grid-wide">
-        <RouterLink
-          v-for="post in posts"
-          :key="post.href"
-          class="post-card"
-          :to="post.href"
-        >
-          <span>{{ formatDate(post.date) }}</span>
-          <h2>{{ post.title }}</h2>
-          <p>{{ post.description }}</p>
-          <small>{{ post.author }}</small>
-        </RouterLink>
-      </div>
-    </section>
+    <section class="section-block"></section>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ContentSummary } from '~/types/content';
+import { SITE_NAME } from '../../config/site';
 
 const { data } = await useAsyncData<ContentSummary[]>(
   'blog-posts',
@@ -45,7 +32,7 @@ function formatDate(date?: string) {
 }
 
 useSeoMeta({
-  title: 'Blog | Hikari',
-  description: 'Read Hikari blog posts from the SPA migration.'
+  title: `学习记录 | ${SITE_NAME}`,
+  description: `${SITE_NAME}的个人技术学习记录。`
 });
 </script>

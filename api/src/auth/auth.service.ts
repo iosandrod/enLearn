@@ -47,6 +47,31 @@ function throwAuthError(error: AuthError | null, fallback: string): never {
 
 const ADMIN_LOGIN_ALIAS = 'admin';
 const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
+const PUBLIC_CATALOG_PAGE_SIZE = 1000;
+
+type PublicCatalogPage<T> = {
+  data: T[] | null;
+  error: { message: string } | null;
+};
+
+async function listAllPublicCatalogRows<T>(
+  loadPage: (from: number, to: number) => PromiseLike<PublicCatalogPage<T>>
+) {
+  const rows: T[] = [];
+
+  for (let from = 0; ; from += PUBLIC_CATALOG_PAGE_SIZE) {
+    const { data, error } = await loadPage(from, from + PUBLIC_CATALOG_PAGE_SIZE - 1);
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    const page = data ?? [];
+    rows.push(...page);
+    if (page.length < PUBLIC_CATALOG_PAGE_SIZE) break;
+  }
+
+  return rows;
+}
 
 function normalizeLoginEmail(email: string) {
   const trimmedEmail = email.trim();
@@ -82,7 +107,28 @@ function toPublicSession(session: Session): PublicSession {
 export class AuthService {
   async listPublishedLowCodeMaterials() {
     const admin = createSupabaseClient('admin');
-    const { data, error } = await admin
+    const materials = await this.listPublicLowCodeMaterials(admin);
+    return { materials };
+  }
+
+  async listPublicLowCodeCatalog() {
+    const admin = createSupabaseClient('admin');
+    const [materials, formDefinitions] = await Promise.all([
+      this.listPublicLowCodeMaterials(admin),
+      listAllPublicCatalogRows((from, to) => admin
+        .from('lowcode_form_definitions')
+        .select('id,code,name,description,schema,enabled,created_at,updated_at')
+        .eq('enabled', true)
+        .order('code', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to))
+    ]);
+
+    return { materials, formDefinitions };
+  }
+
+  private listPublicLowCodeMaterials(admin: ReturnType<typeof createSupabaseClient>) {
+    return listAllPublicCatalogRows((from, to) => admin
       .from('lowcode_materials')
       .select([
         'id',
@@ -109,13 +155,8 @@ export class AuthService {
       .order('material_kind', { ascending: true })
       .order('sort_order', { ascending: true })
       .order('code', { ascending: true })
-      .limit(100);
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return { materials: data ?? [] };
+      .order('id', { ascending: true })
+      .range(from, to));
   }
 
   async listLoginAccountOptions(login?: string) {

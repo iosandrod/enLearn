@@ -10,7 +10,6 @@ import {
   BaseService,
   type CrudContext,
   type HookContext,
-  type ResourceConfigMap,
   type ServiceHooks,
   type ServicePostData
 } from '../common/base.service';
@@ -39,16 +38,16 @@ import {
 } from './execution/planning-orchestrator';
 import { resolvePlanningParameters } from './execution/planning-parameters';
 import { preflightPlanningData } from './execution/planning-preflight';
+import { validatePlanningMaterialReadiness } from './execution/planning-material-readiness';
 import { normalizePlanningSnapshotForEngine } from './execution/planning-snapshot-normalizer';
 import {
   loadPlanningConsoleDataset,
   parsePlanningConsoleRequest
 } from './planning-console';
-import { planningResources } from './planning.resources';
 import {
   PLANNING_MANAGE_PERMISSION,
   PLANNING_VIEW_PERMISSION
-} from './planning.resources';
+} from './planning.permissions';
 import {
   PLANNING_MODEL_BY_KEY,
   type PlanningModelDefinition
@@ -91,10 +90,6 @@ export class PlanningService extends BaseService {
     private readonly triggerCredentials?: TriggerCredentialsService
   ) {
     super();
-  }
-
-  protected override resources(): ResourceConfigMap {
-    return planningResources();
   }
 
   protected override async listItems(
@@ -222,6 +217,10 @@ export class PlanningService extends BaseService {
           snapshotHash: report.inputSnapshot.hash
         }] : [])
       ];
+    }
+
+    if (method === 'validatePlanningData') {
+      return this.validatePlanningData(postData, context);
     }
 
     if (method === 'getPlanningConsoleOptions') {
@@ -502,6 +501,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'listRelationOptions') {
+      await this.readResourceMetadata(context);
       const relation = this.resolveResource(postData);
       const ctx = await this.createCrudContext('list', postData, context, relation);
       await this.assertPermission(ctx);
@@ -563,6 +563,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'getPlanningParameter') {
+      await this.readResourceMetadata(context);
       const name = this.readOptionalString(postData.name);
       if (!name) throw new BadRequestException('name is required.');
       const parameter = this.resolveResource({ resource: 'planning_parameter' });
@@ -579,6 +580,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'syncSalesOrderDemands') {
+      await this.readResourceMetadata(context);
       const relation = this.resolveResource({ resource: 'planning_demand' });
       const ctx = await this.createCrudContext('update', postData, context, relation);
       await this.assertPermission(ctx);
@@ -597,6 +599,7 @@ export class PlanningService extends BaseService {
     }
 
     if (method === 'publishPlanVersion') {
+      await this.readResourceMetadata(context);
       const relation = this.resolveResource({ resource: 'planning_plan_version' });
       const ctx = await this.createCrudContext('update', postData, context, relation);
       await this.assertPermission(ctx);
@@ -829,6 +832,35 @@ export class PlanningService extends BaseService {
       throw new ServiceUnavailableException('Trigger.dev client is unavailable.');
     }
     return this.triggerClient;
+  }
+
+  private async validatePlanningData(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    await this.authorizeExecution(context);
+    this.assertSupplyPlan(postData);
+    const rawItemIds = postData.itemIds ?? postData.item_ids;
+    if (rawItemIds !== undefined && rawItemIds !== null && !Array.isArray(rawItemIds)) {
+      throw new BadRequestException('itemIds must be an array of material ids.');
+    }
+    const itemIds = Array.isArray(rawItemIds)
+      ? [...new Set(rawItemIds
+        .map((value) => this.readOptionalString(value))
+        .filter((value): value is string => Boolean(value)))]
+      : [];
+    if (itemIds.length > 2000) {
+      throw new BadRequestException('itemIds must contain at most 2000 material ids.');
+    }
+
+    const accountId = this.accountValue(context, 'account_id');
+    const pool = createPlanningPool();
+    try {
+      const snapshot = await new PlanningDataLoader(pool).load(accountId);
+      return validatePlanningMaterialReadiness(snapshot, itemIds);
+    } finally {
+      await pool.end();
+    }
   }
 
   private startInlinePlanningRun(options: {

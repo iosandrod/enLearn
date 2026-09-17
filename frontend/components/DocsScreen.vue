@@ -39,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { SITE_NAME } from '../config/site';
 import { docsNavGroups } from '~/data/docs';
 import type { RenderedContent } from '~/types/content';
 
@@ -78,7 +79,7 @@ if (error.value) {
 const doc = computed(() => data.value);
 
 useSeoMeta({
-  title: () => (doc.value ? `${doc.value.title} | Hikari Docs` : 'Hikari Docs'),
-  description: () => doc.value?.description ?? 'Hikari documentation'
+  title: () => (doc.value ? `${doc.value.title} | ${SITE_NAME}` : `${SITE_NAME} 学习文档`),
+  description: () => doc.value?.description ?? `${SITE_NAME}学习文档`
 });
 </script>

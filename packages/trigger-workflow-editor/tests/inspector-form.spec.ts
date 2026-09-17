@@ -55,6 +55,11 @@ assert.ok(!approvalSchema.fields.some((field) => field.field === 'taskType'));
 assert.ok(!approvalSchema.fields.some((field) => field.field === 'retryFactor'));
 assert.ok(approvalSchema.fields.some((field) => field.component === 'lc-json-editor'));
 
+const reviewSchema = createTriggerNodeFormSchema({ id: 'review', type: 'humanReview', name: '人工复核' });
+const reviewField = reviewSchema.fields.find((field) => field.field === 'approval');
+assert.equal(reviewField?.component, 'lc-sub-form');
+assert.ok((reviewField?.props?.schema as TriggerInspectorFormSchema).fields.some((field) => field.field === 'assigneeType'));
+
 const taskSchema = createTriggerNodeFormSchema({ id: 'task', type: 'task', name: 'Task' });
 const taskTypeField = taskSchema.fields.find((field) => field.field === 'taskType');
 assert.deepEqual(taskTypeField?.options?.map((option) => option.value), [

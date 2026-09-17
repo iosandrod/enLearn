@@ -28,6 +28,11 @@ export class AuthController {
     return this.authService.listPublishedLowCodeMaterials();
   }
 
+  @Get('lowcode-catalog')
+  listPublicLowCodeCatalog() {
+    return this.authService.listPublicLowCodeCatalog();
+  }
+
   @Post('signup')
   signUp(@Body() dto: EmailPasswordAuthDto) {
     return this.authService.signUp(dto);

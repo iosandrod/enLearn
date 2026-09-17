@@ -6,8 +6,7 @@ import {
 import type Stripe from 'stripe';
 import {
   BaseService,
-  type ListItemsHandler,
-  type ResourceConfigMap
+  type ListItemsHandler
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
@@ -45,26 +44,6 @@ function readNumber(value: unknown, name: string, fallback?: number) {
 
 @Injectable()
 export class PaymentService extends BaseService {
-  protected override resources(): ResourceConfigMap {
-    return {
-      customers: {
-        tableName: 'customers',
-        internalActions: ['create', 'update', 'delete', 'action'],
-        primaryKey: 'id',
-        clientMode: 'admin',
-        create: {
-          allowedFields: ['id', 'stripe_customer_id'],
-          requiredFields: ['id', 'stripe_customer_id'],
-          timestamp: false
-        },
-        update: {
-          allowedFields: ['stripe_customer_id'],
-          timestamp: false
-        }
-      }
-    };
-  }
-
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'createCheckoutSession':
