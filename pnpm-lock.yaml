@@ -711,6 +711,9 @@ importers:
       '@svar-ui/lib-vue':
         specifier: 1.1.0
         version: 1.1.0(vue@3.5.40(typescript@5.9.3))
+      '@svar-ui/vue-comments':
+        specifier: 2.6.0
+        version: 2.6.0(vue@3.5.40(typescript@5.9.3))
       '@svar-ui/vue-core':
         specifier: 2.6.0
         version: 2.6.0(vue@3.5.40(typescript@5.9.3))
@@ -721,6 +724,9 @@ importers:
         specifier: 2.7.2
         version: 2.7.2(vue@3.5.40(typescript@5.9.3))
       '@svar-ui/vue-menu':
+        specifier: 2.6.0
+        version: 2.6.0(vue@3.5.40(typescript@5.9.3))
+      '@svar-ui/vue-tasklist':
         specifier: 2.6.0
         version: 2.6.0(vue@3.5.40(typescript@5.9.3))
       '@svar-ui/vue-toolbar':

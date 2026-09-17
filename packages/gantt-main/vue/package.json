@@ -47,10 +47,12 @@
 		"@svar-ui/lib-dom": "0.13.1",
 		"@svar-ui/lib-state": "1.9.7",
 		"@svar-ui/lib-vue": "1.1.0",
+		"@svar-ui/vue-comments": "2.6.0",
 		"@svar-ui/vue-core": "2.6.0",
 		"@svar-ui/vue-editor": "2.6.0",
 		"@svar-ui/vue-grid": "2.7.2",
 		"@svar-ui/vue-menu": "2.6.0",
+		"@svar-ui/vue-tasklist": "2.6.0",
 		"@svar-ui/vue-toolbar": "2.6.0"
 	},
 	"peerDependencies": {

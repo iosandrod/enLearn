@@ -253,7 +253,7 @@ function inspectSupplyAtLocation(
     result.usableMethods.add('purchasing');
   }
 
-  const manufacturing = inspectManufacturing(context, itemId, locationId);
+  const manufacturing = inspectManufacturing(context, itemId, locationId, nextVisiting);
   mergeInspection(result, manufacturing);
 
   const distributions = context.distributions.filter((row) =>
@@ -315,7 +315,8 @@ function inspectSupplyAtLocation(
 function inspectManufacturing(
   context: ValidationContext,
   itemId: string,
-  locationId: string
+  locationId: string,
+  visiting: Set<string>
 ): LocationInspection {
   const result = emptyInspection();
   const effectiveFlows = context.flows.filter((row) => isEffective(row, context.current));
@@ -476,6 +477,26 @@ function inspectManufacturing(
           result.issues.push(issueForRule(
             'MANUFACTURING_INPUT_BUFFER_MISSING',
             `生产工序 ${rowLabel(process)} 的投入物料在工序地点没有库存缓冲。`,
+            'planning_operationmaterial',
+            flow,
+            locationId,
+            'item_id,location_id',
+            'manufacturing'
+          ));
+          candidateValid = false;
+          continue;
+        }
+        const inputSupply = inspectSupplyAtLocation(
+          context,
+          inputItemId,
+          inputLocationId,
+          visiting
+        );
+        if (!inputSupply.usableMethods.size) {
+          const inputItem = context.items.get(inputItemId);
+          result.issues.push(issueForRule(
+            'MANUFACTURING_INPUT_HAS_NO_SUPPLY',
+            `生产工序 ${rowLabel(process)} 的投入物料 ${optionalString(inputItem?.display_name) ?? optionalString(inputItem?.name) ?? inputItemId} 没有库存或可用补货路径。`,
             'planning_operationmaterial',
             flow,
             locationId,
