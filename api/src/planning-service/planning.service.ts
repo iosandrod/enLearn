@@ -38,6 +38,7 @@ import {
 } from './execution/planning-orchestrator';
 import { resolvePlanningParameters } from './execution/planning-parameters';
 import { preflightPlanningData } from './execution/planning-preflight';
+import { validatePlanningMaterialReadiness } from './execution/planning-material-readiness';
 import { normalizePlanningSnapshotForEngine } from './execution/planning-snapshot-normalizer';
 import {
   loadPlanningConsoleDataset,
@@ -216,6 +217,10 @@ export class PlanningService extends BaseService {
           snapshotHash: report.inputSnapshot.hash
         }] : [])
       ];
+    }
+
+    if (method === 'validatePlanningData') {
+      return this.validatePlanningData(postData, context);
     }
 
     if (method === 'getPlanningConsoleOptions') {
@@ -827,6 +832,35 @@ export class PlanningService extends BaseService {
       throw new ServiceUnavailableException('Trigger.dev client is unavailable.');
     }
     return this.triggerClient;
+  }
+
+  private async validatePlanningData(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    await this.authorizeExecution(context);
+    this.assertSupplyPlan(postData);
+    const rawItemIds = postData.itemIds ?? postData.item_ids;
+    if (rawItemIds !== undefined && rawItemIds !== null && !Array.isArray(rawItemIds)) {
+      throw new BadRequestException('itemIds must be an array of material ids.');
+    }
+    const itemIds = Array.isArray(rawItemIds)
+      ? [...new Set(rawItemIds
+        .map((value) => this.readOptionalString(value))
+        .filter((value): value is string => Boolean(value)))]
+      : [];
+    if (itemIds.length > 2000) {
+      throw new BadRequestException('itemIds must contain at most 2000 material ids.');
+    }
+
+    const accountId = this.accountValue(context, 'account_id');
+    const pool = createPlanningPool();
+    try {
+      const snapshot = await new PlanningDataLoader(pool).load(accountId);
+      return validatePlanningMaterialReadiness(snapshot, itemIds);
+    } finally {
+      await pool.end();
+    }
   }
 
   private startInlinePlanningRun(options: {
