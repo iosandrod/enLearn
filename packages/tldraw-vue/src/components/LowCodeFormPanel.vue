@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import LowCodeForm from '@enlearn/lowcode-framework/components/LowCodeForm.vue'
+import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
+import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import type {
 	LowCodeField,
 	LowCodeFormSchema,
 	LowCodeOption,
 } from '@enlearn/lowcode-framework/types/lowcode'
 import { isShapeId, type Editor, type TLShape, type TLShapePartial } from '@tldraw/editor'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
 	normalizeVueMaterialSections,
 	updateVueMaterialShapeLayout,
@@ -18,6 +19,7 @@ type ShapeFormModel = Record<string, unknown>
 
 type ShapeFormDescriptor = {
 	title: string
+	formCode: string
 	schema: LowCodeFormSchema
 	toModel(shape: TLShape): ShapeFormModel
 	apply(editor: Editor, shape: TLShape, model: ShapeFormModel): void
@@ -36,7 +38,13 @@ const props = withDefaults(
 )
 
 const formModel = ref<ShapeFormModel>({})
-const collapsed = ref(false)
+const formDefinitions = ref<Record<string, LowCodeFormSchema>>({})
+const formDefinitionsLoading = ref(true)
+const formDefinitionError = ref('')
+const imageSourceError = ref('')
+const host = useLowCodeHost()
+const imageSourceCache = new Map<string, { src: string }>()
+const imageSourceRequests = new Map<string, Promise<{ src: string }>>()
 
 const selectedShapeIds = useEditorValue('lowcode form selected shape ids', () =>
 	props.editor.getSelectedShapeIds()
@@ -47,13 +55,31 @@ const selectedShape = useEditorValue('lowcode form selected shape', () => {
 	return props.editor.getShape(ids[0]) ?? null
 })
 const workspaceCamera = useEditorValue('lowcode form workspace camera', () => props.editor.getCamera())
+const uploadedImageShapeKeys = useEditorValue('uploaded image shape keys', () =>
+	props.editor.getCurrentPageShapes()
+		.filter((shape) => shape.type === 'vue-image')
+		.map((shape) => {
+			const shapeProps = getProps(shape)
+			const persistedFileId = readImageFileId(shapeProps.fileId)
+			const legacyFileId = readImageFileId(shapeProps.src)
+			return `${shape.id}:${persistedFileId || (isFileObjectId(legacyFileId) ? legacyFileId : '')}`
+		})
+		.join('|')
+)
 
-const isCanvasFormActive = computed(() => selectedShapeIds.value.length !== 1)
+const isCanvasFormActive = computed(() => selectedShapeIds.value.length === 0)
 const activeDescriptor = computed(() =>
 	selectedShape.value ? getShapeFormDescriptor(selectedShape.value.type) : null
 )
-const activeSchema = computed(() =>
-	isCanvasFormActive.value ? workspaceFormDescriptor.schema : activeDescriptor.value?.schema ?? null
+const activeFormCode = computed(() =>
+	isCanvasFormActive.value ? workspaceFormDescriptor.formCode : activeDescriptor.value?.formCode ?? null
+)
+const activeSchema = computed(() => {
+	const code = activeFormCode.value
+	return code ? formDefinitions.value[code] ?? null : null
+})
+const imagePropertySchema = computed(() =>
+	formDefinitions.value[propertyFormCode('vue-image')] ?? null
 )
 const panelTitle = computed(() => {
 	if (isCanvasFormActive.value) return workspaceFormDescriptor.title
@@ -76,10 +102,12 @@ const panelSubtitle = computed(() => {
 	return `${getShapeTypeLabel(shape.type)} · ${shape.id}`
 })
 const emptyMessage = computed(() => {
-	if (isCanvasFormActive.value) return ''
-	if (selectedShapeIds.value.length === 0) return '请选择画布上的一个节点'
 	if (selectedShapeIds.value.length > 1) return '当前选择了多个节点，请只选择一个节点'
-	return activeDescriptor.value ? '' : '当前节点类型暂未配置表单'
+	if (!activeDescriptor.value && !isCanvasFormActive.value) return '当前节点类型暂未配置表单'
+	if (!formDefinitionsLoading.value && !formDefinitionError.value && !activeSchema.value) {
+		return `未找到属性表单：${activeFormCode.value ?? '未知表单'}`
+	}
+	return ''
 })
 const formKey = computed(() => {
 	if (isCanvasFormActive.value) return 'workspace'
@@ -102,14 +130,133 @@ function handleModelUpdate(value: ShapeFormModel) {
 	if (!shape || !descriptor || props.editor.getIsReadonly()) return
 
 	descriptor.apply(props.editor, shape, value)
+	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
+		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
+	}
 }
 
-function toggleCollapsed() {
-	collapsed.value = !collapsed.value
+function usesUploadedImageSource(schema: LowCodeFormSchema | null) {
+	return schema?.fields.some((field) => field.field === 'src' && field.component === 'vxe-upload') === true
+}
+
+function readImageFileId(value: unknown) {
+	const candidate = Array.isArray(value) ? value[0] : value
+	if (isRecord(candidate)) {
+		return String(candidate.fileId ?? candidate.id ?? '').trim()
+	}
+	return typeof candidate === 'string' ? candidate.trim() : ''
+}
+
+function isFileObjectId(value: string) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
+async function hydrateUploadedImageShape(shapeId: TLShape['id'], requestedFileId = '') {
+	const shape = props.editor.getShape(shapeId)
+	if (!shape || shape.type !== 'vue-image') return
+
+	const shapeProps = getProps(shape)
+	const persistedFileId = readImageFileId(shapeProps.fileId)
+	const legacyFileId = readImageFileId(shapeProps.src)
+	const fileId = requestedFileId || persistedFileId || (isFileObjectId(legacyFileId) ? legacyFileId : '')
+	if (!fileId || !isFileObjectId(fileId)) return
+
+	if (persistedFileId !== fileId || legacyFileId === fileId) {
+		props.editor.run(() => props.editor.updateShape({
+			id: shape.id,
+			type: shape.type,
+			props: {
+				fileId,
+				assetId: null,
+				...(legacyFileId === fileId ? { src: '' } : {}),
+			},
+		} as TLShapePartial), { history: 'ignore' })
+	}
+
+	const cached = imageSourceCache.get(fileId)
+	if (cached) {
+		applyResolvedImageSource(shape.id, fileId, cached.src)
+		return
+	}
+
+	let request = imageSourceRequests.get(fileId)
+	if (!request) {
+		request = resolveUploadedImageSource(fileId)
+		imageSourceRequests.set(fileId, request)
+		request.finally(() => imageSourceRequests.delete(fileId)).catch(() => undefined)
+	}
+
+	try {
+		imageSourceError.value = ''
+		const resolved = await request
+		imageSourceCache.set(fileId, resolved)
+		applyResolvedImageSource(shape.id, fileId, resolved.src)
+	} catch (error) {
+		const current = props.editor.getShape(shape.id)
+		if (current && readImageFileId(getProps(current).fileId) === fileId) {
+			imageSourceError.value = error instanceof Error ? error.message : '图片加载失败，请重新上传。'
+		}
+	}
+}
+
+async function resolveUploadedImageSource(fileId: string) {
+	const result = await host.getServiceApi().invoke<{
+		download?: { signedUrl?: unknown }
+	}>('files', 'runAction', {
+		resource: 'file_objects',
+		operation: 'getDownloadUrl',
+		fileId,
+		expiresInSeconds: 7200,
+	})
+	const signedUrl = typeof result?.download?.signedUrl === 'string'
+		? result.download.signedUrl.trim()
+		: ''
+	if (!signedUrl) throw new Error('未获取到图片地址，请重新上传。')
+
+	try {
+		const response = await fetch(signedUrl)
+		if (!response.ok) throw new Error(`图片下载失败 (${response.status})`)
+		const blob = await response.blob()
+		if (blob.type && !blob.type.startsWith('image/')) {
+			throw new Error('上传文件不是可显示的图片。')
+		}
+		return { src: await readBlobAsDataUrl(blob) }
+	} catch (error) {
+		// A signed URL can still be rendered by <img> when storage CORS blocks fetch().
+		if (error instanceof TypeError) return { src: signedUrl }
+		throw error
+	}
+}
+
+function readBlobAsDataUrl(blob: Blob) {
+	return new Promise<string>((resolve, reject) => {
+		const reader = new FileReader()
+		reader.addEventListener('load', () => resolve(String(reader.result ?? '')))
+		reader.addEventListener('error', () => reject(reader.error ?? new Error('图片读取失败。')))
+		reader.readAsDataURL(blob)
+	})
+}
+
+function applyResolvedImageSource(shapeId: TLShape['id'], fileId: string, src: string) {
+	const shape = props.editor.getShape(shapeId)
+	if (!shape || shape.type !== 'vue-image') return
+	if (readImageFileId(getProps(shape).fileId) !== fileId || getProps(shape).src === src) return
+
+	props.editor.run(() => props.editor.updateShape({
+		id: shape.id,
+		type: shape.type,
+		props: { src, fileId, assetId: null },
+	} as TLShapePartial), { history: 'ignore' })
 }
 
 function getShapeFormDescriptor(type: string) {
 	return shapeFormDescriptors[type] ?? fallbackDescriptor
+}
+
+const PROPERTY_FORM_CODE_PREFIX = 'print-designer.property.'
+
+function propertyFormCode(type: string) {
+	return `${PROPERTY_FORM_CODE_PREFIX}${type}`
 }
 
 function createSchema(title: string, fields: LowCodeField[]): LowCodeFormSchema {
@@ -223,6 +370,7 @@ const httpMethodOptions = [
 
 const workspaceFormDescriptor = {
 	title: '画布属性',
+	formCode: propertyFormCode('workspace'),
 	schema: {
 		title: '画布属性',
 		fields: [
@@ -252,7 +400,7 @@ const workspaceFormDescriptor = {
 		],
 		actions: [],
 	},
-} satisfies { title: string; schema: LowCodeFormSchema }
+	} satisfies { title: string; formCode: string; schema: LowCodeFormSchema }
 
 const colorOptions = [
 	{ label: '黑色', value: 'black' },
@@ -327,6 +475,14 @@ const qrLevelOptions = [
 	{ label: 'H - 高', value: 'H' },
 ] satisfies LowCodeOption[]
 
+const barcodeFormatOptions = [
+	{ label: 'Code 128', value: 'code128' },
+	{ label: 'Code 39', value: 'code39' },
+	{ label: 'EAN-13', value: 'ean13' },
+	{ label: 'EAN-8', value: 'ean8' },
+	{ label: 'UPC-A', value: 'upca' },
+] satisfies LowCodeOption[]
+
 const materialZoneOptions = [
 	{ label: '页头', value: 'pageHeader' },
 	{ label: '表头', value: 'tableHeader' },
@@ -360,13 +516,13 @@ const fillStyleFields = [selectField('fill', '填充', fillOptions)] satisfies L
 const borderVisibilityFields = [switchField('showBorder', '显示边框')] satisfies LowCodeField[]
 
 const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
-	'vue-box': createPropsDescriptor('几何节点', [
+	'vue-box': createPropsDescriptor('vue-box', '几何节点', [
 		...sizeFields,
 		selectField('geo', '几何形状', geoOptions),
 		...strokeStyleFields,
 		...fillStyleFields,
 	]),
-	'vue-text': createPropsDescriptor('文字节点', [
+	'vue-text': createPropsDescriptor('vue-text', '文字节点', [
 		...sizeFields,
 		textareaField('text', '文本内容'),
 		selectField('color', '颜色', colorOptions),
@@ -375,7 +531,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		switchField('autoSize', '自动尺寸'),
 		...borderVisibilityFields,
 	]),
-	'vue-image': createPropsDescriptor('图片节点', [
+	'vue-image': createPropsDescriptor('vue-image', '图片节点', [
 		...sizeFields,
 		inputField('name', '图片名称'),
 		textareaField('src', '图片地址', {
@@ -384,7 +540,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		inputField('assetId', '资源 ID', disabledInputProps),
 		...borderVisibilityFields,
 	]),
-	'vue-line': createPropsDescriptor('直线节点', [
+	'vue-line': createPropsDescriptor('vue-line', '直线节点', [
 		...sizeFields,
 		numberField('startX', '起点 X', { step: 1 }),
 		numberField('startY', '起点 Y', { step: 1 }),
@@ -392,7 +548,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		numberField('endY', '终点 Y', { step: 1 }),
 		...strokeStyleFields,
 	]),
-	'vue-arrow': createPropsDescriptor('箭头节点', [
+	'vue-arrow': createPropsDescriptor('vue-arrow', '箭头节点', [
 		...sizeFields,
 		numberField('startX', '起点 X', { step: 1 }),
 		numberField('startY', '起点 Y', { step: 1 }),
@@ -401,7 +557,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		...strokeStyleFields,
 		...fillStyleFields,
 	]),
-	'vue-draw': createPropsDescriptor('手绘节点', [
+	'vue-draw': createPropsDescriptor('vue-draw', '手绘节点', [
 		...sizeFields,
 		numberField('pointsCount', '点数量', disabledNumberProps),
 		...strokeStyleFields,
@@ -409,6 +565,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	]),
 	'vue-qr': {
 		title: '二维码节点',
+		formCode: propertyFormCode('vue-qr'),
 		schema: createSchema('二维码节点', [
 			numberField('qrSize', '二维码尺寸', { min: 24, step: 1 }),
 			textareaField('text', '二维码内容'),
@@ -448,18 +605,64 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			} as TLShapePartial)
 		},
 	},
-	'vue-frame': createPropsDescriptor('画框节点', [
+	'vue-barcode': {
+		title: '条形码节点',
+		formCode: propertyFormCode('vue-barcode'),
+		schema: createSchema('条形码节点', [
+			...sizeFields,
+			textareaField('text', '条形码内容'),
+			selectField('format', '编码格式', barcodeFormatOptions),
+			colorPickerField('barColor', '条码颜色'),
+			colorPickerField('background', '背景色'),
+			switchField('includeText', '显示文本'),
+			numberField('padding', '留白', { min: 0, max: 48, step: 1 }),
+			...borderVisibilityFields,
+		]),
+		toModel(shape) {
+			const props = getProps(shape)
+			return {
+				...getCommonModel(shape),
+				w: toFiniteNumber(props.w, 240),
+				h: toFiniteNumber(props.h, 96),
+				text: props.text ?? '',
+				format: props.format ?? 'code128',
+				barColor: props.barColor ?? '#000000',
+				background: props.background ?? '#ffffff',
+				includeText: props.includeText !== false,
+				padding: toFiniteNumber(props.padding, 4),
+				showBorder: Boolean(props.showBorder),
+			}
+		},
+		apply(editor, shape, model) {
+			editor.updateShape({
+				...getCommonPartial(shape, model),
+				props: {
+					w: clampNumber(model.w, 40, 4096, 240),
+					h: clampNumber(model.h, 24, 4096, 96),
+					text: String(model.text ?? ''),
+					format: getOptionValue(model.format, barcodeFormatOptions, 'code128'),
+					barColor: String(model.barColor ?? '#000000'),
+					background: String(model.background ?? '#ffffff'),
+					includeText: Boolean(model.includeText),
+					padding: clampNumber(model.padding, 0, 48, 4),
+					showBorder: Boolean(model.showBorder),
+				},
+			} as TLShapePartial)
+		},
+	},
+	'vue-frame': createPropsDescriptor('vue-frame', '画框节点', [
 		...sizeFields,
 		inputField('name', '画框名称'),
 		...borderVisibilityFields,
 	]),
-	'vue-table': createPropsDescriptor('Table node', [
+	'vue-table': createPropsDescriptor('vue-table', '表格节点', [
 		...sizeFields,
 		numberField('rowHeight', 'Row height', { min: 22, max: 72, step: 1 }),
 		...borderVisibilityFields,
 	]),
 	'vue-material': {
 		title: '物料节点',
+		formCode: propertyFormCode('vue-material'),
 		schema: createSchema('物料节点', [
 			numberField('w', '宽度', { min: 280, step: 1 }),
 			numberField('h', '高度', { min: 272, step: 1 }),
@@ -495,6 +698,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	},
 	'vue-material-section': {
 		title: '物料分区',
+		formCode: propertyFormCode('vue-material-section'),
 		schema: createSchema('物料分区', [
 			numberField('w', '宽度', disabledNumberProps),
 			numberField('h', '高度', { min: 24, step: 1 }),
@@ -523,6 +727,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	},
 	group: {
 		title: '分组节点',
+		formCode: propertyFormCode('group'),
 		schema: createSchema('分组节点', []),
 		toModel(shape) {
 			return getCommonModel(shape)
@@ -535,6 +740,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 
 const fallbackDescriptor: ShapeFormDescriptor = {
 	title: '通用节点',
+	formCode: propertyFormCode('generic'),
 	schema: createSchema('通用节点', [
 		jsonField('propsJson', 'Props JSON', {
 			readonly: true,
@@ -552,10 +758,88 @@ const fallbackDescriptor: ShapeFormDescriptor = {
 	},
 }
 
+type PropertyFormDefinitionRow = {
+	code?: unknown
+	schema?: unknown
+}
+
+const requiredPropertyFormCodes = [
+	workspaceFormDescriptor.formCode,
+	...Object.values(shapeFormDescriptors).map((descriptor) => descriptor.formCode),
+	fallbackDescriptor.formCode,
+].filter((code, index, codes) => codes.indexOf(code) === index)
+
+async function loadPropertyFormDefinitions() {
+	formDefinitionsLoading.value = true
+	formDefinitionError.value = ''
+
+	try {
+		const serviceApi = host.getServiceApi()
+		const rows = await serviceApi.invoke<PropertyFormDefinitionRow[]>('lowcode', 'listItems', {
+			resource: 'lowcode_form_definitions',
+			filters: { code: requiredPropertyFormCodes, enabled: true },
+			limit: requiredPropertyFormCodes.length,
+		})
+		const loaded: Record<string, LowCodeFormSchema> = {}
+
+		for (const row of Array.isArray(rows) ? rows : []) {
+			if (typeof row.code !== 'string' || !isLowCodeFormSchema(row.schema)) continue
+			loaded[row.code] = structuredClone(row.schema)
+		}
+
+		const missing = requiredPropertyFormCodes.filter((code) => !loaded[code])
+		if (missing.length) {
+			throw new Error(`缺少或停用了属性表单：${missing.join('、')}`)
+		}
+
+		formDefinitions.value = loaded
+	} catch (error) {
+		formDefinitions.value = {}
+		formDefinitionError.value =
+			error instanceof Error ? error.message : '属性表单加载失败，请稍后重试。'
+	} finally {
+		formDefinitionsLoading.value = false
+	}
+}
+
+function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
+	if (!isRecord(value)) return false
+	if (!Array.isArray(value.fields) || !Array.isArray(value.actions)) return false
+	if (value.layout !== undefined && !Array.isArray(value.layout)) return false
+	return value.fields.every(
+		(field) =>
+			isRecord(field) &&
+			typeof field.field === 'string' &&
+			typeof field.label === 'string' &&
+			typeof field.component === 'string'
+	)
+}
+
+onMounted(() => {
+	void loadPropertyFormDefinitions()
+})
+
 watch(
-	[selectedShape, isCanvasFormActive, workspaceCamera, () => props.workspaceRevision],
+	[selectedShape, isCanvasFormActive, activeSchema, workspaceCamera, () => props.workspaceRevision],
 	() => {
 		syncFormModel()
+		const shape = selectedShape.value
+		if (shape?.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
+			void hydrateUploadedImageShape(shape.id)
+		} else {
+			imageSourceError.value = ''
+		}
+	},
+	{ immediate: true }
+)
+
+watch(
+	[uploadedImageShapeKeys, imagePropertySchema],
+	() => {
+		if (!usesUploadedImageSource(imagePropertySchema.value)) return
+		for (const shape of props.editor.getCurrentPageShapes()) {
+			if (shape.type === 'vue-image') void hydrateUploadedImageShape(shape.id)
+		}
 	},
 	{ immediate: true }
 )
@@ -779,9 +1063,10 @@ function getWorkspaceConfigSnapshot(): VueTemplateWorkspaceConfig {
 	}
 }
 
-function createPropsDescriptor(title: string, fields: LowCodeField[]): ShapeFormDescriptor {
+function createPropsDescriptor(type: string, title: string, fields: LowCodeField[]): ShapeFormDescriptor {
 	return {
 		title,
+		formCode: propertyFormCode(type),
 		schema: createSchema(title, fields),
 		toModel(shape) {
 			return {
@@ -831,6 +1116,10 @@ function getFlatPropsModel(shape: TLShape): ShapeFormModel {
 		}
 		model[key] = typeof value === 'number' ? roundNumber(value) : value
 	}
+	if (shape.type === 'vue-image') {
+		const fileId = readImageFileId(props.fileId)
+		if (fileId) model.src = fileId
+	}
 
 	return model
 }
@@ -851,7 +1140,7 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 	const currentProps = getProps(shape)
 	const nextProps: Record<string, unknown> = {}
 
-	for (const field of activeDescriptor.value?.schema.fields ?? []) {
+	for (const field of activeSchema.value?.fields ?? []) {
 		const key = field.field
 		if (key in commonModelKeys || key === 'shapeTypeLabel') continue
 		if (key === 'assetId' || key === 'pointsCount' || key === 'propsJson') continue
@@ -910,6 +1199,14 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 			nextProps.showBorder = Boolean(model.showBorder)
 			continue
 		}
+		if (shape.type === 'vue-image' && key === 'src' && usesUploadedImageSource(activeSchema.value)) {
+			const fileId = readImageFileId(model[key])
+			const currentFileId = readImageFileId(currentProps.fileId)
+			nextProps.fileId = fileId
+			nextProps.assetId = null
+			if (!fileId || fileId !== currentFileId) nextProps.src = ''
+			continue
+		}
 		if (key === 'text' || key === 'name' || key === 'src') {
 			nextProps[key] = String(model[key] ?? '')
 			if (shape.type === 'vue-image' && key === 'src') {
@@ -947,8 +1244,9 @@ function getShapeTypeLabel(type: string) {
 			'vue-arrow': '箭头节点',
 			'vue-draw': '手绘节点',
 			'vue-qr': '二维码节点',
+			'vue-barcode': '条形码节点',
 			'vue-frame': '画框节点',
-			'vue-table': 'Table node',
+			'vue-table': '表格节点',
 			'vue-material': '物料节点',
 			'vue-material-section': '物料分区',
 			group: '分组',
@@ -1004,9 +1302,8 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 </script>
 
 <template>
-	<aside
+	<section
 		class="lowcode-form-panel"
-		:class="{ 'is-collapsed': collapsed }"
 		aria-label="低代码属性表单"
 		@pointerdown.stop
 		@pointermove.stop
@@ -1016,29 +1313,30 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
-		<button
-			type="button"
-			class="side-panel-toggle lowcode-form-panel__toggle"
-			:aria-label="collapsed ? '展开属性面板' : '收起属性面板'"
-			:title="collapsed ? '展开属性面板' : '收起属性面板'"
-			@click="toggleCollapsed"
-		>
-			{{ collapsed ? '‹' : '›' }}
-		</button>
-		<header v-show="!collapsed" class="lowcode-form-panel__header">
+		<header class="lowcode-form-panel__header">
 			<div>
 				<div class="lowcode-form-panel__title">{{ panelTitle }}</div>
 				<div class="lowcode-form-panel__subtitle">{{ panelSubtitle }}</div>
 			</div>
 		</header>
 
-		<div v-if="emptyMessage" v-show="!collapsed" class="lowcode-form-panel__empty">{{ emptyMessage }}</div>
+		<div v-if="formDefinitionsLoading" class="lowcode-form-panel__state" role="status">
+			正在加载属性表单...
+		</div>
+		<div v-else-if="formDefinitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
+			<p>{{ formDefinitionError }}</p>
+			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
+		</div>
+		<div v-else-if="emptyMessage" class="lowcode-form-panel__empty">{{ emptyMessage }}</div>
 		<LowCodeForm
-			v-else-if="activeSchema && !collapsed"
+			v-else-if="activeSchema"
 			:key="formKey"
 			:model-value="formModel"
 			:schema="activeSchema"
 			@update:model-value="handleModelUpdate"
 		/>
-	</aside>
+		<div v-if="imageSourceError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
+			{{ imageSourceError }}
+		</div>
+	</section>
 </template>

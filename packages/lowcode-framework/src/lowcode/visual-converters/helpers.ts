@@ -10,36 +10,7 @@ import type {
 import type { VisualEditorBlockData, VisualEditorModelValue } from '../../visual-editor/visual-editor.utils';
 import type { VisualBlockProps } from './types';
 import { normalizeVxeColumnType } from '../../utils/lowcode';
-
-const componentMap: Record<string, LowCodeField['component']> = {
-  input: 'vxe-input',
-  picker: 'vxe-select',
-  select: 'vxe-select',
-  switch: 'vxe-switch',
-  checkbox: 'vxe-checkbox-group',
-  radio: 'vxe-radio-group',
-  stepper: 'lc-stepper',
-  rate: 'lc-rate',
-  slider: 'lc-slider',
-  'vxe-input': 'vxe-input',
-  'vxe-textarea': 'vxe-textarea',
-  'vxe-select': 'vxe-select',
-  'vxe-switch': 'vxe-switch',
-  'vxe-password-input': 'vxe-password-input',
-  'vxe-checkbox-group': 'vxe-checkbox-group',
-  'vxe-radio-group': 'vxe-radio-group',
-  'vxe-tree-select': 'vxe-tree-select',
-  'lc-json-editor': 'lc-json-editor',
-  'lc-monaco-editor': 'lc-monaco-editor',
-  'lc-number-input': 'lc-number-input',
-  'lc-stepper': 'lc-stepper',
-  'lc-rate': 'lc-rate',
-  'lc-slider': 'lc-slider',
-  'array-table': 'lc-array-table',
-  'lc-array-table': 'lc-array-table',
-  'lc-sub-form': 'lc-sub-form',
-  'sub-form': 'lc-sub-form',
-};
+import { resolveFormMaterialComponentType } from '../material-runtime/form-component-map';
 
 export function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
@@ -237,7 +208,7 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   if (!field || !label) return null;
 
   const componentName = readString(row.component, 'vxe-input');
-  const component = componentMap[componentName] ?? 'vxe-input';
+  const component = resolveFormMaterialComponentType(componentName) as LowCodeField['component'];
   const options = readJsonArray<LowCodeOption>(row.optionsJson);
   const optionsCode = readString(row.optionsCode);
   const optionsSourceKey = readString(row.optionsSourceKey);
@@ -498,12 +469,16 @@ export function createFormDataSource(
 }
 
 function isDesignerFieldBlock(block: VisualEditorBlockData) {
-  return [
+  return block.moduleName === 'formComponents' || [
     'input',
     'picker',
     'switch',
     'radio',
     'checkbox',
+    'stepper',
+    'rate',
+    'slider',
+    'image',
     'array-table',
     'sub-form',
   ].includes(block.componentKey);

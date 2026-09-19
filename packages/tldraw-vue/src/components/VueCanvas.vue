@@ -22,6 +22,7 @@ import { getVueArrowPageTerminalPoint } from '@/editor/interactions/vueLineGeome
 import { getVueArrowTargetState } from '@/editor/interactions/vueArrowTargetState'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
+import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
 	WorkspaceBoundsManager,
 	type WorkspacePageSizeMm,
@@ -53,7 +54,7 @@ const assetManager = new VueAssetManager(props.editor, workspaceBounds)
 const workspaceRevision = ref(0)
 const workspacePageSizeMm = ref(workspaceBounds.getPageSizeMm())
 const guides = ref<WorkspaceGuide[]>([])
-const printDataSource = ref<VueTemplateWorkspaceConfig['printDataSource']>({ type: 'none' })
+const printDataSource = getEditorPrintDataSource(props.editor)
 const selectedGuideId = ref<string | null>(null)
 let resizeObserver: ResizeObserver | null = null
 let lastSelectionPointerDown: { time: number; x: number; y: number } | null = null

@@ -234,36 +234,36 @@ export class ContextMenuState {
 		const hasSelection = info.selectionShapeIds.length > 0
 		const canReorder = !isReadonly && info.hasUnlockedShapes
 		const lockLabel =
-			hasSelection && info.hasLockedShapes && !info.hasUnlockedSelectedShapes ? 'Unlock' : 'Lock'
+			hasSelection && info.hasLockedShapes && !info.hasUnlockedSelectedShapes ? '解锁' : '锁定'
 
 		const items: ContextMenuItem[] = [
 			{
 				id: 'cut',
-				label: 'Cut',
+				label: '剪切',
 				shortcut: 'Ctrl+X',
 				disabled: isReadonly || !hasSelection || !info.hasUnlockedShapes,
 			},
 			{
 				id: 'copy',
-				label: 'Copy',
+				label: '复制',
 				shortcut: 'Ctrl+C',
 				disabled: !hasSelection,
 			},
 			{
 				id: 'paste',
-				label: 'Paste',
+				label: '粘贴',
 				shortcut: 'Ctrl+V',
 				disabled: !canPaste,
 			},
 			{
 				id: 'duplicate',
-				label: 'Duplicate',
+				label: '创建副本',
 				shortcut: 'Ctrl+D',
 				disabled: isReadonly || !hasSelection || !info.hasUnlockedShapes,
 			},
 			{
 				id: 'delete',
-				label: 'Delete',
+				label: '删除',
 				shortcut: 'Del',
 				disabled: isReadonly || !hasSelection || !info.hasUnlockedShapes,
 				destructive: true,
@@ -274,26 +274,26 @@ export class ContextMenuState {
 			items.push(
 				{
 					id: 'bring-to-front',
-					label: 'Bring to front',
+					label: '置于顶层',
 					shortcut: ']',
 					disabled: false,
 					separatorBefore: true,
 				},
 				{
 					id: 'bring-forward',
-					label: 'Bring forward',
+					label: '上移一层',
 					shortcut: 'Alt+]',
 					disabled: false,
 				},
 				{
 					id: 'send-backward',
-					label: 'Send backward',
+					label: '下移一层',
 					shortcut: 'Alt+[',
 					disabled: false,
 				},
 				{
 					id: 'send-to-back',
-					label: 'Send to back',
+					label: '置于底层',
 					shortcut: '[',
 					disabled: false,
 				}
@@ -303,20 +303,20 @@ export class ContextMenuState {
 		items.push(
 			{
 				id: 'group',
-				label: 'Group',
+				label: '组合',
 				shortcut: 'Ctrl+G',
 				disabled: isReadonly || !info.canGroup,
 				separatorBefore: true,
 			},
 			{
 				id: 'ungroup',
-				label: 'Ungroup',
+				label: '取消组合',
 				shortcut: 'Ctrl+Shift+G',
 				disabled: isReadonly || !info.canUngroup,
 			},
 			{
 				id: 'expand',
-				label: 'Expand',
+				label: '适应视图',
 				disabled: !hasSelection && !info.hasShapesOnPage,
 			},
 			{
@@ -327,7 +327,7 @@ export class ContextMenuState {
 			},
 			{
 				id: 'select-all',
-				label: 'Select all',
+				label: '全选',
 				shortcut: 'Ctrl+A',
 				disabled: !info.hasShapesOnPage,
 				separatorBefore: true,

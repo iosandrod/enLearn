@@ -2,9 +2,22 @@ import type { TLShapeId } from '@tldraw/editor'
 
 export type PrintDataRow = Record<string, unknown>
 
+export interface PrintDataSourceDetailColumn {
+	field: string
+	title: string
+	width?: number
+}
+
 export type PrintDataSourceConfig =
 	| { type: 'none' }
-	| { type: 'inline'; rows: readonly PrintDataRow[] }
+	| {
+			type: 'inline'
+			rows: readonly PrintDataRow[]
+			formCode?: string
+			tableName?: string
+			detailField?: string
+			detailColumns?: readonly PrintDataSourceDetailColumn[]
+	  }
 	| { type: 'json'; value: string | unknown; dataPath?: string }
 	| { type: 'csv'; value: string; delimiter?: string; header?: boolean }
 	| {

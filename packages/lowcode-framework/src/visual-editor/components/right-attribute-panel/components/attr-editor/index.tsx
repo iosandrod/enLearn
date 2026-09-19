@@ -58,6 +58,7 @@ const componentTypeVisualMap: Record<string, string> = {
   'lc-stepper': 'stepper',
   'lc-rate': 'rate',
   'lc-slider': 'slider',
+  'vxe-upload': 'image',
 };
 
 function getMaterialPropComponentKey(componentKey: unknown) {
@@ -74,6 +75,7 @@ const editorDefaultRuntimeMap: Record<string, string | undefined> = {
   stepper: 'lc-stepper',
   rate: 'lc-rate',
   slider: 'lc-slider',
+  image: 'vxe-upload',
   'array-table': 'lc-array-table',
   'sub-form': 'lc-sub-form',
 };
@@ -211,7 +213,8 @@ export const AttrEditor = defineComponent({
           field: 'componentKey',
           label: '组件类型',
           component: 'vxe-select',
-          optionsSourceKey: componentTypeOptionsSourceKey,
+          "optionsCode": "form_field_component_type",
+          // optionsSourceKey: 'form_field_component_type',//
           props: {
             clearable: false,
             filterable: true,
@@ -373,6 +376,12 @@ export const AttrEditor = defineComponent({
       }
       if (nextComponentKey === 'switch' && props.modelValue === undefined) {
         props.modelValue = false;
+      }
+      if (nextComponentKey === 'image') {
+        const imageDefaults = visualConfig.componentMap.image?.defaultProps ?? {};
+        Object.entries(imageDefaults).forEach(([key, value]) => {
+          if (props[key] === undefined) props[key] = cloneValue(value);
+        });
       }
     };
 

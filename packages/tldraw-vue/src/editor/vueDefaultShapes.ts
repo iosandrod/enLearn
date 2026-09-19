@@ -53,6 +53,7 @@ export type VueImageShape = TLBaseShape<
 		w: number
 		h: number
 		assetId: TLAssetId | null
+		fileId?: string
 		src: string
 		name: string
 		showBorder?: boolean
@@ -160,6 +161,7 @@ export class VueImageShapeUtil extends BaseBoxShapeUtil<VueImageShape> {
 		w: T.number,
 		h: T.number,
 		assetId: assetIdValidator.nullable(),
+		fileId: T.string.optional(),
 		src: T.string,
 		name: T.string,
 		showBorder: T.boolean.optional(),
@@ -170,6 +172,7 @@ export class VueImageShapeUtil extends BaseBoxShapeUtil<VueImageShape> {
 			w: 180,
 			h: 120,
 			assetId: null,
+			fileId: '',
 			src: '',
 			name: 'Image',
 			showBorder: false,

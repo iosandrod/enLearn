@@ -13,6 +13,7 @@ export type BuiltInCanvasTool =
 	| 'note'
 	| 'asset'
 	| 'qr'
+	| 'barcode'
 	| 'highlight'
 	| 'line'
 	| 'laser'

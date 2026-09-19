@@ -303,14 +303,23 @@ export type LowCodeGridRowAction = LowCodeGridAction & {
     text?: boolean;
 };
 export type LowCodeGridDetailConfig = {
+    /** Enable master-detail submission for this grid. */
     enabled?: boolean;
+    /** Form data source that owns the parent record. */
     parentSourceKey: string;
+    /** Authorized child resource sent in data.__details. */
     resource: string;
+    /** Child field that references the saved parent record. */
     foreignKey: string;
+    /** Parent field copied into foreignKey. Defaults to id. */
     parentKey?: string;
+    /** Parent fields copied to child rows by the transactional save. */
     inheritFields?: string[];
+    /** Replace all rows or submit only created, updated, and deleted rows. */
     updateMode?: 'replace' | 'changes';
+    /** Defaults merged into newly created detail rows before submission. */
     defaults?: Record<string, unknown>;
+    /** Remove the grid row key from newly created rows so the database can generate it. */
     stripCreatedKey?: boolean;
 };
 export type LowCodeGridSchema = {
@@ -385,7 +394,7 @@ export type LowCodePageDataSource = {
     tableName?: string;
     /** `tableName` 的 snake_case 兼容字段，新配置优先使用 `tableName`。 */
     table_name?: string;
-    /** 关联的数据库视图名；实际查询仍通过 `tableName` 传给列表服务。 */
+    /** 关联的数据库视图名；存在时作为列表读取目标，真实表仍保留在 `tableName`。 */
     viewName?: string;
     /**
      * 传给服务方法的基础请求参数，例如 `resource`、`filters`、`sorts`、
@@ -419,30 +428,13 @@ export type LowCodePageFunction = {
     enabled?: boolean;
     script: string;
 };
-export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
-export type LowCodeMaterialVersionedBlock = {
-    materialVersion?: string;
-    className?: unknown;
-    style?: unknown;
-    layout?: {
-        fillRemaining?: boolean;
-    };
-    hooks?: LowCodeExecuteActionHook[];
-};
-export type LowCodeExecuteActionHook = {
-    name?: string;
-    phase?: 'before' | 'after';
-    method?: string;
-    enabled?: boolean;
-    critical?: boolean;
-    script: string;
-};
 export type LowCodeNodeActionParameter = {
     name: string;
     type: string;
     required?: boolean;
     description: string;
 };
+/** Database-owned action definition shared by every node of the same type. */
 export type LowCodeNodeActionDefinition = {
     id: string;
     node_type: string;
@@ -461,6 +453,66 @@ export type LowCodeNodeActionDefinition = {
     is_system: boolean;
     sort_order: number;
     limits: import('../runtime/scripts').LowCodeScriptExecutionLimits;
+};
+/** Database-owned page function, rule, directive, or integration definition. */
+export type LowCodeRuntimeFunctionDefinition = {
+    id: string;
+    page_id: string | null;
+    runtime_key: string;
+    function_name: string;
+    function_type: 'page_function' | 'button_rule' | 'directive' | 'capability' | 'integration';
+    category: 'page_flow' | 'crud' | 'document_status' | 'data' | 'ui' | 'validation' | 'integration';
+    page_type: LowCodePageType | null;
+    node_type: string | null;
+    label: string;
+    description: string;
+    execution_mode: 'script' | 'native' | 'rule';
+    source_code: string;
+    native_handler: string | null;
+    runtime_spec: Record<string, unknown>;
+    parameters: LowCodeNodeActionParameter[];
+    result_schema: Record<string, unknown>;
+    capabilities: import('../runtime/scripts').LowCodeScriptCapabilityName[];
+    applicable_when: Record<string, unknown>;
+    limits: import('../runtime/scripts').LowCodeScriptExecutionLimits;
+    version: number;
+    status: 'draft' | 'published' | 'archived';
+    enabled: boolean;
+    is_system: boolean;
+    sort_order: number;
+    source_hash: string;
+};
+/** Effect emitted by a local page-function script. */
+export type LowCodeRuntimeEffect = {
+    type: import('../runtime/scripts').LowCodeScriptCapabilityName;
+    [key: string]: unknown;
+};
+/** Result returned by a page-function script before local effect adaptation. */
+export type LowCodeRuntimeResult = {
+    value: unknown;
+    effects?: LowCodeRuntimeEffect[];
+    resultEffect?: number;
+};
+export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
+export type LowCodeMaterialVersionedBlock = {
+    materialVersion?: string;
+    className?: unknown;
+    style?: unknown;
+    layout?: {
+        fillRemaining?: boolean;
+    };
+    /** Scripts that run around this node's executeAction calls. */
+    hooks?: LowCodeExecuteActionHook[];
+};
+export type LowCodeExecuteActionHook = {
+    name?: string;
+    phase?: 'before' | 'after';
+    /** Empty means that the hook applies to every executeAction method on the node. */
+    method?: string;
+    enabled?: boolean;
+    /** Stop the action when this hook throws or returns a rejected promise. */
+    critical?: boolean;
+    script: string;
 };
 export type LowCodePageTextBlock = LowCodeMaterialVersionedBlock & {
     id: string;
@@ -525,6 +577,7 @@ export type LowCodePageFormBlock = LowCodeMaterialVersionedBlock & {
     title?: string;
     description?: string;
     schema: LowCodeFormSchema;
+    /** 表单节点自己的数据源；运行时使用表单 id 作为数据源键。 */
     dataSource?: LowCodePageDataSource;
     initialValues?: Record<string, unknown>;
     formDesignerModel?: Record<string, unknown>;
@@ -679,6 +732,22 @@ export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
     childrenField?: string;
     routeActionDirectives?: LowCodeRuntimeDirective[];
 };
+/** Database-backed approval workflow designer material block. */
+export type LowCodePageApprovalWorkflowDesignerBlock = LowCodeMaterialVersionedBlock & {
+    id: string;
+    kind: 'approval-workflow-designer';
+    sourceKey?: string;
+    model?: Record<string, unknown>;
+    readonly?: boolean;
+};
+/** Database-backed Trigger.dev workflow orchestrator material block. */
+export type LowCodePageTriggerWorkflowDesignerBlock = LowCodeMaterialVersionedBlock & {
+    id: string;
+    kind: 'trigger-workflow-designer';
+    sourceKey?: string;
+    model?: Record<string, unknown>;
+    readonly?: boolean;
+};
 /** Database-backed label printing designer material block. */
 export type LowCodePageLabelDesignerBlock = LowCodeMaterialVersionedBlock & {
     id: string;
@@ -687,7 +756,7 @@ export type LowCodePageLabelDesignerBlock = LowCodeMaterialVersionedBlock & {
     templateName?: string;
     readonly?: boolean;
 };
-export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageButtonGroupBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock | LowCodePageEntityDesignFlowBlock | LowCodePagePlanningFlowBlock | LowCodePagePlanningGanttBlock | LowCodePagePlanningBomBlock | LowCodePageLabelDesignerBlock;
+export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageButtonGroupBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock | LowCodePageEntityDesignFlowBlock | LowCodePagePlanningFlowBlock | LowCodePagePlanningGanttBlock | LowCodePagePlanningBomBlock | LowCodePageApprovalWorkflowDesignerBlock | LowCodePageTriggerWorkflowDesignerBlock | LowCodePageLabelDesignerBlock;
 export type LowCodePageOverlayBlock = LowCodePageModalBlock | LowCodePageDrawerBlock;
 export type LowCodePageSchema = {
     schemaVersion?: number;
@@ -737,10 +806,14 @@ export type LowCodePageRecord = {
     table_name: string | null;
     relate_config: LowCodePageRelateConfig;
     schema: LowCodePageSchema;
+    /** Active global node actions resolved by the low-code service. */
     node_actions?: LowCodeNodeActionDefinition[];
+    /** Active page-scoped and system runtime functions resolved by the low-code service. */
+    runtime_functions?: LowCodeRuntimeFunctionDefinition[];
     version: number;
     published_at: string | null;
     created_at: string;
     updated_at: string;
 };
 export type LowCodePageSummary = Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'view_name' | 'table_name' | 'relate_config' | 'version' | 'published_at' | 'created_at' | 'updated_at'>;
+//# sourceMappingURL=lowcode.d.ts.map

@@ -5,6 +5,7 @@ import type { LowCodeFormSchema } from '../types/lowcode';
 export type LowCodeFormDefinitionRecord = {
   code: string;
   name?: string;
+  table_name?: string | null;
   schema: LowCodeFormSchema;
   enabled?: boolean;
 };

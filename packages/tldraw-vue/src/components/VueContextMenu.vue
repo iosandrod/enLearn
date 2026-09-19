@@ -42,7 +42,7 @@ function onItemClick(id: ContextMenuActionId) {
 				top: `${snapshot.position.y}px`,
 			}"
 			role="menu"
-			aria-label="Context menu"
+			aria-label="画布操作菜单"
 			@pointerdown.stop
 			@contextmenu.stop.prevent
 		>

@@ -10,6 +10,10 @@ import {
   registerLowCodeBlockMaterialComponent,
   registerLowCodeFormMaterialComponent,
 } from './component-bridge';
+import {
+  replaceFormMaterialComponentMappings,
+  resetFormMaterialComponentMappings,
+} from './form-component-map';
 import type {
   LowCodeMaterialCatalogResult,
   LowCodeMaterialLoadError,
@@ -223,6 +227,7 @@ export function initializeLowCodeMaterialCatalog(serviceApi: LowCodeMaterialServ
       lowCodeMaterialCatalogState.ready = false;
       return { rows: [], compiled: 0, errors: [] };
     }
+    replaceFormMaterialComponentMappings(rows);
     const { compiled, errors } = await compileAndRegister(rows);
     lowCodeMaterialCatalogState.rows = rows;
     lowCodeMaterialCatalogState.errors = errors;
@@ -240,6 +245,7 @@ export function initializeLowCodeMaterialCatalog(serviceApi: LowCodeMaterialServ
 export function resetLowCodeMaterialCatalog() {
   initialization = undefined;
   compiledSourceModules.clear();
+  resetFormMaterialComponentMappings();
   lowCodeMaterialCatalogState.loading = false;
   lowCodeMaterialCatalogState.ready = false;
   lowCodeMaterialCatalogState.rows = [];

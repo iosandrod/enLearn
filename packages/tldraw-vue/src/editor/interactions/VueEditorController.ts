@@ -341,7 +341,7 @@ export class VueEditorController {
 		this.resetContainerScroll()
 		this.options.editor.updateViewportScreenBounds(container, center)
 		if (center) {
-			this.setCamera(this.options.workspaceBounds.getCenteredCamera(this.getViewportSize()))
+			this.setCamera(this.options.workspaceBounds.getFittedCamera(this.getViewportSize()))
 		}
 	}
 

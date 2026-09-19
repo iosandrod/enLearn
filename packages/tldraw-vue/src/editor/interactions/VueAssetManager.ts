@@ -33,6 +33,7 @@ export class VueAssetManager {
 				w: rect.w,
 				h: rect.h,
 				assetId,
+				fileId: '',
 				src: asset.props.src ?? '',
 				name: asset.props.name,
 			},

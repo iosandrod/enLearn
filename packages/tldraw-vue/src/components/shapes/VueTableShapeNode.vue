@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { VxeColumn, VxeTable, VxeUI } from 'vxe-table'
 import ExtendCellArea from 'vxe-table-plugin-extend-cell-area'
 import {
@@ -8,6 +8,7 @@ import {
 	type VueTableShape,
 } from '@/editor/extensions/table/vueTableShape'
 import type { VueShapeNodeProps } from './types'
+import { getLocalCellAreaGeometry } from './tableCellAreaGeometry'
 
 VxeUI.use(ExtendCellArea, {
 	allowBody: true,
@@ -18,6 +19,15 @@ VxeUI.use(ExtendCellArea, {
 
 const props = defineProps<VueShapeNodeProps<VueTableShape>>()
 const tableRef = ref<any | null>(null)
+let activeCellArea: TableCellArea | null = null
+let cellAreaAlignmentFrame: number | null = null
+
+interface TableCellArea {
+	startRow: VueTableRow | null
+	endRow: VueTableRow | null
+	startColumn: unknown
+	endColumn: unknown
+}
 
 const tableColumns = computed(() => props.shape.props.columns)
 const tableRows = computed(() =>
@@ -55,20 +65,84 @@ const areaConfig = {
 }
 
 watch(
-	() => [props.shape.props.w, props.shape.props.h, props.shape.props.rowHeight],
+	() => [props.shape.props.w, props.shape.props.h, props.shape.props.rowHeight, props.zoom],
 	() => {
-		void nextTick(() => {
-			void tableRef.value?.recalculate?.()
-			void tableRef.value?.handleRecalculateCellAreaEvent?.()
+		void nextTick(async () => {
+			await tableRef.value?.recalculate?.()
+			await tableRef.value?.handleRecalculateCellAreaEvent?.()
+			alignActiveCellArea()
 		})
 	}
 )
+
+onBeforeUnmount(() => {
+	if (cellAreaAlignmentFrame !== null) {
+		window.cancelAnimationFrame(cellAreaAlignmentFrame)
+	}
+})
 
 function normalizeTableRow(row: VueTableRow, index: number): VueTableRow {
 	return {
 		...row,
 		[VUE_TABLE_ROW_ID_FIELD]: row[VUE_TABLE_ROW_ID_FIELD] || `row-${index + 1}`,
 	}
+}
+
+function alignActiveCellArea() {
+	const area = activeCellArea
+	const table = tableRef.value
+	if (!area?.startRow || !area.endRow || !table) return
+
+	const startCell = table.getCellElement?.(area.startRow, area.startColumn)
+	const endCell = table.getCellElement?.(area.endRow, area.endColumn)
+	if (!(startCell instanceof HTMLElement) || !(endCell instanceof HTMLElement)) return
+
+	const wrapper = startCell.closest('.vxe-table--body-wrapper')
+	const areaElement = wrapper?.querySelector('.vxe-table--cell-area')
+	const rootElement = areaElement?.parentElement
+	if (!(areaElement instanceof HTMLElement) || !(rootElement instanceof HTMLElement)) return
+
+	const geometry = getLocalCellAreaGeometry({
+		rootRect: rootElement.getBoundingClientRect(),
+		rootOffsetWidth: rootElement.offsetWidth,
+		rootOffsetHeight: rootElement.offsetHeight,
+		rootScrollLeft: rootElement.scrollLeft,
+		rootScrollTop: rootElement.scrollTop,
+		startRect: startCell.getBoundingClientRect(),
+		endRect: endCell.getBoundingClientRect(),
+	})
+	if (!geometry) return
+
+	const style = {
+		display: 'block',
+		left: `${geometry.left}px`,
+		top: `${geometry.top}px`,
+		width: `${geometry.width}px`,
+		height: `${geometry.height}px`,
+	}
+	for (const selector of ['.vxe-table--cell-main-area', '.vxe-table--cell-active-area']) {
+		const element = areaElement.querySelector(selector)
+		if (element instanceof HTMLElement) Object.assign(element.style, style)
+	}
+}
+
+function scheduleCellAreaAlignment() {
+	if (cellAreaAlignmentFrame !== null) {
+		window.cancelAnimationFrame(cellAreaAlignmentFrame)
+	}
+	cellAreaAlignmentFrame = window.requestAnimationFrame(() => {
+		cellAreaAlignmentFrame = null
+		alignActiveCellArea()
+	})
+}
+
+function onCellAreaSelection(event: unknown) {
+	if (!event || typeof event !== 'object' || !('area' in event)) return
+	const area = event.area as TableCellArea | undefined
+	if (!area) return
+	activeCellArea = area
+	alignActiveCellArea()
+	scheduleCellAreaAlignment()
 }
 
 function focusShape(event: Event) {
@@ -144,6 +218,9 @@ function stopAlways(event: Event) {
 			:cell-config="cellConfig"
 			:mouse-config="mouseConfig"
 			:area-config="areaConfig"
+			@cell-area-selection-start="onCellAreaSelection"
+			@cell-area-selection-drag="onCellAreaSelection"
+			@cell-area-selection-end="onCellAreaSelection"
 		>
 			<VxeColumn
 				v-for="column in tableColumns"

@@ -2,16 +2,32 @@
 import type { TLShapePartial } from '@tldraw/editor'
 import { computed, onBeforeUnmount } from 'vue'
 import {
+	getPrintDataSourceDetailColumns,
+	getPrintDataSourceDetailRows,
+} from '@/editor/dataSourceForm'
+import {
 	getVueMaterialSectionDefinition,
 	getVueMaterialSections,
 	isVueMaterialShape,
 	type VueMaterialSectionShape,
 } from '@/editor/extensions/material/vueMaterialShape'
+import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import type { VueShapeNodeProps } from './types'
 
 const props = defineProps<VueShapeNodeProps<VueMaterialSectionShape>>()
 
 const isTableBody = computed(() => props.shape.props.zone === 'tableBody')
+const printDataSource = getEditorPrintDataSource(props.editor)
+const previewColumns = computed(() => getPrintDataSourceDetailColumns(printDataSource.value))
+const previewGridTemplate = computed(() =>
+	previewColumns.value.map((column) => `minmax(0, ${column.width ?? 100}fr)`).join(' ')
+)
+const previewRows = computed(() => getPrintDataSourceDetailRows(printDataSource.value))
+const visiblePreviewRows = computed(() => {
+	const availableHeight = Math.max(0, props.shape.props.h - 36)
+	const maxRows = Math.max(1, Math.floor(availableHeight / 28))
+	return previewRows.value.slice(0, maxRows)
+})
 const canResizeBottom = computed(() => {
 	const parent = props.editor.getShape(props.shape.parentId)
 	if (!isVueMaterialShape(parent)) return false
@@ -123,6 +139,20 @@ onBeforeUnmount(() => {
 	window.removeEventListener('pointerup', onWindowPointerUp, true)
 	window.removeEventListener('pointercancel', onWindowPointerUp, true)
 })
+
+function formatPreviewValue(row: Record<string, unknown>, field: string) {
+	const value = row[field]
+	if (value === undefined || value === null || value === '') return '—'
+	if (typeof value === 'object') {
+		try {
+			return JSON.stringify(value)
+		} catch {
+			return String(value)
+		}
+	}
+	return String(value)
+}
+
 </script>
 
 <template>
@@ -142,14 +172,23 @@ onBeforeUnmount(() => {
 		}"
 	>
 		<template v-if="isTableBody">
-			<div class="vue-material-table-columns">
-				<div>销售订单</div>
-				<div>状态</div>
-				<div>审核日期</div>
-				<div>客户名称</div>
+			<div class="vue-material-table-columns" :style="{ gridTemplateColumns: previewGridTemplate }">
+				<div v-for="column in previewColumns" :key="column.field">{{ column.title }}</div>
 			</div>
-			<div class="vue-material-table-fill">
-				<span>自动填充</span>
+			<div v-if="visiblePreviewRows.length" class="vue-material-table-rows">
+				<div
+					v-for="(row, rowIndex) in visiblePreviewRows"
+					:key="String(row._rowId ?? rowIndex)"
+					class="vue-material-table-row"
+					:style="{ gridTemplateColumns: previewGridTemplate }"
+				>
+					<div v-for="column in previewColumns" :key="column.field">
+						{{ formatPreviewValue(row, column.field) }}
+					</div>
+				</div>
+			</div>
+			<div v-else class="vue-material-table-fill">
+				<span>暂无 Detail 预览数据</span>
 			</div>
 		</template>
 		<div v-else class="vue-material-section-label">{{ shape.props.label }}</div>

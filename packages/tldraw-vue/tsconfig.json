@@ -22,6 +22,9 @@
 			"@/*": ["src/*"],
 			"~/*": ["../lowcode-framework/src/*"],
 			"@enlearn/lowcode-framework": ["../lowcode-framework/src/index.ts"],
+			"@enlearn/lowcode-framework/components/low-code-form": ["../lowcode-framework/src/components/low-code-form.d.ts"],
+			"@enlearn/lowcode-framework/core/host": ["../lowcode-framework/src/core/host.d.ts"],
+			"@enlearn/lowcode-framework/types/lowcode": ["../lowcode-framework/src/types/lowcode.d.ts"],
 			"@enlearn/lowcode-framework/*": ["../lowcode-framework/src/*"],
 			"@tldraw/editor": ["packages/editor/src/vue-core.ts"],
 			"@tldraw/state": ["packages/state/src/index.ts"],
@@ -48,10 +51,9 @@
 			"react/jsx-runtime": ["node_modules/@types/react/jsx-runtime"]
 		}
 	},
-	"include": ["src", "vite.config.ts"],
+	"include": ["src", "vite.config.ts", "../lowcode-framework/src/types/framework-env.d.ts"],
 	"exclude": [
 		"src/App.vue",
-		"src/components/LowCodeFormPanel.vue",
 		"src/main.ts"
 	]
 }

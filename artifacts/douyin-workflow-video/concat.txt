@@ -1,0 +1,6 @@
+file 'E:\enLearn\artifacts\douyin-workflow-video\01-hook.mp4'
+file 'E:\enLearn\artifacts\douyin-workflow-video\02-design.mp4'
+file 'E:\enLearn\artifacts\douyin-workflow-video\03-submit.mp4'
+file 'E:\enLearn\artifacts\douyin-workflow-video\04-task.mp4'
+file 'E:\enLearn\artifacts\douyin-workflow-video\05-monitor.mp4'
+file 'E:\enLearn\artifacts\douyin-workflow-video\06-cta.mp4'

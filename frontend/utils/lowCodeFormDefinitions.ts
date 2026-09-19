@@ -28,6 +28,7 @@ export type LowCodeFormDefinitionRecord = {
   code: string;
   name: string;
   description: string | null;
+  table_name: string | null;
   schema: LowCodeFormSchema;
   enabled: boolean;
   created_at: string;

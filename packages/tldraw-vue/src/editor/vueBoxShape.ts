@@ -12,6 +12,7 @@ import {
 } from '@tldraw/tlschema'
 import { T } from '@tldraw/validate'
 import type { VueGeoShape } from './interactions/types'
+import { getVueBoxPath } from './vueBoxGeometry'
 import { createVueBoxSvg } from './vueSvgExport'
 
 export type VueBoxShape = TLBaseShape<
@@ -84,8 +85,6 @@ export class VueBoxShapeUtil extends BaseBoxShapeUtil<VueBoxShape> {
 	}
 
 	override getIndicatorPath(shape: VueBoxShape): Path2D {
-		const path = new Path2D()
-		path.rect(0, 0, shape.props.w, shape.props.h)
-		return path
+		return new Path2D(getVueBoxPath(shape.props.geo, shape.props.w, shape.props.h))
 	}
 }

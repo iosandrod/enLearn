@@ -11,6 +11,7 @@
 	"include": [
 		"src/**/*.ts",
 		"src/**/*.vue",
+		"../lowcode-framework/src/types/framework-env.d.ts",
 		"packages/**/*.d.ts",
 		"packages/editor/src/**/*.ts",
 		"packages/editor/src/**/*.tsx",
@@ -25,7 +26,6 @@
 	],
 	"exclude": [
 		"src/App.vue",
-		"src/components/LowCodeFormPanel.vue",
 		"src/main.ts",
 		"**/*.bench.ts",
 		"**/*.test.ts",

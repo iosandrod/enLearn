@@ -304,6 +304,7 @@ export type LowCodeFormDefinitionRow = {
   code: string;
   name: string;
   description: string | null;
+  table_name: string | null;
   schema: Json;
   enabled: boolean;
   created_by: string | null;

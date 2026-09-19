@@ -150,6 +150,30 @@ function getToolGlyph(item: Pick<ToolbarItemSnapshot, 'glyph' | 'icon' | 'label'
 	return item.glyph ?? TOOL_GLYPHS[item.icon] ?? item.label.slice(0, 1).toUpperCase()
 }
 
+const TOOL_LABELS: Record<string, string> = {
+	Select: '选择',
+	Hand: '抓手',
+	Draw: '画笔',
+	Eraser: '橡皮擦',
+	Arrow: '箭头',
+	Text: '文字',
+}
+
+const ACTION_LABELS: Record<string, string> = {
+	Undo: '撤销',
+	Redo: '重做',
+	Delete: '删除',
+	Duplicate: '复制',
+}
+
+function getToolLabel(item: Pick<ToolbarItemSnapshot, 'label'>) {
+	return TOOL_LABELS[item.label] ?? item.label
+}
+
+function getActionLabel(label: string) {
+	return ACTION_LABELS[label] ?? label
+}
+
 function onToolPointerDown(item: ToolbarItemSnapshot, event: PointerEvent) {
 	if (!canDragItem(item)) return
 	if (event.button !== 0) return
@@ -280,6 +304,7 @@ defineExpose({
 					@click="onToolClick(item, $event)"
 				>
 					<span class="bottom-toolbar-icon" :data-icon="item.icon">{{ getToolGlyph(item) }}</span>
+					<span class="bottom-toolbar-label">{{ getToolLabel(item) }}</span>
 				</button>
 			</template>
 
@@ -296,6 +321,7 @@ defineExpose({
 				@click="runAction(action)"
 			>
 				<span class="bottom-toolbar-icon">{{ action.glyph }}</span>
+				<span class="bottom-toolbar-label">{{ getActionLabel(action.label) }}</span>
 			</button>
 
 		</div>

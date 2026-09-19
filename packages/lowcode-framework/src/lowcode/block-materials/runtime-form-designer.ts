@@ -115,6 +115,7 @@ function designerModelFields(model: unknown): DesignerModelField[] {
                 stepper: 'lc-stepper',
                 rate: 'lc-rate',
                 slider: 'lc-slider',
+                image: 'vxe-upload',
               } as Record<string, string>)[componentKey] || componentKey
         );
         result.push({

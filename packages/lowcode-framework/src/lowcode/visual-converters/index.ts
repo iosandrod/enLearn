@@ -282,6 +282,7 @@ function createFormDesignerFieldBlock(
     'lc-stepper': 'stepper',
     'lc-rate': 'rate',
     'lc-slider': 'slider',
+    'vxe-upload': 'image',
   };
   const props = isPlainRecord(field.props) ? field.props : {};
   const componentKey = componentMap[field.component ?? ''] ?? 'input';
@@ -334,6 +335,7 @@ function createFormDesignerFieldBlock(
       'lc-stepper',
       'lc-rate',
       'lc-slider',
+      'vxe-upload',
       'base-info',
       'lc-array-table',
       'lc-sub-form',
@@ -351,6 +353,7 @@ function createFormDesignerFieldBlock(
   }
   if (field.component === 'lc-array-table') Object.assign(block.props, cloneJson(props));
   if (field.component === 'base-info') Object.assign(block.props, cloneJson(props));
+  if (field.component === 'vxe-upload') Object.assign(block.props, cloneJson(props));
   if (field.component === 'lc-sub-form') {
     Object.assign(block.props, cloneJson(props));
     block.props.__lowcodeComponent = 'lc-sub-form';

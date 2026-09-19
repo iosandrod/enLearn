@@ -17,6 +17,7 @@ import type {
 	TLDefaultSizeStyle,
 } from '@tldraw/tlschema'
 import type { VueBoxShape } from './vueBoxShape'
+import { getVueBoxMarkSegments, getVueBoxPath } from './vueBoxGeometry'
 import { getDashArray, VUE_FONT_SIZE_SCALE, VUE_STROKE_SIZES } from './vueStyleDefs'
 import type {
 	VueArrowShape,
@@ -99,7 +100,7 @@ export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNo
 	const strokeWidth = getVueStrokeWidth(shape.props.size)
 	const strokeColor = getVueThemeColor(editor, shape.props.color, 'solid')
 	const fill = getVueFill(editor, shape.id, shape.props.color, shape.props.fill)
-	const path = getBoxPath(shape.props.geo, shape.props.w, shape.props.h)
+	const path = getVueBoxPath(shape.props.geo, shape.props.w, shape.props.h)
 	const dashArray = getDashArray(shape.props.dash, strokeWidth)
 
 	return createElement(
@@ -113,12 +114,12 @@ export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNo
 			strokeWidth,
 			strokeDasharray: dashArray,
 		}),
-		createCenteredSvgText('Vue shape', shape.props.w, shape.props.h, {
-			fill: shape.props.fill === 'solid' ? '#ffffff' : strokeColor,
-			fontSize: 13,
-			fontWeight: 700,
-		}),
-		createBoxMarkSvg(shape.props.geo, shape.props.w, shape.props.h)
+		createBoxMarkSvg(
+			shape.props.geo,
+			shape.props.w,
+			shape.props.h,
+			shape.props.fill === 'solid' ? '#ffffff' : strokeColor
+		)
 	)
 }
 
@@ -808,143 +809,26 @@ function fitVueTableCellText(value: string, width: number) {
 	return `${value.slice(0, maxChars - 3)}...`
 }
 
-function getBoxPath(geo: VueBoxShape['props']['geo'], width: number, height: number) {
-	switch (geo) {
-		case 'ellipse':
-		case 'oval':
-			return ellipsePath(width, height)
-		case 'triangle':
-			return `M${width / 2},0 L${width},${height} L0,${height} Z`
-		case 'diamond':
-		case 'rhombus':
-			return `M${width / 2},0 L${width},${height / 2} L${width / 2},${height} L0,${height / 2} Z`
-		case 'hexagon':
-			return `M${width * 0.25},0 L${width * 0.75},0 L${width},${height / 2} L${width * 0.75},${height} L${width * 0.25},${height} L0,${height / 2} Z`
-		case 'star':
-			return pointsToPath([
-				[0.5, 0],
-				[0.61, 0.34],
-				[0.98, 0.35],
-				[0.68, 0.57],
-				[0.79, 0.91],
-				[0.5, 0.7],
-				[0.21, 0.91],
-				[0.32, 0.57],
-				[0.02, 0.35],
-				[0.39, 0.34],
-			], width, height)
-		case 'heart':
-			return pointsToPath([
-				[0.5, 0.92],
-				[0.11, 0.57],
-				[0.03, 0.33],
-				[0.17, 0.09],
-				[0.39, 0.09],
-				[0.5, 0.24],
-				[0.61, 0.09],
-				[0.83, 0.09],
-				[0.97, 0.33],
-				[0.89, 0.57],
-			], width, height)
-		case 'arrow-left':
-			return pointsToPath([
-				[0.05, 0.5],
-				[0.42, 0.1],
-				[0.42, 0.32],
-				[0.95, 0.32],
-				[0.95, 0.68],
-				[0.42, 0.68],
-				[0.42, 0.9],
-			], width, height)
-		case 'arrow-up':
-			return pointsToPath([
-				[0.5, 0.05],
-				[0.9, 0.42],
-				[0.68, 0.42],
-				[0.68, 0.95],
-				[0.32, 0.95],
-				[0.32, 0.42],
-				[0.1, 0.42],
-			], width, height)
-		case 'arrow-down':
-			return pointsToPath([
-				[0.5, 0.95],
-				[0.9, 0.58],
-				[0.68, 0.58],
-				[0.68, 0.05],
-				[0.32, 0.05],
-				[0.32, 0.58],
-				[0.1, 0.58],
-			], width, height)
-		case 'arrow-right':
-			return pointsToPath([
-				[0.95, 0.5],
-				[0.58, 0.1],
-				[0.58, 0.32],
-				[0.05, 0.32],
-				[0.05, 0.68],
-				[0.58, 0.68],
-				[0.58, 0.9],
-			], width, height)
-		case 'cloud':
-			return roundedRectPath(width, height, Math.min(width, height) * 0.28)
-		case 'x-box':
-		case 'check-box':
-		case 'rectangle':
-		default:
-			return roundedRectPath(width, height, 8)
-	}
-}
+function createBoxMarkSvg(
+	geo: VueBoxShape['props']['geo'],
+	width: number,
+	height: number,
+	stroke: string
+) {
+	const segments = getVueBoxMarkSegments(geo, width, height)
+	if (!segments.length) return null
 
-function createBoxMarkSvg(geo: VueBoxShape['props']['geo'], width: number, height: number) {
-	if (geo === 'x-box') {
-		return createElement(
-			Fragment,
-			null,
-			createElement('line', markLineProps(width * 0.35, height * 0.22, width * 0.65, height * 0.78)),
-			createElement('line', markLineProps(width * 0.65, height * 0.22, width * 0.35, height * 0.78))
-		)
-	}
-
-	if (geo === 'check-box') {
-		return createElement('polyline', {
-			points: `${width * 0.27},${height * 0.48} ${width * 0.42},${height * 0.64} ${width * 0.73},${height * 0.3}`,
-			fill: 'none',
-			stroke: 'rgba(255,255,255,0.95)',
+	return createElement(
+		Fragment,
+		null,
+		...segments.map((segment) => createElement('line', {
+			...segment,
+			stroke,
 			strokeWidth: 3,
 			strokeLinecap: 'round',
 			strokeLinejoin: 'round',
-		})
-	}
-
-	return null
-}
-
-function markLineProps(x1: number, y1: number, x2: number, y2: number) {
-	return {
-		x1,
-		y1,
-		x2,
-		y2,
-		stroke: 'rgba(255,255,255,0.95)',
-		strokeWidth: 3,
-		strokeLinecap: 'round',
-	}
-}
-
-function pointsToPath(points: [number, number][], width: number, height: number) {
-	return `${points
-		.map(([x, y], index) => `${index === 0 ? 'M' : 'L'}${x * width},${y * height}`)
-		.join(' ')} Z`
-}
-
-function ellipsePath(width: number, height: number) {
-	return `M${width / 2},0 A${width / 2},${height / 2} 0 1,1 ${width / 2},${height} A${width / 2},${height / 2} 0 1,1 ${width / 2},0 Z`
-}
-
-function roundedRectPath(width: number, height: number, radius: number) {
-	const r = Math.min(radius, width / 2, height / 2)
-	return `M${r},0 H${width - r} Q${width},0 ${width},${r} V${height - r} Q${width},${height} ${width - r},${height} H${r} Q0,${height} 0,${height - r} V${r} Q0,0 ${r},0 Z`
+		}))
+	)
 }
 
 function sanitizeSvgId(id: string) {

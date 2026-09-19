@@ -15,7 +15,11 @@ function resolveDashboardLowCodeRouteProps(route: { params: Record<string, unkno
 }
 
 const publicRoutes: RouteRecordRaw[] = [
-  { path: '/', component: () => import('../pages/index.vue') },
+  // The root entry point introduces the schema-backed print designer. Keep
+  // the original public homepage available at /home for compatibility.
+  { path: '/', component: () => import('../pages/print-designer-landing.vue'), meta: { keepAlive: false } },
+  { path: '/print-designer', component: () => import('../pages/print-designer.vue'), meta: { layout: false, keepAlive: false } },
+  { path: '/home', component: () => import('../pages/index.vue') },
   { path: '/pricing', component: () => import('../pages/pricing.vue') },
   { path: '/signin', component: () => import('../pages/signin.vue'), meta: { layout: false, guest: true } },
   { path: '/signup', component: () => import('../pages/signup.vue'), meta: { layout: false, guest: true } },

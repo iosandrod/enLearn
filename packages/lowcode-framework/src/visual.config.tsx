@@ -8,6 +8,7 @@ export const visualConfig = createVisualEditorConfig();
 const formComponentKeys = new Set([
   'array-table',
   'checkbox',
+  'image',
   'input',
   'picker',
   'radio',

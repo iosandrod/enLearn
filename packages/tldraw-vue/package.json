@@ -28,6 +28,7 @@
   ],
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "test:components": "node --experimental-strip-types tests/component-geometry-regression.mjs && node --experimental-strip-types tests/table-cell-area-geometry-regression.mjs && node --experimental-strip-types tests/barcode-regression.mjs && node --experimental-strip-types tests/layers-panel-regression.mjs",
     "typecheck": "vue-tsc --noEmit",
     "build": "pnpm typecheck && vite build && pnpm build:types",
     "build:demo": "pnpm typecheck && vite build --mode demo",
@@ -40,6 +41,7 @@
     "@tiptap/core": "^3.12.1",
     "@tiptap/pm": "^3.12.1",
     "@tiptap/react": "^3.12.1",
+    "bwip-js": "^4.11.4",
     "classnames": "^2.5.1",
     "eventemitter3": "^4.0.7",
     "idb": "^7.1.1",
@@ -55,6 +57,7 @@
     "vxe-table-plugin-extend-cell-area": "0.1.0"
   },
   "peerDependencies": {
+    "@enlearn/lowcode-framework": "^0.1.0",
     "react": "^18.2.0 || ^19.2.1",
     "react-dom": "^18.2.0 || ^19.2.1",
     "vue": "^3.5.17"

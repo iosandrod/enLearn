@@ -6,6 +6,7 @@ import {
 	type ToolbarItemSnapshot,
 } from '@/editor/interactions/ToolbarController'
 import type { CanvasTool, VueGeoShape } from '@/editor/interactions/types'
+import { getVueBoxMarkSegments, getVueBoxPath } from '@/editor/vueBoxGeometry'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
 
 const props = defineProps<{
@@ -52,6 +53,7 @@ const TOOL_GLYPHS: Partial<Record<ToolbarItemId, string>> = {
 	note: glyph(0x25a3),
 	asset: glyph(0x25a4),
 	qr: glyph(0x25a9),
+	barcode: glyph(0x25a5),
 	highlight: glyph(0x25a5),
 	line: '/',
 	laser: glyph(0x25c9),
@@ -106,6 +108,48 @@ function canDragItem(item: ToolbarItemSnapshot) {
 
 function getToolGlyph(item: Pick<ToolbarItemSnapshot, 'glyph' | 'icon' | 'label'>) {
 	return item.glyph ?? TOOL_GLYPHS[item.icon] ?? item.label.slice(0, 1).toUpperCase()
+}
+
+const TOOL_LABELS: Record<string, string> = {
+	Arrow: '箭头',
+	Text: '文字',
+	Note: '便签',
+	Media: '图片',
+	Barcode: '条形码',
+	Highlight: '高亮',
+	Line: '直线',
+	Dot: '圆点',
+	Frame: '框架',
+	Rectangle: '矩形',
+	Ellipse: '椭圆',
+	Triangle: '三角形',
+	Diamond: '菱形',
+	Hexagon: '六边形',
+	Oval: '椭圆框',
+	Rhombus: '平行四边形',
+	Star: '星形',
+	Cloud: '云朵',
+	Heart: '心形',
+	'X box': '叉选框',
+	'Check box': '勾选框',
+	'Arrow left': '左箭头',
+	'Arrow up': '上箭头',
+	'Arrow down': '下箭头',
+	'Arrow right': '右箭头',
+}
+
+function getToolLabel(item: Pick<ToolbarItemSnapshot, 'label'>) {
+	return TOOL_LABELS[item.label] ?? item.label
+}
+
+function getGeometryPreviewPath(item: ToolbarItemSnapshot) {
+	const geo = item.selection?.geoShape
+	return geo ? getVueBoxPath(geo, 32, 24) : ''
+}
+
+function getGeometryPreviewMarks(item: ToolbarItemSnapshot) {
+	const geo = item.selection?.geoShape
+	return geo ? getVueBoxMarkSegments(geo, 32, 24) : []
 }
 
 function onToolPointerDown(item: ToolbarItemSnapshot, event: PointerEvent) {
@@ -244,9 +288,26 @@ function releaseToolPointerCapture(event: PointerEvent) {
 				@pointercancel="onToolPointerCancel"
 				@click="onToolClick(item, $event)"
 			>
-				<span class="component-palette-icon" :data-icon="item.icon">
+				<svg
+					v-if="item.selection?.geoShape"
+					class="component-palette-geometry-icon"
+					viewBox="0 0 32 24"
+					aria-hidden="true"
+				>
+					<path :d="getGeometryPreviewPath(item)" />
+					<line
+						v-for="(segment, index) in getGeometryPreviewMarks(item)"
+						:key="index"
+						:x1="segment.x1"
+						:y1="segment.y1"
+						:x2="segment.x2"
+						:y2="segment.y2"
+					/>
+				</svg>
+				<span v-else class="component-palette-icon" :data-icon="item.icon">
 					{{ getToolGlyph(item) }}
 				</span>
+				<span class="component-palette-label">{{ getToolLabel(item) }}</span>
 			</button>
 		</div>
 	</aside>

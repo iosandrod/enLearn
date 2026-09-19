@@ -62,6 +62,7 @@ export type FormDesignerField = {
 
 export type FormDesignerResult = {
   fields: FormDesignerField[];
+  layout: LowCodeFormLayoutNode[];
   designerModel: VisualEditorModelValue;
 };
 
@@ -118,6 +119,7 @@ const runtimeToEditorComponent: Record<string, string> = {
   'lc-stepper': 'stepper',
   'lc-rate': 'rate',
   'lc-slider': 'slider',
+  'vxe-upload': 'image',
 };
 
 const editorToRuntimeComponent: Record<string, string> = {
@@ -131,6 +133,7 @@ const editorToRuntimeComponent: Record<string, string> = {
   stepper: 'lc-stepper',
   rate: 'lc-rate',
   slider: 'lc-slider',
+  image: 'vxe-upload',
 };
 
 const defaultCodeEditorProps = {
@@ -461,11 +464,14 @@ function canReuseDesignerLayout(
 function createLowCodeFormSchema(
   fields: unknown,
   designerModel?: unknown,
+  explicitLayout?: LowCodeFormLayoutNode[],
 ): LowCodeFormSchema {
   const normalizedFields = normalizeFields(fields)
     .map((field, index) => designerFieldToLowCodeField(field, index))
     .filter(Boolean) as LowCodeField[];
-  const layout = readFormDesignerLayout(designerModel);
+  const layout = Array.isArray(explicitLayout)
+    ? cloneDeep(explicitLayout)
+    : readFormDesignerLayout(designerModel);
 
   return {
     fields: normalizedFields,
@@ -477,7 +483,7 @@ function createLowCodeFormSchema(
 export function createLowCodeFormSchemaFromDesignerResult(
   result: FormDesignerResult,
 ): LowCodeFormSchema {
-  return createLowCodeFormSchema(result.fields, result.designerModel);
+  return createLowCodeFormSchema(result.fields, result.designerModel, result.layout);
 }
 
 function normalizeSubFormProps(props: Record<string, unknown>) {
@@ -602,6 +608,10 @@ function createFieldBlock(field: FormDesignerField, index: number) {
   }
 
   if (runtimeComponent === 'vxe-input' && readString(fieldProps.type) === 'datetime') {
+    Object.assign(block.props, cloneDeep(fieldProps));
+  }
+
+  if (runtimeComponent === 'vxe-upload') {
     Object.assign(block.props, cloneDeep(fieldProps));
   }
 
@@ -1173,6 +1183,7 @@ const ServiceComponent = defineComponent({
         try {
           await state.option.onConfirm({
             fields,
+            layout: readFormDesignerLayout(snapshot.model) ?? [],
             designerModel: snapshot.model,
           });
         } catch (error) {

@@ -86,6 +86,8 @@
     "db:apply-runtime-form-field-component-type": "tsx scripts/apply-runtime-form-field-component-type.ts",
     "db:apply-runtime-form-field-base-info": "tsx scripts/apply-runtime-form-field-base-info.ts",
     "db:apply-runtime-form-field-editor-tabs": "tsx scripts/apply-runtime-form-field-editor-tabs.ts",
+	"db:apply-print-designer-property-forms": "tsx scripts/apply-print-designer-property-forms.ts",
+	"db:apply-print-data-source-forms": "tsx scripts/apply-print-data-source-forms.ts",
     "db:apply-runtime-form-default-value-procedure": "tsx scripts/apply-runtime-form-default-value-procedure.ts",
     "db:apply-runtime-form-relation-selects": "tsx scripts/apply-runtime-form-relation-selects.ts",
     "db:apply-document-number-generator": "tsx scripts/apply-document-number-generator.ts",

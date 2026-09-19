@@ -168,3 +168,33 @@ curl -i http://app.example.com:8081/api/service
 ```
 
 如果无法访问，先确认服务器安全组和防火墙已开放 `8081`；如果前端能打开但接口失败，检查 `api` 日志和 `.env.production` 中的 Supabase 变量。
+
+## Windows WSL2 自动启动与状态检查
+
+远程服务器使用 Windows + WSL2 时，建议创建一个以 `administrator` 身份运行的开机任务。远程当前注册的发行版为 `Ubuntu-22.04`，不能使用 `SYSTEM` 账户启动。任务会唤醒 WSL，等待 Docker 就绪，启动 Compose，并在 WSL IP 变化后自动更新端口转发。
+
+在管理员 PowerShell 中执行一次：
+
+```powershell
+schtasks.exe /Create /SC ONSTART /TN "enLearn-Start-Services" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\project\enLearn\scripts\windows-enlearn-startup.ps1" /RU administrator /RP "服务器登录密码" /RL HIGHEST /F
+```
+
+查看服务状态：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\project\enLearn\scripts\windows-enlearn-status.ps1
+```
+
+查看自动启动日志：
+
+```powershell
+Get-Content C:\project\enLearn\.codex-server-logs\windows-enlearn-startup.log -Tail 100
+```
+
+Trigger.dev 服务依赖 `infra/triggerdev/.env` 中的密钥配置。该文件不会进入普通代码同步流程，需要单独复制到远程服务器；自动启动脚本检测到该文件后，会在主站之后启动 Trigger Compose 全部依赖服务。状态脚本会额外显示 Trigger 容器状态。
+
+手动立即运行任务：
+
+```powershell
+schtasks.exe /Run /TN "enLearn-Start-Services"
+```

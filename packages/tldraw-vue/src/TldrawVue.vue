@@ -4,6 +4,9 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import VueBottomToolbar from './components/VueBottomToolbar.vue'
 import VueCanvas from './components/VueCanvas.vue'
 import VueComponentPalette from './components/VueComponentPalette.vue'
+import VueDataSourcePanel from './components/VueDataSourcePanel.vue'
+import VueLayersPanel from './components/VueLayersPanel.vue'
+import LowCodeFormPanel from './components/LowCodeFormPanel.vue'
 import VueNavigationPanel from './components/VueNavigationPanel.vue'
 import VueStylePanel from './components/VueStylePanel.vue'
 import VueTopLeftMenu from './components/VueTopLeftMenu.vue'
@@ -47,6 +50,7 @@ const emit = defineEmits<{
 }>()
 
 const editorHost = ref<HTMLDivElement | null>(null)
+const designerStage = ref<HTMLDivElement | null>(null)
 const canvasRef = ref<{
 	applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig): void
 	cancelToolbarDrag(event: PointerEvent): void
@@ -62,9 +66,19 @@ const bottomToolbarRef = ref<{ closeMenus(): void } | null>(null)
 const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
-const isCompactLayout = ref(false)
+const activeDesignerTab = ref<
+	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'style'
+>('tools')
+const designerTabs = [
+	{ id: 'tools', label: '工具', icon: '✦' },
+	{ id: 'components', label: '组件', icon: '◇' },
+	{ id: 'layers', label: '图层', icon: '▱' },
+	{ id: 'dataSource', label: '数据源', icon: '▤' },
+	{ id: 'properties', label: '属性', icon: '⚙' },
+	{ id: 'style', label: '样式', icon: '◐' },
+] as const
+const workspaceRevision = ref(0)
 let pluginHost: VueEditorPluginHost | null = null
-let hostResizeObserver: ResizeObserver | null = null
 let stopEditorChangeListener: (() => void) | null = null
 
 const pluginRegistry = computed(() => createVueEditorPluginRegistry(props.plugins ?? []))
@@ -75,12 +89,6 @@ const editorExtensions = computed(() => [
 const toolbarTools = computed(
 	() => createVueEditorExtensionRegistry(editorExtensions.value).toolbarTools
 )
-
-function updateLayoutMode() {
-	const host = editorHost.value
-	if (!host) return
-	isCompactLayout.value = host.clientWidth < 1320 || host.clientHeight < 760
-}
 
 function mountEditor(el: HTMLDivElement) {
 	if (editor.value) return
@@ -95,7 +103,7 @@ function mountEditor(el: HTMLDivElement) {
 	)
 	pluginHost = new VueEditorPluginHost(pluginRegistry.value, {
 		editor: nextEditor,
-		getContainer: () => editorHost.value,
+		getContainer: () => designerStage.value ?? editorHost.value,
 		getWorkspaceTemplateConfig,
 		applyWorkspaceTemplateConfig,
 	})
@@ -167,6 +175,11 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 	canvasRef.value?.applyWorkspaceTemplateConfig(config)
 }
 
+function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
+	workspaceRevision.value += 1
+	emit('workspace-config-change', config)
+}
+
 function handlePluginShortcut(event: KeyboardEvent) {
 	return pluginHost?.handleKeyDown(event) ?? false
 }
@@ -194,19 +207,14 @@ defineExpose({
 })
 
 onMounted(() => {
-	if (editorHost.value) {
-		updateLayoutMode()
-		hostResizeObserver = new ResizeObserver(updateLayoutMode)
-		hostResizeObserver.observe(editorHost.value)
-		mountEditor(editorHost.value)
+	if (designerStage.value) {
+		mountEditor(designerStage.value)
 	}
 	window.addEventListener('keydown', onKeyDown)
 })
 
 onBeforeUnmount(() => {
 	window.removeEventListener('keydown', onKeyDown)
-	hostResizeObserver?.disconnect()
-	hostResizeObserver = null
 	stopEditorChangeListener?.()
 	stopEditorChangeListener = null
 	pluginHost?.dispose()
@@ -217,63 +225,121 @@ onBeforeUnmount(() => {
 
 <template>
 	<main class="app-shell">
-		<section ref="editorHost" class="editor-host">
-			<VueCanvas
-				v-if="editor"
-				ref="canvasRef"
-				:editor="editor"
-				:active-tool="activeTool"
-				:current-geo-shape="currentGeoShape"
-				:handle-shortcut="handlePluginShortcut"
-				:toolbar-tools="toolbarTools"
-				@tool-change="selectTool"
-				@workspace-config-change="emit('workspace-config-change', $event)"
-			/>
-			<VueBottomToolbar
-				v-if="editor"
-				ref="bottomToolbarRef"
-				:editor="editor"
-				:active-tool="activeTool"
-				:current-geo-shape="currentGeoShape"
-				:toolbar-tools="toolbarTools"
-				@before-action="closeContextAndTopMenus"
-				@tool-select="selectTool"
-				@tool-drag-cancel="cancelToolbarDrag"
-				@tool-drag-end="endToolbarDrag"
-				@tool-drag-move="moveToolbarDrag"
-				@tool-drag-start="startToolbarDrag"
-			/>
-			<VueComponentPalette
-				v-if="editor"
-				:active-tool="activeTool"
-				:compact="isCompactLayout"
-				:current-geo-shape="currentGeoShape"
-				:toolbar-tools="toolbarTools"
-				@before-action="closeContextAndTopMenus"
-				@tool-select="selectTool"
-				@tool-drag-cancel="cancelToolbarDrag"
-				@tool-drag-end="endToolbarDrag"
-				@tool-drag-move="moveToolbarDrag"
-				@tool-drag-start="startToolbarDrag"
-			/>
-			<VueTopLeftMenu
-				v-if="editor"
-				ref="topMenuRef"
-				:editor="editor"
-				:can-run-command="canRunCommand"
-				:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
-				:load-templates="props.loadTemplates"
-				:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
-				:save-templates="props.saveTemplates"
-				:show-template-controls="props.showTemplateControls"
-				@before-action="canvasRef?.closeContextMenu()"
-			/>
-			<VueNavigationPanel
-				v-if="editor"
-				:editor="editor"
-				@before-action="closeContextAndTopMenus"
-			/>
-			<VueStylePanel v-if="editor" :compact="isCompactLayout" :editor="editor" />
+		<section
+			ref="editorHost"
+			class="editor-host"
+			:class="{
+				'is-property-active': activeDesignerTab === 'properties',
+				'is-data-source-active': activeDesignerTab === 'dataSource',
+			}"
+		>
+			<aside class="designer-side-panel" aria-label="设计器工具面板">
+				<nav class="designer-side-tabs" aria-label="设计器功能分类">
+					<button
+						v-for="tab in designerTabs"
+						:key="tab.id"
+						type="button"
+						class="designer-side-tab"
+						:class="{ 'is-active': activeDesignerTab === tab.id }"
+						:aria-selected="activeDesignerTab === tab.id"
+						@click="activeDesignerTab = tab.id"
+					>
+						<span class="designer-side-tab__icon" aria-hidden="true">{{ tab.icon }}</span>
+						<span>{{ tab.label }}</span>
+					</button>
+				</nav>
+				<div class="designer-side-content">
+					<div v-show="activeDesignerTab === 'tools'" class="designer-tool-view designer-tool-view--tools">
+						<section class="designer-tool-section" aria-label="绘制工具">
+							<h2 class="designer-tool-section__title">绘制工具</h2>
+							<VueBottomToolbar
+								v-if="editor"
+								ref="bottomToolbarRef"
+								:editor="editor"
+								:active-tool="activeTool"
+								:current-geo-shape="currentGeoShape"
+								:toolbar-tools="toolbarTools"
+								@before-action="closeContextAndTopMenus"
+								@tool-select="selectTool"
+								@tool-drag-cancel="cancelToolbarDrag"
+								@tool-drag-end="endToolbarDrag"
+								@tool-drag-move="moveToolbarDrag"
+								@tool-drag-start="startToolbarDrag"
+							/>
+							<VueTopLeftMenu
+								v-if="editor"
+								ref="topMenuRef"
+								:editor="editor"
+								:can-run-command="canRunCommand"
+								:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
+								:load-templates="props.loadTemplates"
+								:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
+								:save-templates="props.saveTemplates"
+								:show-template-controls="props.showTemplateControls"
+								embedded
+								@before-action="canvasRef?.closeContextMenu()"
+							/>
+						</section>
+					</div>
+					<div v-show="activeDesignerTab === 'components'" class="designer-tool-view">
+						<VueComponentPalette
+							v-if="editor"
+							:active-tool="activeTool"
+							:compact="false"
+							:current-geo-shape="currentGeoShape"
+							:toolbar-tools="toolbarTools"
+							@before-action="closeContextAndTopMenus"
+							@tool-select="selectTool"
+							@tool-drag-cancel="cancelToolbarDrag"
+							@tool-drag-end="endToolbarDrag"
+							@tool-drag-move="moveToolbarDrag"
+							@tool-drag-start="startToolbarDrag"
+						/>
+					</div>
+					<div v-show="activeDesignerTab === 'layers'" class="designer-tool-view designer-tool-view--layers">
+						<VueLayersPanel v-if="editor" :editor="editor" />
+					</div>
+					<div v-show="activeDesignerTab === 'dataSource'" class="designer-tool-view designer-tool-view--data-source">
+						<VueDataSourcePanel
+							v-if="editor"
+							:editor="editor"
+							:workspace-revision="workspaceRevision"
+							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
+							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
+						/>
+					</div>
+					<div v-show="activeDesignerTab === 'properties'" class="designer-tool-view designer-tool-view--properties">
+						<LowCodeFormPanel
+							v-if="editor"
+							:editor="editor"
+							:workspace-revision="workspaceRevision"
+							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
+							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
+						/>
+					</div>
+					<div v-show="activeDesignerTab === 'style'" class="designer-tool-view">
+						<VueStylePanel v-if="editor" :compact="false" :editor="editor" />
+					</div>
+				</div>
+			</aside>
+			<div ref="designerStage" class="designer-stage">
+				<VueCanvas
+					v-if="editor"
+					ref="canvasRef"
+					:editor="editor"
+					:active-tool="activeTool"
+					:current-geo-shape="currentGeoShape"
+					:handle-shortcut="handlePluginShortcut"
+					:toolbar-tools="toolbarTools"
+					@tool-change="selectTool"
+					@workspace-config-change="handleWorkspaceConfigChange"
+				/>
+				<VueNavigationPanel
+					v-if="editor"
+					:editor="editor"
+					@before-action="closeContextAndTopMenus"
+				/>
+			</div>
 		</section>
 	</main>
 </template>

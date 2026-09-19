@@ -8,6 +8,10 @@ import {
 } from '@/editor/interactions/TopMenuController'
 import { isVueMaterialShape } from '@/editor/extensions/material/vueMaterialShape'
 import {
+	getPrintDataSourceDetailColumns,
+	getPrintDataSourceDetailRows,
+} from '@/editor/dataSourceForm'
+import {
 	cloneVueTemplateContent,
 	cloneVueTemplateRecord,
 	createVueTemplateRecord,
@@ -33,6 +37,7 @@ const props = defineProps<{
 	editor: Editor
 	applyWorkspaceTemplateConfig?: (config: VueTemplateWorkspaceConfig) => void
 	canRunCommand?: (commandId: string) => boolean
+	embedded?: boolean
 	getWorkspaceTemplateConfig?: () => VueTemplateWorkspaceConfig
 	loadTemplates?: VueTemplateLoadHandler
 	saveTemplates?: VueTemplateSaveHandler
@@ -58,6 +63,7 @@ const printPreviewLoading = ref(false)
 const printPreviewError = ref<string | null>(null)
 const printPreviewPages = ref<PrintPageRenderResult[]>([])
 const printPreviewPageIndex = ref(0)
+const embeddedPopoverStyle = ref<Record<string, string>>({})
 
 const controller = new TopMenuController(props.editor)
 
@@ -163,36 +169,71 @@ function closeMenus() {
 	openPageSubmenuId.value = null
 }
 
-function toggleMainMenu() {
+function updateEmbeddedPopoverPosition(event?: MouseEvent) {
+	if (!props.embedded) {
+		embeddedPopoverStyle.value = {}
+		return
+	}
+
+	const anchor = event?.currentTarget
+	const scrollContainer = panelRef.value?.closest('.designer-side-content')
+	if (!(anchor instanceof HTMLElement) || !(scrollContainer instanceof HTMLElement) || !panelRef.value) return
+
+	const anchorRect = anchor.getBoundingClientRect()
+	const layoutHost = panelRef.value.closest('.designer-tool-section') ?? panelRef.value
+	const panelRect = layoutHost.getBoundingClientRect()
+	const containerRect = scrollContainer.getBoundingClientRect()
+	const preferredHeight = Math.min(460, containerRect.height - 16)
+	const preferredTop = anchorRect.bottom + 8
+	const top = Math.max(
+		containerRect.top + 8,
+		Math.min(preferredTop, containerRect.bottom - preferredHeight - 8)
+	)
+	const maxHeight = Math.max(120, containerRect.bottom - top - 8)
+
+	embeddedPopoverStyle.value = {
+		position: 'fixed',
+		top: `${Math.round(top)}px`,
+		left: `${Math.round(panelRect.left)}px`,
+		width: `${Math.round(panelRect.width)}px`,
+		maxHeight: `${Math.round(maxHeight)}px`,
+		overflowY: 'auto',
+	}
+}
+
+function toggleMainMenu(event?: MouseEvent) {
 	if (mainMenuOpen.value) {
 		closeMenus()
 		return
 	}
 
+	updateEmbeddedPopoverPosition(event)
 	pageMenuOpen.value = false
 	actionsMenuOpen.value = false
 	templateMenuOpen.value = false
 	mainMenuOpen.value = true
 }
 
-function togglePageMenu() {
+function togglePageMenu(event?: MouseEvent) {
 	if (pageMenuOpen.value) {
 		closeMenus()
 		return
 	}
 
+	updateEmbeddedPopoverPosition(event)
 	mainMenuOpen.value = false
 	actionsMenuOpen.value = false
 	templateMenuOpen.value = false
 	pageMenuOpen.value = true
 }
 
-function toggleActionsMenu() {
+function toggleActionsMenu(event?: MouseEvent) {
 	if (actionsMenuOpen.value) {
 		closeMenus()
 		return
 	}
 
+	updateEmbeddedPopoverPosition(event)
 	mainMenuOpen.value = false
 	pageMenuOpen.value = false
 	templateMenuOpen.value = false
@@ -242,7 +283,7 @@ function createPage() {
 }
 
 function renameCurrentPage() {
-	const name = window.prompt('Rename page', currentPage.value.name)
+	const name = window.prompt('重命名页面', currentPage.value.name)
 	if (name === null) return
 	runAndClose(() => controller.renamePage(currentPage.value.id, name))
 }
@@ -272,7 +313,7 @@ function openPageSubmenu(pageId: TLPageId) {
 }
 
 function renamePage(pageId: TLPageId, name: string) {
-	const nextName = window.prompt('Rename page', name)
+	const nextName = window.prompt('重命名页面', name)
 	if (nextName === null) return
 	runAndClose(() => controller.renamePage(pageId, nextName))
 }
@@ -358,8 +399,8 @@ function goToNextPrintPreviewPage() {
 
 function createPrintJobConfig(): PrintJobConfig {
 	const shapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	const materialGrids = createSampleMaterialGridConfigs(shapeIds)
 	const workspace = props.getWorkspaceTemplateConfig?.()
+	const materialGrids = createMaterialGridConfigs(shapeIds, workspace?.printDataSource)
 	const printPage = getCurrentPrintPageConfig()
 
 	return {
@@ -416,16 +457,26 @@ function getCurrentPrintPageConfig() {
 	}
 }
 
-function createSampleMaterialGridConfigs(
-	shapeIds: readonly TLShapeId[]
+function createMaterialGridConfigs(
+	shapeIds: readonly TLShapeId[],
+	dataSource?: VueTemplateWorkspaceConfig['printDataSource']
 ): PrintMaterialGridCollection | undefined {
 	const materialGrids: Record<string, PrintMaterialGridConfig> = {}
+	const hasConfiguredDataSource =
+		dataSource?.type === 'inline' && typeof dataSource.formCode === 'string'
+	const inlineDetail = hasConfiguredDataSource ? getPrintDataSourceDetailRows(dataSource) : null
+	const configuredColumns = hasConfiguredDataSource
+		? getPrintDataSourceDetailColumns(dataSource)
+		: []
+	const columns = configuredColumns.length ? configuredColumns : PRINT_MATERIAL_SAMPLE_COLUMNS
+	const data = inlineDetail ?? PRINT_MATERIAL_SAMPLE_ROWS
 
 	for (const shapeId of shapeIds) {
 		const shape = props.editor.getShape(shapeId)
 		if (!isVueMaterialShape(shape)) continue
 		materialGrids[shape.id] = {
-			grid: createSampleVxeGrid(),
+			data,
+			columns,
 			headerHeight: 24,
 			minRowHeight: 16,
 			fontSize: 9,
@@ -439,31 +490,7 @@ function createSampleMaterialGridConfigs(
 	return Object.keys(materialGrids).length ? materialGrids : undefined
 }
 
-function createSampleVxeGrid() {
-	return {
-		getTableData() {
-			return {
-				visibleData: PRINT_MATERIAL_SAMPLE_ROWS,
-				tableData: PRINT_MATERIAL_SAMPLE_ROWS,
-				fullData: PRINT_MATERIAL_SAMPLE_ROWS,
-			}
-		},
-		getTableColumn() {
-			return {
-				visibleColumn: PRINT_MATERIAL_SAMPLE_COLUMNS,
-				fullColumn: PRINT_MATERIAL_SAMPLE_COLUMNS,
-			}
-		},
-		getVisibleColumns() {
-			return PRINT_MATERIAL_SAMPLE_COLUMNS
-		},
-		getData() {
-			return PRINT_MATERIAL_SAMPLE_ROWS
-		},
-	}
-}
-
-async function toggleTemplateMenu() {
+async function toggleTemplateMenu(event?: MouseEvent) {
 	emit('before-action')
 
 	if (templateMenuOpen.value) {
@@ -471,6 +498,7 @@ async function toggleTemplateMenu() {
 		return
 	}
 
+	updateEmbeddedPopoverPosition(event)
 	mainMenuOpen.value = false
 	pageMenuOpen.value = false
 	actionsMenuOpen.value = false
@@ -673,67 +701,74 @@ onBeforeUnmount(() => {
 		<div class="top-menu-toolbar">
 			<button
 				type="button"
-				class="top-menu-icon-button"
-				aria-label="Main menu"
-				title="Main menu"
-				@click="toggleMainMenu"
+				class="top-menu-icon-button top-menu-labeled-button"
+				aria-label="菜单"
+				title="菜单"
+				@click="toggleMainMenu($event)"
 			>
-				&#9776;
+				<span class="top-menu-button-icon" aria-hidden="true">&#9776;</span>
+				<span class="top-menu-button-label">菜单</span>
 			</button>
 			<button
 				v-if="props.showTemplateControls !== false && canPreviewPrint"
 				type="button"
-				class="top-menu-icon-button"
+				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="加载模板"
 				title="加载模板"
 				:disabled="isTemplateLoading"
-				@click="toggleTemplateMenu"
+				@click="toggleTemplateMenu($event)"
 			>
-				&#128194;
+				<span class="top-menu-button-icon" aria-hidden="true">&#128194;</span>
+				<span class="top-menu-button-label">加载模板</span>
 			</button>
 			<button
 				v-if="props.showTemplateControls !== false && canPrint"
 				type="button"
-				class="top-menu-icon-button"
+				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="保存模板"
 				title="保存模板"
 				:disabled="!hasShapesOnPage || isTemplateSaving"
 				@click="saveCurrentTemplate"
 			>
-				&#128190;
+				<span class="top-menu-button-icon" aria-hidden="true">&#128190;</span>
+				<span class="top-menu-button-label">保存模板</span>
 			</button>
 			<button
 				type="button"
-				class="top-menu-page-button"
-				aria-label="Page menu"
+				class="top-menu-page-button top-menu-labeled-button"
+				aria-label="页面"
 				:title="pageLabel"
-				@click="togglePageMenu"
+				@click="togglePageMenu($event)"
 			>
+				<span class="top-menu-button-icon" aria-hidden="true">&#128196;</span>
+				<span class="top-menu-button-label">页面</span>
 				<span class="top-menu-page-label">{{ pageLabel }}</span>
 				<span class="top-menu-page-caret">&#9662;</span>
 			</button>
 			<button
 				type="button"
-				class="top-menu-icon-button"
+				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印预览"
 				title="打印预览"
 				:disabled="!hasShapesOnPage || printPreviewLoading"
 				@click="previewPrint"
 			>
-				&#128065;
+				<span class="top-menu-button-icon" aria-hidden="true">&#128065;</span>
+				<span class="top-menu-button-label">预览</span>
 			</button>
 			<button
 				type="button"
-				class="top-menu-icon-button"
+				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印"
 				title="打印"
 				:disabled="!hasShapesOnPage || printPreviewLoading"
 				@click="printCurrentPage"
 			>
-				&#128438;
+				<span class="top-menu-button-icon" aria-hidden="true">&#128438;</span>
+				<span class="top-menu-button-label">打印</span>
 			</button>
 			<div class="top-menu-separator" />
-			<div class="top-menu-inline-actions" aria-label="Selection actions">
+			<div class="top-menu-inline-actions" aria-label="对齐与层级操作">
 				<div
 					v-for="(group, groupIndex) in gridActionGroups"
 					:key="groupIndex"
@@ -749,7 +784,8 @@ onBeforeUnmount(() => {
 						:aria-label="action.label"
 						@click="runGridAction(action.id)"
 					>
-						<span class="top-menu-grid-icon">{{ action.glyph }}</span>
+						<span class="top-menu-grid-icon" aria-hidden="true">{{ action.glyph }}</span>
+						<span class="top-menu-action-label">{{ action.label }}</span>
 					</button>
 				</div>
 			</div>
@@ -758,6 +794,7 @@ onBeforeUnmount(() => {
 		<div
 			v-if="props.showTemplateControls !== false && templateMenuOpen"
 			class="top-menu-popover top-menu-popover--templates"
+			:style="embeddedPopoverStyle"
 		>
 			<div class="top-menu-template-title">模板</div>
 			<div v-if="templateError" class="top-menu-template-state top-menu-template-state--error">
@@ -789,19 +826,19 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<div v-if="mainMenuOpen" class="top-menu-popover top-menu-popover--main">
+		<div v-if="mainMenuOpen" class="top-menu-popover top-menu-popover--main" :style="embeddedPopoverStyle">
 			<button type="button" class="top-menu-menu-item" :disabled="!canUndo" @click="undo">
-				Undo
+				撤销
 			</button>
 			<button type="button" class="top-menu-menu-item" :disabled="!canRedo" @click="redo">
-				Redo
+				重做
 			</button>
 			<div class="top-menu-menu-separator" />
 			<button type="button" class="top-menu-menu-item" :disabled="!hasSelection" @click="duplicateSelection">
-				Duplicate selection
+				复制所选
 			</button>
 			<button type="button" class="top-menu-menu-item" :disabled="!hasSelection" @click="deleteSelection">
-				Delete selection
+				删除所选
 			</button>
 			<button
 				type="button"
@@ -809,17 +846,17 @@ onBeforeUnmount(() => {
 				:disabled="!hasShapesOnPage"
 				@click="selectAll"
 			>
-				Select all
+				全选
 			</button>
 			<div class="top-menu-menu-separator" />
-			<button type="button" class="top-menu-menu-item" @click="zoomTo100">Zoom to 100%</button>
+			<button type="button" class="top-menu-menu-item" @click="zoomTo100">缩放至 100%</button>
 			<button
 				type="button"
 				class="top-menu-menu-item"
 				:disabled="!hasShapesOnPage"
 				@click="zoomToFit"
 			>
-				Zoom to fit
+				适应画布
 			</button>
 			<button
 				type="button"
@@ -827,7 +864,7 @@ onBeforeUnmount(() => {
 				:disabled="!hasSelection"
 				@click="zoomToSelection"
 			>
-				Zoom to selection
+				缩放至所选
 			</button>
 			<div class="top-menu-menu-separator" />
 			<button
@@ -836,21 +873,21 @@ onBeforeUnmount(() => {
 				:disabled="hasReachedMaxPages"
 				@click="createPage"
 			>
-				New page
+				新建页面
 			</button>
-			<button type="button" class="top-menu-menu-item" @click="renameCurrentPage">Rename current page</button>
-			<button type="button" class="top-menu-menu-item" @click="duplicateCurrentPage">Duplicate current page</button>
+			<button type="button" class="top-menu-menu-item" @click="renameCurrentPage">重命名当前页面</button>
+			<button type="button" class="top-menu-menu-item" @click="duplicateCurrentPage">复制当前页面</button>
 			<button
 				type="button"
 				class="top-menu-menu-item"
 				:disabled="pages.length <= 1"
 				@click="deleteCurrentPage"
 			>
-				Delete current page
+				删除当前页面
 			</button>
 		</div>
 
-		<div v-if="pageMenuOpen" class="top-menu-popover top-menu-popover--page">
+		<div v-if="pageMenuOpen" class="top-menu-popover top-menu-popover--page" :style="embeddedPopoverStyle">
 			<div class="top-menu-page-list">
 				<div v-for="page in pages" :key="page.id" class="top-menu-page-row" :data-current="page.isCurrent">
 					<button
@@ -865,8 +902,8 @@ onBeforeUnmount(() => {
 					<button
 						type="button"
 						class="top-menu-page-row-submenu-button"
-						aria-label="Page actions"
-						title="Page actions"
+						aria-label="页面操作"
+						title="页面操作"
 						@click.stop="openPageSubmenu(page.id)"
 					>
 						&#8942;
@@ -877,7 +914,7 @@ onBeforeUnmount(() => {
 						@click.stop
 					>
 						<button type="button" class="top-menu-menu-item" @click="renamePage(page.id, page.name)">
-							Rename
+							重命名
 						</button>
 						<button
 							type="button"
@@ -885,7 +922,7 @@ onBeforeUnmount(() => {
 							:disabled="!page.canDuplicate"
 							@click="duplicatePage(page.id)"
 						>
-							Duplicate
+							复制
 						</button>
 						<button
 							type="button"
@@ -893,7 +930,7 @@ onBeforeUnmount(() => {
 							:disabled="!page.canMoveUp"
 							@click="movePage(page.id, -1)"
 						>
-							Move up
+							上移
 						</button>
 						<button
 							type="button"
@@ -901,7 +938,7 @@ onBeforeUnmount(() => {
 							:disabled="!page.canMoveDown"
 							@click="movePage(page.id, 1)"
 						>
-							Move down
+							下移
 						</button>
 						<button
 							type="button"
@@ -909,7 +946,7 @@ onBeforeUnmount(() => {
 							:disabled="!page.canDelete"
 							@click="deletePage(page.id)"
 						>
-							Delete
+							删除
 						</button>
 					</div>
 				</div>
@@ -921,11 +958,11 @@ onBeforeUnmount(() => {
 				:disabled="hasReachedMaxPages"
 				@click="createPage"
 			>
-				New page
+				新建页面
 			</button>
 		</div>
 
-		<div v-if="actionsMenuOpen" class="top-menu-popover top-menu-popover--actions">
+		<div v-if="actionsMenuOpen" class="top-menu-popover top-menu-popover--actions" :style="embeddedPopoverStyle">
 			<div v-for="(group, groupIndex) in gridActionGroups" :key="groupIndex" class="top-menu-grid-row">
 				<template v-for="action in group" :key="action.id">
 					<button

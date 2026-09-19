@@ -299,37 +299,37 @@ export class TopMenuController {
 	private getGridActionLabel(actionId: TopMenuGridActionId) {
 		switch (actionId) {
 			case 'align-left':
-				return 'Align left'
+				return '左对齐'
 			case 'align-center-horizontal':
-				return 'Align center horizontally'
+				return '水平居中'
 			case 'align-right':
-				return 'Align right'
+				return '右对齐'
 			case 'stretch-horizontal':
-				return 'Stretch horizontally'
+				return '水平拉伸'
 			case 'align-top':
-				return 'Align top'
+				return '顶部对齐'
 			case 'align-center-vertical':
-				return 'Align center vertically'
+				return '垂直居中'
 			case 'align-bottom':
-				return 'Align bottom'
+				return '底部对齐'
 			case 'stretch-vertical':
-				return 'Stretch vertically'
+				return '垂直拉伸'
 			case 'distribute-horizontal':
-				return 'Distribute horizontally'
+				return '水平分布'
 			case 'distribute-vertical':
-				return 'Distribute vertically'
+				return '垂直分布'
 			case 'stack-horizontal':
-				return 'Stack horizontally'
+				return '水平堆叠'
 			case 'stack-vertical':
-				return 'Stack vertically'
+				return '垂直堆叠'
 			case 'send-to-back':
-				return 'Send to back'
+				return '置于底层'
 			case 'send-backward':
-				return 'Send backward'
+				return '下移一层'
 			case 'bring-forward':
-				return 'Bring forward'
+				return '上移一层'
 			case 'bring-to-front':
-				return 'Bring to front'
+				return '置于顶层'
 		}
 	}
 
