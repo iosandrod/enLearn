@@ -142,6 +142,20 @@ export class WorkspaceBoundsManager {
 		)
 	}
 
+	getFittedCamera(viewport: WorkspaceViewportSize, maxZoom = 1): WorkspaceCamera {
+		if (viewport.w <= 0 || viewport.h <= 0) return this.getCenteredCamera(viewport, maxZoom)
+
+		const page = this.pageBounds
+		const horizontalRoom = Math.max(1, viewport.w - this.options.cameraMarginPx * 2)
+		const verticalRoom = Math.max(1, viewport.h - this.options.cameraMarginPx * 2)
+		const zoom = Math.max(
+			0.01,
+			Math.min(maxZoom, horizontalRoom / page.w, verticalRoom / page.h)
+		)
+
+		return this.getCenteredCamera(viewport, zoom)
+	}
+
 	clampShapePartial(editor: Editor, partial: TLShapePartial): TLShapePartial {
 		const shape = editor.getShape(partial.id)
 		if (!shape) return partial

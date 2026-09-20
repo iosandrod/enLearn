@@ -6,6 +6,8 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "test:keep-alive": "node tests/keep-alive-regression.mjs",
+    "test:production-cache-recovery": "node tests/production-cache-recovery-regression.mjs",
+    "test:production-print-designer-style": "node tests/production-print-designer-style-regression.mjs",
     "test:dashboard-tabs": "node tests/dashboard-tab-context-menu-regression.mjs",
     "test:sidebar-menu": "node tests/sidebar-menu-accordion-regression.mjs",
     "test:navigation": "node tests/database-navigation-regression.mjs",

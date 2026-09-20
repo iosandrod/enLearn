@@ -11,6 +11,15 @@
 
     handle {
         root * /srv
+
+        @versionedAssets path /assets/*
+        header @versionedAssets Cache-Control "public, max-age=31536000, immutable"
+
+        @appShell not path /assets/*
+        header @appShell Cache-Control "no-cache, no-store, must-revalidate"
+        header @appShell Pragma "no-cache"
+        header @appShell Expires "0"
+
         try_files {path} /index.html
         file_server
     }

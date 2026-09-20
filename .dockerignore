@@ -2,6 +2,7 @@
 .gitignore
 node_modules
 **/node_modules
+.pnpm-store
 frontend/dist
 api/dist
 .codex-screenshots

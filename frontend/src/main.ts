@@ -8,6 +8,7 @@ import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
 import 'vxe-table-plugin-advanced-filter/style.css';
 import 'vxe-table-plugin-search-panel/style.css';
+import 'tldraw-vue-phase-one/style.css';
 import '../assets/styles/app.css';
 import '../assets/styles/visual-editor-utilities.scss';
 
@@ -51,38 +52,58 @@ import {
 import { installLowCodeScriptApis } from './lowcode-script-apis';
 import { router } from './router';
 import './mainStyle.ts'
-const DEV_SERVICE_WORKER_RELOAD_KEY = 'enlearn_dev_service_worker_reloaded';
+const SERVICE_WORKER_RELOAD_KEY = 'enlearn_service_worker_cleanup_reloaded';
+const PRELOAD_ERROR_RELOAD_KEY = 'enlearn_preload_error_reloaded_at';
+const PRELOAD_ERROR_RELOAD_WINDOW_MS = 30_000;
 
 
 
-async function cleanupDevServiceWorkers() {
-  if (!import.meta.env.DEV || !('serviceWorker' in navigator)) return;
+function installPreloadErrorRecovery() {
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault();
 
-  try {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    if (!registrations.length) return;
-
-    await Promise.all(registrations.map((registration) => registration.unregister()));
-
-    if ('caches' in window) {
-      const cacheKeys = await window.caches.keys();
-      await Promise.all(cacheKeys.map((key) => window.caches.delete(key)));
+    const now = Date.now();
+    const lastReload = Number(window.sessionStorage.getItem(PRELOAD_ERROR_RELOAD_KEY));
+    if (Number.isFinite(lastReload) && now - lastReload < PRELOAD_ERROR_RELOAD_WINDOW_MS) {
+      return;
     }
 
+    window.sessionStorage.setItem(PRELOAD_ERROR_RELOAD_KEY, String(now));
+    window.location.reload();
+  });
+}
+
+async function cleanupLegacyServiceWorkers() {
+  const supportsServiceWorkers = 'serviceWorker' in navigator;
+  const supportsCacheStorage = 'caches' in window;
+  if (!supportsServiceWorkers && !supportsCacheStorage) return;
+
+  try {
+    const registrations = supportsServiceWorkers
+      ? await navigator.serviceWorker.getRegistrations()
+      : [];
+    const cacheKeys = supportsCacheStorage ? await window.caches.keys() : [];
+    if (!registrations.length && !cacheKeys.length) return;
+
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+    await Promise.all(cacheKeys.map((key) => window.caches.delete(key)));
+
     if (
+      supportsServiceWorkers &&
       navigator.serviceWorker.controller &&
-      window.sessionStorage.getItem(DEV_SERVICE_WORKER_RELOAD_KEY) !== '1'
+      window.sessionStorage.getItem(SERVICE_WORKER_RELOAD_KEY) !== '1'
     ) {
-      window.sessionStorage.setItem(DEV_SERVICE_WORKER_RELOAD_KEY, '1');
+      window.sessionStorage.setItem(SERVICE_WORKER_RELOAD_KEY, '1');
       window.location.reload();
       await new Promise<void>(() => { });
     }
   } catch (error) {
-    console.warn('Dev service worker cleanup failed.', error);
+    console.warn('Legacy service worker cleanup failed.', error);
   }
 }
 
-await cleanupDevServiceWorkers();
+installPreloadErrorRecovery();
+await cleanupLegacyServiceWorkers();
 
 if (
   import.meta.env.DEV &&
