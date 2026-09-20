@@ -1,0 +1,1 @@
+@echo off`r`nC:\Windows\System32\wsl.exe -d Ubuntu-22.04 -e bash -lc "docker compose --env-file /mnt/c/project/enLearn/infra/triggerdev/.env -f /mnt/c/project/enLearn/infra/triggerdev/docker-compose.yml ps > /mnt/c/project/enLearn/trigger-status.txt 2>&1"`r`n
