@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ServiceInvokeDto } from '../common/dto/service-invoke.dto';
 import { isPublicServiceName, type PublicServiceName } from '../common/service-bus';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { ServiceRouterService } from './service-router.service';
 import { requireActiveAccount } from '../common/utils/account-context';
 import {
@@ -23,6 +24,8 @@ type NormalizedServiceInvoke = {
   serviceMethod: string;
   postData: Record<string, unknown>;
 };
+
+const DEFAULT_LOW_CODE_ACCOUNT_ID = '00000000-0000-4000-8000-000000000001';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -122,27 +125,38 @@ export class ServiceGatewayController {
     const accessToken =
       typeof postData.accessToken === 'string' ? postData.accessToken : undefined;
     const contextAuthorization = authorization ?? (accessToken ? `Bearer ${accessToken}` : undefined);
+    const allowAnonymousLowCodeRead =
+      serviceName === 'lowcode' && serviceMethod === 'listItems' &&
+      !contextAuthorization && !accountId;
 
     let data: unknown;
     try {
-      // 验证登录用户、当前账户集成员关系及账户集状态，并生成可信的服务上下文。
-      const resolvedAccount = await requireActiveAccount(
-        { authorization: contextAuthorization, requestId },
-        accountId
-      );
+      // 除公开的 lowcode 读取外，验证用户、账套成员关系和账套状态。
+      const resolvedContext: ServiceContext = allowAnonymousLowCodeRead
+        ? {
+            authorization: contextAuthorization,
+            requestId,
+            serviceName,
+            accountId: DEFAULT_LOW_CODE_ACCOUNT_ID
+          }
+        : (await requireActiveAccount(
+            { authorization: contextAuthorization, requestId, serviceName },
+            accountId
+          )).context;
       // 将业务参数与可信上下文交给路由器，由其分发至 workflow 或对应领域服务。
       const invoke = () => this.router.invoke(
           serviceName,
           serviceMethod,
           postData,
-          resolvedAccount.context
+          resolvedContext
         );
       // 对带请求 ID 的写操作执行持久化幂等控制，防止网络重试造成重复写入。
-      data = requestId && isIdempotentServiceWrite(serviceMethod, postData)
+      data = requestId && resolvedContext.userId && resolvedContext.accountId &&
+        isIdempotentServiceWrite(serviceMethod, postData)
         ? await executeDurableIdempotentServiceWrite(
             {
-              userId: resolvedAccount.context.userId,
-              accountId: resolvedAccount.context.accountId,
+              userId: resolvedContext.userId,
+              accountId: resolvedContext.accountId,
               requestId
             },
             { serviceName, serviceMethod, postData },

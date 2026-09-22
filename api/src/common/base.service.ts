@@ -609,7 +609,9 @@ export abstract class BaseService implements ServiceExecutor {
     const clientMode = this.readOptionalString(postData.clientMode ?? postData.client_mode);
     const client = clientMode === 'admin'
       ? createSupabaseClient('admin', context)
-      : (await getCurrentUser(context)).client;
+      : context.serviceName === 'lowcode' && !context.authorization
+        ? createSupabaseClient('admin', context)
+        : (await getCurrentUser(context)).client;
     const select = this.readOptionalString(postData.select) || '*';
     const pageSize = this.readListItemsLimit(postData);
     const page = Math.min(Math.max(Math.trunc(this.readNumber(postData.page, 1)), 1), 100000);
@@ -761,6 +763,9 @@ export abstract class BaseService implements ServiceExecutor {
     if (resource.clientMode === 'admin') {
       return createSupabaseClient('admin', context);
     }
+    if (context.serviceName === 'lowcode' && !context.authorization) {
+      return createSupabaseClient('admin', context);
+    }
     return (await getCurrentUser(context)).client;
   }
 
@@ -784,6 +789,8 @@ export abstract class BaseService implements ServiceExecutor {
         return undefined;
       }
     }
+
+    if (context.serviceName === 'lowcode' && !context.authorization) return undefined;
 
     return (await getCurrentUser(context)).user;
   }
@@ -1984,6 +1991,9 @@ export abstract class BaseService implements ServiceExecutor {
   protected async assertPermission(ctx: CrudContext) {
     const required = ctx.resource.permissions?.[ctx.action];
     if (!required) return;
+    if (ctx.action === 'list' && ctx.serviceName === 'lowcode' && !ctx.context.authorization) {
+      return;
+    }
     if (!ctx.user) throw new ForbiddenException('Permission required.');
     const authorizationClient = ctx.resource.clientMode === 'admin'
       ? (await getCurrentUser(ctx.context)).client

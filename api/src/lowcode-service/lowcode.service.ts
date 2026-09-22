@@ -380,12 +380,24 @@ export class LowCodeService extends BaseService {
       throw new BadRequestException('id, code, or route is required.');
     }
 
-    const activeAccount = await requireActiveAccount(context);
-    const { client, user } = await getCurrentUser(activeAccount.context);
-    const authorization = await getUserAuthorization(client, user.id, {
-      accountId: activeAccount.context.accountId
-    });
-    const adminClient = createSupabaseClient('admin', activeAccount.context);
+    const anonymousAdminRead = context.serviceName === 'lowcode' && !context.authorization;
+    const activeAccount = anonymousAdminRead ? undefined : await requireActiveAccount(context);
+    const adminContext = activeAccount?.context ?? context;
+    let authorization: Awaited<ReturnType<typeof getUserAuthorization>>;
+    if (anonymousAdminRead) {
+      authorization = {
+        profile: null,
+        permissionCodes: [],
+        accounts: [],
+        isLegacyAdmin: true
+      };
+    } else {
+      const { client, user } = await getCurrentUser(activeAccount!.context);
+      authorization = await getUserAuthorization(client, user.id, {
+        accountId: activeAccount!.context.accountId
+      });
+    }
+    const adminClient = createSupabaseClient('admin', adminContext);
     const { data: routeRows, error: routeError } = await adminClient
       .from('admin_routes')
       .select(ADMIN_NAVIGATION_SELECT)
