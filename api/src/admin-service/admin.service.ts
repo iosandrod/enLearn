@@ -713,11 +713,17 @@ export class AdminService extends BaseService {
       throw new BadRequestException('A maximum of 100 option source codes can be resolved at once.');
     }
 
-    const { client, user } = await getCurrentUser(context);
-    const authorization = await getUserAuthorization(client, user.id, {
-      accountId: context.accountId
-    });
-    const canManage = hasRequiredPermission(authorization, 'admin.options.manage');
+    const anonymousAdminRead = context.serviceName === 'admin' && !context.authorization;
+    const currentUser = anonymousAdminRead ? undefined : await getCurrentUser(context);
+    const client = currentUser?.client ?? createSupabaseClient('admin', context);
+    const canManage = currentUser
+      ? hasRequiredPermission(
+          await getUserAuthorization(currentUser.client, currentUser.user.id, {
+            accountId: context.accountId
+          }),
+          'admin.options.manage'
+        )
+      : true;
     let sourceQuery = client
       .from('system_option_sources')
       .select('*')

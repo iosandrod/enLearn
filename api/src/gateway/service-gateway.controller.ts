@@ -25,7 +25,12 @@ type NormalizedServiceInvoke = {
   postData: Record<string, unknown>;
 };
 
-const DEFAULT_LOW_CODE_ACCOUNT_ID = '00000000-0000-4000-8000-000000000001';
+const DEFAULT_ANONYMOUS_ACCOUNT_ID = '00000000-0000-4000-8000-000000000001';
+const ANONYMOUS_OPTION_ITEMS_METHODS = new Set([
+  'resolveOptionItemsBatch',
+  'listOptionItemsBatch',
+  'listDropdownOptionsBatch'
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -128,16 +133,19 @@ export class ServiceGatewayController {
     const allowAnonymousLowCodeRead =
       serviceName === 'lowcode' && serviceMethod === 'listItems' &&
       !contextAuthorization && !accountId;
+    const allowAnonymousOptionItemsRead =
+      serviceName === 'admin' && ANONYMOUS_OPTION_ITEMS_METHODS.has(serviceMethod) &&
+      !contextAuthorization && !accountId;
 
     let data: unknown;
     try {
-      // 除公开的 lowcode 读取外，验证用户、账套成员关系和账套状态。
-      const resolvedContext: ServiceContext = allowAnonymousLowCodeRead
+      // 除公开的低代码和选项读取外，验证用户、账套成员关系和账套状态。
+      const resolvedContext: ServiceContext = allowAnonymousLowCodeRead || allowAnonymousOptionItemsRead
         ? {
             authorization: contextAuthorization,
             requestId,
             serviceName,
-            accountId: DEFAULT_LOW_CODE_ACCOUNT_ID
+            accountId: DEFAULT_ANONYMOUS_ACCOUNT_ID
           }
         : (await requireActiveAccount(
             { authorization: contextAuthorization, requestId, serviceName },
