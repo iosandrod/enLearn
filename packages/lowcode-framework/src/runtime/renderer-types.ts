@@ -5,7 +5,13 @@ import type {
   LowCodeHostServiceApi,
   LowCodeTheme,
 } from '../core/host';
-import type { LowCodePageRecord, LowCodeRuntimeEvent } from '../types/lowcode';
+import type { LowCodePageBlock, LowCodePageRecord, LowCodeRuntimeEvent } from '../types/lowcode';
+
+export type LowCodeBlockTeleport = {
+  to: string;
+  id?: string;
+  kind?: LowCodePageBlock['kind'];
+};
 
 export type LowCodePageRendererProps = {
   page: LowCodePageRecord & { resolvedData?: Record<string, unknown> };
@@ -17,4 +23,5 @@ export type LowCodePageRendererProps = {
   theme?: LowCodeTheme;
   onRuntimeEvent?: (event: LowCodeRuntimeEvent) => Promise<void> | void;
   showGlobalDialogHost?: boolean;
+  blockTeleport?: LowCodeBlockTeleport;
 };

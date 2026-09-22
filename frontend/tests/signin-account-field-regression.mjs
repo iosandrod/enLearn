@@ -1,25 +1,23 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [pageSource, schemaSource, authSource, fetchSource] = await Promise.all([
+const [pageSource, schemaSource, authSource] = await Promise.all([
   readFile(new URL('../pages/signin.vue', import.meta.url), 'utf8'),
   readFile(new URL('../schemas/auth.ts', import.meta.url), 'utf8'),
   readFile(new URL('../../api/src/auth/auth.service.ts', import.meta.url), 'utf8'),
-  readFile(new URL('../src/spa-compat.ts', import.meta.url), 'utf8'),
 ]);
 
 assert.doesNotMatch(pageSource, /1\s*\/\s*2|2\s*\/\s*2|step === 'account'/);
-assert.match(schemaSource, /field: 'accountId'[\s\S]*?component: 'vxe-select'/);
-assert.match(pageSource, /:option-sources="accountOptionSources"/);
-assert.match(pageSource, /query: \{ login \}/);
-assert.match(pageSource, /if \(!login\) \{[\s\S]*?accountOptionsLoading\.value = false;/);
-assert.match(pageSource, /accountId,[\s\S]*?setDefault: preferSelectedAccount\.value/);
+assert.doesNotMatch(schemaSource, /field: 'accountId'/);
+assert.doesNotMatch(pageSource, /accountOptionSources|accountOptionsLoading|account-options/);
+assert.match(pageSource, /await auth\.signInWithPassword\(\{[\s\S]*?email:[\s\S]*?password:/);
+assert.match(pageSource, /await activatePreferredAccount\(\)/);
+assert.match(pageSource, /auth\.selectAccount\(account\.account_id/);
 assert.match(authSource, /async listLoginAccountOptions\(login\?: string\)/);
 assert.match(authSource, /auth\.admin\.listUsers/);
 assert.match(authSource, /admin\.rpc\('get_login_account_options'/);
 assert.match(authSource, /if \(dto\.accountId && data\.session\?\.access_token\)/);
 assert.match(authSource, /this\.selectAccount\([\s\S]*?accountId: dto\.accountId/);
-assert.match(fetchSource, /!apiPath\.startsWith\('\/auth\/account-options'\)/);
 
 const [accountServiceSource, accountStateSource, removalMigrationSource] = await Promise.all([
   readFile(new URL('../../api/src/account-service/account.service.ts', import.meta.url), 'utf8'),

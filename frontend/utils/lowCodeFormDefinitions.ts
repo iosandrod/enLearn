@@ -10,6 +10,7 @@ export const LOW_CODE_FORM_CODES = {
   gridExport: 'grid-export',
   accountProfile: 'account-profile',
   accountEmail: 'account-email',
+  printAccountSetting: 'print-account-setting',
   dashboardSettings: 'dashboard-settings',
   postEditor: 'post-editor',
   lowCodePageEditor: 'lowcode-page-editor',

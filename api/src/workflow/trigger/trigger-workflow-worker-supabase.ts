@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 import { getEnv } from '../../common/utils/env';
+import { createSupabaseFetch } from '../../common/utils/supabase-fetch';
 
 const DEFAULT_RETRY_DELAYS_MS = [200, 500] as const;
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
@@ -13,7 +14,8 @@ export function createTriggerWorkflowSupabaseClient(taskName: string) {
     throw new Error(`SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required by ${taskName}.`);
   }
   return createClient(url, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { fetch: createSupabaseFetch(fetch) }
   });
 }
 

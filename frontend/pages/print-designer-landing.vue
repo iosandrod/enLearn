@@ -25,7 +25,7 @@
           </div>
         </div>
 
-        <div class="print-intro__preview print-intro__preview--real" aria-label="真实打印设计器画布">
+        <div id="designer-preview" class="print-intro__preview print-intro__preview--real" aria-label="真实打印设计器画布">
           <TldrawVue :show-template-controls="false" />
         </div>
       </div>
@@ -40,7 +40,7 @@
       </div>
     </section>
 
-    <section class="print-intro__cta">
+    <section id="start-design" class="print-intro__cta">
       <div><p>READY TO DESIGN</p><h2>从一个创意，开始持续出图。</h2></div>
       <RouterLink class="print-intro__primary print-intro__primary--light" to="/print-designer">打开设计器 <i class="ri-arrow-right-line" aria-hidden="true"></i></RouterLink>
     </section>
@@ -61,7 +61,8 @@ const capabilities = [
 </script>
 
 <style scoped>
-.print-intro { --ink: #152238; --muted: #657286; --line: #d9e0e8; --paper: #f5f7fa; --accent: #e35f37; --mint: #d9f0e8; color: var(--ink); background: #f8fafb; }
+.print-intro { --ink: #152238; --muted: #657286; --line: #d9e0e8; --paper: #f5f7fa; --accent: #e35f37; --mint: #d9f0e8; margin-top: 68px; color: var(--ink); background: #f8fafb; }
+.print-intro :is(#designer-preview, #capabilities, #start-design) { scroll-margin-top: 84px; }
 .print-intro__hero { overflow: hidden; background: #eef3f5; border-bottom: 1px solid var(--line); }
 .print-intro__hero-inner { display: grid; grid-template-columns: minmax(0, 1fr); gap: 54px; max-width: 1600px; min-height: auto; margin: 0 auto; padding: 78px clamp(24px, 5vw, 72px) 84px; }
 .print-intro__copy { max-width: 900px; }

@@ -1,13 +1,13 @@
 <template>
   <header class="site-header" :class="{ 'is-open': menuOpen }">
     <div class="site-header__inner">
-      <RouterLink class="site-brand" to="/" :aria-label="`${SITE_NAME} 首页`" @click="closeMenu">
+      <RouterLink class="site-brand" to="/" aria-label="研峰打印设计器首页" @click="closeMenu">
         <span class="site-brand-mark" aria-hidden="true">
-          <span></span><span></span><span></span>
+          <i class="ri-printer-line" />
         </span>
         <span class="site-brand-copy">
-          <strong>{{ SITE_NAME }}</strong>
-          <small>个人学习交流站</small>
+          <strong>研峰打印设计器</strong>
+          <small>可视化打印与批量出图</small>
         </span>
       </RouterLink>
 
@@ -22,24 +22,22 @@
         <i :class="menuOpen ? 'ri-close-line' : 'ri-menu-3-line'" aria-hidden="true" />
       </button>
 
-      <nav id="site-navigation" class="site-nav" aria-label="首页导航">
+      <nav id="site-navigation" class="site-nav" aria-label="打印设计器导航">
         <a v-for="item in navItems" :key="item.href" :href="item.href" @click="closeMenu">
           {{ item.label }}
         </a>
       </nav>
 
       <div class="site-actions">
-        <RouterLink v-if="signedIn" class="site-console-link" to="/dashboard">
+        <RouterLink v-if="signedIn" class="site-login-link" to="/dashboard" @click="closeMenu">
           <i class="ri-layout-grid-line" aria-hidden="true" />
-          进入工作台
+          工作台
         </RouterLink>
-        <template v-else>
-          <RouterLink class="site-login-link" to="/signin">登录</RouterLink>
-          <a class="site-console-link" href="/#experience" @click="closeMenu">
-            立即体验
-            <i class="ri-arrow-right-up-line" aria-hidden="true" />
-          </a>
-        </template>
+        <RouterLink v-else class="site-login-link" to="/signin" @click="closeMenu">登录</RouterLink>
+        <RouterLink class="site-console-link" to="/print-designer" @click="closeMenu">
+          <i class="ri-pencil-ruler-2-line" aria-hidden="true" />
+          进入设计器
+        </RouterLink>
       </div>
     </div>
   </header>
@@ -47,16 +45,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { SITE_NAME } from '../config/site';
-
 const auth = useAuth();
 const signedIn = computed(() => Boolean(auth.user.value));
 const menuOpen = ref(false);
 const navItems = [
-  { label: '学习主题', href: '/#capabilities' },
-  { label: '组件体验', href: '/#experience' },
-  { label: '实践场景', href: '/#scenarios' },
-  { label: '技术结构', href: '/#architecture' },
+  { label: '在线体验', href: '/#designer-preview' },
+  { label: '核心能力', href: '/#capabilities' },
+  { label: '开始设计', href: '/#start-design' },
 ];
 
 function closeMenu() {
@@ -77,7 +72,7 @@ onMounted(() => {
   height: 68px;
   padding: 0;
   border-bottom: 1px solid rgb(15 23 42 / 8%);
-  background: rgb(250 252 253 / 88%);
+  background: rgb(248 250 251 / 92%);
   backdrop-filter: blur(18px) saturate(150%);
 }
 
@@ -101,25 +96,12 @@ onMounted(() => {
   display: grid;
   width: 34px;
   height: 34px;
-  grid-template-columns: repeat(3, 4px);
-  align-items: end;
-  justify-content: center;
-  gap: 3px;
+  place-items: center;
   border-radius: 6px;
-  background: #112c2a;
-  padding-bottom: 8px;
+  background: #152238;
 }
 
-.site-brand-mark span {
-  display: block;
-  width: 4px;
-  border-radius: 1px;
-  background: #b8ef50;
-}
-
-.site-brand-mark span:nth-child(1) { height: 9px; }
-.site-brand-mark span:nth-child(2) { height: 17px; }
-.site-brand-mark span:nth-child(3) { height: 13px; }
+.site-brand-mark i { color: #ffffff; font-size: 19px; }
 
 .site-brand-copy {
   display: grid;
@@ -127,13 +109,13 @@ onMounted(() => {
 }
 
 .site-brand-copy strong {
-  color: #112c2a;
+  color: #152238;
   font-size: 17px;
   line-height: 1;
 }
 
 .site-brand-copy small {
-  color: #6e7c7a;
+  color: #7a8798;
   font-size: 9px;
   letter-spacing: 1.6px;
 }
@@ -148,7 +130,7 @@ onMounted(() => {
 .site-nav a,
 .site-login-link {
   position: relative;
-  color: #40504e;
+  color: #455266;
   font-size: 13px;
   font-weight: 600;
 }
@@ -159,7 +141,7 @@ onMounted(() => {
   bottom: -9px;
   left: 0;
   height: 2px;
-  background: #4f8e72;
+  background: #e35f37;
   content: '';
   transform: scaleX(0);
   transform-origin: right;
@@ -186,7 +168,7 @@ onMounted(() => {
   justify-content: center;
   gap: 7px;
   border-radius: 4px;
-  background: #112c2a;
+  background: #e35f37;
   color: #ffffff;
   padding: 0 16px;
   font-size: 13px;
@@ -195,7 +177,7 @@ onMounted(() => {
 }
 
 .site-console-link:hover {
-  background: #26564a;
+  background: #c94f2d;
   transform: translateY(-1px);
 }
 
@@ -215,7 +197,7 @@ onMounted(() => {
     border: 1px solid #d9e1df;
     border-radius: 4px;
     background: #ffffff;
-    color: #112c2a;
+    color: #152238;
     cursor: pointer;
     font-size: 20px;
   }
@@ -242,7 +224,7 @@ onMounted(() => {
   .site-nav a::after { display: none; }
 
   .site-actions {
-    top: 260px;
+    top: 216px;
     align-items: stretch;
     gap: 10px;
     border-bottom: 1px solid #dfe6e4;

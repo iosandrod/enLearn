@@ -18,7 +18,7 @@
               免登录体验
             </a>
             <RouterLink class="home-button home-button--plain" to="/signin">
-              登录学习空间
+              登录打印设计器
               <i class="ri-arrow-right-line" aria-hidden="true" />
             </RouterLink>
           </div>
@@ -187,7 +187,7 @@
         <h2>把复杂问题，拆成可以动手验证的实验。</h2>
         <div>
           <a class="home-button home-button--accent" href="#experience">继续体验组件<i class="ri-arrow-up-line"></i></a>
-          <RouterLink class="home-button home-button--dark-plain" to="/signin">登录学习空间</RouterLink>
+          <RouterLink class="home-button home-button--dark-plain" to="/signin">登录打印设计器</RouterLink>
         </div>
       </div>
     </section>

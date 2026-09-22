@@ -1,5 +1,6 @@
 <template>
   <div class="standalone-print-designer">
+    <PrintDesignerHeader />
     <PrintDesignerPage />
   </div>
 </template>
@@ -7,6 +8,7 @@
 <script setup lang="ts">
 // Reuse the backend-backed page renderer. The designer UI, materials and
 // actions come from the `print-designer` low-code page schema at runtime.
+import PrintDesignerHeader from '../components/PrintDesignerHeader.vue';
 import PrintDesignerPage from './dashboard/print/lowcode-designer.vue';
 </script>
 
@@ -30,7 +32,8 @@ html:has(.standalone-print-designer) #app {
 }
 
 .standalone-print-designer .print-lowcode-page {
-  height: 100%;
-  min-height: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  flex: 1 1 auto;
 }
 </style>

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  ServiceUnavailableException,
   UnauthorizedException
 } from '@nestjs/common';
 import type { AuthError, Provider, Session, User } from '@supabase/supabase-js';
@@ -42,7 +43,13 @@ type PublicSession = Pick<
 };
 
 function throwAuthError(error: AuthError | null, fallback: string): never {
-  throw new UnauthorizedException(error?.message ?? fallback);
+  const message = error?.message ?? '';
+  if (/fetch failed|econnreset|enotfound|etimedout|network/i.test(message)) {
+    throw new ServiceUnavailableException(
+      '认证服务暂时不可用，请检查 Supabase 网络连接后重试。'
+    );
+  }
+  throw new UnauthorizedException(message || fallback);
 }
 
 const ADMIN_LOGIN_ALIAS = 'admin';
@@ -221,7 +228,9 @@ export class AuthService {
       };
     }
 
-    return this.buildAuthResponse(data.user, data.session);
+    return this.buildAuthResponse(data.user, data.session, {
+      activatePreferredAccount: true
+    });
   }
 
   async signUp(dto: EmailPasswordAuthDto) {
@@ -372,7 +381,11 @@ export class AuthService {
     return { success: true };
   }
 
-  private async buildAuthResponse(user: User, session: Session | null) {
+  private async buildAuthResponse(
+    user: User,
+    session: Session | null,
+    options: { activatePreferredAccount?: boolean } = {}
+  ) {
     if (!session?.access_token) {
       return {
         user: toPublicUser(user),
@@ -391,6 +404,47 @@ export class AuthService {
     );
 
     const authorization = await getUserAuthorization(client, user.id, { refresh: true });
+
+    if (options.activatePreferredAccount) {
+      const preferredAccount = authorization.accounts
+        .filter((account) => account.status !== 'inactive' && account.status !== 'archived')
+        .find((account) => account.is_last_used)
+        ?? authorization.accounts
+          .filter((account) => account.status !== 'inactive' && account.status !== 'archived')
+          .find((account) => account.is_default)
+        ?? authorization.accounts.find(
+          (account) => account.status !== 'inactive' && account.status !== 'archived'
+        );
+
+      if (preferredAccount) {
+        const { error: selectError } = await client.rpc('select_account_set_with_preference', {
+          account_id: preferredAccount.account_id,
+          set_default: false
+        });
+        if (selectError && !selectError.message.includes('Could not find the function')) {
+          throw new BadRequestException(selectError.message);
+        }
+
+        clearUserAuthorizationCache(user.id);
+        const accountAuthorization = await getUserAuthorization(client, user.id, {
+          refresh: true,
+          accountId: preferredAccount.account_id
+        });
+        const activeAccount = accountAuthorization.accounts.find(
+          (account) => account.account_id === preferredAccount.account_id
+        ) ?? preferredAccount;
+
+        return {
+          user: toPublicUser(user),
+          profile: accountAuthorization.profile,
+          permissions: accountAuthorization.permissionCodes,
+          accounts: accountAuthorization.accounts,
+          activeAccount,
+          accountRequired: false,
+          session: toPublicSession(session)
+        };
+      }
+    }
 
     return {
       user: toPublicUser(user),

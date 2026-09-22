@@ -8,6 +8,7 @@ const [
   materialSource,
   printMenuSource,
   migrationSource,
+  definitionMigrationSource,
   stylesSource,
 ] = await Promise.all([
   readFile(new URL('../../packages/tldraw-vue/src/TldrawVue.vue', import.meta.url), 'utf8'),
@@ -33,6 +34,13 @@ const [
   readFile(
     new URL(
       '../../supabase/migrations/20260920100000_print_data_source_form_definitions.sql',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+  readFile(
+    new URL(
+      '../../supabase/migrations/20260921120000_print_data_source_definition_form.sql',
       import.meta.url,
     ),
     'utf8',
@@ -72,6 +80,12 @@ assert.match(migrationSource, /'print-designer\.datasource\.sales-orders'/);
 assert.match(migrationSource, /"field": "header"[\s\S]*"component": "lc-sub-form"/);
 assert.match(migrationSource, /"field": "detail"[\s\S]*"component": "lc-array-table"/);
 assert.match(migrationSource, /"tableName": "sales_order_lines"/);
+assert.match(definitionMigrationSource, /'print-designer\.datasource-definition'/);
+assert.match(
+  definitionMigrationSource,
+  /"field": "code"[\s\S]*?"component": "vxe-input"[\s\S]*?"field": "tableName"/,
+);
+assert.match(definitionMigrationSource, /on conflict \(code\) do update set/);
 assert.match(
   stylesSource,
   /\.editor-host\.is-data-source-active\s*{\s*grid-template-columns:\s*400px minmax\(0, 1fr\);/,

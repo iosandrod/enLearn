@@ -1,26 +1,21 @@
 <template>
   <main class="erp-signin">
-    <section class="erp-signin__brand" :aria-label="SITE_NAME">
+    <section class="erp-signin__brand" aria-label="打印设计器">
       <div class="erp-signin__brand-copy">
         <div class="erp-signin__product">
-          <span class="erp-signin__product-mark">M</span>
-          <span>Manufacturing ERP</span>
+          <span class="erp-signin__product-mark">P</span>
+          <span>Print Designer</span>
         </div>
-        <p class="erp-signin__eyebrow">个人技术学习交流</p>
-        <h1>{{ SITE_NAME }}</h1>
+        <p class="erp-signin__eyebrow">可视化打印模板设计</p>
+        <h1>打印设计器</h1>
         <p class="erp-signin__lead">
-          从计划、采购到生产与交付，在同一套可信数据中协同工作。
+          拖拽排版业务单据，绑定数据字段并实时预览，快速制作规范、易用的打印模板。
         </p>
         <div class="erp-signin__signals" aria-hidden="true">
-          <span><i class="ri-building-2-line" />多组织核算</span>
-          <span><i class="ri-git-merge-line" />流程协同</span>
-          <span><i class="ri-shield-check-line" />账套隔离</span>
+          <span><i class="ri-layout-4-line" />可视化排版</span>
+          <span><i class="ri-links-line" />数据字段绑定</span>
+          <span><i class="ri-eye-line" />实时预览</span>
         </div>
-      </div>
-      <div class="erp-signin__factory" aria-hidden="true">
-        <span class="erp-signin__factory-label">数字化工厂</span>
-        <div class="erp-signin__factory-grid" />
-        <i class="ri-building-4-line" />
       </div>
     </section>
 
@@ -29,38 +24,33 @@
         <header class="erp-login-panel__header">
           <div>
             <p>欢迎回来</p>
-            <h2>{{ selectingAccountForSession ? '选择账套' : '登录学习空间' }}</h2>
+            <h2>登录打印设计器</h2>
           </div>
         </header>
 
         <p class="erp-login-panel__description">
-          {{ selectingAccountForSession ? `当前账号：${auth.user.value?.email ?? ''}` : '请输入登录信息并选择业务账套。' }}
+          请输入登录信息。
         </p>
 
         <LowCodeForm
           ref="loginFormRef"
           v-model="form"
           :schema="loginSchema"
-          :option-sources="accountOptionSources"
-          :loading="loading || accountOptionsLoading"
+          :loading="loading"
           @submit="handleSubmit"
         />
 
         <div class="erp-login-panel__preferences">
-          <label v-if="!selectingAccountForSession" class="erp-login-panel__remember">
+          <label class="erp-login-panel__remember">
             <input v-model="rememberLoginAccount" type="checkbox" />
             <span>记住登录账号</span>
-          </label>
-          <label class="erp-login-panel__remember">
-            <input v-model="preferSelectedAccount" type="checkbox" />
-            <span>下次优先使用该账套</span>
           </label>
         </div>
 
         <button
           class="erp-login-panel__primary"
           type="button"
-          :disabled="loading || accountOptionsLoading"
+          :disabled="loading"
           @click="submitLoginForm"
         >
           <i :class="loading ? 'ri-loader-4-line erp-spin' : 'ri-login-box-line'" aria-hidden="true" />
@@ -69,13 +59,12 @@
 
         <button
           v-if="!selectingAccountForSession"
-          class="erp-login-panel__oauth"
+          class="erp-login-panel__register"
           type="button"
-          :disabled="loading || accountOptionsLoading"
-          @click="handleGithub"
+          @click="navigateTo('/signup')"
         >
-          <i class="ri-github-fill" aria-hidden="true" />
-          <span>使用 GitHub 登录</span>
+          <i class="ri-user-add-line" aria-hidden="true" />
+          <span>注册账号</span>
         </button>
 
         <p v-if="message" class="erp-login-panel__error" role="alert">
@@ -91,65 +80,26 @@
 
 <script setup lang="ts">
 import { signInSchema } from '~/schemas/auth';
-import type { AppAccountSummary } from '~/composables/useAuthState';
 import { SITE_NAME } from '../config/site';
-
-type LoginAccountOption = Pick<
-  AppAccountSummary,
-  'account_id' | 'code' | 'name' | 'base_currency' | 'status'
->;
 
 const LOGIN_ACCOUNT_KEY = 'enlearn_login_account';
 const LOGIN_ACCOUNT_SET_KEY = 'enlearn_login_account_set_id';
 const auth = useAuth();
 const loading = ref(false);
-const accountOptionsLoading = ref(true);
 const message = ref('');
-const accountOptions = ref<LoginAccountOption[]>([]);
 const rememberLoginAccount = ref(true);
-const preferSelectedAccount = ref(true);
-let accountOptionsRequestId = 0;
-let accountOptionsTimer: ReturnType<typeof setTimeout> | undefined;
 const loginFormRef = ref<{
   validate: () => Promise<boolean>;
   snapshot: () => Record<string, unknown>;
 } | null>(null);
 const form = ref<Record<string, unknown>>({
   email: import.meta.server ? '' : window.localStorage.getItem(LOGIN_ACCOUNT_KEY) ?? '',
-  password: '',
-  accountId: import.meta.server ? '' : window.localStorage.getItem(LOGIN_ACCOUNT_SET_KEY) ?? ''
+  password: ''
 });
 const selectingAccountForSession = computed(() =>
   Boolean(auth.user.value && !auth.activeAccount.value)
 );
-const loginAccount = computed(() => String(form.value.email ?? '').trim());
-const loginSchema = computed(() => ({
-  ...signInSchema,
-  fields: signInSchema.fields
-    .filter((field) => !selectingAccountForSession.value || field.field === 'accountId')
-    .map((field) => field.field === 'accountId'
-      ? {
-          ...field,
-          props: {
-            ...field.props,
-            disabled: accountOptionsLoading.value || (
-              !selectingAccountForSession.value && !loginAccount.value
-            ),
-            placeholder: accountOptionsLoading.value
-              ? '正在加载账套...'
-              : !selectingAccountForSession.value && !loginAccount.value
-                ? '请先输入登录账号'
-                : '请选择账套'
-          }
-        }
-      : field)
-}));
-const accountOptionSources = computed(() => ({
-  accounts: accountOptions.value.map((account) => ({
-    ...account,
-    label: [account.code, account.name].filter(Boolean).join(' · ') || '未命名账套'
-  }))
-}));
+const loginSchema = signInSchema;
 
 async function submitLoginForm() {
   const loginForm = loginFormRef.value;
@@ -158,22 +108,40 @@ async function submitLoginForm() {
   await handleSubmit(loginForm.snapshot());
 }
 
+function isAccountEnabled(account: { status?: string | null }) {
+  return account.status !== 'inactive' && account.status !== 'archived';
+}
+
+function preferredAccount() {
+  const availableAccounts = auth.accounts.value.filter(isAccountEnabled);
+  const savedAccountId = window.localStorage.getItem(LOGIN_ACCOUNT_SET_KEY) ?? '';
+  return availableAccounts.find((account) => account.account_id === savedAccountId)
+    ?? availableAccounts.find((account) => account.is_last_used)
+    ?? availableAccounts.find((account) => account.is_default)
+    ?? availableAccounts[0];
+}
+
+async function activatePreferredAccount() {
+  const account = preferredAccount();
+  if (!account) {
+    throw new Error('该登录账号没有可用账套，请联系系统管理员。');
+  }
+
+  await auth.selectAccount(account.account_id, { setDefault: true });
+  window.localStorage.setItem(LOGIN_ACCOUNT_SET_KEY, account.account_id);
+}
+
 async function handleSubmit(values: Record<string, unknown>) {
   loading.value = true;
   message.value = '';
 
   try {
-    const accountId = String(values.accountId ?? '');
     if (selectingAccountForSession.value) {
-      await auth.selectAccount(accountId, {
-        setDefault: preferSelectedAccount.value
-      });
+      await activatePreferredAccount();
     } else {
       await auth.signInWithPassword({
         email: String(values.email),
-        password: String(values.password),
-        accountId,
-        setDefault: preferSelectedAccount.value
+        password: String(values.password)
       });
       if (rememberLoginAccount.value) {
         window.localStorage.setItem(LOGIN_ACCOUNT_KEY, String(values.email));
@@ -181,8 +149,7 @@ async function handleSubmit(values: Record<string, unknown>) {
         window.localStorage.removeItem(LOGIN_ACCOUNT_KEY);
       }
     }
-    window.localStorage.setItem(LOGIN_ACCOUNT_SET_KEY, accountId);
-    await navigateTo('/dashboard');
+    await navigateTo('/');
   } catch (error) {
     message.value =
       error instanceof Error ? error.message : '登录失败，请检查登录信息。';
@@ -191,90 +158,17 @@ async function handleSubmit(values: Record<string, unknown>) {
   }
 }
 
-function isAccountEnabled(account: AppAccountSummary) {
-  return account.status !== 'inactive' && account.status !== 'archived';
-}
-
-async function loadAccountOptions(login = loginAccount.value) {
-  const requestId = ++accountOptionsRequestId;
-  if (!selectingAccountForSession.value && !login) {
-    accountOptions.value = [];
-    form.value.accountId = '';
-    accountOptionsLoading.value = false;
-    return;
-  }
-
-  accountOptionsLoading.value = true;
-  try {
-    if (selectingAccountForSession.value) {
-      accountOptions.value = auth.accounts.value.filter(isAccountEnabled);
-    } else {
-      const payload = await $fetch<{ accounts: LoginAccountOption[] }>('/api/auth/account-options', {
-        query: { login }
-      });
-      if (requestId !== accountOptionsRequestId) return;
-      accountOptions.value = Array.isArray(payload.accounts) ? payload.accounts : [];
-    }
-
-    const selectedAccountId = String(form.value.accountId ?? '');
-    if (!accountOptions.value.some((account) => account.account_id === selectedAccountId)) {
-      const preferredAccount = selectingAccountForSession.value
-        ? auth.accounts.value.find((account) => account.is_default && isAccountEnabled(account))
-        : undefined;
-      form.value.accountId = preferredAccount?.account_id ?? accountOptions.value[0]?.account_id ?? '';
-    }
-
-    message.value = accountOptions.value.length
-      ? ''
-      : '该登录账号没有可用账套，请联系系统管理员。';
-  } catch (error) {
-    if (requestId !== accountOptionsRequestId) return;
-    accountOptions.value = [];
-    message.value = error instanceof Error ? error.message : '账套加载失败，请稍后重试。';
-  } finally {
-    if (requestId === accountOptionsRequestId) {
-      accountOptionsLoading.value = false;
-    }
-  }
-}
-
-onMounted(() => {
-  void loadAccountOptions();
-});
-
-watch(loginAccount, (login, previousLogin) => {
-  if (selectingAccountForSession.value || login === previousLogin) return;
-  accountOptionsRequestId += 1;
-  accountOptions.value = [];
-  form.value.accountId = '';
-  message.value = '';
-  accountOptionsLoading.value = Boolean(login);
-  if (accountOptionsTimer) clearTimeout(accountOptionsTimer);
-  if (!login) {
-    accountOptionsLoading.value = false;
-    return;
-  }
-  accountOptionsTimer = setTimeout(() => {
-    void loadAccountOptions(login);
-  }, 300);
-});
-
-onBeforeUnmount(() => {
-  if (accountOptionsTimer) clearTimeout(accountOptionsTimer);
-});
-
-async function handleGithub() {
-  loading.value = true;
-  message.value = '';
+onMounted(async () => {
+  if (!selectingAccountForSession.value) return;
 
   try {
-    await auth.signInWithOAuth('github');
+    await activatePreferredAccount();
+    await navigateTo('/');
   } catch (error) {
-    message.value =
-      error instanceof Error ? error.message : 'GitHub sign in failed.';
-    loading.value = false;
+    message.value = error instanceof Error ? error.message : '登录失败，请检查登录信息。';
   }
-}
+});
+
 </script>
 
 <style scoped>
@@ -303,7 +197,7 @@ async function handleGithub() {
   inset: 0;
   background:
     linear-gradient(90deg, rgb(11 31 49 / 88%), rgb(20 67 92 / 54%)),
-    url('/hikari-dashboard.png') center / cover;
+    url('/site/print-designer.png') center / cover;
   content: '';
   filter: saturate(0.72) contrast(1.06);
 }
@@ -316,13 +210,9 @@ async function handleGithub() {
   content: '';
 }
 
-.erp-signin__brand-copy,
-.erp-signin__factory {
+.erp-signin__brand-copy {
   position: relative;
   z-index: 1;
-}
-
-.erp-signin__brand-copy {
   max-width: 640px;
 }
 
@@ -389,27 +279,6 @@ async function handleGithub() {
 .erp-signin__signals i {
   color: #87c9f0;
   font-size: 17px;
-}
-
-.erp-signin__factory {
-  position: absolute;
-  right: clamp(28px, 5vw, 80px);
-  bottom: 36px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgb(255 255 255 / 55%);
-  font-size: 11px;
-}
-
-.erp-signin__factory-grid {
-  width: 84px;
-  height: 1px;
-  background: rgb(255 255 255 / 25%);
-}
-
-.erp-signin__factory > i {
-  font-size: 18px;
 }
 
 .erp-signin__workspace {
@@ -493,7 +362,7 @@ async function handleGithub() {
 }
 
 .erp-login-panel__primary,
-.erp-login-panel__oauth {
+.erp-login-panel__register {
   display: flex;
   width: 100%;
   height: 42px;
@@ -518,19 +387,19 @@ async function handleGithub() {
 }
 
 .erp-login-panel__primary:disabled,
-.erp-login-panel__oauth:disabled {
+.erp-login-panel__register:disabled {
   cursor: not-allowed;
   opacity: 0.58;
 }
 
-.erp-login-panel__oauth {
+.erp-login-panel__register {
   margin-top: 11px;
   border: 1px solid #cbd4dc;
   background: #fff;
   color: #354b5e;
 }
 
-.erp-login-panel__oauth:hover:not(:disabled) {
+.erp-login-panel__register:hover:not(:disabled) {
   border-color: #9fb3c4;
   background: #f9fbfc;
 }
@@ -585,8 +454,7 @@ async function handleGithub() {
   }
 
   .erp-signin__lead,
-  .erp-signin__signals,
-  .erp-signin__factory {
+  .erp-signin__signals {
     display: none;
   }
 

@@ -60,7 +60,7 @@ const footerGroups = [
     links: [
       { label: '学习文档', href: '/docs' },
       { label: '学习记录', href: '/blog' },
-      { label: '登录学习空间', href: '/signin' },
+      { label: '登录打印设计器', href: '/signin' },
     ],
   },
 ];

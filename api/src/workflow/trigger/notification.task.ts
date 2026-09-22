@@ -1,6 +1,7 @@
 import { task, tasks, wait } from '@trigger.dev/sdk';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from '../../common/utils/env';
+import { createSupabaseFetch } from '../../common/utils/supabase-fetch';
 
 export const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
 export const NOTIFICATION_RETRY_DELIVERY_TASK_ID = 'notification.retryDelivery';
@@ -362,7 +363,8 @@ function createNotificationClient(taskName: string) {
     throw new Error(`SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required by ${taskName}.`);
   }
   return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false }
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { fetch: createSupabaseFetch(fetch) }
   });
 }
 

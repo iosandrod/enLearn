@@ -319,7 +319,9 @@ export class LowCodePageScriptRuntime {
     } = this.dependencies;
     const command = this.readScriptStringArg(request.args, 0, 'command');
     const payload = this.readScriptRecordArg(request.args, 1);
-    const sourceKey = block.id
+    const sourceKey = 'sourceKey' in block
+      ? readString(block.sourceKey, block.id)
+      : block.id;
     switch (command) {
       case 'runtime.resolve'://
         return resolveRuntimePostData(this.readScriptRecordArg([payload.value], 0));

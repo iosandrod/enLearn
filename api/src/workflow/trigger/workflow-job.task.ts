@@ -2,6 +2,7 @@ import { runs, schedules, task, tasks } from '@trigger.dev/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 import { getEnv } from '../../common/utils/env';
+import { createSupabaseFetch } from '../../common/utils/supabase-fetch';
 
 const WORKFLOW_JOB_RPC = 'workflow_job_command';
 type JsonRecord = Record<string, unknown>;
@@ -238,7 +239,8 @@ function createWorkerSupabaseClient(taskName: string) {
     auth: {
       autoRefreshToken: false,
       persistSession: false
-    }
+    },
+    global: { fetch: createSupabaseFetch(fetch) }
   });
 }
 

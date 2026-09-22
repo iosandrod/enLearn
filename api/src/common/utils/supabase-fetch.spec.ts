@@ -40,6 +40,67 @@ async function main() {
   assert.equal(ordinaryFailure.status, 503);
   assert.equal(calls, 1, 'unrelated failures must not be replayed');
 
+  calls = 0;
+  const transientNetworkFailureFetch = (async () => {
+    calls += 1;
+    if (calls <= 3) {
+      throw new TypeError('fetch failed: read ECONNRESET');
+    }
+    return Response.json({ ok: true });
+  }) as typeof fetch;
+  const networkRetryingFetch = createSupabaseFetch(transientNetworkFailureFetch, {
+    timeoutMs: 1_000,
+    schemaCacheRetryDelaysMs: [],
+    networkRetryDelaysMs: [0, 0, 0]
+  });
+
+  const networkRecovered = await networkRetryingFetch('https://example.test/auth/v1/token', {
+    method: 'POST'
+  });
+  assert.equal(networkRecovered.status, 200);
+  assert.equal(calls, 4, 'transient network failures should be retried up to the configured limit');
+
+  const requestBodies: string[] = [];
+  calls = 0;
+  const requestBodyRetryFetch = (async (input: Parameters<typeof fetch>[0]) => {
+    calls += 1;
+    const request = input instanceof Request ? input : new Request(input);
+    requestBodies.push(await request.text());
+    if (calls === 1) throw new TypeError('fetch failed');
+    return Response.json({ ok: true });
+  }) as typeof fetch;
+  const bodyPreservingFetch = createSupabaseFetch(requestBodyRetryFetch, {
+    timeoutMs: 1_000,
+    schemaCacheRetryDelaysMs: [],
+    networkRetryDelaysMs: [0]
+  });
+  const bodyRequest = new Request('https://example.test/rest/v1/rpc/example', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ value: 42 })
+  });
+
+  const bodyRetryResponse = await bodyPreservingFetch(bodyRequest);
+  assert.equal(bodyRetryResponse.status, 200);
+  assert.deepEqual(requestBodies, ['{"value":42}', '{"value":42}']);
+
+  calls = 0;
+  const exhaustedNetworkFetch = (async () => {
+    calls += 1;
+    throw new TypeError('fetch failed');
+  }) as typeof fetch;
+  const boundedNetworkRetryFetch = createSupabaseFetch(exhaustedNetworkFetch, {
+    timeoutMs: 1_000,
+    schemaCacheRetryDelaysMs: [],
+    networkRetryDelaysMs: [0, 0]
+  });
+
+  await assert.rejects(
+    () => boundedNetworkRetryFetch('https://example.test/auth/v1/token'),
+    /fetch failed/
+  );
+  assert.equal(calls, 3, 'network retries must remain bounded');
+
   const hangingFetch = ((_input: Parameters<typeof fetch>[0], init?: RequestInit) =>
     new Promise<Response>((_resolve, reject) => {
       const signal = init?.signal;
@@ -49,7 +110,8 @@ async function main() {
     })) as typeof fetch;
   const boundedFetch = createSupabaseFetch(hangingFetch, {
     timeoutMs: 20,
-    schemaCacheRetryDelaysMs: []
+    schemaCacheRetryDelaysMs: [],
+    networkRetryDelaysMs: []
   });
 
   await assert.rejects(
@@ -62,7 +124,7 @@ async function main() {
     }
   );
 
-  console.log('Supabase request timeout and schema-cache retry tests passed');
+  console.log('Supabase timeout, schema-cache retry, and network retry tests passed');
 }
 
 void main();

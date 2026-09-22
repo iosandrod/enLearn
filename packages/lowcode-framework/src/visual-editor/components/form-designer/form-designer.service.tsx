@@ -13,6 +13,7 @@ import {
 import DesignerUI, { ElButton, ElDialog, ElMessage } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from '../../../components/VisualEditorProvider.vue';
+import LowCodeForm from '../../../components/LowCodeForm.vue';
 import { visualConfig } from '../../../visual.config';
 import type {
   LowCodeField,
@@ -64,9 +65,16 @@ export type FormDesignerResult = {
   fields: FormDesignerField[];
   layout: LowCodeFormLayoutNode[];
   designerModel: VisualEditorModelValue;
+  header?: Record<string, unknown>;
 };
 
-interface FormDesignerServiceOption {
+export type FormDesignerHeaderForm = {
+  schema: LowCodeFormSchema;
+  model: Record<string, unknown>;
+  onUpdateModel?: (value: Record<string, unknown>) => void;
+};
+
+export interface FormDesignerServiceOption {
   title?: string;
   /** The layer is allocated by $$formDesigner so nested designers stack above their parent. */
   zIndex?: number;
@@ -78,6 +86,7 @@ interface FormDesignerServiceOption {
   pageData?: unknown;
   pageRecord?: LowCodePageRecord | null;
   serviceApi?: LowCodeHostServiceApi;
+  headerForm?: FormDesignerHeaderForm;
   onConfirm: (value: FormDesignerResult) => Promise<void> | void;
   onCancel?: () => void;
 }
@@ -1105,6 +1114,7 @@ const ServiceComponent = defineComponent({
   setup(props) {
     const ctx = getCurrentInstance()!;
     const providerRef = ref<FormProviderInstance | null>(null);
+    const headerFormRef = ref<{ validate?: () => Promise<boolean> } | null>(null);
     const tableFieldOptions = ref<LowCodeOption[]>(
       collectPageTableFieldOptions(props.option.pageData),
     );
@@ -1171,6 +1181,10 @@ const ServiceComponent = defineComponent({
 
     const handler = {
       onConfirm: async () => {
+        if (state.option.headerForm && headerFormRef.value?.validate) {
+          const valid = await headerFormRef.value.validate();
+          if (!valid) return;
+        }
         const snapshot = providerRef.value?.getSnapshot();
         if (!snapshot) {
           ElMessage.error('表单设计器还未初始化完成');
@@ -1185,6 +1199,9 @@ const ServiceComponent = defineComponent({
             fields,
             layout: readFormDesignerLayout(snapshot.model) ?? [],
             designerModel: snapshot.model,
+            header: state.option.headerForm
+              ? cloneDeep(state.option.headerForm.model)
+              : undefined,
           });
         } catch (error) {
           ElMessage.error(error instanceof Error ? error.message : '表单配置保存失败');
@@ -1224,6 +1241,21 @@ const ServiceComponent = defineComponent({
                   <strong>表单拖拽设计</strong>
                   <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
                 </div>
+                {state.option.headerForm ? (
+                  <div class="form-workbench-header-form">
+                    <LowCodeForm
+                      ref={headerFormRef}
+                      schema={state.option.headerForm.schema}
+                      modelValue={state.option.headerForm.model}
+                      onUpdateModel={(value: Record<string, unknown>) => {
+                        state.option.headerForm?.onUpdateModel?.(value);
+                        if (state.option.headerForm) {
+                          state.option.headerForm.model = value;
+                        }
+                      }}
+                    />
+                  </div>
+                ) : null}
                 {false ? (
                 <label>
                   <span>表单列数</span>

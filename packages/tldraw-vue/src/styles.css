@@ -2718,10 +2718,15 @@ button {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	gap: 10px;
 	min-height: 58px;
 	padding: 12px 14px;
 	border-bottom: 1px solid #e5eaf1;
 	background: #f8fafc;
+}
+
+.lowcode-form-panel__heading {
+	min-width: 0;
 }
 
 .lowcode-form-panel__title {
@@ -2733,9 +2738,89 @@ button {
 .lowcode-form-panel__subtitle {
 	margin-top: 3px;
 	color: #64748b;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	font-size: 11px;
 	font-weight: 650;
 	line-height: 1.2;
+	overflow: hidden;
+}
+
+.lowcode-form-panel__header-actions {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 4px;
+}
+
+.lowcode-form-panel__action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	min-width: 42px;
+	height: 28px;
+	padding: 0 7px;
+	border: 1px solid #cbd5e1;
+	border-radius: 5px;
+	background: #ffffff;
+	color: #475569;
+	cursor: pointer;
+	font: inherit;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+	transition: border-color 0.16s, background-color 0.16s, color 0.16s;
+}
+
+.lowcode-form-panel__action:hover:not(:disabled) {
+	border-color: #93c5fd;
+	background: #eff6ff;
+	color: #1d4ed8;
+}
+
+.lowcode-form-panel__action:focus-visible {
+	outline: 2px solid #60a5fa;
+	outline-offset: 1px;
+}
+
+.lowcode-form-panel__action:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.lowcode-form-panel__action--primary {
+	border-color: #2563eb;
+	background: #2563eb;
+	color: #ffffff;
+}
+
+.lowcode-form-panel__action--primary:hover:not(:disabled) {
+	border-color: #1d4ed8;
+	background: #1d4ed8;
+	color: #ffffff;
+}
+
+.lowcode-form-panel__action i {
+	font-size: 14px;
+}
+
+.lowcode-form-panel__action-message {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	padding: 7px 14px;
+	border-bottom: 1px solid #dbeafe;
+	background: #eff6ff;
+	color: #1d4ed8;
+	font-size: 11px;
+	line-height: 1.4;
+}
+
+.lowcode-form-panel__action-message i {
+	flex: 0 0 auto;
+	margin-top: 1px;
+	font-size: 13px;
 }
 
 .lowcode-form-panel__state,

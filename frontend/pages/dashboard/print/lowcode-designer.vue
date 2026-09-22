@@ -8,6 +8,7 @@
       :service-api="serviceApi"
       :router="router"
       :route="pageRoute"
+      :block-teleport="headerBlockTeleport"
     />
   </section>
 </template>
@@ -23,6 +24,11 @@ const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const headerBlockTeleport = computed(() => (
+  route.path.replace(/\/+$/, '') === '/print-designer'
+    ? { kind: 'buttonGroup' as const, to: '#print-designer-header-actions' }
+    : undefined
+));
 const pageRoute = computed(() => ({
   path: route.path,
   fullPath: route.fullPath,

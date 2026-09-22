@@ -43,7 +43,7 @@
         </button>
       </div>
 
-      <div class="print-template-current" :title="currentTemplateName">
+      <div v-if="!standaloneHeaderMode" class="print-template-current" :title="currentTemplateName">
         <span>当前模板</span>
         <strong>{{ currentTemplateName }}</strong>
         <small :class="{ 'is-dirty': templateDirty }">{{ currentTemplateStatus }}</small>
@@ -177,12 +177,26 @@ const currentTemplateStatus = computed(() => {
   if (selectedTemplate.value) return `数据库模板 · v${selectedTemplate.value.version}`;
   return '尚未保存';
 });
+const standaloneHeaderMode = computed(
+  () => !embedded.value && route.path === '/print-designer'
+);
 const messageClass = computed(() => `print-message print-message--${messageType.value}`);
 const messageIcon = computed(() => {
   if (messageType.value === 'success') return 'ri-checkbox-circle-line';
   if (messageType.value === 'error') return 'ri-error-warning-line';
   return 'ri-information-line';
 });
+
+watch(
+  [currentTemplateName, currentTemplateStatus, templateDirty],
+  ([name, status, dirty]) => {
+    if (!standaloneHeaderMode.value || import.meta.server) return;
+    window.dispatchEvent(new CustomEvent('enlearn:print-template-info-change', {
+      detail: { name, status, dirty }
+    }));
+  },
+  { immediate: true }
+);
 
 watch(
   () => embedded.value ? undefined : route.query.templateId,

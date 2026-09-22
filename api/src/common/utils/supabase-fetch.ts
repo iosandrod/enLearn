@@ -2,10 +2,12 @@ export const SUPABASE_REQUEST_TIMEOUT_MS = 30_000;
 
 const SCHEMA_CACHE_UNAVAILABLE_CODE = 'PGRST002';
 const DEFAULT_SCHEMA_CACHE_RETRY_DELAYS_MS = [250] as const;
+const DEFAULT_NETWORK_RETRY_DELAYS_MS = [150, 500, 1200, 2500, 5000] as const;
 
 type SupabaseFetchOptions = {
   timeoutMs?: number;
   schemaCacheRetryDelaysMs?: readonly number[];
+  networkRetryDelaysMs?: readonly number[];
   onRequest?: (request: { method: string; url: string }) => void;
 };
 
@@ -72,6 +74,7 @@ export function createSupabaseFetch(
 ): typeof fetch {
   const timeoutMs = options.timeoutMs ?? SUPABASE_REQUEST_TIMEOUT_MS;
   const retryDelays = options.schemaCacheRetryDelaysMs ?? DEFAULT_SCHEMA_CACHE_RETRY_DELAYS_MS;
+  const networkRetryDelays = options.networkRetryDelaysMs ?? DEFAULT_NETWORK_RETRY_DELAYS_MS;
 
   return async (input, init) => {
     options.onRequest?.({
@@ -91,27 +94,42 @@ export function createSupabaseFetch(
         ? input.signal
         : undefined
     );
+    const requestTemplate = typeof Request !== 'undefined' && input instanceof Request
+      ? input.clone()
+      : input;
 
-    for (let attempt = 0; ; attempt += 1) {
+    let networkRetryCount = 0;
+    let schemaCacheRetryCount = 0;
+
+    for (;;) {
       const attemptSignal = createAttemptSignal(sourceSignal, timeoutMs);
       let response: Response;
       try {
-        response = await fetchImplementation(input, {
+        const attemptInput = typeof Request !== 'undefined' && requestTemplate instanceof Request
+          ? requestTemplate.clone()
+          : requestTemplate;
+        response = await fetchImplementation(attemptInput, {
           ...(init ?? {}),
           signal: attemptSignal.signal
         });
+      } catch (error) {
+        if (networkRetryCount >= networkRetryDelays.length) throw error;
+        await waitForRetry(networkRetryDelays[networkRetryCount], sourceSignal);
+        networkRetryCount += 1;
+        continue;
       } finally {
         attemptSignal.dispose();
       }
 
       if (
-        attempt >= retryDelays.length ||
+        schemaCacheRetryCount >= retryDelays.length ||
         !(await isSchemaCacheUnavailable(response))
       ) {
         return response;
       }
 
-      await waitForRetry(retryDelays[attempt], sourceSignal);
+      await waitForRetry(retryDelays[schemaCacheRetryCount], sourceSignal);
+      schemaCacheRetryCount += 1;
     }
   };
 }

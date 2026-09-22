@@ -18,26 +18,31 @@
         <span>{{ loadingText }}</span>
       </div>
 
-      <LowCodeBlockRenderer
-        v-for="(block, index) in layoutBlocks"
-        :key="block.id"
-        :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
-        :block="block"
-        :resolved-data="resolvedData"
-        :form-models="formModels"
-        :search-filters="searchFilters"
-        :loading-block-id="loadingBlockId"
-        :loading-grid-id="loadingGridId"
-        @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
-        @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
-        @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
-        @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
-        @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
-        @toolbar-action="({ action }) => handleToolbarAction(action)"
-        @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
-        @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-        @runtime-event="publishRuntimeEvent"
-      />
+      <template v-for="(block, index) in layoutBlocks" :key="block.id">
+        <Teleport
+          :disabled="!resolveBlockTeleportTarget(block)"
+          :to="resolveBlockTeleportTarget(block) || 'body'"
+        >
+          <LowCodeBlockRenderer
+            :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
+            :block="block"
+            :resolved-data="resolvedData"
+            :form-models="formModels"
+            :search-filters="searchFilters"
+            :loading-block-id="loadingBlockId"
+            :loading-grid-id="loadingGridId"
+            @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
+            @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
+            @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+            @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+            @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
+            @toolbar-action="({ action }) => handleToolbarAction(action)"
+            @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
+            @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
+            @runtime-event="publishRuntimeEvent"
+          />
+        </Teleport>
+      </template>
 
       <LowCodeOverlayHost
         v-if="pageOverlays.length"
@@ -100,6 +105,15 @@ import { useLowCodeHost } from '../core/host';
 const props = withDefaults(defineProps<LowCodePageRendererProps>(), {
   showGlobalDialogHost: true,
 });
+
+function resolveBlockTeleportTarget(block: { id: string; kind: string }) {
+  const teleport = props.blockTeleport;
+  if (!teleport?.to) return '';
+  if (teleport.id && teleport.id !== block.id) return '';
+  if (teleport.kind && teleport.kind !== block.kind) return '';
+  return teleport.to;
+}
+
 const materialHost = useLowCodeHost(() => ({ serviceApi: props.serviceApi }));
 onBeforeMount(() => {
   let serviceApi;

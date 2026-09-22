@@ -19,6 +19,7 @@ const publicRoutes: RouteRecordRaw[] = [
   // the original public homepage available at /home for compatibility.
   { path: '/', component: () => import('../pages/print-designer-landing.vue'), meta: { keepAlive: false } },
   { path: '/print-designer', component: () => import('../pages/print-designer.vue'), meta: { layout: false, keepAlive: false } },
+  { path: '/print-account-setting', component: () => import('../pages/print-account-setting.vue'), meta: { layout: false, auth: true, keepAlive: false } },
   { path: '/home', component: () => import('../pages/index.vue') },
   { path: '/pricing', component: () => import('../pages/pricing.vue') },
   { path: '/signin', component: () => import('../pages/signin.vue'), meta: { layout: false, guest: true } },
@@ -75,6 +76,6 @@ router.beforeEach(async (to) => {
 
   if (to.meta.guest) {
     await auth.init();
-    if (auth.user.value && auth.activeAccount.value) return '/dashboard';
+    if (auth.user.value && auth.activeAccount.value) return '/';
   }
 });

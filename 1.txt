@@ -2534,3 +2534,30 @@ if (
         {{ item.label }}
       </RouterLink>
     </nav>
+
+
+
+
+     <section class="erp-signin__brand" :aria-label="SITE_NAME">
+      <div class="erp-signin__brand-copy">
+        <div class="erp-signin__product">
+          <span class="erp-signin__product-mark">M</span>
+          <span>Manufacturing ERP</span>
+        </div>
+        <p class="erp-signin__eyebrow">个人技术学习交流</p>
+        <h1>{{ SITE_NAME }}</h1>
+        <p class="erp-signin__lead">
+          从计划、采购到生产与交付，在同一套可信数据中协同工作。
+        </p>
+        <div class="erp-signin__signals" aria-hidden="true">
+          <span><i class="ri-building-2-line" />多组织核算</span>
+          <span><i class="ri-git-merge-line" />流程协同</span>
+          <span><i class="ri-shield-check-line" />账套隔离</span>
+        </div>
+      </div>
+      <div class="erp-signin__factory" aria-hidden="true">
+        <span class="erp-signin__factory-label">数字化工厂</span>
+        <div class="erp-signin__factory-grid" />
+        <i class="ri-building-4-line" />
+      </div>
+    </section>

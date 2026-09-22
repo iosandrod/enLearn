@@ -26,22 +26,6 @@ export const signInSchema: LowCodeFormSchema = {
         { min: 6, message: '密码至少需要 6 个字符' }
       ]
     },
-    {
-      field: 'accountId',
-      label: '选择账套',
-      component: 'vxe-select',
-      optionsSourceKey: 'accounts',
-      optionProps: {
-        label: 'label',
-        value: 'account_id'
-      },
-      props: {
-        placeholder: '请选择账套',
-        clearable: true,
-        filterable: true
-      },
-      rules: [{ required: true, message: '请选择账套' }]
-    }
   ],
   actions: []
 };
