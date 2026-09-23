@@ -340,7 +340,6 @@ async function createBlankTemplate() {
     designerRef.value?.getWorkspaceTemplateConfig() ?? {}
   );
   templateDirty.value = false;
-  await syncRouteTemplateId('');
   showMessage('已新建空白模板', 'success');
 }
 
@@ -370,6 +369,10 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
         [PRINT_TEMPLATE_EDIT_FORM_ID]: initialValues
       },
       disableFormAutoLoad: true,
+      // The edit page may contain node actions/data sources that load the
+      // current record during renderer initialization. The save dialog must
+      // use the snapshot from the canvas and its explicit initial values.
+      disablePageAutoLoad: true,
       submitOnConfirm: true,
       serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
       router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
@@ -448,7 +451,6 @@ async function finishTemplateSave(row: PrintTemplateRow, snapshot: TemplateSnaps
   selectedTemplateId.value = saved.id;
   savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
   templateDirty.value = false;
-  await syncRouteTemplateId(saved.id);
   showMessage(`模板“${saved.name}”已保存`, 'success');
 }
 
@@ -495,7 +497,6 @@ async function loadTemplate(template: PrintTemplateRecord, options: { confirmRep
       designerRef.value?.getWorkspaceTemplateConfig() ?? template.workspace ?? {}
     );
     templateDirty.value = false;
-    await syncRouteTemplateId(template.id);
     showMessage(`已加载模板“${template.name}”`, 'success');
   } catch (error) {
     showMessage(getErrorMessage(error, '模板加载失败'), 'error');
@@ -640,17 +641,6 @@ function hasTemplateName(name: string, exceptId = '') {
   return templates.value.some(
     (template) => template.id !== exceptId && template.name.trim().toLocaleLowerCase('zh-CN') === normalizedName
   );
-}
-
-async function syncRouteTemplateId(templateId: string) {
-  if (embedded.value) return;
-  if (getRouteTemplateId() === templateId) return;
-  templateLoadRequestId += 1;
-
-  const query = { ...route.query };
-  if (templateId) query.templateId = templateId;
-  else delete query.templateId;
-  await router.replace({ query });
 }
 
 function readRows<T>(value: unknown) {

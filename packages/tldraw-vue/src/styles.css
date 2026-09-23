@@ -3484,6 +3484,15 @@ button {
 	background: #ffffff;
 }
 
+.data-source-panel__actions-footer {
+	display: flex;
+	flex: 0 0 auto;
+	justify-content: flex-end;
+	padding: 10px 14px;
+	border-top: 1px solid #e5eaf1;
+	background: #f8fafc;
+}
+
 .data-source-panel__selector-form > .lc-form {
 	padding: 10px 14px;
 	overflow: visible;

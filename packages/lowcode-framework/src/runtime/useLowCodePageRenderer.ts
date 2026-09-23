@@ -574,7 +574,9 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       dataLoading.value = true;
 
       try {
-        const errors = await loadPageData(props.page);
+        const errors = await loadPageData(props.page, {
+          skipDataSources: props.disablePageAutoLoad === true,
+        });
 
         if (currentLoad !== loadSequence) {
           return;

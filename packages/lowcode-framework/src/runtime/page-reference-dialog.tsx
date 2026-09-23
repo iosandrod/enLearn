@@ -115,6 +115,7 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
   /** Explicit filters for form data sources. These replace page-internal filters. */
   filters?: Record<string, unknown>;
   disableFormAutoLoad?: boolean;
+  disablePageAutoLoad?: boolean;
   includeEventHistory?: boolean;
   maxEventHistory?: number;
   onRuntimeEvent?: (
@@ -130,7 +131,7 @@ export type LowCodePageConfirmDialogResult =
 
 type LowCodePageRendererExpose = {
   getSnapshot: () => LowCodePageConfirmSnapshot;
-  submitForms: () => Promise<boolean>;
+  submitForms: (options?: { reload?: boolean }) => Promise<boolean>;
   getLastSavedFormRecord: () => Record<string, unknown> | undefined;
 };
 
@@ -591,7 +592,11 @@ export async function openLowCodePageConfirmDialog(
             if (!rendererRef.value) {
               throw new Error('模板编辑页尚未加载完成，请稍后再试。');
             }
-            const submitted = await rendererRef.value.submitForms();
+            // The dialog is destroyed immediately after confirmation. Avoid
+            // waiting for a post-save page reload, which can be blocked by a
+            // dialog-only data source or a stale route and leave the caller's
+            // confirmLowCodePage promise pending forever.
+            const submitted = await rendererRef.value.submitForms({ reload: false });
             if (!submitted) {
               throw new Error('模板保存失败，请检查模板名称和表单内容。');
             }
@@ -620,6 +625,7 @@ export async function openLowCodePageConfirmDialog(
               locale={config.locale}
               messages={config.messages}
               theme={config.theme}
+              disablePageAutoLoad={config.disablePageAutoLoad}
               showGlobalDialogHost={false}
               onRuntimeEvent={updateSelection}
             />

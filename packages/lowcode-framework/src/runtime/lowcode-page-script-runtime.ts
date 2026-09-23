@@ -582,6 +582,7 @@ export class LowCodePageScriptRuntime {
       'formInitialValues',
       'filters',
       'disableFormAutoLoad',
+      'disablePageAutoLoad',
       'includeEventHistory',
       'maxEventHistory',
       'dialog',
@@ -1255,6 +1256,17 @@ export class LowCodePageScriptRuntime {
 
     if (request.name === 'dialog.confirmLowCodePage') {
       return this.confirmScriptLowCodePage(this.readScriptRecordArg(request.args, 0));
+    }
+
+    if (request.name === 'router.push') {
+      const destination = request.args[0];
+      if (
+        typeof destination !== 'string' &&
+        !isRecord(destination)
+      ) {
+        throw new Error('脚本 API router.push 参数必须是路径字符串或路由对象。');
+      }
+      return this.dependencies.host.getRouter().push(cloneRuntimeValue(destination));
     }
 
     if (request.name === 'event.emit') {

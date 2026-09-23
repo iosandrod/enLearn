@@ -11,6 +11,7 @@ $wsl = 'C:\Program Files\WSL\wsl.exe'
 $composeFile = '/mnt/c/project/enLearn/docker-compose.yml'
 $envFile = '/mnt/c/project/enLearn/.env.production'
 $projectDir = '/mnt/c/project/enLearn'
+$hostForwardPort = 18081
 
 if (-not (Test-Path -LiteralPath $wsl)) {
   throw "WSL executable not found: $wsl"
@@ -34,6 +35,15 @@ function Invoke-Compose {
   }
 }
 
+function Ensure-WindowsPortProxy {
+  Write-Host 'Refreshing Windows HTTP port forwarding...' -ForegroundColor Cyan
+  & netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=80 2>$null
+  & netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=80 connectaddress=127.0.0.1 connectport=$hostForwardPort
+  if ($LASTEXITCODE -ne 0) {
+    throw 'Could not configure Windows port 80 forwarding.'
+  }
+}
+
 Write-Host "Checking WSL and Docker..." -ForegroundColor Cyan
 & $wsl -d $Distro -e bash -lc 'docker info >/dev/null'
 if ($LASTEXITCODE -ne 0) {
@@ -48,6 +58,8 @@ Invoke-Compose $buildArgs
 
 Write-Host 'Replacing api and web containers...' -ForegroundColor Cyan
 Invoke-Compose @('up', '-d', '--no-build', '--force-recreate', '--no-deps', 'api', 'web')
+
+Ensure-WindowsPortProxy
 
 Write-Host 'Checking service status...' -ForegroundColor Cyan
 Invoke-Compose @('ps')

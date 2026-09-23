@@ -1029,7 +1029,10 @@ export class PageDataController {
     return results.filter(Boolean);
   }
 
-  readonly loadPageData = async (nextPage: LowCodePageRecord) => {
+  readonly loadPageData = async (
+    nextPage: LowCodePageRecord,
+    options: { skipDataSources?: boolean } = {},
+  ) => {
     // debugger//
     const pageBlocks = this.dependencies.flattenPageBlocks(nextPage.schema);
     const sources = this.collectConfiguredDataSources(nextPage.schema, pageBlocks);
@@ -1076,6 +1079,13 @@ export class PageDataController {
       }
     }//
     if (!entries.length) {
+      this.syncPageGridStates(nextPage.schema);
+      this.restoreGridInteractionState(gridInteractionState);
+      this.captureFormBaselines();
+      return [];
+    }
+
+    if (options.skipDataSources) {
       this.syncPageGridStates(nextPage.schema);
       this.restoreGridInteractionState(gridInteractionState);
       this.captureFormBaselines();

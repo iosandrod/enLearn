@@ -765,36 +765,6 @@ watch(
 				<div class="lowcode-form-panel__title">数据源</div>
 				<div class="lowcode-form-panel__subtitle">{{ panelSubtitle }}</div>
 			</div>
-			<div class="lowcode-form-panel__header-actions" aria-label="数据源操作">
-				<button
-					type="button"
-					class="lowcode-form-panel__action lowcode-form-panel__action--primary"
-					:disabled="definitionsLoading"
-					title="添加数据源"
-					@click="handleAddDataSource"
-				>
-					<i class="ri-add-line" aria-hidden="true" />
-					<span>添加</span>
-				</button>
-				<button
-					type="button"
-					class="lowcode-form-panel__action"
-					title="管理数据源"
-					@click="handleManageDataSource"
-				>
-					<i class="ri-settings-3-line" aria-hidden="true" />
-					<span>管理</span>
-				</button>
-				<button
-					type="button"
-					class="lowcode-form-panel__action"
-					title="设计数据源"
-					@click="handleDesignDataSource"
-				>
-					<i class="ri-layout-4-line" aria-hidden="true" />
-					<span>设计</span>
-				</button>
-			</div>
 		</header>
 		<div v-if="selectorDefinition" class="data-source-panel__selector-form">
 			<LowCodeForm
@@ -898,8 +868,40 @@ watch(
 				</div>
 				<div v-else class="lowcode-form-panel__state">
 					暂未添加明细子表，请先点击“添加子表”。
-					</div>
+				</div>
 			</div>
 		</div>
+		<footer class="data-source-panel__actions-footer">
+			<div class="lowcode-form-panel__header-actions" aria-label="数据源操作">
+				<button
+					type="button"
+					class="lowcode-form-panel__action lowcode-form-panel__action--primary"
+					:disabled="definitionsLoading"
+					title="添加数据源"
+					@click="handleAddDataSource"
+				>
+					<i class="ri-add-line" aria-hidden="true" />
+					<span>添加</span>
+				</button>
+				<button
+					type="button"
+					class="lowcode-form-panel__action"
+					title="管理数据源"
+					@click="handleManageDataSource"
+				>
+					<i class="ri-settings-3-line" aria-hidden="true" />
+					<span>管理</span>
+				</button>
+				<button
+					type="button"
+					class="lowcode-form-panel__action"
+					title="设计数据源"
+					@click="handleDesignDataSource"
+				>
+					<i class="ri-layout-4-line" aria-hidden="true" />
+					<span>设计</span>
+				</button>
+			</div>
+		</footer>
 	</section>
 </template>

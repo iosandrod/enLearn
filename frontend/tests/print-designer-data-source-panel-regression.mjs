@@ -82,6 +82,10 @@ assert.match(panelSource, /<LowCodeForm/);
 assert.match(panelSource, /resource: 'lowcode_form_definitions'/);
 assert.match(panelSource, /SELECTOR_FORM_CODE = 'print-designer\.datasource-selector'/);
 assert.match(panelSource, /class="data-source-panel__selector-form"[\s\S]*<LowCodeForm/);
+assert.match(
+  panelSource,
+  /class="data-source-panel__body"[\s\S]*<footer class="data-source-panel__actions-footer">[\s\S]*aria-label="数据源操作"[\s\S]*handleAddDataSource[\s\S]*handleManageDataSource[\s\S]*handleDesignDataSource/,
+);
 assert.doesNotMatch(panelSource, /<select/);
 assert.match(
   panelSource,

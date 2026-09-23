@@ -23,5 +23,6 @@ export type LowCodePageRendererProps = {
   theme?: LowCodeTheme;
   onRuntimeEvent?: (event: LowCodeRuntimeEvent) => Promise<void> | void;
   showGlobalDialogHost?: boolean;
+  disablePageAutoLoad?: boolean;
   blockTeleport?: LowCodeBlockTeleport;
 };
