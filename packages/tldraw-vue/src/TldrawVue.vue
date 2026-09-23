@@ -5,6 +5,10 @@ import VueBottomToolbar from './components/VueBottomToolbar.vue'
 import VueCanvas from './components/VueCanvas.vue'
 import VueComponentPalette from './components/VueComponentPalette.vue'
 import VueDataSourcePanel from './components/VueDataSourcePanel.vue'
+import VueAnimationPanel from './components/VueAnimationPanel.vue'
+import VueBackgroundPanel from './components/VueBackgroundPanel.vue'
+import VuePresentationPages from './components/VuePresentationPages.vue'
+import VuePresentationPreview from './components/VuePresentationPreview.vue'
 import VueLayersPanel from './components/VueLayersPanel.vue'
 import LowCodeFormPanel from './components/LowCodeFormPanel.vue'
 import VueNavigationPanel from './components/VueNavigationPanel.vue'
@@ -17,6 +21,7 @@ import type {
 	VueTemplateLoadHandler,
 	VueTemplateSaveHandler,
 	VueTemplateWorkspaceConfig,
+	WorkspaceBackgroundConfig,
 } from './editor/templateStore'
 import {
 	createVueEditorExtensionRegistry,
@@ -27,6 +32,12 @@ import {
 	VueEditorPluginHost,
 	type VueEditorPlugin,
 } from './editor/vuePlugins'
+import {
+	clonePresentationConfig,
+	DEFAULT_PRESENTATION_CONFIG,
+	type DesignerMode,
+	type PresentationConfig,
+} from './presentation'
 
 const props = withDefaults(
 	defineProps<{
@@ -36,10 +47,14 @@ const props = withDefaults(
 		loadTemplates?: VueTemplateLoadHandler
 		saveTemplates?: VueTemplateSaveHandler
 		showTemplateControls?: boolean
+		mode?: DesignerMode
+		showModeControls?: boolean
 	}>(),
 	{
 		createDefaultShapes: true,
 		showTemplateControls: true,
+		mode: 'print',
+		showModeControls: false,
 	}
 )
 
@@ -47,6 +62,7 @@ const emit = defineEmits<{
 	ready: [editor: Editor]
 	'content-change': []
 	'workspace-config-change': [config: VueTemplateWorkspaceConfig]
+	'mode-change': [mode: DesignerMode]
 }>()
 
 const editorHost = ref<HTMLDivElement | null>(null)
@@ -61,14 +77,27 @@ const canvasRef = ref<{
 	moveToolbarDrag(event: PointerEvent): void
 	startToolbarDrag(tool: CanvasTool, geoShape: VueGeoShape | undefined, event: PointerEvent): void
 } | null>(null)
-const topMenuRef = ref<{ closeMenus(): void } | null>(null)
+const topMenuRef = ref<{
+	closeMenus(): void
+	previewPrint(): Promise<void>
+	printCurrentPage(): Promise<void>
+} | null>(null)
 const bottomToolbarRef = ref<{ closeMenus(): void } | null>(null)
 const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
-	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'style'
+	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'style' | 'background' | 'animation'
 >('tools')
+const designerMode = ref<DesignerMode>(props.mode)
+const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
+const workspaceBackground = ref<WorkspaceBackgroundConfig>({
+	color: '#ffffff',
+	imageUrl: '',
+	imageSize: 'cover',
+	imagePosition: 'center',
+})
+const presentationPreviewOpen = ref(false)
 const designerTabs = [
 	{ id: 'tools', label: '工具', icon: '✦' },
 	{ id: 'components', label: '组件', icon: '◇' },
@@ -76,6 +105,8 @@ const designerTabs = [
 	{ id: 'dataSource', label: '数据源', icon: '▤' },
 	{ id: 'properties', label: '属性', icon: '⚙' },
 	{ id: 'style', label: '样式', icon: '◐' },
+	{ id: 'background', label: '背景', icon: '▧' },
+	{ id: 'animation', label: '动画', icon: '▶' },
 ] as const
 const workspaceRevision = ref(0)
 let pluginHost: VueEditorPluginHost | null = null
@@ -168,16 +199,82 @@ function getEditor() {
 }
 
 function getWorkspaceTemplateConfig() {
-	return canvasRef.value?.getWorkspaceTemplateConfig()
+	const config = canvasRef.value?.getWorkspaceTemplateConfig()
+	if (!config) return undefined
+	return {
+		...config,
+		designerMode: designerMode.value,
+		presentation: clonePresentationConfig(presentationConfig.value),
+	}
 }
 
 function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
+	if (config.designerMode === 'print' || config.designerMode === 'presentation') {
+		designerMode.value = config.designerMode
+		notifyDesignerModeState(config.designerMode)
+	}
+	if (config.presentation) {
+		presentationConfig.value = {
+			...clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG),
+			...clonePresentationConfig(config.presentation),
+		}
+	}
+	if (config.background) {
+		workspaceBackground.value = {
+			...workspaceBackground.value,
+			...config.background,
+			imageUrl: config.background.imageUrl ?? '',
+		}
+	}
 	canvasRef.value?.applyWorkspaceTemplateConfig(config)
 }
 
 function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
 	workspaceRevision.value += 1
-	emit('workspace-config-change', config)
+	if (config.background) {
+		workspaceBackground.value = {
+			...workspaceBackground.value,
+			...config.background,
+			imageUrl: config.background.imageUrl ?? '',
+		}
+	}
+	emit('workspace-config-change', {
+		...config,
+		designerMode: designerMode.value,
+		presentation: clonePresentationConfig(presentationConfig.value),
+	})
+}
+
+function updateWorkspaceBackground(background: WorkspaceBackgroundConfig) {
+	workspaceBackground.value = { ...background }
+	canvasRef.value?.applyWorkspaceTemplateConfig({ background: { ...background } })
+}
+
+function setDesignerMode(mode: DesignerMode) {
+	if (designerMode.value === mode) return
+	designerMode.value = mode
+	if (mode === 'presentation' && presentationConfig.value.pageSizeMm) {
+		canvasRef.value?.applyWorkspaceTemplateConfig({ pageSizeMm: presentationConfig.value.pageSizeMm })
+	}
+	emit('mode-change', mode)
+	notifyDesignerModeState(mode)
+	handleWorkspaceConfigChange(getWorkspaceTemplateConfig() ?? {})
+}
+
+function togglePresentationPreview() {
+	presentationPreviewOpen.value = true
+}
+
+function notifyDesignerModeState(mode: DesignerMode) {
+	if (typeof window === 'undefined') return
+	window.dispatchEvent(new CustomEvent('enlearn:print-designer-mode-state', {
+		detail: { mode },
+	}))
+}
+
+function handleExternalDesignerModeChange(event: Event) {
+	const mode = (event as CustomEvent<{ mode?: unknown }>).detail?.mode
+	if (mode === 'print' || mode === 'presentation') setDesignerMode(mode)
 }
 
 function handlePluginShortcut(event: KeyboardEvent) {
@@ -192,6 +289,14 @@ function runCommand(commandId: string, event?: Event) {
 	return pluginHost?.runCommand(commandId, event) ?? Promise.resolve(false)
 }
 
+function previewPrint() {
+	return topMenuRef.value?.previewPrint() ?? Promise.resolve()
+}
+
+function printCurrentPage() {
+	return topMenuRef.value?.printCurrentPage() ?? Promise.resolve()
+}
+
 function getPluginIds() {
 	return pluginHost?.getPluginIds() ?? []
 }
@@ -203,7 +308,11 @@ defineExpose({
 	getEditor,
 	getPluginIds,
 	getWorkspaceTemplateConfig,
+	getDesignerMode: () => designerMode.value,
+	setDesignerMode,
 	runCommand,
+	previewPrint,
+	printCurrentPage,
 })
 
 onMounted(() => {
@@ -211,10 +320,13 @@ onMounted(() => {
 		mountEditor(designerStage.value)
 	}
 	window.addEventListener('keydown', onKeyDown)
+	window.addEventListener('enlearn:print-designer-mode-change', handleExternalDesignerModeChange)
+	notifyDesignerModeState(designerMode.value)
 })
 
 onBeforeUnmount(() => {
 	window.removeEventListener('keydown', onKeyDown)
+	window.removeEventListener('enlearn:print-designer-mode-change', handleExternalDesignerModeChange)
 	stopEditorChangeListener?.()
 	stopEditorChangeListener = null
 	pluginHost?.dispose()
@@ -224,19 +336,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<main class="app-shell">
+	<main class="app-shell" :class="{ 'has-mode-toolbar': props.showModeControls }">
+		<header v-if="props.showModeControls" class="designer-mode-toolbar">
+			<div class="designer-mode-switch" role="tablist" aria-label="设计模式">
+				<button type="button" :class="{ 'is-active': designerMode === 'print' }" @click="setDesignerMode('print')">打印设计</button>
+				<button type="button" :class="{ 'is-active': designerMode === 'presentation' }" @click="setDesignerMode('presentation')">PPT 设计</button>
+			</div>
+			<div v-if="designerMode === 'presentation'" class="designer-mode-actions">
+				<button type="button" title="预览当前演示文稿" @click="togglePresentationPreview">▶ 预览</button>
+			</div>
+		</header>
 		<section
 			ref="editorHost"
 			class="editor-host"
 			:class="{
 				'is-property-active': activeDesignerTab === 'properties',
 				'is-data-source-active': activeDesignerTab === 'dataSource',
+				'is-presentation-mode': designerMode === 'presentation',
+				'is-presentation-preview': presentationPreviewOpen,
 			}"
 		>
 			<aside class="designer-side-panel" aria-label="设计器工具面板">
 				<nav class="designer-side-tabs" aria-label="设计器功能分类">
 					<button
 						v-for="tab in designerTabs"
+						v-show="tab.id !== 'animation' || designerMode === 'presentation'"
 						:key="tab.id"
 						type="button"
 						class="designer-side-tab"
@@ -320,6 +444,15 @@ onBeforeUnmount(() => {
 					<div v-show="activeDesignerTab === 'style'" class="designer-tool-view">
 						<VueStylePanel v-if="editor" :compact="false" :editor="editor" />
 					</div>
+					<div v-show="activeDesignerTab === 'background'" class="designer-tool-view">
+						<VueBackgroundPanel
+							:background="workspaceBackground"
+							@update:background="updateWorkspaceBackground"
+						/>
+					</div>
+					<div v-show="activeDesignerTab === 'animation'" class="designer-tool-view">
+						<VueAnimationPanel v-if="editor && designerMode === 'presentation'" :editor="editor" />
+					</div>
 				</div>
 			</aside>
 			<div ref="designerStage" class="designer-stage">
@@ -338,8 +471,22 @@ onBeforeUnmount(() => {
 					v-if="editor"
 					:editor="editor"
 					@before-action="closeContextAndTopMenus"
-				/>
+				>
+					<template #presentation-pages>
+						<VuePresentationPages
+							v-if="designerMode === 'presentation'"
+							class="presentation-pages--dock"
+							:editor="editor"
+							:page-size-mm="presentationConfig.pageSizeMm"
+						/>
+					</template>
+				</VueNavigationPanel>
 			</div>
 		</section>
+		<VuePresentationPreview
+			v-if="editor && presentationPreviewOpen && designerMode === 'presentation'"
+			:editor="editor"
+			@close="presentationPreviewOpen = false"
+		/>
 	</main>
 </template>

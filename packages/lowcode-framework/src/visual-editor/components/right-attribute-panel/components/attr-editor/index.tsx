@@ -406,7 +406,19 @@ export const AttrEditor = defineComponent({
       ) return;
 
       const component = visualConfig.componentMap[nextComponentKey];
-      const isAllowedOption = Boolean(selectedOption && !selectedOption.disabled);
+      // Runtime component values (for example `vxe-upload`) may be supplied by
+      // the database-backed option source while the merged editor options keep
+      // the equivalent visual key (`image`). Treat the registered runtime alias
+      // as valid even when that exact value was deduplicated from the options.
+      const isRegisteredRuntimeAlias = Boolean(
+        component &&
+        component.moduleName === 'formComponents' &&
+        (componentTypeVisualMap[requestedValue] === nextComponentKey ||
+          editorDefaultRuntimeMap[nextComponentKey] === requestedValue),
+      );
+      const isAllowedOption = selectedOption
+        ? !selectedOption.disabled
+        : isRegisteredRuntimeAlias;
       if (!component || component.moduleName !== 'formComponents' || !isAllowedOption) {
         ElMessage.warning(`组件类型“${requestedValue || nextComponentKey}”未注册`);
         return;

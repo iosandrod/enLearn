@@ -66,4 +66,15 @@
       }
     }
   }
+
+  .schemaLoading,
+  .schemaError {
+    padding: 8px 0;
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  .schemaError {
+    color: #c2410c;
+  }
 }

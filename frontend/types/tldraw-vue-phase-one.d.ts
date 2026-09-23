@@ -19,6 +19,7 @@ declare module 'tldraw-vue-phase-one' {
   };
 
   export type VueTemplateWorkspaceConfig = Record<string, unknown>;
+  export type DesignerMode = 'print' | 'presentation';
 
   export type VueTemplateRecord = {
     id: string;

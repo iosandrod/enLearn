@@ -18,6 +18,7 @@ export type Editor = {
 };
 
 export type VueTemplateWorkspaceConfig = Record<string, unknown>;
+export type DesignerMode = 'print' | 'presentation';
 
 export type VueTemplateRecord = {
   id: string;
@@ -67,6 +68,10 @@ const TldrawVue = defineComponent({
       type: Boolean,
       default: true,
     },
+    showModeControls: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['content-change', 'ready', 'workspace-config-change'],
   setup(_, { emit, expose }) {
@@ -74,6 +79,7 @@ const TldrawVue = defineComponent({
       getEditor: () => unavailableEditor,
       getWorkspaceTemplateConfig: () => undefined,
       applyWorkspaceTemplateConfig: () => undefined,
+      getDesignerMode: () => 'print' as DesignerMode,
     });
 
     onMounted(() => {

@@ -2,6 +2,8 @@ import { Box, type Editor, type TLShape, type TLShapeId, type TLShapePartial } f
 import {
 	clearVueMaterialPrintTableOverrides,
 	setVueMaterialPrintTableOverrides,
+	clearVueResumePrintOverrides,
+	setVueResumePrintOverrides,
 } from '@/editor/vueSvgExport'
 import { runWithVueMaterialPrintLayoutUpdates } from '@/editor/extensions/material/vueMaterialShape'
 import { resolveObjectExpressions } from './expression'
@@ -11,6 +13,7 @@ import {
 	getMaterialGridTableOverrides,
 	type MaterialGridPrintPlan,
 } from './materialGrid'
+import { createResumePrintPlan, getResumeOverrides, type ResumePrintPlan } from './resume'
 import type { PrintJobConfig, PrintPageRenderResult } from './types'
 
 const DEFAULT_PX_PER_MM = 10
@@ -19,6 +22,8 @@ export interface PrintRenderJob {
 	row: Record<string, unknown>
 	materialGridPlan?: MaterialGridPrintPlan
 	materialGridPageIndex?: number
+	resumePlan?: ResumePrintPlan
+	resumePageIndex?: number
 }
 
 export class PrintRenderer {
@@ -27,11 +32,17 @@ export class PrintRenderer {
 	createRenderJobs(config: PrintJobConfig): PrintRenderJob[] {
 		const shapeIds = this.getTemplateShapeIds(config)
 		const materialGridPlan = createMaterialGridPrintPlan(this.editor, config, shapeIds)
+		const resumePlan = createResumePrintPlan(this.editor, config, shapeIds)
 
-		if (!materialGridPlan) {
+		if (!materialGridPlan && !resumePlan) {
 			return (config.data ?? []).map((row) => ({ row }))
 		}
+		if (resumePlan) {
+			const contextRow = config.data?.[0] ?? {}
+			return Array.from({ length: resumePlan.pageCount }, (_, pageIndex) => ({ row: contextRow, resumePlan, resumePageIndex: pageIndex }))
+		}
 
+		if (!materialGridPlan) return []
 		const contextRow = config.data?.[0] ?? {}
 		const jobs: PrintRenderJob[] = []
 
@@ -54,6 +65,8 @@ export class PrintRenderer {
 		options: {
 			materialGridPlan?: MaterialGridPrintPlan
 			materialGridPageIndex?: number
+			resumePlan?: ResumePrintPlan
+			resumePageIndex?: number
 		} = {}
 	): Promise<PrintPageRenderResult> {
 		const shapeIds = this.getTemplateShapeIds(config)
@@ -79,9 +92,13 @@ export class PrintRenderer {
 				getMaterialGridTableOverrides(options.materialGridPlan, materialGridPageIndex)
 			)
 		}
+		if (options.resumePlan) {
+			setVueResumePrintOverrides(getResumeOverrides(options.resumePlan, options.resumePageIndex ?? index))
+		}
 
 		if (updates.length && this.editor.getIsReadonly()) {
 			clearVueMaterialPrintTableOverrides()
+			clearVueResumePrintOverrides()
 			throw new Error('Cannot render print updates while the editor is readonly.')
 		}
 
@@ -107,6 +124,7 @@ export class PrintRenderer {
 			}
 		} finally {
 			clearVueMaterialPrintTableOverrides()
+			clearVueResumePrintOverrides()
 			this.applyShapeUpdates(updateRestores)
 		}
 	}

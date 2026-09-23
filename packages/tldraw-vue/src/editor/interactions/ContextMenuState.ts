@@ -16,8 +16,10 @@ import {
 import type { VueTextShape } from '../vueDefaultShapes'
 import { measureVueTextShape } from './vueTextSizing'
 import { getDuplicateSelectionOffset } from './selectionActions'
+import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
+import type { PrintDataSourceConfig } from '@/print/types'
 
-export type ContextMenuActionId =
+type BuiltInContextMenuActionId =
 	| 'cut'
 	| 'copy'
 	| 'paste'
@@ -33,6 +35,8 @@ export type ContextMenuActionId =
 	| 'toggle-lock'
 	| 'select-all'
 
+export type ContextMenuActionId = BuiltInContextMenuActionId | `data-source:${string}`
+
 export interface ContextMenuItem {
 	id: ContextMenuActionId
 	label: string
@@ -40,6 +44,7 @@ export interface ContextMenuItem {
 	shortcut?: string
 	destructive?: boolean
 	separatorBefore?: boolean
+	children?: ContextMenuItem[]
 }
 
 export interface ContextMenuSnapshot {
@@ -59,10 +64,11 @@ export interface ContextMenuSnapshot {
 	}
 }
 
-const MENU_WIDTH = 224
-const MENU_PADDING = 8
-const ITEM_HEIGHT = 34
-const SEPARATOR_HEIGHT = 8
+const MENU_WIDTH = 196
+const MENU_PADDING = 4
+const ITEM_HEIGHT = 24
+const SEPARATOR_HEIGHT = 6
+const MAX_MENU_HEIGHT = 360
 
 const CLIPBOARD_JSON_TYPE = 'application/vnd.tldraw-vue.context-menu+json'
 
@@ -99,6 +105,7 @@ export class ContextMenuState {
 			hasUnlockedShapes,
 			hasUnlockedSelectedShapes,
 			selectionShapeIds,
+			dataSource: getEditorPrintDataSource(editor).value,
 		})
 
 		return {
@@ -124,6 +131,13 @@ export class ContextMenuState {
 		snapshot: ContextMenuSnapshot,
 		actionId: ContextMenuActionId
 	): Promise<void> {
+		if (actionId.startsWith('data-source:')) {
+			const path = actionId.slice('data-source:'.length)
+			if (path && path !== 'root' && path !== 'header' && path !== 'detail') {
+				this.insertDataSourceReference(editor, path, snapshot.selection.shapeIds)
+			}
+			return
+		}
 		switch (actionId) {
 			case 'copy': {
 				await this.copySelection(editor, snapshot.selection.shapeIds)
@@ -227,6 +241,7 @@ export class ContextMenuState {
 			hasUnlockedShapes: boolean
 			hasUnlockedSelectedShapes: boolean
 			selectionShapeIds: TLShapeId[]
+			dataSource?: PrintDataSourceConfig
 		}
 	): ContextMenuItem[] {
 		const isReadonly = editor.getIsReadonly()
@@ -301,6 +316,7 @@ export class ContextMenuState {
 		}
 
 		items.push(
+			this.buildDataSourceMenuItem(info.dataSource),
 			{
 				id: 'group',
 				label: '组合',
@@ -335,6 +351,86 @@ export class ContextMenuState {
 		)
 
 		return items
+	}
+
+	private insertDataSourceReference(editor: Editor, path: string, shapeIds: TLShapeId[]) {
+		if (editor.getIsReadonly() || shapeIds.length !== 1) return
+		const shape = editor.getShape(shapeIds[0])
+		if (!shape || shape.type !== 'vue-text') return
+		const textShape = shape as VueTextShape
+		const value = textShape.props.text.trim()
+		const nextText = value ? `${textShape.props.text} {{${path}}}` : `{{${path}}}`
+		const nextSize = measureVueTextShape(editor, nextText, {
+			font: textShape.props.font,
+			size: textShape.props.size,
+			width: textShape.props.w,
+			autoSize: textShape.props.autoSize,
+		})
+		editor.markHistoryStoppingPoint('insert data source field')
+		editor.updateShape<VueTextShape>({
+			id: textShape.id,
+			type: 'vue-text',
+			props: {
+				text: nextText,
+				w: nextSize.w,
+				h: nextSize.h,
+			},
+		})
+	}
+
+	private buildDataSourceMenuItem(source: PrintDataSourceConfig | undefined): ContextMenuItem {
+		if (!source || source.type !== 'inline') {
+			return {
+				id: 'data-source:empty',
+				label: '数据源',
+				disabled: true,
+				separatorBefore: true,
+			}
+		}
+		// PrintDataSourceConfig also accepts custom source types through a
+		// broad `{ type: string }` branch. Narrow explicitly here so the menu
+		// only reads fields that belong to an inline source.
+		const inlineSource = source as Extract<PrintDataSourceConfig, { type: 'inline' }>
+
+		const headerFields = inlineSource.headerFields?.length
+			? inlineSource.headerFields
+			: Object.keys(inlineSource.rows[0] ?? {})
+				.filter((field) => !inlineSource.detailTables?.some((table) => table.field === field))
+				.map((field) => ({ field, label: field }))
+		const headerItems = headerFields.map((field) => ({
+			id: `data-source:${field.field}` as const,
+			label: field.label || field.field,
+			disabled: false,
+		}))
+		const detailTables = inlineSource.detailTables?.length
+			? inlineSource.detailTables
+			: inlineSource.detailColumns?.length
+				? [{
+					id: 'detail',
+					field: inlineSource.detailField || 'detail',
+					label: '明细',
+					columns: inlineSource.detailColumns,
+				}]
+				: []
+		const detailItems = detailTables.flatMap((table) => table.columns.map((column) => ({
+			id: `data-source:${table.field}.${column.field}` as const,
+			label: detailTables.length > 1
+				? `${table.label || table.field} / ${column.title || column.field}`
+				: column.title || column.field,
+			disabled: false,
+		})))
+		return {
+			id: 'data-source:root',
+			label: '数据源',
+			disabled: !headerItems.length && !detailItems.length,
+			separatorBefore: true,
+			children: [
+				...headerItems,
+				...(detailItems.length
+					? [{ id: 'data-source:detail' as const, label: '明细', disabled: false, children: detailItems }]
+					: []),
+			],
+		}
 	}
 
 	private getDuplicateOffset(editor: Editor, snapshot: ContextMenuSnapshot) {
@@ -628,7 +724,8 @@ export class ContextMenuState {
 		const bounds = container.getBoundingClientRect()
 		const itemCount = items.length
 		const separatorCount = items.reduce((count, item) => count + (item.separatorBefore ? 1 : 0), 0)
-		const height = MENU_PADDING * 2 + itemCount * ITEM_HEIGHT + separatorCount * SEPARATOR_HEIGHT
+		const estimatedHeight = MENU_PADDING * 2 + itemCount * ITEM_HEIGHT + separatorCount * SEPARATOR_HEIGHT
+		const height = Math.min(MAX_MENU_HEIGHT, estimatedHeight)
 		const maxX = Math.max(MENU_PADDING, bounds.width - MENU_WIDTH - MENU_PADDING)
 		const maxY = Math.max(MENU_PADDING, bounds.height - height - MENU_PADDING)
 

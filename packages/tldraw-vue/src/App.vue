@@ -6,6 +6,7 @@ import TldrawVue, {
 	defineVueEditorPlugin,
 	historyValidationPlugin,
 	materialExtension,
+	resumeExtension,
 	qrExtension,
 } from './index'
 
@@ -14,7 +15,7 @@ const tldrawRef = ref<InstanceType<typeof TldrawVue> | null>(null)
 const workspaceRevision = ref(0)
 const proFeaturePlugin = defineVueEditorPlugin({
 	id: 'demo.pro',
-	extensions: [qrExtension, materialExtension],
+	extensions: [qrExtension, materialExtension, resumeExtension],
 	commands: [
 		{
 			id: 'print.preview',

@@ -6,19 +6,26 @@
  * @Description: 动画组件
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\components\right-attribute-panel\components\animate\Animate.tsx
  */
-import { defineComponent, reactive, ref, watchEffect } from 'vue';
-import { ElTabs, ElTabPane, ElRow, ElCol, ElButton, ElSwitch, ElAlert, ElIcon } from '../../../common/designer-ui';
+import { defineComponent, onMounted, reactive, ref, watchEffect } from 'vue';
+import { ElTabs, ElTabPane, ElRow, ElCol, ElButton, ElAlert, ElIcon } from '../../../common/designer-ui';
 import { onClickOutside } from '@vueuse/core';
 import { Plus, CaretRight } from '../../../common/remix-icons';
 import { animationTabs } from './animateConfig';
 import styles from './animate.module.scss';
 import type { Animation } from '../../../../visual-editor.utils';
 import { useVisualData } from '../../../../hooks/useVisualData';
-import { useAnimate } from '../../../../../hooks/useAnimate';
+import { useAnimate } from '../../../../../hooks/useAnimate';
+import LowCodeForm from '../../../../../components/LowCodeForm.vue';
+import { useLowCodeHost } from '../../../../../core/host';
+import { isLowCodeFormSchema } from '../../../../../lowcode/form-schema';
+import type { LowCodeFormSchema, LowCodeField } from '../../../../../types/lowcode';
 export const Animate = defineComponent({
   setup() {
     const { currentBlock } = useVisualData();
+    const host = useLowCodeHost();
     const target = ref<InstanceType<typeof HTMLDivElement>>();
+    const animationFormSchema = ref<LowCodeFormSchema | null>(null);
+    const schemaLoadError = ref('');
 
     const state = reactive({
       activeName: '',
@@ -27,6 +34,27 @@ export const Animate = defineComponent({
     });
 
     onClickOutside(target, () => (state.isAddAnimates = false));
+
+    onMounted(async () => {
+      try {
+        const rows = await host.getServiceApi().invoke<Array<{ schema?: unknown }>>(
+          'lowcode',
+          'listItems',
+          {
+            resource: 'lowcode_form_definitions',
+            filters: { code: 'visual-editor.animation', enabled: true },
+            limit: 1,
+          },
+        );
+        const schema = Array.isArray(rows) ? rows[0]?.schema : undefined;
+        if (!isLowCodeFormSchema(schema)) {
+          throw new Error('动画表单 schema 不存在或格式无效');
+        }
+        animationFormSchema.value = schema;
+      } catch (error) {
+        schemaLoadError.value = error instanceof Error ? error.message : '动画表单加载失败';
+      }
+    });
 
     watchEffect((onInvalidate) => {
       if (state.isAddAnimates) {
@@ -91,6 +119,26 @@ export const Animate = defineComponent({
       console.log(currentBlock.value.animations, '当前组件的动画');
     };
 
+    const updateAnimationField = (
+      index: number,
+      payload: { field: LowCodeField; value: unknown },
+    ) => {
+      const animation = currentBlock.value.animations?.[index];
+      if (!animation || !['duration', 'delay', 'count', 'infinite'].includes(payload.field.field)) {
+        return;
+      }
+
+      if (payload.field.field === 'infinite') {
+        animation.infinite = payload.value === true;
+        return;
+      }
+
+      const value = Number(payload.value);
+      if (Number.isFinite(value)) {
+        animation[payload.field.field] = value;
+      }
+    };
+
     // 已添加的动画列表组件
     const AddedAnimateList = () => (
       <>
@@ -118,21 +166,18 @@ export const Animate = defineComponent({
               ),
               default: () => (
                 <>
-                  <ElRow gutter={6}>
-                    <ElCol span={8}>
-                      时间：
-                      <input v-model={item.duration} type="number" step={0.1} min={0} />
-                    </ElCol>
-                    <ElCol span={8}>
-                      延迟：
-                      <input v-model={item.delay} type="number" step={0.1} min={0} />
-                    </ElCol>
-                    <ElCol span={8}>
-                      次数：
-                      <input v-model={item.count} type="number" min={0} />
-                    </ElCol>
-                  </ElRow>
-                  <ElSwitch v-model={item.infinite}></ElSwitch> 循环播放
+                  {animationFormSchema.value ? (
+                    <LowCodeForm
+                      schema={animationFormSchema.value}
+                      modelValue={item}
+                      vertical
+                      onFieldChange={(payload) => updateAnimationField(index, payload)}
+                    />
+                  ) : schemaLoadError.value ? (
+                    <div class={styles.schemaError}>{schemaLoadError.value}</div>
+                  ) : (
+                    <div class={styles.schemaLoading}>正在加载动画表单...</div>
+                  )}
                 </>
               ),
             }}

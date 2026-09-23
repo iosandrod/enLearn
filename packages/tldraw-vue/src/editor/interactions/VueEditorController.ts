@@ -1451,6 +1451,15 @@ export class VueEditorController {
 			margin: editor.getHitTestMargin(),
 		}
 
+		// When a shape was selected from the layers panel, keep it as the drag
+		// target while the pointer is inside it, even if another shape is above it.
+		// This makes moving an already-selected lower layer possible without
+		// changing the document's actual z-order.
+		const selectedShape = editor.getSelectedShapeAtPoint(point)
+		if (selectedShape && !editor.isShapeOrAncestorLocked(selectedShape)) {
+			return selectedShape
+		}
+
 		const hitShape =
 			editor.getShapeAtPoint(point, {
 				...hitOptions,

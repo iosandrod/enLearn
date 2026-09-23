@@ -33,6 +33,29 @@
           </span>
         </div>
 
+        <div class="print-app-mode-switch" role="tablist" aria-label="设计模式">
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="designerMode === 'print'"
+            :class="{ 'is-active': designerMode === 'print' }"
+            @click="changeDesignerMode('print')"
+          >
+            <i class="ri-printer-line" aria-hidden="true" />
+            <span>打印设计</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="designerMode === 'presentation'"
+            :class="{ 'is-active': designerMode === 'presentation' }"
+            @click="changeDesignerMode('presentation')"
+          >
+            <i class="ri-slideshow-3-line" aria-hidden="true" />
+            <span>PPT 设计</span>
+          </button>
+        </div>
+
         <div
           id="print-designer-header-actions"
           class="print-app-header__designer-actions"
@@ -143,6 +166,17 @@ const signingOut = ref(false);
 const templateName = ref('新建模板');
 const templateStatus = ref('尚未保存');
 const templateDirty = ref(false);
+const designerMode = ref<'print' | 'presentation'>('print');
+
+type TemplateInfoDetail = {
+  name?: unknown;
+  status?: unknown;
+  dirty?: unknown;
+};
+
+type PrintTemplateInfoWindow = Window & {
+  __ENLEARN_PRINT_TEMPLATE_INFO__?: TemplateInfoDetail;
+};
 
 const authReady = computed(() => auth.ready.value);
 const signedIn = computed(() => Boolean(auth.user.value));
@@ -173,12 +207,7 @@ function handleDocumentKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape') closeUserMenu();
 }
 
-function handleTemplateInfoChange(event: Event) {
-  const detail = (event as CustomEvent<{
-    name?: unknown;
-    status?: unknown;
-    dirty?: unknown;
-  }>).detail;
+function applyTemplateInfo(detail: TemplateInfoDetail | undefined) {
   if (!detail) return;
 
   const name = readDisplayString(detail.name);
@@ -186,6 +215,22 @@ function handleTemplateInfoChange(event: Event) {
   templateName.value = name || '新建模板';
   templateStatus.value = status || '尚未保存';
   templateDirty.value = detail.dirty === true;
+}
+
+function handleTemplateInfoChange(event: Event) {
+  applyTemplateInfo((event as CustomEvent<TemplateInfoDetail>).detail);
+}
+
+function changeDesignerMode(mode: 'print' | 'presentation') {
+  designerMode.value = mode;
+  window.dispatchEvent(new CustomEvent('enlearn:print-designer-mode-change', {
+    detail: { mode },
+  }));
+}
+
+function handleDesignerModeChange(event: Event) {
+  const mode = (event as CustomEvent<{ mode?: unknown }>).detail?.mode;
+  if (mode === 'print' || mode === 'presentation') designerMode.value = mode;
 }
 
 async function handleSignOut() {
@@ -203,6 +248,9 @@ onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointerDown);
   document.addEventListener('keydown', handleDocumentKeyDown);
   window.addEventListener('enlearn:print-template-info-change', handleTemplateInfoChange);
+  window.addEventListener('enlearn:print-designer-mode-change', handleDesignerModeChange);
+  window.addEventListener('enlearn:print-designer-mode-state', handleDesignerModeChange);
+  applyTemplateInfo((window as PrintTemplateInfoWindow).__ENLEARN_PRINT_TEMPLATE_INFO__);
   void auth.init();
 });
 
@@ -210,6 +258,8 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown);
   document.removeEventListener('keydown', handleDocumentKeyDown);
   window.removeEventListener('enlearn:print-template-info-change', handleTemplateInfoChange);
+  window.removeEventListener('enlearn:print-designer-mode-change', handleDesignerModeChange);
+  window.removeEventListener('enlearn:print-designer-mode-state', handleDesignerModeChange);
 });
 </script>
 
@@ -319,6 +369,45 @@ onBeforeUnmount(() => {
   gap: 10px;
   overflow: hidden;
 }
+
+.print-app-mode-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #dfe5ea;
+  border-radius: 9px;
+  background: #f5f7f8;
+}
+
+.print-app-mode-switch button {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #7a8592;
+  padding: 0 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.print-app-mode-switch button:hover { color: #334155; }
+
+.print-app-mode-switch button.is-active {
+  border-color: #d6e5df;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 8%);
+  color: #24775a;
+}
+
+.print-app-mode-switch button i { font-size: 14px; }
 
 .print-app-header__designer-actions {
   display: flex;
@@ -638,6 +727,8 @@ onBeforeUnmount(() => {
     scrollbar-width: none;
   }
   .print-app-workspace::-webkit-scrollbar { display: none; }
+  .print-app-mode-switch button span { display: none; }
+  .print-app-mode-switch button { width: 32px; justify-content: center; padding: 0; }
   .print-app-header__designer-actions { flex: 0 0 auto; }
   .print-app-user__trigger { max-width: 170px; }
 }

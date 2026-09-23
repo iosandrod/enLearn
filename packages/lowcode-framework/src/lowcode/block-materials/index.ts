@@ -9,11 +9,14 @@ import { registerLowCodeBlockMaterialComponent } from '../material-runtime/compo
 // once initializeLowCodeMaterialCatalog completes.
 const DatabaseMaterialPending = defineComponent({
   name: 'LowCodeDatabaseMaterialPending',
-  props: { block: { type: Object, required: false } },
-  setup(props) {
-    return () => h('article', { class: 'content-panel lc-node-material-pending' }, [
-      h('strong', '物料正在加载'),
-      h('span', String((props.block as { kind?: unknown } | undefined)?.kind ?? '')),
+  setup() {
+    return () => h('article', {
+      class: 'content-panel lc-node-material-pending',
+      role: 'status',
+      'aria-label': '物料加载中',
+      style: { display: 'grid', placeItems: 'center' },
+    }, [
+      h('i', { class: 'ri-loader-4-line admin-spin', 'aria-hidden': 'true' }),
     ]);
   },
 });

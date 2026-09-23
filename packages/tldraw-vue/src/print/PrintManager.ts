@@ -51,6 +51,8 @@ export class PrintManager {
 				const page = await this.renderer.renderPage(resolvedConfig, job.row, index, total, {
 					materialGridPlan: job.materialGridPlan,
 					materialGridPageIndex: job.materialGridPageIndex,
+					resumePlan: job.resumePlan,
+					resumePageIndex: job.resumePageIndex,
 				})
 				callbacks.onPageRendered?.(page)
 				renderedPages.push(page)
@@ -86,6 +88,8 @@ export class PrintManager {
 						const page = await this.renderer.renderPage(config, job.row, index, total, {
 							materialGridPlan: job.materialGridPlan,
 							materialGridPageIndex: job.materialGridPageIndex,
+							resumePlan: job.resumePlan,
+							resumePageIndex: job.resumePageIndex,
 						})
 						callbacks.onPageRendered?.(page)
 
@@ -127,6 +131,8 @@ export class PrintManager {
 						const page = await this.renderer.renderPage(config, job.row, index, total, {
 							materialGridPlan: job.materialGridPlan,
 							materialGridPageIndex: job.materialGridPageIndex,
+							resumePlan: job.resumePlan,
+							resumePageIndex: job.resumePageIndex,
 						})
 						callbacks.onPageRendered?.(page)
 

@@ -7,6 +7,7 @@ import type {
 	WorkspaceViewportSize,
 } from './interactions/WorkspaceBoundsManager'
 import type { WorkspaceGuide } from './interactions/guides'
+import type { DesignerMode, PresentationConfig } from '../presentation'
 
 const LOCAL_TEMPLATE_STORAGE_KEY = 'tldraw-vue.templates.v1'
 
@@ -20,6 +21,7 @@ export interface VueTemplateRecord {
 }
 
 export interface VueTemplateWorkspaceConfig {
+	designerMode?: DesignerMode
 	pageSizeMm?: WorkspacePageSizeMm
 	pageBounds?: WorkspacePageBounds
 	camera?: WorkspaceCamera
@@ -27,6 +29,15 @@ export interface VueTemplateWorkspaceConfig {
 	viewportSize?: WorkspaceViewportSize
 	pxPerMm?: number
 	printDataSource?: PrintDataSourceConfig
+	background?: WorkspaceBackgroundConfig
+	presentation?: PresentationConfig
+}
+
+export interface WorkspaceBackgroundConfig {
+	color: string
+	imageUrl?: string
+	imageSize: 'cover' | 'contain' | 'auto'
+	imagePosition: string
 }
 
 export type VueTemplateLoadHandler = () =>
@@ -141,15 +152,28 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspaceConfig {
 	if (!isObject(value)) return false
-	const { pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, printDataSource } = value
+	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, printDataSource, background, presentation } = value
 	return (
+		(designerMode === undefined || designerMode === 'print' || designerMode === 'presentation') &&
 		(pageSizeMm === undefined || isSizeLike(pageSizeMm)) &&
 		(pageBounds === undefined || isBoundsLike(pageBounds)) &&
 		(camera === undefined || isCameraLike(camera)) &&
 		(guides === undefined || isGuideList(guides)) &&
 		(viewportSize === undefined || isSizeLike(viewportSize)) &&
 		(pxPerMm === undefined || isFiniteNumber(pxPerMm)) &&
-		(printDataSource === undefined || isPrintDataSourceConfig(printDataSource))
+		(printDataSource === undefined || isPrintDataSourceConfig(printDataSource)) &&
+		(background === undefined || isBackgroundConfig(background)) &&
+		(presentation === undefined || isObject(presentation))
+	)
+}
+
+function isBackgroundConfig(value: unknown): value is WorkspaceBackgroundConfig {
+	return (
+		isObject(value) &&
+		typeof value.color === 'string' &&
+		(value.imageUrl === undefined || typeof value.imageUrl === 'string') &&
+		(value.imageSize === 'cover' || value.imageSize === 'contain' || value.imageSize === 'auto') &&
+		typeof value.imagePosition === 'string'
 	)
 }
 

@@ -581,15 +581,20 @@ export async function openLowCodePageConfirmDialog(
       {
         code: 'confirm',
         label: config.confirmLabel ?? '确定',
-        role: 'custom',
+        role: 'confirm',
         status: 'primary',
         onClick: async () => {
           let payload = createPayload();
           if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
 
           if (config.submitOnConfirm) {
-            const submitted = await rendererRef.value?.submitForms();
-            if (!submitted) return false;
+            if (!rendererRef.value) {
+              throw new Error('模板编辑页尚未加载完成，请稍后再试。');
+            }
+            const submitted = await rendererRef.value.submitForms();
+            if (!submitted) {
+              throw new Error('模板保存失败，请检查模板名称和表单内容。');
+            }
             payload = createPayload();
           }
 

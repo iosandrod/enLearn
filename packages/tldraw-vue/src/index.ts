@@ -7,6 +7,13 @@ export { getDefaultVueEditorExtensions } from './editor/extensions/defaultExtens
 export { frameExtension } from './editor/extensions/frame/frameExtension'
 export type { VueFrameShape } from './editor/extensions/frame/vueFrameShape'
 export { materialExtension } from './editor/extensions/material/materialExtension'
+export { resumeExtension } from './editor/extensions/resume/resumeExtension'
+export type {
+	VueResumeSectionDefinition,
+	VueResumeSectionShape,
+	VueResumeSectionZone,
+	VueResumeShape,
+} from './editor/extensions/resume/vueResumeShape'
 export type {
 	VueMaterialSectionDefinition,
 	VueMaterialSectionShape,
@@ -64,4 +71,5 @@ export {
 } from './editor/vuePlugins'
 export { historyValidationPlugin } from './plugins/historyValidationPlugin'
 export * from './print'
+export * from './presentation'
 export * from '@tldraw/editor'

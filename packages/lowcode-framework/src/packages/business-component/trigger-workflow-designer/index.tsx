@@ -66,7 +66,11 @@ const triggerWorkflowDesigner: VisualEditorComponent = {
       };
 
       if (!RuntimeComponent) {
-        return <div style={wrapperStyle} role="status">触发器编排画布物料正在加载…</div>;
+        return (
+          <div style={{ ...wrapperStyle, display: 'grid', placeItems: 'center' }} role="status" aria-label="物料加载中">
+            <i class="ri-loader-4-line admin-spin" aria-hidden="true" />
+          </div>
+        );
       }
 
       return (

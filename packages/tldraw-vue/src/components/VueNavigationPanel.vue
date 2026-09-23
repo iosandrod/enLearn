@@ -353,5 +353,6 @@ onBeforeUnmount(() => {
 		</div>
 
 		<VueMinimap v-if="!collapsed" :editor="editor" />
+		<slot name="presentation-pages" />
 	</div>
 </template>

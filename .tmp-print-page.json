@@ -1,0 +1,84 @@
+{
+  "code": "print-designer",
+  "schema": {
+    "code": "print-designer",
+    "route": "/dashboard/advanced/print-designer",
+    "title": "打印设计器",
+    "blocks": [
+      {
+        "id": "label-designer-actions",
+        "gap": "8",
+        "kind": "buttonGroup",
+        "align": "left",
+        "title": "按钮组",
+        "actions": [
+          {
+            "code": "label-new",
+            "icon": "ri-file-add-line",
+            "type": "button",
+            "label": "新建模板",
+            "script": "async function main() { return await this.executeAction({ node: 'label-designer-canvas', method: 'resetData' }); }",
+            "disabled": false
+          },
+          {
+            "code": "label-load",
+            "icon": "ri-folder-open-line",
+            "type": "button",
+            "label": "加载模板",
+            "script": "\nasync function main() {\n  const result = await this.executeFunction({\n    name: \"confirmLowCodePage\",\n    args: {\n      pageCode: \"print-templates\",\n      includeData: true,\n      title: \"加载打印模板\",\n      confirmLabel: \"加载\",\n      cancelLabel: \"取消\",\n      requireSelection: true,\n      dialog: { id: \"print-template-picker-dialog\" },\n    },\n  });\n  if (!result || result.action !== \"confirm\" || !result.row?.id) return result;\n  await this.executeAction({\n    node: \"label-designer-canvas\",\n    method: \"loadData\",\n    templateId: result.row.id,\n  });\n  return result.row;\n}\n",
+            "disabled": false
+          },
+          {
+            "code": "label-save",
+            "icon": "ri-save-3-line",
+            "type": "button",
+            "label": "保存模板",
+            "script": "async function main() { return await this.executeAction({ node: 'label-designer-canvas', method: 'save' }); }",
+            "status": "primary",
+            "disabled": false
+          },
+          {
+            "code": "label-validate",
+            "icon": "ri-shield-check-line",
+            "type": "button",
+            "label": "校验",
+            "script": "async function main() { return await this.executeAction({ node: 'label-designer-canvas', method: 'validate' }); }",
+            "disabled": false
+          },
+          {
+            "code": "label-preview",
+            "icon": "ri-eye-line",
+            "type": "button",
+            "label": "打印预览",
+            "script": "async function main() { return await this.executeAction({ node: 'label-designer-canvas', method: 'preview' }); }",
+            "disabled": false
+          },
+          {
+            "code": "label-print",
+            "icon": "ri-printer-line",
+            "type": "button",
+            "label": "打印",
+            "script": "async function main() { return await this.executeAction({ node: 'label-designer-canvas', method: 'print' }); }",
+            "status": "success",
+            "disabled": false
+          }
+        ],
+        "description": "",
+        "materialVersion": "1.0.0"
+      },
+      {
+        "id": "label-designer-canvas",
+        "kind": "label-designer",
+        "templateName": "标签打印模板",
+        "materialVersion": "1.0.0"
+      }
+    ],
+    "layout": "blank",
+    "status": "published",
+    "pageType": "custom",
+    "keepAlive": true,
+    "dataSources": {},
+    "description": "低代码标签打印设计器。",
+    "schemaVersion": 1
+  }
+}

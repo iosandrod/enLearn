@@ -28,11 +28,14 @@ import type {
 } from './vueDefaultShapes'
 import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
+import type { VueResumeSectionShape, VueResumeShape } from './extensions/resume/vueResumeShape'
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 const VUE_VISIBLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_GRID_COLOR = '#d1d5db'
+const VUE_RESUME_BORDER_COLOR = '#cbd5e1'
+const VUE_RESUME_ACCENT_COLOR = '#0f766e'
 
 type VueMaterialSvgShape = {
 	id: TLShapeId
@@ -86,6 +89,24 @@ export interface VueMaterialPrintTableOverride {
 
 let vueMaterialPrintTableOverrides = new Map<TLShapeId, VueMaterialPrintTableOverride>()
 
+export interface VueResumePrintItem {
+	name: string
+	title: string
+	period: string
+	description: string
+}
+
+export interface VueResumePrintOverride {
+	items: VueResumePrintItem[]
+	fontSize: number
+	lineHeight: number
+	itemGap: number
+	pageNo: number
+	total: number
+}
+
+let vueResumePrintOverrides = new Map<TLShapeId, VueResumePrintOverride>()
+
 export function setVueMaterialPrintTableOverrides(
 	overrides: Map<TLShapeId, VueMaterialPrintTableOverride>
 ) {
@@ -94,6 +115,14 @@ export function setVueMaterialPrintTableOverrides(
 
 export function clearVueMaterialPrintTableOverrides() {
 	vueMaterialPrintTableOverrides.clear()
+}
+
+export function setVueResumePrintOverrides(overrides: Map<TLShapeId, VueResumePrintOverride>) {
+	vueResumePrintOverrides = new Map(overrides)
+}
+
+export function clearVueResumePrintOverrides() {
+	vueResumePrintOverrides.clear()
 }
 
 export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNode {
@@ -829,6 +858,67 @@ function createBoxMarkSvg(
 			strokeLinejoin: 'round',
 		}))
 	)
+}
+
+export function createVueResumeSvg(shape: VueResumeShape): SvgExportNode {
+	return createElement('g', null, createElement('rect', {
+		width: Math.max(1, shape.props.w), height: Math.max(1, shape.props.h), fill: '#ffffff', stroke: VUE_RESUME_BORDER_COLOR, strokeWidth: 1.5,
+	}))
+}
+
+export function createVueResumeSectionSvg(shape: VueResumeSectionShape): SvgExportNode {
+	const width = Math.max(1, shape.props.w)
+	const height = Math.max(1, shape.props.h)
+	const override = vueResumePrintOverrides.get(shape.id)
+	const children: SvgExportChild[] = [createElement('rect', {
+		width, height, fill: '#ffffff', stroke: VUE_RESUME_BORDER_COLOR, strokeWidth: 1,
+	})]
+
+	if (shape.props.zone === 'pageHeader') {
+		children.push(createElement('line', { x1: 0, y1: Math.min(height - 1, 58), x2: width, y2: Math.min(height - 1, 58), stroke: VUE_RESUME_ACCENT_COLOR, strokeWidth: 2 }))
+		children.push(createElement('text', { x: 20, y: Math.min(height - 18, 38), fill: '#0f172a', fontFamily: 'Arial, sans-serif', fontSize: 24, fontWeight: 700 }, 'RESUME'))
+	} else if (shape.props.zone === 'pageFooter') {
+		const footerText = override ? `第 ${override.pageNo} / ${override.total} 页` : '简历分页组件'
+		children.push(createElement('text', { x: width - 16, y: Math.max(18, height / 2), fill: '#64748b', fontFamily: 'Arial, sans-serif', fontSize: 11, textAnchor: 'end', dominantBaseline: 'middle' }, footerText))
+	} else if (override) {
+		children.push(...createVueResumeItemsSvg(override.items, width, height, override))
+	}
+
+	return createElement('g', null, children)
+}
+
+function createVueResumeItemsSvg(items: readonly VueResumePrintItem[], width: number, height: number, options: VueResumePrintOverride): SvgExportChild[] {
+	const result: SvgExportChild[] = []
+	let y = 26
+	for (const item of items) {
+		if (y >= height - 8) break
+		result.push(createElement('text', { x: 18, y, fill: '#0f172a', fontFamily: 'Arial, sans-serif', fontSize: options.fontSize, fontWeight: 700 }, fitSvgText(item.name || item.title, width - 36, options.fontSize)))
+		if (item.title || item.period) {
+			result.push(createElement('text', { x: width - 18, y, fill: '#64748b', fontFamily: 'Arial, sans-serif', fontSize: Math.max(10, options.fontSize - 1), textAnchor: 'end' }, fitSvgText([item.title, item.period].filter(Boolean).join(' · '), width * 0.52, options.fontSize)))
+		}
+		y += options.lineHeight
+		for (const line of wrapSvgText(item.description, width - 36, options.fontSize)) {
+			if (y >= height - 8) break
+			result.push(createElement('text', { x: 18, y, fill: '#334155', fontFamily: 'Arial, sans-serif', fontSize: options.fontSize }, line))
+			y += options.lineHeight
+		}
+		y += options.itemGap
+	}
+	return result
+}
+
+function fitSvgText(text: string, width: number, fontSize: number) {
+	const maxChars = Math.max(1, Math.floor(width / Math.max(5, fontSize * 0.56)))
+	return text.length <= maxChars ? text : `${text.slice(0, Math.max(1, maxChars - 1))}…`
+}
+
+function wrapSvgText(text: string, width: number, fontSize: number) {
+	const normalized = String(text ?? '').replace(/\s+/g, ' ').trim()
+	if (!normalized) return []
+	const maxChars = Math.max(1, Math.floor(width / Math.max(5, fontSize * 0.56)))
+	const lines: string[] = []
+	for (let index = 0; index < normalized.length; index += maxChars) lines.push(normalized.slice(index, index + maxChars))
+	return lines
 }
 
 function sanitizeSvgId(id: string) {

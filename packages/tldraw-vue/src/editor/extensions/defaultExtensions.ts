@@ -4,8 +4,13 @@ import { coreExtension } from './coreExtension'
 import { frameExtension } from './frame/frameExtension'
 import { materialExtension } from './material/materialExtension'
 import { qrExtension } from './qr/qrExtension'
+import { resumeExtension } from './resume/resumeExtension'
 import { tableExtension } from './table/tableExtension'
 
 export function getDefaultVueEditorExtensions(): VueEditorExtension[] {
-	return [coreExtension, frameExtension, tableExtension, materialExtension, qrExtension, barcodeExtension]
+	return [coreExtension, frameExtension, tableExtension, materialExtension].concat(
+		resumeExtension,
+		qrExtension,
+		barcodeExtension
+	)
 }

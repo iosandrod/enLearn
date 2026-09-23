@@ -676,6 +676,8 @@ function onDocumentKeyDown(event: KeyboardEvent) {
 
 defineExpose({
 	closeMenus,
+	previewPrint,
+	printCurrentPage,
 })
 
 onMounted(() => {

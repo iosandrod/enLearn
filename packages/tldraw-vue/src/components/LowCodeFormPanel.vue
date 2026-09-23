@@ -12,6 +12,10 @@ import {
 	normalizeVueMaterialSections,
 	updateVueMaterialShapeLayout,
 } from '@/editor/extensions/material/vueMaterialShape'
+import {
+	getVueResumeSectionDefinition,
+	normalizeVueResumeSections,
+} from '@/editor/extensions/resume/vueResumeShape'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
 import { useEditorValue } from '@/vue/useEditorValue'
 
@@ -491,6 +495,12 @@ const materialZoneOptions = [
 	{ label: '页尾', value: 'pageFooter' },
 ] satisfies LowCodeOption[]
 
+const resumeZoneOptions = [
+	{ label: '简历页头', value: 'pageHeader' },
+	{ label: '自动填充内容', value: 'content' },
+	{ label: '简历页尾', value: 'pageFooter' },
+] satisfies LowCodeOption[]
+
 const baseFields = [
 	inputField('shapeId', '节点 ID', disabledInputProps),
 	inputField('shapeTypeLabel', '节点类型', disabledInputProps),
@@ -725,6 +735,31 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			}
 		},
 	},
+	'vue-resume': createPropsDescriptor('vue-resume', '简历分页组件', [
+		...sizeFields,
+		inputField('name', '组件名称'),
+	]),
+	'vue-resume-section': {
+		title: '简历分区',
+		formCode: propertyFormCode('vue-resume-section'),
+		schema: createSchema('简历分区', [
+			numberField('w', '宽度', disabledNumberProps),
+			numberField('h', '高度', { min: 28, step: 1 }),
+			selectField('zone', '分区', resumeZoneOptions),
+			inputField('label', '名称', disabledInputProps),
+		]),
+		toModel(shape) {
+			return { ...getCommonModel(shape), ...getFlatPropsModel(shape) }
+		},
+		apply(editor, shape, model) {
+			const zone = String(getOptionValue(model.zone, resumeZoneOptions, getProps(shape).zone ?? 'content')) as 'pageHeader' | 'content' | 'pageFooter'
+			editor.updateShape({
+				...getCommonPartial(shape, model),
+				props: { h: clampNumber(model.h, getVueResumeSectionDefinition(zone).minHeight, 4096, toFiniteNumber(getProps(shape).h, 180)), zone },
+			} as TLShapePartial)
+			if (isShapeId(shape.parentId)) normalizeVueResumeSections(editor, shape.parentId)
+		},
+	},
 	group: {
 		title: '分组节点',
 		formCode: propertyFormCode('group'),
@@ -789,7 +824,22 @@ async function loadPropertyFormDefinitions() {
 
 		const missing = requiredPropertyFormCodes.filter((code) => !loaded[code])
 		if (missing.length) {
-			throw new Error(`缺少或停用了属性表单：${missing.join('、')}`)
+			// Database definitions are authoritative. Keep the designer usable while
+			// a new migration is rolling out by filling only missing codes from the
+			// matching local descriptor; later database responses still win.
+			const localSchemas = new Map<string, LowCodeFormSchema>([
+				[workspaceFormDescriptor.formCode, workspaceFormDescriptor.schema],
+				...Object.values(shapeFormDescriptors).map((descriptor) => [descriptor.formCode, descriptor.schema] as const),
+				[fallbackDescriptor.formCode, fallbackDescriptor.schema],
+			])
+			const unresolved = missing.filter((code) => !localSchemas.has(code))
+			if (unresolved.length) {
+				throw new Error(`缺少或停用了属性表单：${unresolved.join('、')}`)
+			}
+			for (const code of missing) {
+				const schema = localSchemas.get(code)
+				if (schema) loaded[code] = structuredClone(schema)
+			}
 		}
 
 		formDefinitions.value = loaded

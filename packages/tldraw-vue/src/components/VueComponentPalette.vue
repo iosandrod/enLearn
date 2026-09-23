@@ -60,6 +60,7 @@ const TOOL_GLYPHS: Partial<Record<ToolbarItemId, string>> = {
 	frame: glyph(0x231f),
 	table: glyph(0x25a6),
 	material: glyph(0x25a4),
+	resume: glyph(0x25a4),
 	rectangle: glyph(0x25ad),
 	ellipse: glyph(0x25ef),
 	triangle: glyph(0x25b3),

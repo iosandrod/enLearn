@@ -456,7 +456,7 @@ export class LowCodePageScriptRuntime {
       case 'material.resetData':
         return executeLowCodeMaterialRuntimeAction(block.id, 'resetData');
       case 'material.save':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'save');
+        return executeLowCodeMaterialRuntimeAction(block.id, 'save', payload);
       case 'material.autoLayout':
         return executeLowCodeMaterialRuntimeAction(block.id, 'autoLayout');
       case 'material.compile':

@@ -21,7 +21,7 @@ import { VueAssetManager } from '@/editor/interactions/VueAssetManager'
 import { getVueArrowPageTerminalPoint } from '@/editor/interactions/vueLineGeometry'
 import { getVueArrowTargetState } from '@/editor/interactions/vueArrowTargetState'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
-import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
+import type { VueTemplateWorkspaceConfig, WorkspaceBackgroundConfig } from '@/editor/templateStore'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
 	WorkspaceBoundsManager,
@@ -53,6 +53,12 @@ const RULER_SIZE = 28
 const assetManager = new VueAssetManager(props.editor, workspaceBounds)
 const workspaceRevision = ref(0)
 const workspacePageSizeMm = ref(workspaceBounds.getPageSizeMm())
+const workspaceBackground = ref<WorkspaceBackgroundConfig>({
+	color: '#ffffff',
+	imageUrl: '',
+	imageSize: 'cover',
+	imagePosition: 'center',
+})
 const guides = ref<WorkspaceGuide[]>([])
 const printDataSource = getEditorPrintDataSource(props.editor)
 const selectedGuideId = ref<string | null>(null)
@@ -97,6 +103,16 @@ const selectionBounds = useEditorValue('selection rotated page bounds', () =>
 	props.editor.getSelectionRotatedPageBounds()
 )
 const selectionRotation = useEditorValue('selection rotation', () => props.editor.getSelectionRotation())
+
+const workspacePageStyle = computed(() => ({
+	backgroundColor: workspaceBackground.value.color,
+	backgroundImage: workspaceBackground.value.imageUrl
+		? `url(${JSON.stringify(workspaceBackground.value.imageUrl)})`
+		: 'none',
+	backgroundSize: workspaceBackground.value.imageSize,
+	backgroundPosition: workspaceBackground.value.imagePosition,
+	backgroundRepeat: 'no-repeat',
+}))
 
 const selectedSet = computed(() => new Set(selectedShapeIds.value))
 const snapLines = computed(() =>
@@ -150,6 +166,7 @@ const selectedShape = computed(() => {
 })
 const isMaterialSelection = computed(() => selectedShape.value?.type === ('vue-material' as string))
 const isTableSelection = computed(() => selectedShape.value?.type === ('vue-table' as string))
+const isResumeSelection = computed(() => selectedShape.value?.type === ('vue-resume' as string))
 const selectedArrowHandles = computed(() => {
 	if (selectedShapeIds.value.length !== 1) return []
 	const shape = selectedShape.value
@@ -621,6 +638,7 @@ function getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig {
 		viewportSize: { ...viewportSize.value },
 		pxPerMm: workspaceBounds.getPxPerMm(),
 		printDataSource: printDataSource.value ? cloneJson(printDataSource.value) : undefined,
+		background: cloneJson(workspaceBackground.value),
 	}
 }
 
@@ -631,6 +649,14 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 		workspacePageSizeMm.value = workspaceBounds.getPageSizeMm()
 		workspaceRevision.value++
 		didUpdatePageSize = true
+	}
+	if (config.background) {
+		workspaceBackground.value = {
+			...workspaceBackground.value,
+			...cloneJson(config.background),
+			imageUrl: config.background.imageUrl ?? '',
+		}
+		workspaceRevision.value++
 	}
 
 	if (config.camera) {
@@ -802,6 +828,7 @@ onBeforeUnmount(() => {
 					width: `${workspacePage.w}px`,
 					height: `${workspacePage.h}px`,
 					'--inverse-zoom': String(1 / camera.z),
+					...workspacePageStyle,
 				}"
 			/>
 
@@ -864,6 +891,7 @@ onBeforeUnmount(() => {
 					'is-passive': activeTool !== 'select',
 					'is-material-selection': isMaterialSelection,
 					'is-table-selection': isTableSelection,
+					'is-resume-selection': isResumeSelection,
 				}"
 				:style="{
 					width: `${selectionControl.w}px`,

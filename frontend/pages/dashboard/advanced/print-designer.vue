@@ -54,6 +54,7 @@
       <TldrawVue
         ref="designerRef"
         :plugins="designerPlugins"
+        show-mode-controls
         :show-template-controls="false"
         @content-change="markTemplateDirty"
         @ready="handleDesignerReady"
@@ -80,6 +81,7 @@ import {
 import { VxeUI } from 'vxe-pc-ui';
 import TldrawVue, {
   defineVueEditorPlugin,
+  type DesignerMode,
   type Editor,
   type TLContent,
   type VueEditorPlugin,
@@ -89,6 +91,7 @@ import TldrawVue, {
 
 type TldrawVueExpose = {
   getEditor(): Editor | null;
+  getDesignerMode(): DesignerMode;
   getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig | undefined;
   applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig): void;
 };
@@ -361,8 +364,13 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
     const editPage = await getPrintTemplateEditPage();
     const initialValues = createSaveDialogValues(mode, snapshot);
     const result = await confirmLowCodePage({
-      page: createPrefilledEditPage(editPage, initialValues),
+      page: createTemplateSaveDialogPage(editPage),
       includeData: false,
+      formInitialValues: {
+        [PRINT_TEMPLATE_EDIT_FORM_ID]: initialValues
+      },
+      disableFormAutoLoad: true,
+      submitOnConfirm: true,
       serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
       router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
       route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
@@ -378,8 +386,11 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
 
     if (result.action === 'cancel' || result.action === 'close') return;
 
-    const values = readTemplateFormValues(result.payload, initialValues);
-    await persistTemplateFromDialog(mode, values, snapshot);
+    const savedRecord = result.payload?.savedRecord;
+    if (!savedRecord) {
+      throw new Error('模板编辑页未返回已保存的模板记录');
+    }
+    await finishTemplateSave(savedRecord as PrintTemplateRow, snapshot);
   } catch (error) {
     showMessage(getErrorMessage(error, '模板保存页面加载失败'), 'error');
   } finally {
@@ -417,71 +428,18 @@ function createSaveDialogValues(mode: TemplateSaveMode, snapshot: TemplateSnapsh
   };
 }
 
-function createPrefilledEditPage(
-  page: LowCodePageRecord,
-  initialValues: Record<string, unknown>
-): LowCodePageRecord {
+function createTemplateSaveDialogPage(page: LowCodePageRecord): LowCodePageRecord {
   return {
     ...page,
     schema: {
       ...page.schema,
-      dataSources: {},
-      blocks: page.schema.blocks.map((block) => {
-        if (block.kind !== 'form' || block.id !== PRINT_TEMPLATE_EDIT_FORM_ID) return block;
-        return {
-          ...block,
-          sourceKey: undefined,
-          submitSourceKey: undefined,
-          initialValues: cloneJson(initialValues),
-          schema: {
-            ...block.schema,
-            actions: []
-          }
-        };
-      })
+      blocks: page.schema.blocks
+        .filter((block) => block.kind !== 'buttonGroup')
+        .map((block) => block.kind === 'form' && block.id === PRINT_TEMPLATE_EDIT_FORM_ID
+          ? { ...block, schema: { ...block.schema, actions: [] } }
+          : block)
     }
   };
-}
-
-function readTemplateFormValues(payload: unknown, fallback: Record<string, unknown>) {
-  if (!isRecord(payload) || !isRecord(payload.formModels)) return fallback;
-  const form = payload.formModels[PRINT_TEMPLATE_EDIT_FORM_ID];
-  return isRecord(form) ? { ...fallback, ...form } : fallback;
-}
-
-async function persistTemplateFromDialog(
-  mode: TemplateSaveMode,
-  values: Record<string, unknown>,
-  snapshot: TemplateSnapshot
-) {
-  const existing = mode === 'save' ? selectedTemplate.value : null;
-  const name = typeof values.name === 'string' ? values.name.trim() : '';
-  if (!name) {
-    throw new Error('模板名称不能为空');
-  }
-
-  if (hasTemplateName(name, existing?.id ?? '')) {
-    throw new Error('模板名称已存在，请使用其他名称');
-  }
-
-  const status = isTemplateStatus(values.status) ? values.status : 'active';
-  const data = {
-    name,
-    content: cloneJson(snapshot.content),
-    workspace: cloneJson(snapshot.workspace),
-    status,
-    version: existing ? existing.version + 1 : 1,
-    metadata: createTemplateMetadata(
-      isRecord(values.metadata) ? values.metadata : existing?.metadata
-    )
-  };
-  const row = await serviceApi.invoke<PrintTemplateRow>('admin', 'saveItem', {
-    resource: PRINT_TEMPLATE_RESOURCE,
-    ...(existing ? { id: existing.id } : {}),
-    data
-  });
-
-  await finishTemplateSave(row, snapshot);
 }
 
 async function finishTemplateSave(row: PrintTemplateRow, snapshot: TemplateSnapshot) {
@@ -662,7 +620,8 @@ function getWorkspaceDirtySignature(config: VueTemplateWorkspaceConfig) {
   return JSON.stringify({
     pageSizeMm: workspace.pageSizeMm ?? null,
     guides: workspace.guides ?? [],
-    printDataSource: workspace.printDataSource ?? null
+    printDataSource: workspace.printDataSource ?? null,
+    background: workspace.background ?? null
   });
 }
 

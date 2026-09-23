@@ -2939,3 +2939,9 @@ body:has(.form-designer-dialog) .vxe-ico-picker--panel {
   flex: 1 !important;
   overflow: hidden;
 }
+
+
+.vxe-input--wrapper .vxe-input--inner{
+  width: 100%;
+  height: 100%;
+}

@@ -54,7 +54,8 @@
     "rbush": "^3.0.1",
     "vxe-pc-ui": "^4.16.22",
     "vxe-table": "^4.20.7",
-    "vxe-table-plugin-extend-cell-area": "0.1.0"
+    "vxe-table-plugin-extend-cell-area": "0.1.0",
+    "xlsx": "^0.18.5"
   },
   "peerDependencies": {
     "@enlearn/lowcode-framework": "^0.1.0",

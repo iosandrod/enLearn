@@ -50,6 +50,8 @@ const TYPE_LABELS: Record<string, string> = {
 	'vue-table': '表格节点',
 	'vue-material': '物料节点',
 	'vue-material-section': '物料分区',
+	'vue-resume': '简历分页组件',
+	'vue-resume-section': '简历分区',
 	group: '分组',
 }
 
@@ -66,6 +68,8 @@ const TYPE_ICONS: Record<string, string> = {
 	'vue-table': '▤',
 	'vue-material': '▤',
 	'vue-material-section': '▭',
+	'vue-resume': '▤',
+	'vue-resume-section': '▭',
 	group: '◇',
 }
 

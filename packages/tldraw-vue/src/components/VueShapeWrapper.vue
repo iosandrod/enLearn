@@ -21,6 +21,8 @@ const shapeComponent = computed(() => getVueShapeComponent(props.shape.type))
 	<component
 		:is="shapeComponent"
 		v-if="shapeComponent"
+		:data-shape-id="shape.id"
+		:data-presentation-target="shape.id"
 		:editor="editor"
 		:shape="shape"
 		:selected="selected"

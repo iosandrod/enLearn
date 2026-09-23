@@ -11,6 +11,7 @@ export { resolveObjectExpressions, resolveTemplateString } from './expression'
 export { PrintManager } from './PrintManager'
 export { PrintCancelledError, PrintQueue } from './queue'
 export { PrintRenderer } from './renderer'
+export { createResumePrintPlan, getResumeOverrides, getResumePageUpdates } from './resume'
 export type {
 	BluetoothPrinterConfig,
 	BrowserPrinterConfig,
@@ -32,6 +33,8 @@ export type {
 	PrintMaterialGridColumn,
 	PrintMaterialGridConfig,
 	PrintMaterialGridInstance,
+	PrintResumeConfig,
+	PrintResumeInstance,
 	PrintPageConfig,
 	PrintPageRenderResult,
 	PrintProgress,

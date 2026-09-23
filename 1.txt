@@ -2561,3 +2561,8 @@ if (
         <i class="ri-building-4-line" />
       </div>
     </section>
+
+    <div v-if="actionMessage" class="lowcode-form-panel__action-message" role="status">
+			<i class="ri-information-line" aria-hidden="true" />
+			<span>{{ actionMessage }}</span>
+		</div>

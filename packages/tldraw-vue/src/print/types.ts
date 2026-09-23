@@ -6,6 +6,21 @@ export interface PrintDataSourceDetailColumn {
 	field: string
 	title: string
 	width?: number
+	[key: string]: unknown
+}
+
+export interface PrintDataSourceDetailTable {
+	id: string
+	field: string
+	label: string
+	columns: readonly PrintDataSourceDetailColumn[]
+	gridOptions?: Record<string, unknown>
+	gridEvents?: readonly Record<string, unknown>[]
+}
+
+export interface PrintDataSourceFieldReference {
+	field: string
+	label: string
 }
 
 export type PrintDataSourceConfig =
@@ -17,6 +32,8 @@ export type PrintDataSourceConfig =
 			tableName?: string
 			detailField?: string
 			detailColumns?: readonly PrintDataSourceDetailColumn[]
+			detailTables?: readonly PrintDataSourceDetailTable[]
+			headerFields?: readonly PrintDataSourceFieldReference[]
 	  }
 	| { type: 'json'; value: string | unknown; dataPath?: string }
 	| { type: 'csv'; value: string; delimiter?: string; header?: boolean }
@@ -53,6 +70,7 @@ export interface PrintTemplateConfig {
 	pxPerMm?: number
 	materialGrid?: PrintMaterialGridConfig | PrintMaterialGridInstance
 	materialGrids?: PrintMaterialGridCollection
+	resume?: PrintResumeConfig | PrintResumeInstance
 }
 
 export type PrintMaterialGridCollection =
@@ -74,6 +92,24 @@ export interface PrintMaterialGridConfig {
 }
 
 export type PrintMaterialGridInstance = object
+
+export type PrintResumeInstance = object
+
+export interface PrintResumeConfig {
+	resumeId?: TLShapeId
+	data?: readonly PrintDataRow[]
+	dataPath?: string
+	itemFields?: {
+		name?: string
+		title?: string
+		period?: string
+		description?: string
+	}
+	fontSize?: number
+	lineHeight?: number
+	itemGap?: number
+	minItemHeight?: number
+}
 
 export interface PrintMaterialGridColumn {
 	field?: string

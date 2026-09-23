@@ -231,6 +231,7 @@ export default defineConfig({
       { find: 'vue/jsx-runtime', replacement: resolve(__dirname, 'runtime/vue-jsx-runtime.tsx') },
       { find: /^@\/editor(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'editor')}$1` },
       { find: /^@\/print(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'print')}$1` },
+      { find: /^@\/presentation(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'presentation')}$1` },
       { find: /^@\/vue(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'vue')}$1` },
       { find: /^@\/components\/shapes(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'components', 'shapes')}$1` },
       { find: '~', replacement: __dirname },
