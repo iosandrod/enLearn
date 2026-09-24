@@ -420,9 +420,14 @@ export function createFormDataSource(
 
   const configured = isPlainRecord(props.dataSource) ? props.dataSource : {};
   const configuredPostData = readJsonObject(configured.postData, {});
+  const configuredSavePostData = readJsonObject(configured.savePostData, {});
   const postData = {
     ...configuredPostData,
     ...readJsonObject(props.postDataJson, {}),
+  };
+  const savePostData = {
+    ...configuredSavePostData,
+    ...readJsonObject(props.savePostDataJson, {}),
   };
   const serviceName = readString(props.serviceName, readString(configured.serviceName, 'admin'));
   const serviceMethod = readString(
@@ -458,6 +463,7 @@ export function createFormDataSource(
     serviceName,
     serviceMethod,
     ...(saveMethod ? { saveMethod } : {}),
+    ...(Object.keys(savePostData).length ? { savePostData } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
     ...(entityCode ? { entityCode } : {}),
     ...(tableName ? { tableName } : {}),

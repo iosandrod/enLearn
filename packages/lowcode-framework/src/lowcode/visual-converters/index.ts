@@ -804,6 +804,7 @@ function convertRuntimeBlockToVisual(
         serviceName: source?.serviceName ?? 'admin',
         serviceMethod: source?.serviceMethod ?? '',
         saveMethod: source?.saveMethod ?? '',
+        savePostDataJson: stringifyJson(source?.savePostData, {}),
         entityCode: readDataSourceEntityCode(source),
         tableName: readDataSourceTableName(source),
         postDataJson: stringifyJson(source?.postData, {}),

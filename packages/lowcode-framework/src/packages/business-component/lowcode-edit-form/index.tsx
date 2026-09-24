@@ -40,6 +40,7 @@ export default {
     serviceMethod: 'listItems',
     saveMethod: 'saveItem',
     postDataJson: {},
+    savePostDataJson: {},
     initialValuesJson: {},
     submitText: '保存',
     resetText: '重置',

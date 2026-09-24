@@ -103,6 +103,7 @@ export type PageDataControllerDependencies = {
     key: string,
     source: LowCodePageDataSource,
   ): Record<string, unknown>;
+  resolveRuntimePostData(postData?: Record<string, unknown>): Record<string, unknown>;
   resolveRuntimeRoute(path: string, row?: Record<string, unknown>): string;
   shouldReturnEmptyForUnavailableList(error: unknown, serviceMethod: string): boolean;
   isListItemsRequest(serviceName: string, serviceMethod: string): boolean;
@@ -833,12 +834,17 @@ export class PageDataController {
       : '';
     const saveResource = serviceName !== 'admin' ? physicalTableName : '';
 
-    return this.dependencies.host.getServiceApi().invoke(serviceName, serviceMethod, {
-      ...request.postData,
+    const configuredSavePostData = this.dependencies.resolveRuntimePostData(source.savePostData);
+    const savePostData: Record<string, unknown> = {
+      ...configuredSavePostData,
       ...values,
-      ...(writeTableName ? { tableName: writeTableName } : {}),
+      ...(physicalTableName && !readString(configuredSavePostData.tableName)
+        ? { tableName: writeTableName || physicalTableName }
+        : {}),
       ...(saveResource ? { resource: saveResource } : {}),
-    });
+    };
+
+    return this.dependencies.host.getServiceApi().invoke(serviceName, serviceMethod, savePostData);
   }
 
   private readonly readSavedRecord = (value: unknown): Record<string, unknown> | undefined => {
@@ -1031,7 +1037,7 @@ export class PageDataController {
 
   readonly loadPageData = async (
     nextPage: LowCodePageRecord,
-    options: { skipDataSources?: boolean } = {},
+    options: { skipDataSources?: boolean; disablePageAutoLoad?: boolean } = {},
   ) => {
     // debugger//
     const pageBlocks = this.dependencies.flattenPageBlocks(nextPage.schema);
@@ -1085,7 +1091,7 @@ export class PageDataController {
       return [];
     }
 
-    if (options.skipDataSources) {
+    if (options.disablePageAutoLoad === true || options.skipDataSources) {
       this.syncPageGridStates(nextPage.schema);
       this.restoreGridInteractionState(gridInteractionState);
       this.captureFormBaselines();

@@ -222,6 +222,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     findRuntimeBlock,
     resolveDataSourceRequest,
     resolveDataSourcePostData,
+    resolveRuntimePostData,
     resolveRuntimeRoute,
     shouldReturnEmptyForUnavailableList,
     isListItemsRequest,
@@ -575,6 +576,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
 
       try {
         const errors = await loadPageData(props.page, {
+          disablePageAutoLoad: props.disablePageAutoLoad === true,
           skipDataSources: props.disablePageAutoLoad === true,
         });
 

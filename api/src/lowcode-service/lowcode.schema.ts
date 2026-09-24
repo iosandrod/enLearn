@@ -25,6 +25,7 @@ export type LowCodePageSchema = {
       serviceMethod?: string;
       saveMethod?: string;
       saveServiceName?: string;
+      savePostData?: Record<string, unknown>;
       deleteMethod?: string;
       entityCode?: string;
       entity_code?: string;
@@ -253,6 +254,7 @@ function normalizeDataSource(
   const usesListItems = Boolean(entityCode || readTarget);
   const saveMethod = readString(source.saveMethod);
   const saveServiceName = readString(source.saveServiceName, sourceServiceName);
+  const savePostData = readPostDataObject(source.savePostData);
   const deleteMethod = readString(source.deleteMethod);
   const postData = { ...sourcePostData };
   if (sourceType !== 'custom') {
@@ -274,6 +276,7 @@ function normalizeDataSource(
     serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
     ...(saveMethod && saveServiceName ? { saveServiceName } : {}),
+    ...(Object.keys(savePostData).length ? { savePostData } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
     ...(tableName ? { tableName } : {}),
     ...(normalizedViewName ? { viewName: normalizedViewName } : {}),

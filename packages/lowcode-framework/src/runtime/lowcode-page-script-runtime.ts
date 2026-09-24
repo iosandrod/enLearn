@@ -451,6 +451,8 @@ export class LowCodePageScriptRuntime {
         );
       case 'material.getData':
         return executeLowCodeMaterialRuntimeAction(block.id, 'getData');
+      case 'material.getTemplateInfo':
+        return executeLowCodeMaterialRuntimeAction(block.id, 'getTemplateInfo');
       case 'material.validate':
         return executeLowCodeMaterialRuntimeAction(block.id, 'validate');
       case 'material.resetData':

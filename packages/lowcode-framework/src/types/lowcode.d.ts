@@ -373,10 +373,12 @@ export type LowCodePageDataSource = {
      * 的第二个参数；列表数据通常使用 `listItems`。
      */
     serviceMethod?: string;
-    /** 表单提交时调用的服务方法；请求参数由 `postData` 和表单值合并得到。 */
+    /** 表单提交时调用的服务方法；请求参数由 `savePostData` 和表单值合并得到。 */
     saveMethod?: string;
     /** 表单提交使用的服务名；视图数据源可与读取服务名不同。 */
     saveServiceName?: string;
+    /** 仅用于表单保存的基础请求参数，不继承读取请求的 filters、分页或排序参数。 */
+    savePostData?: Record<string, unknown>;
     /** 表格删除行时调用的服务方法；请求参数由 `postData` 和当前行数据合并得到。 */
     deleteMethod?: string;
     /**

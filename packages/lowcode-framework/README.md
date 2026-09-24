@@ -1123,6 +1123,7 @@ type LowCodePageDataSource = {
   serviceName: string;
   serviceMethod: string;
   saveMethod?: string;
+  savePostData?: Record<string, unknown>;
   deleteMethod?: string;
   postData?: Record<string, unknown>;
   autoLoad?: boolean;

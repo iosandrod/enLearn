@@ -53,6 +53,10 @@ const rendererRuntime = await readFile(
   new URL('../../packages/lowcode-framework/src/runtime/useLowCodePageRenderer.ts', import.meta.url),
   'utf8',
 );
+const formConverter = await readFile(
+  new URL('../../packages/lowcode-framework/src/lowcode/visual-converters/lowcode-edit-form/index.ts', import.meta.url),
+  'utf8',
+);
 
 assert.match(saveDialogMigration, /pageCode: 'print-templates-edit'/);
 assert.match(saveDialogMigration, /submitOnConfirm: true/);
@@ -102,7 +106,14 @@ assert.doesNotMatch(materialStateMigration, /const templateId = String\(this\.ro
 assert.match(rendererTypes, /disablePageAutoLoad\?: boolean/);
 assert.match(runtime, /'disablePageAutoLoad'/);
 assert.match(runtime, /request\.name === 'router\.push'[\s\S]*getRouter\(\)\.push/);
-assert.match(pageDataController, /if \(options\.skipDataSources\)[\s\S]*captureFormBaselines\(\)[\s\S]*return \[\]/);
+assert.match(pageDataController, /if \(options\.disablePageAutoLoad === true \|\| options\.skipDataSources\)[\s\S]*captureFormBaselines\(\)[\s\S]*return \[\]/);
+assert.match(pageDataController, /options: \{ skipDataSources\?: boolean; disablePageAutoLoad\?: boolean \}/);
+assert.match(pageDataController, /if \(options\.disablePageAutoLoad === true \|\| options\.skipDataSources\)/);
+assert.match(pageDataController, /resolveRuntimePostData\(source\.savePostData\)/);
+assert.match(pageDataController, /const savePostData:[\s\S]*\.\.\.configuredSavePostData,[\s\S]*\.\.\.values/);
+assert.doesNotMatch(pageDataController, /\.\.\.request\.postData,[\s\S]*\.\.\.values/);
+assert.match(formConverter, /savePostDataJson: '\{\}'/);
+assert.match(rendererRuntime, /disablePageAutoLoad: props\.disablePageAutoLoad === true,[\s\S]*skipDataSources: props\.disablePageAutoLoad === true/);
 assert.match(rendererRuntime, /skipDataSources: props\.disablePageAutoLoad === true/);
 
 console.log('Print template save dialog regression test passed.');

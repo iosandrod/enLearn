@@ -2,6 +2,7 @@ export type LowCodeMaterialRuntimeController = {
   loadData?: (options?: Record<string, unknown>) => unknown | Promise<unknown>;
   setData?: (value: unknown, options?: Record<string, unknown>) => unknown | Promise<unknown>;
   getData?: () => unknown | Promise<unknown>;
+  getTemplateInfo?: () => unknown | Promise<unknown>;
   validate?: () => unknown | Promise<unknown>;
   resetData?: () => unknown | Promise<unknown>;
   save?: () => unknown | Promise<unknown>;
