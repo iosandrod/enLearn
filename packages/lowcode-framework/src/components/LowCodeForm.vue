@@ -16,6 +16,7 @@
       :nodes="layoutNodes"
       :fields-by-key="fieldsByKey"
       :style="formLayoutStyle"
+      @tab-change="(key) => emit('tab-change', key)"
     >
       <template #field="{ field }">
         <vxe-form-item
@@ -221,6 +222,7 @@ const emit = defineEmits<{
       formValues: Record<string, unknown>;
     },
   ];
+  'tab-change': [key: string];
 }>();
 
 const attrs = useAttrs();

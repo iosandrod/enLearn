@@ -44,6 +44,11 @@ type DetailImportConfig = {
 	mode: 'append' | 'replace'
 }
 
+type AddDetailTableModel = {
+	label: string
+	field: string
+}
+
 interface StoredFormDefinition {
 	id: string
 	code: string
@@ -78,6 +83,74 @@ const activeSourceTab = ref<'header' | 'detail'>('header')
 const detailTables = computed(() =>
 	activeDefinition.value ? getPrintDataSourceDetailTables(activeDefinition.value.schema) : [],
 )
+const detailFormModel = ref<Record<string, unknown[]>>({})
+const detailFormSchema = computed<LowCodeFormSchema>(() => ({
+	title: '明细数据',
+		columns: 1,
+		fields: detailTables.value.map((table) => ({
+			field: table.field,
+			label: table.label,
+			component: 'lc-array-table',
+			showTitle: false,
+			props: {
+				columns: table.columns.map((column) => ({
+					...column,
+					component: column.component ?? 'vxe-input',
+				})),
+				showSeq: true,
+				fillAvailableHeight: true,
+				toolbarButtons: [
+					{ code: 'add', label: '新增行', command: 'add', status: 'primary' },
+					{
+						code: 'clear',
+						label: '清空',
+						status: 'warning',
+						execute: ({ rows }: { rows: Record<string, unknown>[] }) => {
+							rows.splice(0, rows.length)
+							handleDetailFormUpdate({ ...detailFormModel.value, [table.field]: [] })
+						},
+					},
+					{
+						code: 'import',
+						label: '导入',
+						execute: () => {
+							activeDetailTableId.value = table.id
+							void handleImportData()
+						},
+					},
+					{
+						code: 'configure',
+						label: '表格配置',
+						execute: () => {
+							activeDetailTableId.value = table.id
+							void handleConfigureDetailTable()
+						},
+					},
+					{
+						code: 'delete',
+						label: '删除子表',
+						status: 'danger',
+						execute: () => {
+							activeDetailTableId.value = table.id
+							void handleDeleteDetailTable()
+						},
+					},
+				],
+				...(table.gridOptions ?? {}),
+			},
+		})),
+		layout: [{
+			kind: 'tabs',
+			fillRemaining: true,
+			defaultKey: activeDetailTableId.value || detailTables.value[0]?.id,
+			tabs: detailTables.value.map((table) => ({
+				key: table.id,
+				label: `${table.label}（${table.field}）`,
+				blocks: [{ kind: 'field', field: table.field }],
+			})),
+		}],
+		actions: [],
+}))
 const activeDetailTableId = ref('')
 const activeDetailTable = computed(() =>
 	detailTables.value.find((table) => table.id === activeDetailTableId.value) ?? detailTables.value[0],
@@ -196,7 +269,7 @@ function handleDesignDataSource() {
 	})
 }
 
-function handleAddDetailTable() {
+async function handleAddDetailTable() {
 	notifyAction('design')
 	const definition = activeDefinition.value
 	if (!definition) {
@@ -204,13 +277,74 @@ function handleAddDetailTable() {
 		return
 	}
 	const nextIndex = detailTables.value.length + 1
+	const model: AddDetailTableModel = {
+		label: `明细${nextIndex}`,
+		field: `detail_${nextIndex}`,
+	}
+	const result = await openGlobalDialog<AddDetailTableModel>({
+		title: '添加子表',
+		width: 520,
+		model,
+		form: {
+			schema: createAddDetailTableSchema(),
+			model,
+		},
+		actions: [
+			{ code: 'cancel', label: '取消', role: 'cancel' },
+			{ code: 'confirm', label: '添加', role: 'confirm', status: 'primary' },
+		],
+		onConfirm: ({ model: values }) => {
+			const label = readString(values.label)
+			const field = readString(values.field)
+			if (!label) throw new Error('请输入子表名称。')
+			if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(field)) {
+				throw new Error('子表字段只能以字母或下划线开头，并包含字母、数字或下划线。')
+			}
+			if (detailTables.value.some((table) => table.field === field)) {
+				throw new Error(`子表字段“${field}”已存在。`)
+			}
+		},
+	})
+	debugger//
+	if (result.action !== 'confirm') return
+
+	const label = readString(result.values.label)
+	const field = readString(result.values.field)
 	const table: PrintDataSourceDetailTable = {
 		id: createDetailTableId(),
-		field: `detail_${nextIndex}`,
-		label: `明细${nextIndex}`,
+		field,
+		label,
 		columns: [{ field: 'value', title: '值', width: 120 }],
 	}
-	void saveDetailTables(definition, [...detailTables.value, table], table.id)
+	try {
+		await saveDetailTables(definition, [...detailTables.value, table], table.id)
+	} catch (error) {
+		setActionMessage(error instanceof Error ? error.message : '子表保存失败。')
+	}
+}
+
+function createAddDetailTableSchema(): LowCodeFormSchema {
+	return {
+		title: '子表信息',
+		columns: 1,
+		fields: [
+			{
+				field: 'label',
+				label: '子表名称',
+				component: 'vxe-input',
+				props: { placeholder: '例如：商品明细' },
+				rules: [{ required: true, message: '请输入子表名称' }],
+			},
+			{
+				field: 'field',
+				label: '数据字段',
+				component: 'vxe-input',
+				props: { placeholder: '例如：items' },
+				rules: [{ required: true, message: '请输入数据字段' }],
+			},
+		],
+		actions: [],
+	}
 }
 
 async function handleDeleteDetailTable() {
@@ -421,6 +555,7 @@ function convertImportedRows(matrix: unknown[][], table: PrintDataSourceDetailTa
 }
 
 function updateDetailRows(field: string, rows: Record<string, unknown>[]) {
+	detailFormModel.value = { ...detailFormModel.value, [field]: rows }
 	const current = props.getWorkspaceTemplateConfig?.() ?? {}
 	const source = current.printDataSource
 	if (!source || source.type !== 'inline') return
@@ -433,61 +568,59 @@ function updateDetailRows(field: string, rows: Record<string, unknown>[]) {
 	})
 }
 
+function syncDetailFormModel(source = getWorkspaceDataSource()) {
+	detailFormModel.value = Object.fromEntries(
+		detailTables.value.map((table) => [
+			table.field,
+			getPrintDataSourceDetailRows(source, table.field),
+		]),
+	)
+}
+
+function handleDetailFormUpdate(value: Record<string, unknown>) {
+	const nextModel = Object.fromEntries(
+		detailTables.value.map((table) => [
+			table.field,
+			Array.isArray(value[table.field]) ? value[table.field] : [],
+		]),
+	)
+	detailFormModel.value = nextModel as Record<string, unknown[]>
+	const current = props.getWorkspaceTemplateConfig?.() ?? {}
+	const source = current.printDataSource
+	if (!source || source.type !== 'inline') return
+	const inlineSource = source as Extract<NonNullable<VueTemplateWorkspaceConfig['printDataSource']>, { type: 'inline' }>
+	const rows = inlineSource.rows.length ? inlineSource.rows : [{}]
+	props.applyWorkspaceTemplateConfig?.({
+		...current,
+		printDataSource: {
+			...inlineSource,
+			rows: rows.map((row) => ({
+				...row,
+				...nextModel,
+			})),
+		},
+	})
+}
+
+function handleDetailTabChange(key: string) {
+	const table = detailTables.value.find((item) => item.id === key)
+	if (!table) return
+	activeDetailTableId.value = table.id
+	const current = props.getWorkspaceTemplateConfig?.() ?? {}
+	const source = current.printDataSource
+	if (!source || source.type !== 'inline' || source.detailField === table.field) return
+	props.applyWorkspaceTemplateConfig?.({
+		...current,
+		printDataSource: {
+			...source,
+			detailField: table.field,
+			detailColumns: table.columns.map((column) => ({ ...column })),
+		},
+	})
+}
+
 function createDataSourceDefinitionSchema(readonlyCode = false): LowCodeFormSchema {
-	return {
-		title: '数据源信息',
-		columns: 2,
-		fields: [
-			{
-				field: 'code',
-				label: '数据源编码',
-				component: 'vxe-input',
-				rules: [{ required: true, message: '请输入数据源编码' }],
-				props: {
-					placeholder: 'print-designer.datasource.inventory',
-					...(readonlyCode ? { disabled: true } : {}),
-				},
-			},
-			{
-				field: 'name',
-				label: '数据源名称',
-				component: 'vxe-input',
-				rules: [{ required: true, message: '请输入数据源名称' }],
-				props: { placeholder: '请输入数据源名称' },
-			},
-			{
-				field: 'tableName',
-				label: '关联表',
-				component: 'vxe-input',
-				rules: [{ required: true, message: '请输入业务表名' }],
-				props: { placeholder: '例如：public.inventory' },
-			},
-			{
-				field: 'description',
-				label: '描述',
-				component: 'vxe-textarea',
-				span: 2,
-				props: { placeholder: '请输入数据源说明', rows: 2 },
-			},
-		],
-		layout: [
-			{
-				kind: 'row',
-				columns: [
-					{ span: 1, blocks: [{ kind: 'field', field: 'code' }] },
-					{ span: 1, blocks: [{ kind: 'field', field: 'name' }] },
-				],
-			},
-			{
-				kind: 'row',
-				columns: [
-					{ span: 1, blocks: [{ kind: 'field', field: 'tableName' }] },
-					{ span: 1, blocks: [{ kind: 'field', field: 'description' }] },
-				],
-			},
-		],
-		actions: [],
-	}
+	return {} as any
 }
 
 async function saveDataSourceDefinition(
@@ -500,12 +633,10 @@ async function saveDataSourceDefinition(
 	const name = readString(model.name)
 	const tableName = readString(model.tableName)
 	const description = readString(model.description)
-	if (!/^print-designer\.datasource\.[A-Za-z0-9_-]+$/.test(code)) {
-		throw new Error('数据源编码必须以 print-designer.datasource. 开头，并包含英文、数字、下划线或短横线。')
+	if (!/^print-designer\.datasource\./.test(code)) {
+		throw new Error('数据源编码必须以 print-designer.datasource. 开头')
 	}
-	if (!/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/.test(tableName)) {
-		throw new Error('关联表名格式不正确，只支持 table 或 schema.table。')
-	}
+
 	const serviceApi = host.getServiceApi()
 	if (!id) {
 		const existing = await serviceApi.invoke<unknown[]>('lowcode', 'listItems', {
@@ -544,18 +675,72 @@ async function saveDetailTables(
 	selectedId?: string,
 ) {
 	const schema = {
-		...structuredClone(definition.schema),
+		// ...structuredClone(definition.schema),
+		...definition.schema,//
 		printDetail: tables,
 	}
-	await host.getServiceApi().invoke('lowcode', 'updateItem', {
-		resource: 'lowcode_form_definitions',
-		id: definition.id,
-		data: { schema },
-	})
-	await loadDefinitions()
-	activeSourceTab.value = 'detail'
+	const nextDefinition: PrintDataSourceFormDefinition = {
+		...definition,
+		schema,
+	}
+	// Update the local definition and canvas source first so the left data-source
+	// menu reflects the new detail table immediately, without waiting for the
+	// catalog round-trip to finish.
+	activeDefinition.value = nextDefinition
 	activeDetailTableId.value = selectedId ?? tables[0]?.id ?? ''
+	applyWorkspaceDetailTables(tables)
+	syncDetailFormModel()
+	activeSourceTab.value = 'detail'
+	try {
+		await host.getServiceApi().invoke('lowcode', 'saveItem', {
+			resource: 'lowcode_form_definitions',//
+			id: definition.id,
+			data: { schema },
+		})
+		// await loadDefinitions()
+	} catch (error) {
+		console.error(error)//
+		// Keep the optimistic local state visible, but report the persistence error.
+		setActionMessage(error instanceof Error ? error.message : '子表配置保存失败。')
+		return
+	}
 	setActionMessage('子表配置已保存。')
+}
+
+function applyWorkspaceDetailTables(tables: PrintDataSourceDetailTable[]) {
+	const current = props.getWorkspaceTemplateConfig?.() ?? {}
+	const source = current.printDataSource
+	if (!source || source.type !== 'inline') return
+	const inlineSource = source as Extract<NonNullable<VueTemplateWorkspaceConfig['printDataSource']>, { type: 'inline' }>
+
+	const previousFields = new Set(
+		(inlineSource.detailTables ?? []).map((table) => readString(table.field)).filter(Boolean),
+	)
+	const nextFields = new Set(tables.map((table) => table.field))
+	const sourceRows = inlineSource.rows.length ? inlineSource.rows : [{}]
+	const rows = sourceRows.map((row) => {
+		const nextRow = { ...row }
+		previousFields.forEach((field) => {
+			if (!nextFields.has(field)) delete nextRow[field]
+		})
+		tables.forEach((table) => {
+			if (!Array.isArray(nextRow[table.field])) nextRow[table.field] = []
+		})
+		return nextRow
+	})
+	props.applyWorkspaceTemplateConfig?.({
+		...current,
+		printDataSource: {
+			...inlineSource,
+			rows,
+			detailField: tables.find((table) => table.id === activeDetailTableId.value)?.field ?? tables[0]?.field,
+			detailColumns: (tables.find((table) => table.id === activeDetailTableId.value)?.columns ?? tables[0]?.columns ?? []).map((column) => ({ ...column })),
+			detailTables: tables.map((table) => ({
+				...table,
+				columns: table.columns.map((column) => ({ ...column })),
+			})),
+		},
+	})
 }
 
 function createDetailTableId() {
@@ -652,7 +837,13 @@ async function activateDefinition(code: string, resetModel: boolean) {
 
 	activeDefinition.value = definition
 	activeSourceTab.value = 'header'
-	activeDetailTableId.value = getPrintDataSourceDetailTables(definition.schema)[0]?.id ?? ''
+	const detailDefinitions = getPrintDataSourceDetailTables(definition.schema)
+	const workspaceSource = getWorkspaceDataSource()
+	const activeField = workspaceSource?.type === 'inline' ? workspaceSource.detailField : undefined
+	activeDetailTableId.value = detailDefinitions.find((table) => table.field === activeField)?.id
+		?? detailDefinitions[0]?.id
+		?? ''
+	syncDetailFormModel()
 	selectorModel.value = { formCode: definition.code }
 	formModel.value = getPrintDataSourceFormModel(
 		resetModel ? undefined : getWorkspaceDataSource(),
@@ -742,24 +933,10 @@ watch(
 </script>
 
 <template>
-	<section
-		class="lowcode-form-panel data-source-panel"
-		aria-label="打印数据源表单"
-		@pointerdown.stop
-		@pointermove.stop
-		@keydown.stop
-		@keyup.stop
-		@keypress.stop
-		@wheel.stop
-		@contextmenu.prevent.stop
-	>
-		<input
-			ref="importFileInput"
-			class="data-source-panel__file-input"
-			type="file"
-			accept=".xlsx,.xls,.csv"
-			@change="handleImportFileChange"
-		/>
+	<section class="lowcode-form-panel data-source-panel" aria-label="打印数据源表单" @pointerdown.stop @pointermove.stop
+		@keydown.stop @keyup.stop @keypress.stop @wheel.stop @contextmenu.prevent.stop>
+		<input ref="importFileInput" class="data-source-panel__file-input" type="file" accept=".xlsx,.xls,.csv"
+			@change="handleImportFileChange" />
 		<header class="lowcode-form-panel__header">
 			<div class="lowcode-form-panel__heading">
 				<div class="lowcode-form-panel__title">数据源</div>
@@ -767,141 +944,74 @@ watch(
 			</div>
 		</header>
 		<div v-if="selectorDefinition" class="data-source-panel__selector-form">
-			<LowCodeForm
-				:model-value="selectorModel"
-				:schema="selectorDefinition.schema"
-				:disabled="definitionsLoading"
-				@update:model-value="handleDefinitionChange"
-			/>
+			<div class="data-source-panel__actions-footer">
+			<div class="lowcode-form-panel__header-actions" aria-label="数据源操作">
+				<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary"
+					:disabled="definitionsLoading" title="添加数据源" @click="handleAddDataSource">
+					<i class="ri-add-line" aria-hidden="true" />
+					<span>添加</span>
+				</button>
+				<button type="button" class="lowcode-form-panel__action" title="管理数据源" @click="handleManageDataSource">
+					<i class="ri-settings-3-line" aria-hidden="true" />
+					<span>管理</span>
+				</button>
+				<button type="button" class="lowcode-form-panel__action" title="设计数据源" @click="handleDesignDataSource">
+					<i class="ri-layout-4-line" aria-hidden="true" />
+					<span>设计</span>
+				</button>
+			</div>
+		</div>
+			<LowCodeForm :model-value="selectorModel" :schema="selectorDefinition.schema" :disabled="definitionsLoading"
+				@update:model-value="handleDefinitionChange" />
 		</div>
 		<div v-if="definitionsLoading" class="lowcode-form-panel__state" role="status">
 			正在加载低代码表单...
 		</div>
-		<div
-			v-else-if="definitionError"
-			class="lowcode-form-panel__state lowcode-form-panel__state--error"
-			role="alert"
-		>
+		<div v-else-if="definitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error"
+			role="alert">
 			<p>{{ definitionError }}</p>
 			<button type="button" @click="loadDefinitions">重新加载</button>
 		</div>
 		<div v-else-if="activeDefinition" class="data-source-panel__body">
 			<div class="data-source-panel__tabs" role="tablist" aria-label="数据源区域">
-				<button
-					type="button"
-					:class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'header' }]"
-					role="tab"
-					:aria-selected="activeSourceTab === 'header'"
-					@click="activeSourceTab = 'header'"
-				>
+				<button type="button" :class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'header' }]"
+					role="tab" :aria-selected="activeSourceTab === 'header'" @click="activeSourceTab = 'header'">
 					表头
 				</button>
-				<button
-					type="button"
-					:class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'detail' }]"
-					role="tab"
-					:aria-selected="activeSourceTab === 'detail'"
-					@click="activeSourceTab = 'detail'"
-				>
+				<button type="button" :class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'detail' }]"
+					role="tab" :aria-selected="activeSourceTab === 'detail'" @click="activeSourceTab = 'detail'">
 					明细
 				</button>
 			</div>
 			<div v-if="activeSourceTab === 'header'" class="data-source-panel__header-form" role="tabpanel">
-				<LowCodeForm
-					:key="activeDefinition.code"
-					:model-value="formModel"
+				<LowCodeForm :key="activeDefinition.code" :model-value="formModel"
 					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)"
-					@update:model-value="handleModelUpdate"
-				/>
+					@update:model-value="handleModelUpdate" />
 			</div>
 			<div v-else class="data-source-panel__detail" role="tabpanel">
 				<div class="data-source-panel__detail-toolbar">
 					<div class="data-source-panel__detail-actions">
-						<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary" :disabled="!activeDetailTable" @click="handleAddDetailRow">
-							<i class="ri-add-line" aria-hidden="true" />
-							<span>新增行</span>
-						</button>
-						<button type="button" class="lowcode-form-panel__action" :disabled="!activeDetailTable" @click="handleImportData">
-							<i class="ri-file-excel-2-line" aria-hidden="true" />
-							<span>导入数据</span>
-						</button>
-						<button type="button" class="lowcode-form-panel__action" :disabled="!activeDetailTable || !detailRows.length" @click="handleClearDetailRows">
-							<i class="ri-delete-bin-6-line" aria-hidden="true" />
-							<span>清空数据</span>
-						</button>
-						<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary" @click="handleAddDetailTable">
+
+						<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary"
+							@click="handleAddDetailTable">
 							<i class="ri-add-line" aria-hidden="true" />
 							<span>添加子表</span>
 						</button>
-						<button type="button" class="lowcode-form-panel__action" :disabled="!activeDetailTable" @click="handleDeleteDetailTable">
-							<i class="ri-delete-bin-line" aria-hidden="true" />
-							<span>删除子表</span>
-						</button>
-						<button type="button" class="lowcode-form-panel__action" :disabled="!activeDetailTable" @click="handleConfigureDetailTable">
-							<i class="ri-settings-3-line" aria-hidden="true" />
-							<span>表格配置</span>
-						</button>
 					</div>
 				</div>
-				<div v-if="detailTables.length" class="data-source-panel__detail-tabs" role="tablist" aria-label="明细子表">
-					<button
-						v-for="table in detailTables"
-						:key="table.id"
-						type="button"
-						:class="['data-source-panel__detail-tab', { 'is-active': activeDetailTable?.id === table.id }]"
-						role="tab"
-						:aria-selected="activeDetailTable?.id === table.id"
-						@click="activeDetailTableId = table.id"
-					>
-						{{ table.label }}
-					</button>
-				</div>
-				<div v-if="activeDetailTable" class="data-source-panel__detail-grid">
-					<vxe-grid
-						v-bind="activeDetailTable.gridOptions"
-						:columns="activeDetailTable.columns"
-						:data="detailRows"
-						:border="true"
-						:show-overflow="true"
-						height="280"
-					/>
-				</div>
+				<LowCodeForm
+					v-if="detailTables.length"
+					:model-value="detailFormModel"
+					:schema="detailFormSchema"
+					class="data-source-panel__detail-form"
+					@update:model-value="handleDetailFormUpdate"
+					@tab-change="handleDetailTabChange"
+				/>
 				<div v-else class="lowcode-form-panel__state">
 					暂未添加明细子表，请先点击“添加子表”。
 				</div>
 			</div>
 		</div>
-		<footer class="data-source-panel__actions-footer">
-			<div class="lowcode-form-panel__header-actions" aria-label="数据源操作">
-				<button
-					type="button"
-					class="lowcode-form-panel__action lowcode-form-panel__action--primary"
-					:disabled="definitionsLoading"
-					title="添加数据源"
-					@click="handleAddDataSource"
-				>
-					<i class="ri-add-line" aria-hidden="true" />
-					<span>添加</span>
-				</button>
-				<button
-					type="button"
-					class="lowcode-form-panel__action"
-					title="管理数据源"
-					@click="handleManageDataSource"
-				>
-					<i class="ri-settings-3-line" aria-hidden="true" />
-					<span>管理</span>
-				</button>
-				<button
-					type="button"
-					class="lowcode-form-panel__action"
-					title="设计数据源"
-					@click="handleDesignDataSource"
-				>
-					<i class="ri-layout-4-line" aria-hidden="true" />
-					<span>设计</span>
-				</button>
-			</div>
-		</footer>
+
 	</section>
 </template>

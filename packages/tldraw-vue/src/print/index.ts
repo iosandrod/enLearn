@@ -6,6 +6,7 @@ export {
 	normalizeRows,
 	registerPrintDataSourceProvider,
 	resolvePrintDataSource,
+	resolvePrintPreviewRows,
 } from './dataSource'
 export { resolveObjectExpressions, resolveTemplateString } from './expression'
 export { PrintManager } from './PrintManager'

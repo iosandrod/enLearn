@@ -76,6 +76,20 @@ export async function resolvePrintDataSource(
 	return normalizeRows(rows)
 }
 
+export function resolvePrintPreviewRows(
+	dataSource: PrintDataSourceConfig | undefined,
+	rows: readonly PrintDataRow[] | undefined,
+): PrintDataRow[] | undefined {
+	if (!dataSource || dataSource.type !== 'inline') return rows ? normalizeRows(rows) : undefined
+	const detailTables = Array.isArray(dataSource.detailTables) ? dataSource.detailTables : []
+	const detailField = dataSource.detailField || detailTables[0]?.field
+	if (!detailField) return rows ? normalizeRows(rows) : undefined
+	const sourceRow = normalizeRows(rows ?? dataSource.rows)[0]
+	const detailRows = sourceRow?.[detailField]
+	const normalized = normalizeRows(detailRows).filter((row) => isRecord(row))
+	return normalized.length ? normalized : [{}]
+}
+
 export function normalizeRows(value: unknown): PrintDataRow[] {
 	const rows = Array.isArray(value) ? value : value === undefined || value === null ? [] : [value]
 	return rows.map((row) => (isRecord(row) ? { ...row } : { value: row }))

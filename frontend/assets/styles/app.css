@@ -2945,3 +2945,7 @@ body:has(.form-designer-dialog) .vxe-ico-picker--panel {
   width: 100%;
   height: 100%;
 }
+
+.vxe-form--item-title-content{
+  display:flex !important;
+}

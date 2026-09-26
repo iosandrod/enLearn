@@ -9733,20 +9733,22 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * Get content that can be exported for the given shape ids.
 	 *
 	 * @param shapes - The shapes (or shape ids) to get content for.
+	 * @param pageId - The page that owns the exported shapes. Defaults to the current page.
 	 *
 	 * @returns The exported content.
 	 *
 	 * @public
 	 */
-	getContentFromCurrentPage(shapes: TLShapeId[] | TLShape[]): TLContent | undefined {
-		// todo: make this work with any page, not just the current page
+	getContentFromCurrentPage(
+		shapes: TLShapeId[] | TLShape[],
+		pageId: TLPageId = this.getCurrentPageId()
+	): TLContent | undefined {
 		const ids =
 			typeof shapes[0] === 'string'
 				? (shapes as TLShapeId[])
 				: (shapes as TLShape[]).map((s) => s.id)
 
 		if (!ids) return
-		if (ids.length === 0) return
 
 		const shapeIds = this.getShapeAndDescendantIds(ids)
 
@@ -9775,7 +9777,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 						x: pagePoint.x,
 						y: pagePoint.y,
 						rotation: pageTransform.rotation(),
-						parentId: this.getCurrentPageId(),
+						parentId: pageId,
 					})
 					rootShapeIds.push(shape.id)
 				} else {
@@ -10314,6 +10316,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @public
 	 */
 	async toImage(shapes: TLShapeId[] | TLShape[], opts: TLImageExportOptions = {}) {
+		//
 		const withDefaults = {
 			format: 'png',
 			scale: 1,

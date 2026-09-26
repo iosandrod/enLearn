@@ -6,7 +6,8 @@ import {
 	setVueResumePrintOverrides,
 } from '@/editor/vueSvgExport'
 import { runWithVueMaterialPrintLayoutUpdates } from '@/editor/extensions/material/vueMaterialShape'
-import { resolveObjectExpressions } from './expression'
+import { resolvePrintPreviewRows } from './dataSource'
+import { PrintShapePreviewResolver } from './shapePreviewStrategies'
 import {
 	createMaterialGridPrintPlan,
 	getMaterialGridPageUpdates,
@@ -27,6 +28,8 @@ export interface PrintRenderJob {
 }
 
 export class PrintRenderer {
+	private readonly previewResolver = new PrintShapePreviewResolver()
+
 	constructor(private readonly editor: Editor) {}
 
 	createRenderJobs(config: PrintJobConfig): PrintRenderJob[] {
@@ -35,7 +38,8 @@ export class PrintRenderer {
 		const resumePlan = createResumePrintPlan(this.editor, config, shapeIds)
 
 		if (!materialGridPlan && !resumePlan) {
-			return (config.data ?? []).map((row) => ({ row }))
+			const rows = resolvePrintPreviewRows(config.dataSource, config.data) ?? config.data ?? []
+			return rows.map((row) => ({ row }))
 		}
 		if (resumePlan) {
 			const contextRow = config.data?.[0] ?? {}
@@ -79,10 +83,8 @@ export class PrintRenderer {
 		const updates: TLShapePartial[] = []
 
 		for (const shape of this.getShapesForExpressionPass(shapeIds)) {
-			const nextProps = resolveObjectExpressions(shape.props, context, config.expression)
-			if (areJsonEqual(nextProps, shape.props)) continue
-
-			updates.push(createPropsUpdate(shape, nextProps))
+			const update = this.previewResolver.resolve(shape, context, config.expression)
+			if (update) updates.push(update)
 		}
 
 		if (options.materialGridPlan) {
@@ -157,18 +159,6 @@ export class PrintRenderer {
 			ignoreShapeLock: true,
 		})
 	}
-}
-
-function areJsonEqual(a: unknown, b: unknown) {
-	return JSON.stringify(a) === JSON.stringify(b)
-}
-
-function createPropsUpdate(shape: TLShape, props: TLShape['props']): TLShapePartial {
-	return {
-		id: shape.id,
-		type: shape.type,
-		props,
-	} as TLShapePartial
 }
 
 function createRestoreUpdates(editor: Editor, updates: readonly TLShapePartial[]) {

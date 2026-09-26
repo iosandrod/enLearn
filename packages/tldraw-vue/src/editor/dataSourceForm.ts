@@ -55,7 +55,7 @@ export function getPrintDataSourceHeaderSchema(schema: PrintDataSourceFormSchema
 	if (isLowCodeFormSchema(nestedSchema)) {
 		return {
 			...nestedSchema,
-			title: schema.title ?? nestedSchema.title,
+			title: '',//
 		}
 	}
 	return {
@@ -132,7 +132,7 @@ export function getPrintDataSourceFormCode(source: PrintDataSourceConfig | undef
 export function getPrintDataSourceDetailRows(
 	source: PrintDataSourceConfig | undefined,
 	field?: string,
-) {
+) {//
 	const row = getInlineSourceRow(source)
 	if (!row) return []
 	const detailField = field || (

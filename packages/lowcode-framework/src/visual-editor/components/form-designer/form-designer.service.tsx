@@ -1247,10 +1247,13 @@ const ServiceComponent = defineComponent({
                       ref={headerFormRef}
                       schema={state.option.headerForm.schema}
                       modelValue={state.option.headerForm.model}
-                      onUpdateModel={(value: Record<string, unknown>) => {
-                        state.option.headerForm?.onUpdateModel?.(value);
+                      onUpdate:modelValue={(value: Record<string, unknown>) => {
+                        const nextModel = { ...value };
+                        state.option.headerForm?.onUpdateModel?.(nextModel);
                         if (state.option.headerForm) {
-                          state.option.headerForm.model = value;
+                          const model = state.option.headerForm.model;
+                          Object.keys(model).forEach((key) => delete model[key]);
+                          Object.assign(model, nextModel);
                         }
                       }}
                     />

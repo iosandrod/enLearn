@@ -198,11 +198,47 @@ function getEditor() {
 	return editor.value
 }
 
+function cloneTemplateValue<T>(value: T): T {
+	return JSON.parse(JSON.stringify(value)) as T
+}
+
+async function getTemplateInfo() {
+	const currentEditor = editor.value
+	if (!currentEditor) return null
+
+	const currentPageId = currentEditor.getCurrentPageId()
+	const pages = [] as Array<{ id: string; name: string; content: unknown }>
+	for (const page of currentEditor.getPages()) {
+		const shapeIds = [...currentEditor.getPageShapeIds(page.id)].sort()
+		const pageContent = currentEditor.getContentFromCurrentPage(shapeIds, page.id)
+		const resolvedContent = await currentEditor.resolveAssetsInContent(pageContent)
+		if (!resolvedContent) continue
+		pages.push({
+			id: page.id,
+			name: page.name,
+			content: cloneTemplateValue(resolvedContent),
+		})
+	}
+
+	if (!pages.length) return null
+
+	const workspace = cloneTemplateValue(getWorkspaceTemplateConfig() ?? {})
+	return {
+		content: {
+			pages: cloneTemplateValue(pages),
+			currentPageId,
+			workspace,
+		},
+		pages: cloneTemplateValue(pages),
+		currentPageId,
+		workspace,
+	}
+}
+
 function getWorkspaceTemplateConfig() {
 	const config = canvasRef.value?.getWorkspaceTemplateConfig()
-	if (!config) return undefined
 	return {
-		...config,
+		...(config ?? {}),
 		designerMode: designerMode.value,
 		presentation: clonePresentationConfig(presentationConfig.value),
 	}
@@ -306,6 +342,7 @@ defineExpose({
 	applyWorkspaceTemplateConfig,
 	canRunCommand,
 	getEditor,
+	getTemplateInfo,
 	getPluginIds,
 	getWorkspaceTemplateConfig,
 	getDesignerMode: () => designerMode.value,
@@ -395,9 +432,9 @@ onBeforeUnmount(() => {
 								ref="topMenuRef"
 								:editor="editor"
 								:can-run-command="canRunCommand"
-								:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
+								:get-workspace-template-config="getWorkspaceTemplateConfig"
 								:load-templates="props.loadTemplates"
-								:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
+								:apply-workspace-template-config="applyWorkspaceTemplateConfig"
 								:save-templates="props.saveTemplates"
 								:show-template-controls="props.showTemplateControls"
 								embedded

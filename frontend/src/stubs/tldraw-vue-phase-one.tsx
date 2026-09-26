@@ -4,7 +4,16 @@ export type TLContent = Record<string, unknown>;
 
 export type Editor = {
   getCurrentPageShapeIdsSorted(): unknown[];
-  getContentFromCurrentPage(shapeIds: unknown[]): TLContent;
+  getCurrentPageId(): string;
+  getCurrentPage(): { id: string; name: string };
+  getPages(): Array<{ id: string; name: string }>;
+  getPageShapeIds(pageId: string): Set<string>;
+  getPage(pageId: string): { id: string; name: string } | undefined;
+  createPage(page: { id: string; name: string }): Editor;
+  renamePage(pageId: string, name: string): Editor;
+  deletePage(pageId: string): Editor;
+  setCurrentPage(pageId: string): Editor;
+  getContentFromCurrentPage(shapeIds: unknown[], pageId?: string): TLContent;
   resolveAssetsInContent(content: TLContent): Promise<TLContent>;
   clearHistory(): void;
   markHistoryStoppingPoint(label: string): void;
@@ -44,6 +53,15 @@ export type VueEditorPlugin = {
 
 const unavailableEditor: Editor = {
   getCurrentPageShapeIdsSorted: () => [],
+  getCurrentPageId: () => 'page:stub',
+  getCurrentPage: () => ({ id: 'page:stub', name: 'Page 1' }),
+  getPages: () => [{ id: 'page:stub', name: 'Page 1' }],
+  getPageShapeIds: () => new Set(),
+  getPage: (pageId) => pageId === 'page:stub' ? { id: 'page:stub', name: 'Page 1' } : undefined,
+  createPage: () => unavailableEditor,
+  renamePage: () => unavailableEditor,
+  deletePage: () => unavailableEditor,
+  setCurrentPage: () => unavailableEditor,
   getContentFromCurrentPage: () => ({}),
   resolveAssetsInContent: async (content) => content,
   clearHistory: () => undefined,

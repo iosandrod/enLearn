@@ -98,11 +98,23 @@ type TldrawVueExpose = {
 
 type PrintTemplateStatus = 'draft' | 'active' | 'archived';
 
-type PrintTemplateRow = {
+type TemplatePageSnapshot = {
   id: string;
   name: string;
   content: TLContent;
-  workspace: VueTemplateWorkspaceConfig | null;
+};
+
+type TemplateDocumentContent = Partial<TLContent> & {
+  pages?: TemplatePageSnapshot[];
+  currentPageId?: string;
+  workspace?: VueTemplateWorkspaceConfig;
+};
+
+type PrintTemplateRow = {
+  id: string;
+  name: string;
+  content: TemplateDocumentContent;
+  workspace?: VueTemplateWorkspaceConfig | null;
   status: PrintTemplateStatus;
   version: number;
   metadata: Record<string, unknown> | null;
@@ -119,8 +131,25 @@ type PrintTemplateRecord = VueTemplateRecord & {
 type TemplateSaveMode = 'save' | 'saveAs';
 
 type TemplateSnapshot = {
-  content: TLContent;
+  content: TemplateDocumentContent;
   workspace: VueTemplateWorkspaceConfig;
+  pages: TemplatePageSnapshot[];
+  currentPageId: string;
+};
+
+type TemplatePublicMetadata = Record<string, unknown> & {
+  editor: 'tldraw-vue';
+  schemaVersion: number;
+  source: 'print-designer';
+  designerMode: DesignerMode;
+  templateName?: string;
+  dataSourceType: string;
+  dataSourceKey?: string;
+  dataSourceFormCode?: string;
+  dataSourceTableName?: string;
+  pageSizeMm?: { w: number; h: number };
+  pageBounds?: { x: number; y: number; w: number; h: number };
+  pageCount?: number;
 };
 
 const props = withDefaults(defineProps<{
@@ -291,9 +320,18 @@ async function openTemplatePicker() {
 
     if (result.action === 'cancel' || result.action === 'close') return;
 
-    const template = readTemplateFromPickerPayload(result.payload);
-    if (!template) {
+    const selectedTemplate = readTemplateFromPickerPayload(result.payload);
+    if (!selectedTemplate) {
       showMessage('请先选择要加载的模板', 'error');
+      return;
+    }
+
+    // The low-code picker may return only its display columns (or an older
+    // single-page content projection). Resolve the selected id against the
+    // complete template list before applying anything to the editor.
+    const template = await resolveTemplateForLoad(selectedTemplate);
+    if (!template) {
+      showMessage('未找到模板的完整页面数据', 'error');
       return;
     }
 
@@ -393,7 +431,7 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
     if (!savedRecord) {
       throw new Error('模板编辑页未返回已保存的模板记录');
     }
-    await finishTemplateSave(savedRecord as PrintTemplateRow, snapshot);
+    await finishTemplateSave(savedRecord as PrintTemplateRow, snapshot, initialValues);
   } catch (error) {
     showMessage(getErrorMessage(error, '模板保存页面加载失败'), 'error');
   } finally {
@@ -418,16 +456,25 @@ async function getPrintTemplateEditPage() {
 
 function createSaveDialogValues(mode: TemplateSaveMode, snapshot: TemplateSnapshot) {
   const template = mode === 'save' ? selectedTemplate.value : null;
+  const name = mode === 'saveAs'
+    ? createAvailableTemplateName(selectedTemplate.value?.name ?? '打印模板')
+    : template?.name ?? createAvailableTemplateName('打印模板');
+  const content = cloneJson(snapshot.content);
   return {
     id: template?.id ?? '',
-    name: mode === 'saveAs'
-      ? createAvailableTemplateName(selectedTemplate.value?.name ?? '打印模板')
-      : template?.name ?? createAvailableTemplateName('打印模板'),
+    name,
     status: template?.status ?? 'active',
     version: template?.version ?? 1,
-    content: cloneJson(snapshot.content),
-    workspace: cloneJson(snapshot.workspace),
-    metadata: createTemplateMetadata(template?.metadata)
+    // The content column is the complete template document. Keep page data,
+    // the active page and workspace config together so a form save cannot
+    // accidentally persist only the representative page.
+    content,
+    metadata: createTemplateMetadata(
+      template?.metadata,
+      content.workspace ?? {},
+      name,
+      snapshot.pages.length
+    )
   };
 }
 
@@ -445,11 +492,15 @@ function createTemplateSaveDialogPage(page: LowCodePageRecord): LowCodePageRecor
   };
 }
 
-async function finishTemplateSave(row: PrintTemplateRow, snapshot: TemplateSnapshot) {
-  const saved = requireTemplateRecord(row);
+async function finishTemplateSave(
+  row: PrintTemplateRow,
+  snapshot: TemplateSnapshot,
+  fallbackValues: ReturnType<typeof createSaveDialogValues>
+) {
+  const saved = mergeSavedTemplateRecord(row, snapshot, fallbackValues);
   upsertTemplate(saved);
   selectedTemplateId.value = saved.id;
-  savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
+  savedWorkspaceSignature = getWorkspaceDirtySignature(saved.content.workspace ?? snapshot.workspace);
   templateDirty.value = false;
   showMessage(`模板“${saved.name}”已保存`, 'success');
 }
@@ -458,7 +509,6 @@ async function loadTemplate(template: PrintTemplateRecord, options: { confirmRep
   const editor = getEditor();
   if (!editor) return;
 
-  const shapeIds = editor.getCurrentPageShapeIdsSorted();
   if ((options.confirmReplace ?? true) && templateDirty.value) {
     const confirmResult = await VxeUI.modal.confirm({
       title: '加载模板',
@@ -466,26 +516,21 @@ async function loadTemplate(template: PrintTemplateRecord, options: { confirmRep
     });
     if (confirmResult !== 'confirm') return;
   }
-
   try {
     suppressDirtyTracking = true;
     try {
-      editor.store.mergeRemoteChanges(() => {
-        editor.run(
-          () => {
-            if (shapeIds.length) editor.deleteShapes(shapeIds);
-            editor.selectNone();
-            editor.putContentOntoCurrentPage(cloneJson(template.content), {
-              preservePosition: true,
-              select: true
-            });
-          },
-          { history: 'ignore', ignoreShapeLock: true }
-        );
-      });
+      // Do not wrap page creation/switching in mergeRemoteChanges. The editor
+      // creates each page's camera and page-state records in its own store
+      // transaction; delaying those hooks leaves setCurrentPage with an
+      // undefined camera on the next page.
+      const loadedPageCount = applyTemplateDocumentContent(editor, template.content);
+      if (loadedPageCount < 1) {
+        throw new Error('模板未包含可加载的页面数据');
+      }
 
-      if (template.workspace) {
-        designerRef.value?.applyWorkspaceTemplateConfig(cloneJson(template.workspace));
+      const workspace = getTemplateWorkspace(template);
+      if (workspace) {
+        designerRef.value?.applyWorkspaceTemplateConfig(cloneJson(workspace));
       }
       editor.clearHistory();
     } finally {
@@ -494,13 +539,45 @@ async function loadTemplate(template: PrintTemplateRecord, options: { confirmRep
 
     selectedTemplateId.value = template.id;
     savedWorkspaceSignature = getWorkspaceDirtySignature(
-      designerRef.value?.getWorkspaceTemplateConfig() ?? template.workspace ?? {}
+      designerRef.value?.getWorkspaceTemplateConfig() ?? getTemplateWorkspace(template) ?? {}
     );
     templateDirty.value = false;
-    showMessage(`已加载模板“${template.name}”`, 'success');
+    showMessage(`已加载模板“${template.name}”（${getTemplatePageCount(template.content)} 页）`, 'success');
   } catch (error) {
     showMessage(getErrorMessage(error, '模板加载失败'), 'error');
   }
+}
+
+async function resolveTemplateForLoad(candidate: PrintTemplateRecord) {
+  const cached = templates.value.find((template) => template.id === candidate.id);
+  const candidatePageCount = getTemplatePageCount(candidate.content);
+  const cachedPageCount = cached ? getTemplatePageCount(cached.content) : 0;
+  if (cached && cachedPageCount >= candidatePageCount && isUsableTemplateDocumentContent(cached.content)) {
+    return cached;
+  }
+
+  if (isUsableTemplateDocumentContent(candidate.content)) {
+    if (candidatePageCount > 1 || !cached) return candidate;
+  }
+
+  try {
+    const result = await serviceApi.listItems<PrintTemplateRow[]>('admin', {
+      resource: PRINT_TEMPLATE_RESOURCE,
+      filters: { id: { op: 'eq', value: candidate.id } },
+      limit: 1
+    });
+    const row = readRows<PrintTemplateRow>(result)[0];
+    const fullTemplate = row ? mapTemplateRow(row) : null;
+    if (fullTemplate && getTemplatePageCount(fullTemplate.content) >= Math.max(candidatePageCount, cachedPageCount)) {
+      return fullTemplate;
+    }
+  } catch (error) {
+    // Keep the picker record as a last resort and let the normal loader show
+    // a useful error if its page content is invalid.
+    console.warn('[print-designer] failed to reload selected template', error);
+  }
+
+  return isUsableTemplateDocumentContent(candidate.content) ? candidate : null;
 }
 
 async function loadRouteTemplate() {
@@ -529,27 +606,152 @@ async function getCurrentTemplateSnapshot() {
   const editor = getEditor();
   if (!editor) return null;
 
-  const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (!shapeIds.length) {
+  const currentPageId = editor.getCurrentPageId();
+  const pages: TemplatePageSnapshot[] = [];
+  for (const page of editor.getPages()) {
+    const shapeIds = [...editor.getPageShapeIds(page.id)].sort();
+    const pageContent = editor.getContentFromCurrentPage(shapeIds, page.id);
+    if (!pageContent) continue;
+    const resolvedContent = await editor.resolveAssetsInContent(pageContent);
+    if (!resolvedContent) continue;
+    pages.push({
+      id: page.id,
+      name: page.name,
+      content: cloneJson(resolvedContent)
+    });
+  }
+
+  if (!pages.length) {
     showMessage('当前画布没有可保存内容', 'error');
     return null;
   }
 
-  const content = editor.getContentFromCurrentPage(shapeIds);
-  if (!content) {
-    showMessage('当前画布内容读取失败', 'error');
-    return null;
+  const workspace = cloneJson(designerRef.value?.getWorkspaceTemplateConfig() ?? {});
+  return {
+    content: {
+      pages: cloneJson(pages),
+      currentPageId,
+      workspace
+    },
+    pages,
+    currentPageId,
+    workspace
+  };
+}
+
+function applyTemplateDocumentContent(editor: Editor, content: TemplateDocumentContent) {
+  const pages = normalizeTemplatePages(editor, content);
+  if (!pages.length) return 0;
+  const targetPageIds = new Set(pages.map((page) => page.id));
+
+  // Page and camera records are created by the editor's own transactions.
+  // Calling these APIs from a wrapping editor.run leaves a newly-created page
+  // without its camera during setCurrentPage, which makes Vec.Cast(undefined)
+  // throw before any shape is inserted.
+  for (const page of pages) {
+    if (!editor.getPage(page.id)) {
+      editor.createPage({ id: page.id, name: page.name });
+    } else if (editor.getPage(page.id)?.name !== page.name) {
+      editor.renamePage(page.id, page.name);
+    }
   }
 
-  const resolvedContent = await editor.resolveAssetsInContent(content);
-  if (!resolvedContent) {
-    showMessage('当前画布资源读取失败', 'error');
-    return null;
+  const firstPageId = pages[0].id;
+  if (editor.getCurrentPageId() !== firstPageId) editor.setCurrentPage(firstPageId);
+  for (const page of editor.getPages()) {
+    if (!targetPageIds.has(page.id) && editor.getPages().length > 1) {
+      editor.deletePage(page.id);
+    }
   }
+
+  for (const page of pages) {
+    if (!editor.getPage(page.id)) continue;
+    if (editor.getCurrentPageId() !== page.id) editor.setCurrentPage(page.id);
+    const shapeIds = [...editor.getPageShapeIds(page.id)];
+    if (shapeIds.length) editor.deleteShapes(shapeIds);
+    editor.putContentOntoCurrentPage(cloneJson(page.content), {
+      preservePosition: true,
+      preserveIds: true,
+      select: false
+    });
+  }
+
+  const currentPageId = content.currentPageId && targetPageIds.has(content.currentPageId)
+    ? content.currentPageId
+    : firstPageId;
+  if (editor.getCurrentPageId() !== currentPageId) editor.setCurrentPage(currentPageId);
+  editor.selectNone();
+  return pages.length;
+}
+
+function normalizeTemplatePages(editor: Editor, content: TemplateDocumentContent) {
+  const candidatePages = Array.isArray(content.pages) && content.pages.length
+    ? content.pages
+    : [{ id: editor.getCurrentPageId(), name: editor.getCurrentPage().name, content }];
+  return candidatePages
+    .filter((page): page is TemplatePageSnapshot => Boolean(
+      page && typeof page.id === 'string' && typeof page.name === 'string' && isUsableTemplateContent(page.content)
+    ))
+    .map((page) => ({
+      ...page,
+      content: normalizeTemplatePageContent(stripTemplateMetadata(page.content), page.id)
+    }));
+}
+
+function stripTemplateMetadata(value: TLContent): TLContent {
+  const { pages: _pages, currentPageId: _currentPageId, workspace: _workspace, ...content } = value as TemplateDocumentContent;
+  return content as TLContent;
+}
+
+function normalizeTemplatePageContent(value: TLContent, pageId: string): TLContent {
+  const content = cloneJson(value) as TLContent;
+  const rawShapes = Array.isArray(content.shapes) ? content.shapes : [];
+  const shapeIds = new Set(
+    rawShapes
+      .filter((shape): shape is Record<string, any> => isRecord(shape) && typeof shape.id === 'string')
+      .map((shape) => shape.id)
+  );
+  const shapes = rawShapes
+    .filter((shape): shape is Record<string, any> => (
+      isRecord(shape)
+      && typeof shape.id === 'string'
+      && typeof shape.type === 'string'
+      && typeof shape.typeName === 'string'
+    ))
+    .map((shape) => {
+      const parentId = typeof shape.parentId === 'string' && shapeIds.has(shape.parentId)
+        ? shape.parentId
+        : pageId;
+      return {
+        ...shape,
+        x: Number.isFinite(shape.x) ? shape.x : 0,
+        y: Number.isFinite(shape.y) ? shape.y : 0,
+        parentId,
+      };
+    });
+  const normalizedShapeIds = new Set(shapes.map((shape) => shape.id));
+  const rootShapeIds = [
+    ...(Array.isArray(content.rootShapeIds) ? content.rootShapeIds : []),
+    ...shapes.filter((shape) => shape.parentId === pageId).map((shape) => shape.id),
+  ].filter((id, index, ids): id is string => (
+    typeof id === 'string'
+    && normalizedShapeIds.has(id)
+    && ids.indexOf(id) === index
+  ));
+  const bindings = (Array.isArray(content.bindings) ? content.bindings : []).filter((binding) => (
+    isRecord(binding)
+    && typeof binding.id === 'string'
+    && typeof binding.fromId === 'string'
+    && typeof binding.toId === 'string'
+    && normalizedShapeIds.has(binding.fromId)
+    && normalizedShapeIds.has(binding.toId)
+  ));
 
   return {
-    content: cloneJson(resolvedContent),
-    workspace: cloneJson(designerRef.value?.getWorkspaceTemplateConfig() ?? {})
+    ...content,
+    shapes,
+    rootShapeIds,
+    bindings,
   };
 }
 
@@ -563,22 +765,36 @@ function getEditor() {
 }
 
 function mapTemplateRow(row: PrintTemplateRow): PrintTemplateRecord | null {
-  if (!row || typeof row.id !== 'string' || typeof row.name !== 'string' || !isRecord(row.content)) {
+  if (
+    !row ||
+    typeof row.id !== 'string' ||
+    typeof row.name !== 'string' ||
+    !isUsableTemplateDocumentContent(row.content)
+  ) {
     return null;
   }
 
   const createdAt = parseTemplateTimestamp(row.created_at);
   const updatedAt = parseTemplateTimestamp(row.updated_at);
+  const metadata = isRecord(row.metadata) ? cloneJson(row.metadata) : {};
+  const metadataWorkspace = getWorkspaceFromMetadata(metadata);
+  const storedWorkspace = isRecord(row.workspace) ? cloneJson(row.workspace) : undefined;
+  const content = cloneJson(row.content);
+  if (!isRecord(content.workspace) && storedWorkspace) {
+    content.workspace = cloneJson(storedWorkspace);
+  }
   return {
     id: row.id,
     name: row.name,
     createdAt,
     updatedAt,
-    content: cloneJson(row.content),
-    workspace: isRecord(row.workspace) ? cloneJson(row.workspace) : undefined,
+    content,
+    workspace: storedWorkspace || metadataWorkspace
+      ? { ...(metadataWorkspace ?? {}), ...(storedWorkspace ?? {}) }
+      : undefined,
     status: isTemplateStatus(row.status) ? row.status : 'active',
     version: Number.isInteger(row.version) && row.version > 0 ? row.version : 1,
-    metadata: isRecord(row.metadata) ? cloneJson(row.metadata) : {}
+    metadata
   };
 }
 
@@ -596,33 +812,128 @@ function readTemplateFromPickerPayload(payload: unknown) {
   return row ? mapTemplateRow(row as PrintTemplateRow) : null;
 }
 
-function requireTemplateRecord(row: PrintTemplateRow) {
-  const record = mapTemplateRow(row);
-  if (!record) throw new Error('后台未返回有效的模板记录');
-  return record;
-}
-
 function upsertTemplate(template: PrintTemplateRecord) {
   const nextTemplates = templates.value.filter((item) => item.id !== template.id);
   templates.value = [template, ...nextTemplates].sort((left, right) => right.updatedAt - left.updatedAt);
 }
 
-function createTemplateMetadata(existing: Record<string, unknown> = {}) {
+function createTemplateMetadata(
+  existing: Record<string, unknown> = {},
+  workspace: VueTemplateWorkspaceConfig = {},
+  templateName?: string,
+  pageCount?: number
+): TemplatePublicMetadata {
+  const {
+    designerMode: _previousDesignerMode,
+    templateName: _previousTemplateName,
+    dataSourceType: _previousDataSourceType,
+    dataSourceKey: _previousDataSourceKey,
+    dataSourceFormCode: _previousDataSourceFormCode,
+    dataSourceTableName: _previousDataSourceTableName,
+    pageSizeMm: _previousPageSizeMm,
+    pageBounds: _previousPageBounds,
+    pageCount: _previousPageCount,
+    ...otherMetadata
+  } = existing;
+  const dataSource = isRecord(workspace.printDataSource) ? workspace.printDataSource : undefined;
+  const dataSourceType = typeof dataSource?.type === 'string' ? dataSource.type : 'none';
+  const dataSourceFormCode = readString(dataSource?.formCode);
+  const dataSourceTableName = readString(dataSource?.tableName);
+  const dataSourceKey = readString(dataSource?.key) || dataSourceFormCode || dataSourceTableName;
+
   return {
-    ...existing,
+    ...otherMetadata,
     editor: 'tldraw-vue',
-    schemaVersion: 1,
-    source: 'print-designer'
+    schemaVersion: 2,
+    source: 'print-designer',
+    designerMode: workspace.designerMode === 'presentation' ? 'presentation' : 'print',
+    ...(templateName ? { templateName } : {}),
+    dataSourceType,
+    ...(dataSourceKey ? { dataSourceKey } : {}),
+    ...(dataSourceFormCode ? { dataSourceFormCode } : {}),
+    ...(dataSourceTableName ? { dataSourceTableName } : {}),
+    ...(isSizeLike(workspace.pageSizeMm) ? { pageSizeMm: cloneJson(workspace.pageSizeMm) } : {}),
+    ...(isBoundsLike(workspace.pageBounds) ? { pageBounds: cloneJson(workspace.pageBounds) } : {}),
+    ...(Number.isFinite(pageCount) ? { pageCount } : {})
+  };
+}
+
+function mergeSavedTemplateRecord(
+  row: PrintTemplateRow,
+  snapshot: TemplateSnapshot,
+  fallbackValues: ReturnType<typeof createSaveDialogValues>
+) {
+  const fallbackContent = cloneJson(fallbackValues.content);
+  const saved = mapTemplateRow({
+    ...row,
+    name: readString(row.name) || String(fallbackValues.name || '打印模板'),
+    // Some save endpoints return only a partial row (or an empty content
+    // shell). Never let that response replace the complete canvas snapshot.
+    content: isUsableTemplateDocumentContent(row.content) ? row.content : fallbackContent,
+    workspace: isRecord(row.workspace) ? row.workspace : undefined,
+    metadata: isRecord(row.metadata) ? row.metadata : fallbackValues.metadata
+  });
+  if (!saved) throw new Error('后台未返回有效的模板记录');
+
+  const name = saved.name || String(fallbackValues.name || '打印模板');
+  const content = isUsableTemplateDocumentContent(saved.content)
+    && isCompleteTemplateDocumentContent(saved.content, snapshot.pages.length)
+    ? saved.content
+    : fallbackContent;
+  const workspace = isRecord(content.workspace)
+    ? cloneJson(content.workspace)
+    : saved.workspace && Object.keys(saved.workspace).length > 0
+      ? cloneJson(saved.workspace)
+      : cloneJson(snapshot.workspace);
+  content.workspace = workspace;
+  return {
+    ...saved,
+    name,
+    content,
+    workspace,
+    metadata: createTemplateMetadata(
+      saved.metadata,
+      workspace,
+      name,
+      Array.isArray(content.pages)
+        ? content.pages.length
+        : Array.isArray(fallbackValues.content.pages)
+          ? fallbackValues.content.pages.length
+          : undefined
+    )
+  } satisfies PrintTemplateRecord;
+}
+
+function getTemplateWorkspace(template: PrintTemplateRecord) {
+  return isRecord(template.content.workspace)
+    ? template.content.workspace
+    : template.workspace ?? getWorkspaceFromMetadata(template.metadata);
+}
+
+function getWorkspaceFromMetadata(metadata: Record<string, unknown>): VueTemplateWorkspaceConfig | undefined {
+  const designerMode = metadata.designerMode === 'presentation' || metadata.designerMode === 'print'
+    ? metadata.designerMode
+    : undefined;
+  const pageSizeMm = isSizeLike(metadata.pageSizeMm) ? cloneJson(metadata.pageSizeMm) : undefined;
+  const pageBounds = isBoundsLike(metadata.pageBounds) ? cloneJson(metadata.pageBounds) : undefined;
+  if (!designerMode && !pageSizeMm && !pageBounds) return undefined;
+  return {
+    ...(designerMode ? { designerMode } : {}),
+    ...(pageSizeMm ? { pageSizeMm } : {}),
+    ...(pageBounds ? { pageBounds } : {})
   };
 }
 
 function getWorkspaceDirtySignature(config: VueTemplateWorkspaceConfig) {
   const workspace = isRecord(config) ? config : {};
   return JSON.stringify({
+    designerMode: workspace.designerMode ?? null,
     pageSizeMm: workspace.pageSizeMm ?? null,
+    pageBounds: workspace.pageBounds ?? null,
     guides: workspace.guides ?? [],
     printDataSource: workspace.printDataSource ?? null,
-    background: workspace.background ?? null
+    background: workspace.background ?? null,
+    presentation: workspace.presentation ?? null
   });
 }
 
@@ -688,6 +999,53 @@ function isTemplateStatus(value: unknown): value is PrintTemplateStatus {
 
 function isRecord(value: unknown): value is Record<string, any> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+function isSizeLike(value: unknown): value is { w: number; h: number } {
+  return isRecord(value) && Number.isFinite(value.w) && Number.isFinite(value.h);
+}
+
+function isBoundsLike(value: unknown): value is { x: number; y: number; w: number; h: number } {
+  return isRecord(value)
+    && Number.isFinite(value.x)
+    && Number.isFinite(value.y)
+    && Number.isFinite(value.w)
+    && Number.isFinite(value.h);
+}
+
+function isUsableTemplateDocumentContent(value: unknown): value is TemplateDocumentContent {
+  if (!isRecord(value)) return false;
+  const pages = value.pages;
+  if (Array.isArray(pages) && pages.length > 0) {
+    return pages.every((page) => isRecord(page) && isUsableTemplateContent(page.content));
+  }
+  return isUsableTemplateContent(value);
+}
+
+function isCompleteTemplateDocumentContent(value: TemplateDocumentContent, expectedPageCount: number) {
+  if (expectedPageCount <= 1) return true;
+  return Array.isArray(value.pages)
+    && value.pages.length === expectedPageCount
+    && value.pages.every((page) => isRecord(page) && isUsableTemplateContent(page.content));
+}
+
+function getTemplatePageCount(value: unknown) {
+  return isRecord(value) && Array.isArray(value.pages) && value.pages.length > 0
+    ? value.pages.length
+    : 1;
+}
+
+function isUsableTemplateContent(value: unknown): value is TLContent {
+  return isRecord(value)
+    && isRecord(value.schema)
+    && Array.isArray(value.shapes)
+    && Array.isArray(value.rootShapeIds)
+    && Array.isArray(value.bindings)
+    && Array.isArray(value.assets);
 }
 </script>
 

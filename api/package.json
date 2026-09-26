@@ -89,6 +89,8 @@
     "db:apply-print-designer-property-forms": "tsx scripts/apply-print-designer-property-forms.ts",
     "db:apply-print-data-source-forms": "tsx scripts/apply-print-data-source-forms.ts",
     "db:apply-print-template-picker-page-functions": "tsx scripts/apply-print-template-picker-page-functions.ts",
+    "db:apply-print-template-multipage-save": "tsx scripts/apply-print-template-multipage-save.ts",
+    "db:apply-print-designer-material-load-fix": "tsx scripts/apply-print-designer-material-load-fix.ts",
     "db:apply-print-account-setting-form": "tsx scripts/apply-print-account-setting-form.ts",
     "db:apply-print-background-form": "tsx scripts/apply-print-background-form.ts",
     "db:apply-runtime-form-default-value-procedure": "tsx scripts/apply-runtime-form-default-value-procedure.ts",

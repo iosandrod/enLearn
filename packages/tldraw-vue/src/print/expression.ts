@@ -66,7 +66,23 @@ function resolvePathExpression(
 	if (expression === 'total') return context.total
 	if (expression === 'row') return context.row
 
-	return getPathValue(context.row, expression)
+	return resolveCurrentRowPath(expression, context.row)
+}
+
+/**
+ * Detail-table expressions retain their table key in the template (for example,
+ * `detail.item_code`), while the renderer passes the matching detail record as
+ * `context.row`. Resolve the complete path first so genuinely nested row data
+ * keeps precedence, then retry after removing the table key.
+ */
+function resolveCurrentRowPath(expression: string, row: PrintExpressionContext['row']) {
+	const directValue = getPathValue(row, expression)
+	if (directValue !== undefined) return directValue
+
+	const separatorIndex = expression.indexOf('.')
+	if (separatorIndex <= 0) return directValue
+
+	return getPathValue(row, expression.slice(separatorIndex + 1))
 }
 
 function applyFilter(value: unknown, filterExpression: string) {

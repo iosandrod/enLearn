@@ -46,11 +46,11 @@ export type PresentationShapeMeta = {
 }
 
 export const DEFAULT_PRESENTATION_CONFIG: PresentationConfig = {
-	pageSizeMm: { w: 338.7, h: 190.5 },
+	pageSizeMm: { w: 200, h: 130 },
 	defaultTransition: { type: 'fade', duration: 350, easing: 'ease-out' },
 	defaultAnimation: {
 		duration: 500,
-		delay: 0,
+		delay: 0, 
 		easing: 'ease-out',
 		start: 'auto',
 	},

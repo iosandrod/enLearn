@@ -14,12 +14,16 @@ import {
 import {
 	cloneVueTemplateContent,
 	cloneVueTemplateRecord,
+	cloneVueTemplateWorkspaceConfig,
+	createVueTemplateMetadata,
 	createVueTemplateRecord,
 	normalizeVueTemplates,
+	stripVueTemplateDocumentMetadata,
 	readLocalVueTemplates,
 	writeLocalVueTemplates,
 	type VueTemplateLoadHandler,
 	type VueTemplateRecord,
+	type VueTemplateDocument,
 	type VueTemplateSaveHandler,
 	type VueTemplateWorkspaceConfig,
 } from '@/editor/templateStore'
@@ -63,56 +67,33 @@ const printPreviewLoading = ref(false)
 const printPreviewError = ref<string | null>(null)
 const printPreviewPages = ref<PrintPageRenderResult[]>([])
 const printPreviewPageIndex = ref(0)
+const printPreviewModalSize = ref({
+	width: 'min(920px, calc(100vw - 40px))',
+	height: 'min(720px, calc(100vh - 40px))',
+})
 const embeddedPopoverStyle = ref<Record<string, string>>({})
+let printPreviewResizeObserver: ResizeObserver | null = null
 
 const controller = new TopMenuController(props.editor)
 
-const PRINT_SAMPLE_ROWS = [
-	{
-		name: '张三',
-		code: 'A001',
-		phone: '13800000001',
-		address: '上海市浦东新区',
-	},
-	{
-		name: '李四',
-		code: 'A002',
-		phone: '13800000002',
-		address: '北京市朝阳区',
-	},
-	{
-		name: '王五',
-		code: 'A003',
-		phone: '13800000003',
-		address: '广州市天河区',
-	},
-]
+const PRINT_SAMPLE_ROWS = [] as any
 
 const PRINT_MATERIAL_SAMPLE_COLUMNS: PrintMaterialGridColumn[] = [
-	{ type: 'seq', title: '序号', width: 36 },
-	{ field: 'materialCode', title: '编码', width: 82 },
-	{ field: 'materialName', title: '名称', width: 92 },
-	{ field: 'quantity', title: '数量', width: 58 },
-	{ field: 'remark', title: '备注', width: 92 },
-]
+
+] as any
 
 const PRINT_MATERIAL_SAMPLE_ROWS = Array.from({ length: 23 }, (_, index) => {
 	const no = index + 1
 
-	return {
-		materialCode: `M${String(no).padStart(3, '0')}`,
-		materialName: `物料${no}`,
-		specification: no % 3 === 0 ? 'M8*35' : '常规',
-		unit: no % 2 === 0 ? '箱' : '件',
-		quantity: no % 7 === 0 ? 240 + no : 12 + no * 3,
-		warehouse: no % 3 === 0 ? '成品仓' : no % 3 === 1 ? '原料仓' : '备件仓',
-		remark: no % 5 === 0 ? '加急' : '',
-	}
+	return {}
 })
 
 const DEFAULT_PRINT_PAGE_SIZE_MM = { w: 80, h: 80 }
 const DEFAULT_PRINT_PX_PER_MM = 10
 const PRINT_PREVIEW_PAGE_SIZE = 3
+
+type TemplatePageContent = { id: TLPageId; name: string; content: TLContent }
+type TemplateDocumentContent = VueTemplateDocument
 
 const currentPage = useEditorValue('top menu current page', () => props.editor.getCurrentPage())
 const pages = useEditorValue('top menu pages', () => controller.getPages())
@@ -341,6 +322,7 @@ function runGridAction(actionId: TopMenuGridActionId) {
 async function previewPrint() {
 	emit('before-action')
 	closeMenus()
+	updatePrintPreviewModalSize()
 	printPreviewOpen.value = true
 	printPreviewLoading.value = true
 	printPreviewError.value = null
@@ -384,6 +366,22 @@ function closePrintPreview() {
 	printPreviewError.value = null
 	printPreviewPages.value = []
 	printPreviewPageIndex.value = 0
+}
+
+function updatePrintPreviewModalSize() {
+	const container = props.editor.getContainer()
+	const canvasRect = container.getBoundingClientRect()
+	const viewportWidth = document.documentElement.clientWidth || window.innerWidth
+	const viewportHeight = document.documentElement.clientHeight || window.innerHeight
+	const availableWidth = Math.min(canvasRect.width || viewportWidth, viewportWidth) - 32
+	const availableHeight = Math.min(canvasRect.height || viewportHeight, viewportHeight) - 32
+	const width = Math.max(280, Math.floor(availableWidth))
+	const height = Math.max(240, Math.floor(availableHeight))
+
+	printPreviewModalSize.value = {
+		width: `${width}px`,
+		height: `${height}px`,
+	}
 }
 
 function goToPreviousPrintPreviewPage() {
@@ -527,7 +525,9 @@ async function saveCurrentTemplate() {
 	try {
 		const existingTemplates = await loadTemplateRecords()
 		const content = await getCurrentPageTemplateContent()
-		const workspace = props.getWorkspaceTemplateConfig?.()
+		const workspace = content && isObject(content.workspace)
+			? content.workspace as VueTemplateWorkspaceConfig
+			: props.getWorkspaceTemplateConfig?.()
 		if (!content) {
 			await showModalAlert('当前页没有可保存的内容')
 			return
@@ -559,6 +559,7 @@ async function saveCurrentTemplate() {
 				updatedAt: Date.now(),
 				content: cloneVueTemplateContent(content),
 				workspace,
+				metadata: createVueTemplateMetadata(workspace, trimmedName),
 			}
 		} else {
 			nextTemplates.push(createVueTemplateRecord(trimmedName, content, workspace))
@@ -576,8 +577,7 @@ async function saveCurrentTemplate() {
 }
 
 async function applyTemplate(template: VueTemplateRecord) {
-	const pageShapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	if (pageShapeIds.length > 0) {
+	if (props.editor.getCurrentPageShapeIdsSorted().length > 0) {
 		const confirmResult = await VxeUI.modal.confirm({
 			title: '加载模板',
 			content: `加载模板"${template.name}"会替换当前页内容，是否继续？`,
@@ -590,18 +590,11 @@ async function applyTemplate(template: VueTemplateRecord) {
 
 	try {
 		props.editor.markHistoryStoppingPoint('load template')
-		props.editor.run(
-			() => {
-				if (pageShapeIds.length > 0) props.editor.deleteShapes(pageShapeIds)
-				props.editor.selectNone()
-			},
-			{ ignoreShapeLock: true }
-		)
-		if (template.workspace) props.applyWorkspaceTemplateConfig?.(template.workspace)
-		props.editor.putContentOntoCurrentPage(cloneVueTemplateContent(template.content), {
-			preservePosition: true,
-			select: true,
-		})
+		applyTemplateDocumentContent(props.editor, template.content as TemplateDocumentContent)
+		const contentWorkspace = isObject((template.content as TemplateDocumentContent).workspace)
+			? (template.content as TemplateDocumentContent).workspace
+			: template.workspace
+		if (contentWorkspace) props.applyWorkspaceTemplateConfig?.(contentWorkspace)
 	} catch (error) {
 		await showModalAlert(getTemplateErrorMessage(error, '模板加载失败'), '模板加载失败')
 	}
@@ -624,10 +617,74 @@ async function deleteTemplate(template: VueTemplateRecord) {
 	}
 }
 
-async function getCurrentPageTemplateContent(): Promise<TLContent | undefined> {
-	const shapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	const content = props.editor.getContentFromCurrentPage(shapeIds)
-	return props.editor.resolveAssetsInContent(content)
+async function getCurrentPageTemplateContent(): Promise<TemplateDocumentContent | undefined> {
+	const currentPageId = props.editor.getCurrentPageId()
+	const pages: TemplatePageContent[] = []
+	for (const page of props.editor.getPages()) {
+		const shapeIds = [...props.editor.getPageShapeIds(page.id)].sort()
+		const content = props.editor.getContentFromCurrentPage(shapeIds, page.id)
+		const resolved = await props.editor.resolveAssetsInContent(content)
+		if (resolved) pages.push({ id: page.id, name: page.name, content: cloneVueTemplateContent(resolved) })
+	}
+	if (!pages.length) return undefined
+	return {
+		pages,
+		currentPageId,
+		workspace: cloneVueTemplateWorkspaceConfig(props.getWorkspaceTemplateConfig?.()),
+	}
+}
+
+function applyTemplateDocumentContent(editor: Editor, content: TemplateDocumentContent) {
+	const pages = normalizeTemplatePages(editor, content)
+	const targetPageIds = new Set(pages.map((page) => page.id))
+
+	editor.run(() => {
+		for (const page of pages) {
+			if (!editor.getPage(page.id)) editor.createPage({ id: page.id, name: page.name })
+			else if (editor.getPage(page.id)?.name !== page.name) editor.renamePage(page.id, page.name)
+		}
+		editor.setCurrentPage(pages[0].id)
+		for (const page of editor.getPages()) {
+			if (!targetPageIds.has(page.id) && editor.getPages().length > 1) editor.deletePage(page.id)
+		}
+		for (const page of pages) {
+			if (!editor.getPage(page.id)) continue
+			editor.setCurrentPage(page.id)
+			const shapeIds = [...editor.getPageShapeIds(page.id)]
+			if (shapeIds.length) editor.deleteShapes(shapeIds)
+			editor.putContentOntoCurrentPage(cloneVueTemplateContent(page.content), {
+				preservePosition: true,
+				preserveIds: true,
+				select: false,
+			})
+		}
+		editor.setCurrentPage(content.currentPageId && targetPageIds.has(content.currentPageId) ? content.currentPageId : pages[0].id)
+		editor.selectNone()
+	}, { history: 'ignore', ignoreShapeLock: true })
+}
+
+function normalizeTemplatePages(editor: Editor, content: TemplateDocumentContent) {
+	const candidatePages = Array.isArray(content.pages) && content.pages.length
+		? content.pages
+		: [{ id: editor.getCurrentPageId(), name: editor.getCurrentPage().name, content }]
+	return candidatePages
+		.filter((page): page is TemplatePageContent => Boolean(
+			page && typeof page.id === 'string' && typeof page.name === 'string' && isTemplateContent(page.content)
+		))
+		.map((page) => ({ ...page, content: stripTemplateMetadata(page.content) }))
+}
+
+function stripTemplateMetadata(value: TLContent): TLContent {
+	return stripVueTemplateDocumentMetadata(value)
+}
+
+function isTemplateContent(value: unknown): value is TLContent {
+	if (!isObject(value)) return false
+	return isObject(value.schema)
+		&& Array.isArray(value.shapes)
+		&& Array.isArray(value.rootShapeIds)
+		&& Array.isArray(value.bindings)
+		&& Array.isArray(value.assets)
 }
 
 async function loadTemplateRecords() {
@@ -664,6 +721,10 @@ function getTemplateErrorMessage(error: unknown, fallback: string) {
 	return error instanceof Error && error.message ? error.message : fallback
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function onDocumentPointerDown(event: PointerEvent) {
 	const target = event.target
 	if (!(target instanceof Node)) return
@@ -683,11 +744,18 @@ defineExpose({
 onMounted(() => {
 	window.addEventListener('pointerdown', onDocumentPointerDown)
 	window.addEventListener('keydown', onDocumentKeyDown)
+	updatePrintPreviewModalSize()
+	if (typeof ResizeObserver !== 'undefined') {
+		printPreviewResizeObserver = new ResizeObserver(updatePrintPreviewModalSize)
+		printPreviewResizeObserver.observe(props.editor.getContainer())
+	}
 })
 
 onBeforeUnmount(() => {
 	window.removeEventListener('pointerdown', onDocumentPointerDown)
 	window.removeEventListener('keydown', onDocumentKeyDown)
+	printPreviewResizeObserver?.disconnect()
+	printPreviewResizeObserver = null
 })
 </script>
 
@@ -981,21 +1049,22 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<div v-if="printPreviewOpen" class="print-preview-layer" @pointerdown.stop @wheel.stop>
-			<div class="print-preview-backdrop" @click="closePrintPreview" />
-			<section class="print-preview-dialog" role="dialog" aria-modal="true" aria-label="打印预览">
-				<header class="print-preview-header">
-					<div class="print-preview-title">打印预览</div>
-					<button
-						type="button"
-						class="print-preview-close"
-						aria-label="关闭打印预览"
-						title="关闭"
-						@click="closePrintPreview"
-					>
-						&#215;
-					</button>
-				</header>
+		<vxe-modal
+			v-model="printPreviewOpen"
+			class-name="print-preview-modal"
+			title="打印预览"
+			:width="printPreviewModalSize.width"
+			:height="printPreviewModalSize.height"
+			min-width="280px"
+			min-height="240px"
+			:show-footer="true"
+			:show-zoom="false"
+			:show-maximize="false"
+			:show-close="true"
+			:mask-closable="true"
+			@hide="closePrintPreview"
+		>
+			<div class="print-preview-body" @pointerdown.stop @wheel.stop>
 				<div v-if="printPreviewLoading" class="print-preview-loading">正在生成预览...</div>
 				<div v-else-if="printPreviewError" class="print-preview-error">{{ printPreviewError }}</div>
 				<div v-else class="print-preview-pages">
@@ -1004,7 +1073,9 @@ onBeforeUnmount(() => {
 						<figcaption>Page {{ page.pageNo }}</figcaption>
 					</figure>
 				</div>
-				<footer class="print-preview-footer">
+			</div>
+			<template #footer>
+				<div class="print-preview-footer">
 					<div v-if="printPreviewPageCount > 1" class="print-preview-pagination">
 						<button
 							type="button"
@@ -1036,9 +1107,9 @@ onBeforeUnmount(() => {
 					>
 						打印
 					</button>
-				</footer>
-			</section>
-		</div>
+				</div>
+			</template>
+		</vxe-modal>
 
 	</div>
 </template>

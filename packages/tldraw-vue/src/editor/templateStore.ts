@@ -11,13 +11,37 @@ import type { DesignerMode, PresentationConfig } from '../presentation'
 
 const LOCAL_TEMPLATE_STORAGE_KEY = 'tldraw-vue.templates.v1'
 
+export interface VueTemplatePage {
+	id: string
+	name: string
+	content: TLContent
+}
+
+export type VueTemplateDocument = Partial<TLContent> & {
+	pages?: VueTemplatePage[]
+	currentPageId?: string
+	workspace?: VueTemplateWorkspaceConfig
+}
+
 export interface VueTemplateRecord {
 	id: string
 	name: string
 	createdAt: number
 	updatedAt: number
-	content: TLContent
+	content: VueTemplateDocument
 	workspace?: VueTemplateWorkspaceConfig
+	metadata?: VueTemplateMetadata
+}
+
+export interface VueTemplateMetadata {
+	editor?: string
+	schemaVersion?: number
+	designerMode?: DesignerMode
+	dataSourceType?: string
+	dataSourceKey?: string
+	pageSizeMm?: WorkspacePageSizeMm
+	pageBounds?: WorkspacePageBounds
+	[key: string]: unknown
 }
 
 export interface VueTemplateWorkspaceConfig {
@@ -54,13 +78,15 @@ export function createVueTemplateRecord(
 	workspace?: VueTemplateWorkspaceConfig
 ): VueTemplateRecord {
 	const now = Date.now()
+	const document = withWorkspaceInTemplateContent(content, workspace)
 	return {
 		id: createTemplateId(),
 		name,
 		createdAt: now,
 		updatedAt: now,
-		content: cloneVueTemplateContent(content),
+		content: document,
 		workspace: cloneVueTemplateWorkspaceConfig(workspace),
+		metadata: createVueTemplateMetadata(workspace, name),
 	}
 }
 
@@ -69,10 +95,74 @@ export function cloneVueTemplateContent(content: TLContent): TLContent {
 }
 
 export function cloneVueTemplateRecord(template: VueTemplateRecord): VueTemplateRecord {
+	const metadata = template.metadata
+		? JSON.parse(JSON.stringify(template.metadata)) as VueTemplateMetadata
+		: undefined
+	const workspace = mergeMetadataWorkspace(
+		isObject(template.content) && isObject((template.content as Record<string, unknown>).workspace)
+			? (template.content as Record<string, unknown>).workspace as VueTemplateWorkspaceConfig
+			: template.workspace,
+		metadata,
+	)
 	return {
 		...template,
-		content: cloneVueTemplateContent(template.content),
-		workspace: cloneVueTemplateWorkspaceConfig(template.workspace),
+		content: withWorkspaceInTemplateContent(template.content, workspace),
+		// Keep the legacy property for consumers that still read it. New writes
+		// use content.workspace as the authoritative value.
+		workspace,
+		metadata,
+	}
+}
+
+export function cloneVueTemplateDocument(content: VueTemplateDocument): VueTemplateDocument {
+	return JSON.parse(JSON.stringify(content)) as VueTemplateDocument
+}
+
+function withWorkspaceInTemplateContent(
+	content: TLContent,
+	workspace: VueTemplateWorkspaceConfig | undefined,
+) {
+	const cloned = cloneVueTemplateContent(content) as VueTemplateDocument
+	if (workspace) cloned.workspace = cloneVueTemplateWorkspaceConfig(workspace)
+	return cloned
+}
+
+function mergeMetadataWorkspace(
+	workspace: VueTemplateWorkspaceConfig | undefined,
+	metadata: VueTemplateMetadata | undefined
+): VueTemplateWorkspaceConfig | undefined {
+	if (!workspace && !metadata) return undefined
+	return {
+		...(metadata?.designerMode ? { designerMode: metadata.designerMode } : {}),
+		...(metadata?.pageSizeMm ? { pageSizeMm: { ...metadata.pageSizeMm } } : {}),
+		...(metadata?.pageBounds ? { pageBounds: { ...metadata.pageBounds } } : {}),
+		...(cloneVueTemplateWorkspaceConfig(workspace) ?? {}),
+	}
+}
+
+export function createVueTemplateMetadata(
+	workspace: VueTemplateWorkspaceConfig | undefined,
+	templateName?: string
+): VueTemplateMetadata {
+	const source = workspace?.printDataSource
+	const dataSource = source && typeof source === 'object' ? source as Record<string, unknown> : undefined
+	const dataSourceType = typeof dataSource?.type === 'string' ? dataSource.type : 'none'
+	const dataSourceKey = typeof dataSource?.key === 'string' && dataSource.key.trim()
+		? dataSource.key.trim()
+		: typeof dataSource?.formCode === 'string' && dataSource.formCode.trim()
+			? dataSource.formCode.trim()
+			: typeof dataSource?.tableName === 'string' && dataSource.tableName.trim()
+				? dataSource.tableName.trim()
+				: undefined
+	return {
+		editor: 'tldraw-vue',
+		schemaVersion: 1,
+		designerMode: workspace?.designerMode,
+		dataSourceType,
+		...(templateName ? { templateName } : {}),
+		...(dataSourceKey ? { dataSourceKey } : {}),
+		...(workspace?.pageSizeMm ? { pageSizeMm: { ...workspace.pageSizeMm } } : {}),
+		...(workspace?.pageBounds ? { pageBounds: { ...workspace.pageBounds } } : {}),
 	}
 }
 
@@ -132,6 +222,20 @@ function isVueTemplateRecord(value: unknown): value is VueTemplateRecord {
 		typeof value.updatedAt === 'number' &&
 		isTemplateContent(value.content) &&
 		(value.workspace === undefined || isTemplateWorkspaceConfig(value.workspace))
+		&& (value.metadata === undefined || isTemplateMetadata(value.metadata))
+	)
+}
+
+function isTemplateMetadata(value: unknown): value is VueTemplateMetadata {
+	if (!isObject(value)) return false
+	return (
+		(value.editor === undefined || typeof value.editor === 'string') &&
+		(value.schemaVersion === undefined || isFiniteNumber(value.schemaVersion)) &&
+		(value.designerMode === undefined || value.designerMode === 'print' || value.designerMode === 'presentation') &&
+		(value.dataSourceType === undefined || typeof value.dataSourceType === 'string') &&
+		(value.dataSourceKey === undefined || typeof value.dataSourceKey === 'string') &&
+		(value.pageSizeMm === undefined || isSizeLike(value.pageSizeMm)) &&
+		(value.pageBounds === undefined || isBoundsLike(value.pageBounds))
 	)
 }
 
@@ -165,6 +269,11 @@ function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspac
 		(background === undefined || isBackgroundConfig(background)) &&
 		(presentation === undefined || isObject(presentation))
 	)
+}
+
+export function stripVueTemplateDocumentMetadata(value: TLContent): TLContent {
+	const { pages: _pages, currentPageId: _currentPageId, workspace: _workspace, ...content } = value as VueTemplateDocument
+	return content as TLContent
 }
 
 function isBackgroundConfig(value: unknown): value is WorkspaceBackgroundConfig {

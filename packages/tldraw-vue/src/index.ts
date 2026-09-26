@@ -28,9 +28,11 @@ export type { CanvasTool, ResizeHandle, VueGeoShape } from './editor/interaction
 export type {
 	VueTemplateLoadHandler,
 	VueTemplateRecord,
+	VueTemplateMetadata,
 	VueTemplateSaveHandler,
 	VueTemplateWorkspaceConfig,
 } from './editor/templateStore'
+export { createVueTemplateMetadata } from './editor/templateStore'
 export { useEditor, editorKey } from './vue/editorContext'
 export { useEditorValue } from './vue/useEditorValue'
 export type { VueBoxShape } from './editor/vueBoxShape'

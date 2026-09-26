@@ -14,6 +14,7 @@
           <LowCodeFormLayout
             :nodes="column.blocks"
             :fields-by-key="fieldsByKey"
+            @tab-change="(key) => emit('tab-change', key)"
           >
             <template #field="{ field }">
               <slot name="field" :field="field" />
@@ -26,6 +27,7 @@
         v-else-if="node.kind === 'stack'"
         :nodes="node.blocks"
         :fields-by-key="fieldsByKey"
+        @tab-change="(key) => emit('tab-change', key)"
       >
         <template #field="{ field }">
           <slot name="field" :field="field" />
@@ -56,6 +58,7 @@
               <LowCodeFormLayout
                 :nodes="tab.blocks"
                 :fields-by-key="fieldsByKey"
+                @tab-change="(key) => emit('tab-change', key)"
               >
                 <template #field="{ field }">
                   <slot name="field" :field="field" />
@@ -90,6 +93,10 @@ defineOptions({
 defineProps<{
   nodes: LowCodeFormLayoutNode[];
   fieldsByKey: Record<string, LowCodeField>;
+}>();
+
+const emit = defineEmits<{
+  'tab-change': [key: string];
 }>();
 
 const readInjectedFormValues = inject<() => Record<string, unknown>>(
@@ -147,6 +154,7 @@ function setActiveTab(
   if (node.tabs.some((tab) => tab.key === key)) {
     activeTabKeys[nodeKey(node, index)] = key;
     requestFormRecalculate();
+    emit('tab-change', key);
   }
 }
 
