@@ -281,34 +281,34 @@ function prepareConfirmPage(
       const values = initialValues[block.id];
       const dataSource = block.dataSource
         ? {
-            ...block.dataSource,
-            ...(hasFilterOverride
-              ? {
-                  postData: {
-                    ...(block.dataSource.postData ?? {}),
-                    filters: cloneValue(config.filters),
-                  },
-                }
-              : {}),
-          }
+          ...block.dataSource,
+          ...(hasFilterOverride
+            ? {
+              postData: {
+                ...(block.dataSource.postData ?? {}),
+                filters: cloneValue(config.filters),
+              },
+            }
+            : {}),
+        }
         : undefined;
       return {
         ...block,
         ...(values
           ? {
-              initialValues: {
-                ...(block.initialValues ?? {}),
-                ...cloneValue(values),
-              },
-            }
+            initialValues: {
+              ...(block.initialValues ?? {}),
+              ...cloneValue(values),
+            },
+          }
           : {}),
         ...(dataSource
           ? { dataSource }
           : {}),
         ...(config.disableFormAutoLoad && dataSource
           ? {
-              dataSource: { ...dataSource, autoLoad: false },
-            }
+            dataSource: { ...dataSource, autoLoad: false },
+          }
           : {}),
       } satisfies LowCodePageFormBlock;
     }
@@ -330,17 +330,17 @@ function prepareConfirmPage(
   const preparedBlocks = prepareBlocks(page.schema.blocks);
   const preparedDataSources = page.schema.dataSources
     ? Object.fromEntries(Object.entries(page.schema.dataSources).map(([key, source]) => {
-        const nextSource = config.disableFormAutoLoad
-          ? { ...source, autoLoad: false }
-          : { ...source };
-        if (hasFilterOverride && formSourceKeys.has(key)) {
-          nextSource.postData = {
-            ...(nextSource.postData ?? {}),
-            filters: cloneValue(config.filters),
-          };
-        }
-        return [key, nextSource];
-      }))
+      const nextSource = config.disableFormAutoLoad
+        ? { ...source, autoLoad: false }
+        : { ...source };
+      if (hasFilterOverride && formSourceKeys.has(key)) {
+        nextSource.postData = {
+          ...(nextSource.postData ?? {}),
+          filters: cloneValue(config.filters),
+        };
+      }
+      return [key, nextSource];
+    }))
     : page.schema.dataSources;
 
   return {
@@ -426,39 +426,39 @@ export async function openLowCodePageReferenceDialog(
     content: {
       type: 'render',
       render: (context) =>
-        (
-          <div class="lc-global-dialog__page-reference">
-            <LowCodePageRenderer
-              page={page}
-              serviceApi={config.serviceApi}
-              router={config.router}
-              route={config.route}
-              locale={config.locale}
-              messages={config.messages}
-              theme={config.theme}
-              showGlobalDialogHost={false}
-              onRuntimeEvent={async (event: LowCodeRuntimeEvent) => {
-                const row = readEventRow(event);
-                if (!row) return;
+      (
+        <div class="lc-global-dialog__page-reference">
+          <LowCodePageRenderer
+            page={page}
+            serviceApi={config.serviceApi}
+            router={config.router}
+            route={config.route}
+            locale={config.locale}
+            messages={config.messages}
+            theme={config.theme}
+            showGlobalDialogHost={false}
+            onRuntimeEvent={async (event: LowCodeRuntimeEvent) => {
+              const row = readEventRow(event);
+              if (!row) return;
 
-                const payload = createReferencePayload(row, event, page, config);
-                const eventKey = readEventKey(event);
-                if (eventKey === 'rowCurrentChange') {
-                  selectedPayload = payload;
-                }
-
-                if (!selectEvents.has(eventKey) || closing) return;
-
-                closing = true;
+              const payload = createReferencePayload(row, event, page, config);
+              const eventKey = readEventKey(event);
+              if (eventKey === 'rowCurrentChange') {
                 selectedPayload = payload;
-                await context.close({
-                  action: resultAction,
-                  payload,
-                });
-              }}
-            />
-          </div>
-        ),
+              }
+
+              if (!selectEvents.has(eventKey) || closing) return;
+
+              closing = true;
+              selectedPayload = payload;
+              await context.close({
+                action: resultAction,
+                payload,
+              });
+            }}
+          />
+        </div>
+      ),
     },
   });
 
@@ -468,152 +468,152 @@ export async function openLowCodePageReferenceDialog(
 export async function openLowCodePageConfirmDialog(
   config: LowCodePageConfirmDialogConfig,
 ): Promise<LowCodePageConfirmDialogResult> {
-  const page = prepareConfirmPage(await resolveReferencePage(config), config);
-  const resultAction = readString(config.confirmAction ?? config.resultAction, 'confirm');
-  const requireSelection = config.requireSelection === true;
-  const includeEventHistory = config.includeEventHistory !== false;
-  const maxEventHistory = Math.max(1, Number(config.maxEventHistory ?? 50));
-  const rendererRef = ref<LowCodePageRendererExpose | null>(null);
-  let currentRow: Record<string, unknown> | undefined;
-  let selectedRow: Record<string, unknown> | undefined;
-  let selectedRows: Record<string, unknown>[] = [];
-  let lastEvent: LowCodeRuntimeEvent | undefined;
-  const events: LowCodeRuntimeEvent[] = [];
+  return new Promise(async (resolve, reject) => {
+    const page = prepareConfirmPage(await resolveReferencePage(config), config);
+    const resultAction = readString(config.confirmAction ?? config.resultAction, 'confirm');
+    const requireSelection = config.requireSelection === true;
+    const includeEventHistory = config.includeEventHistory !== false;
+    const maxEventHistory = Math.max(1, Number(config.maxEventHistory ?? 50));
+    const rendererRef = ref<LowCodePageRendererExpose | null>(null);
+    let currentRow: Record<string, unknown> | undefined;
+    let selectedRow: Record<string, unknown> | undefined;
+    let selectedRows: Record<string, unknown>[] = [];
+    let lastEvent: LowCodeRuntimeEvent | undefined;
+    const events: LowCodeRuntimeEvent[] = [];
 
-  const createPayload = (): LowCodePageConfirmPayload => {
-    const snapshot = rendererRef.value?.getSnapshot();
-    const row = selectedRow ?? currentRow;
-    const rows = selectedRows.length ? selectedRows : row ? [row] : [];
+    const createPayload = (): LowCodePageConfirmPayload => {
+      const snapshot = rendererRef.value?.getSnapshot();
+      const row = selectedRow ?? currentRow;
+      const rows = selectedRows.length ? selectedRows : row ? [row] : [];
 
-    return {
-      page,
-      ...(snapshot ? { snapshot } : {}),
-      ...(snapshot?.runtime ? { runtime: snapshot.runtime } : {}),
-      resolvedData: snapshot?.resolvedData ?? {},
-      formModels: snapshot?.formModels ?? {},
-      searchFilters: snapshot?.searchFilters ?? {},
-      gridStates: snapshot?.gridStates ?? {},
-      ...(row ? { row } : {}),
-      ...(currentRow ? { currentRow } : {}),
-      ...(selectedRow ? { selectedRow } : {}),
-      selectedRows: cloneRows(rows),
-      rows: cloneRows(rows),
-      ...(lastEvent ? { event: lastEvent, lastEvent } : {}),
-      events: [...events],
-      ...(rendererRef.value?.getLastSavedFormRecord()
-        ? { savedRecord: cloneRecord(rendererRef.value.getLastSavedFormRecord()) }
-        : {}),
-      ...(lastEvent?.blockId ? { blockId: lastEvent.blockId } : {}),
-      ...(lastEvent?.blockKind ? { blockKind: lastEvent.blockKind } : {}),
+      return {
+        page,
+        ...(snapshot ? { snapshot } : {}),
+        ...(snapshot?.runtime ? { runtime: snapshot.runtime } : {}),
+        resolvedData: snapshot?.resolvedData ?? {},
+        formModels: snapshot?.formModels ?? {},
+        searchFilters: snapshot?.searchFilters ?? {},
+        gridStates: snapshot?.gridStates ?? {},
+        ...(row ? { row } : {}),
+        ...(currentRow ? { currentRow } : {}),
+        ...(selectedRow ? { selectedRow } : {}),
+        selectedRows: cloneRows(rows),
+        rows: cloneRows(rows),
+        ...(lastEvent ? { event: lastEvent, lastEvent } : {}),
+        events: [...events],
+        ...(rendererRef.value?.getLastSavedFormRecord()
+          ? { savedRecord: cloneRecord(rendererRef.value.getLastSavedFormRecord()) }
+          : {}),
+        ...(lastEvent?.blockId ? { blockId: lastEvent.blockId } : {}),
+        ...(lastEvent?.blockKind ? { blockKind: lastEvent.blockKind } : {}),
+      };
     };
-  };
-
-  const updateSelection = async (event: LowCodeRuntimeEvent) => {
-    lastEvent = event;
-    if (includeEventHistory) {
-      events.push(event);
-      if (events.length > maxEventHistory) {
-        events.splice(0, events.length - maxEventHistory);
+    const updateSelection = async (event: LowCodeRuntimeEvent) => {
+      lastEvent = event;
+      if (includeEventHistory) {
+        events.push(event);
+        if (events.length > maxEventHistory) {
+          events.splice(0, events.length - maxEventHistory);
+        }
       }
-    }
 
-    const row = readEventRow(event);
-    const rows = readEventRows(event);
-    const eventKey = readEventKey(event);
-    const gridState = event.blockId
-      ? rendererRef.value?.getSnapshot().gridStates[event.blockId]
-      : undefined;
+      const row = readEventRow(event);
+      const rows = readEventRows(event);
+      const eventKey = readEventKey(event);
+      const gridState = event.blockId
+        ? rendererRef.value?.getSnapshot().gridStates[event.blockId]
+        : undefined;
 
-    if (eventKey === 'rowCurrentChange' && row) {
-      currentRow = cloneRecord(row);
-      selectedRow = cloneRecord(row);
-      selectedRows = [cloneRecord(row)].filter(isRecord);
-    } else if (row) {
-      selectedRow = cloneRecord(row);
-      currentRow = cloneRecord(row);
-      if (!selectedRows.length) {
+      if (eventKey === 'rowCurrentChange' && row) {
+        currentRow = cloneRecord(row);
+        selectedRow = cloneRecord(row);
         selectedRows = [cloneRecord(row)].filter(isRecord);
+      } else if (row) {
+        selectedRow = cloneRecord(row);
+        currentRow = cloneRecord(row);
+        if (!selectedRows.length) {
+          selectedRows = [cloneRecord(row)].filter(isRecord);
+        }
       }
-    }
 
-    if (rows.length) {
-      selectedRows = rows;
-      selectedRow = cloneRecord(rows[0]) ?? selectedRow;
-    }
-
-    if (gridState) {
-      currentRow = cloneRecord(gridState.currentRow);
-      if (gridState.selectedRows.length) {
-        selectedRows = cloneRows(gridState.selectedRows);
-        selectedRow = cloneRecord(gridState.selectedRows[0]) ?? selectedRow;
-      } else if (
-        (eventKey === 'rowCurrentChange' && !gridState.currentRow) ||
-        eventKey === 'radioChange' ||
-        eventKey === 'checkboxChange' ||
-        eventKey === 'checkboxAll'
-      ) {
-        selectedRows = [];
-        selectedRow = undefined;
+      if (rows.length) {
+        selectedRows = rows;
+        selectedRow = cloneRecord(rows[0]) ?? selectedRow;
       }
-    }
 
-    await config.onRuntimeEvent?.(event, createPayload());
-  };
+      if (gridState) {
+        currentRow = cloneRecord(gridState.currentRow);
+        if (gridState.selectedRows.length) {
+          selectedRows = cloneRows(gridState.selectedRows);
+          selectedRow = cloneRecord(gridState.selectedRows[0]) ?? selectedRow;
+        } else if (
+          (eventKey === 'rowCurrentChange' && !gridState.currentRow) ||
+          eventKey === 'radioChange' ||
+          eventKey === 'checkboxChange' ||
+          eventKey === 'checkboxAll'
+        ) {
+          selectedRows = [];
+          selectedRow = undefined;
+        }
+      }
 
-  const result = await openGlobalDialog({
-    ...(config.dialog ?? {}),
-    title: config.title ?? page.title,
-    width: config.width ?? 'min(1360px, calc(100vw - 40px))',
-    height: config.height,
-    className: mergeDialogClassName(config.className ?? config.dialog?.className),
-    props: {
-      top: '4vh',
-      destroyOnClose: true,
-      ...(config.dialog?.props ?? {}),
-      ...(config.props ?? {}),
-    },
-    showFooter: true,
-    actions: [
-      {
-        code: 'cancel',
-        label: config.cancelLabel ?? '取消',
-        role: 'cancel',
+      await config.onRuntimeEvent?.(event, createPayload());
+    };
+    const result = await openGlobalDialog({
+      ...(config.dialog ?? {}),
+      title: config.title ?? page.title,
+      width: config.width ?? 'min(1360px, calc(100vw - 40px))',
+      height: config.height,
+      className: mergeDialogClassName(config.className ?? config.dialog?.className),
+      props: {
+        top: '4vh',
+        destroyOnClose: true,
+        ...(config.dialog?.props ?? {}),
+        ...(config.props ?? {}),
       },
-      {
-        code: 'confirm',
-        label: config.confirmLabel ?? '确定',
-        role: 'confirm',
-        status: 'primary',
-        onClick: async () => {
-          let payload = createPayload();
-          if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
-
-          if (config.submitOnConfirm) {
-            if (!rendererRef.value) {
-              throw new Error('模板编辑页尚未加载完成，请稍后再试。');
-            }
-            // The dialog is destroyed immediately after confirmation. Avoid
-            // waiting for a post-save page reload, which can be blocked by a
-            // dialog-only data source or a stale route and leave the caller's
-            // confirmLowCodePage promise pending forever.
-            const submitted = await rendererRef.value.submitForms({ reload: false });
-            if (!submitted) {
-              throw new Error('模板保存失败，请检查模板名称和表单内容。');
-            }
-            payload = createPayload();
-          }
-
-          return {
-            close: true,
-            action: resultAction,
-            payload,
-          };
+      showFooter: true,
+      actions: [
+        {
+          code: 'cancel',
+          label: config.cancelLabel ?? '取消',
+          role: 'cancel',
         },
-      },
-    ],
-    content: {
-      type: 'render',
-      render: () =>
+        {
+          code: 'confirm',
+          label: config.confirmLabel ?? '确定',
+          role: 'confirm',
+          status: 'primary',
+          onClick: async () => {
+            debugger//
+            let payload = createPayload();
+            if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
+
+            if (config.submitOnConfirm) {
+              if (!rendererRef.value) {
+                throw new Error('模板编辑页尚未加载完成，请稍后再试。');
+              }
+              // The dialog is destroyed immediately after confirmation. Avoid
+              // waiting for a post-save page reload, which can be blocked by a
+              // dialog-only data source or a stale route and leave the caller's
+              // confirmLowCodePage promise pending forever.
+              const submitted = await rendererRef.value.submitForms({ reload: false });
+              if (!submitted) {
+                throw new Error('模板保存失败，请检查模板名称和表单内容。');
+              }
+              payload = createPayload();
+            }
+
+            return {
+              close: true,
+              action: resultAction,
+              payload,
+            };
+          },
+        },
+      ],
+      content: {
+        type: 'render',
+        render: () =>
         (
           <div class="lc-global-dialog__page-reference">
             <LowCodePageRenderer
@@ -631,8 +631,9 @@ export async function openLowCodePageConfirmDialog(
             />
           </div>
         ),
-    },
-  });
+      },
+    });
+    resolve(result)
+  })
 
-  return result as LowCodePageConfirmDialogResult;
 }

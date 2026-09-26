@@ -552,7 +552,6 @@ button {
 }
 
 .editor-host.is-data-source-active {
-	grid-template-columns: 400px minmax(0, 1fr);
 }
 
 .designer-side-panel {

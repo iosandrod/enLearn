@@ -348,7 +348,7 @@ export function createGlobalDialogContext<
   };
 }
 
-export function openGlobalDialog<
+export  function openGlobalDialog<
   TValues extends Record<string, unknown> = Record<string, unknown>,
 >(config: GlobalDialogConfig<TValues>) {
   const id = createDialogId(config.id);

@@ -27,6 +27,8 @@ const definitions: Record<string, FormMaterialVisualDefinition> = {
     runtimeComponent: 'vxe-upload',
     defaultProps: {
       modelValue: null,
+      mode: 'image',
+      imageTypes: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'],
       fileTypes: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'],
       multiple: false,
       limitSize: 10,

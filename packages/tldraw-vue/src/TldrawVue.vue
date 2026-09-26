@@ -385,15 +385,11 @@ onBeforeUnmount(() => {
 		</header>
 		<section
 			ref="editorHost"
-			class="editor-host"
+			class="editor-host flex flex-row w-full"
 			:class="{
-				'is-property-active': activeDesignerTab === 'properties',
-				'is-data-source-active': activeDesignerTab === 'dataSource',
-				'is-presentation-mode': designerMode === 'presentation',
-				'is-presentation-preview': presentationPreviewOpen,
 			}"
 		>
-			<aside class="designer-side-panel" aria-label="设计器工具面板">
+			<div style="width:350px;" class="designer-side-panel" aria-label="设计器工具面板">
 				<nav class="designer-side-tabs" aria-label="设计器功能分类">
 					<button
 						v-for="tab in designerTabs"
@@ -491,8 +487,8 @@ onBeforeUnmount(() => {
 						<VueAnimationPanel v-if="editor && designerMode === 'presentation'" :editor="editor" />
 					</div>
 				</div>
-			</aside>
-			<div ref="designerStage" class="designer-stage">
+			</div>
+			<div style="flex:1;" ref="designerStage" class="designer-stage flex-1">
 				<VueCanvas
 					v-if="editor"
 					ref="canvasRef"

@@ -88,6 +88,7 @@ import TldrawVue, {
   type VueTemplateRecord,
   type VueTemplateWorkspaceConfig
 } from 'tldraw-vue-phase-one';
+import { loadAvailableLowCodeFormDefinitions } from '@/utils/lowCodeFormDefinitions';
 
 type TldrawVueExpose = {
   getEditor(): Editor | null;
@@ -163,6 +164,30 @@ const embedded = computed(() => props.embedded);
 const PRINT_TEMPLATE_RESOURCE = 'print_templates';
 const PRINT_TEMPLATE_LIST_PAGE_CODE = 'print-templates';
 const PRINT_TEMPLATE_EDIT_FORM_ID = 'print-templates-edit-form';
+const PRINT_DESIGNER_FORM_CODES = [
+  'print-designer.property.workspace',
+  'print-designer.property.vue-box',
+  'print-designer.property.vue-text',
+  'print-designer.property.vue-image',
+  'print-designer.property.vue-line',
+  'print-designer.property.vue-arrow',
+  'print-designer.property.vue-draw',
+  'print-designer.property.vue-qr',
+  'print-designer.property.vue-barcode',
+  'print-designer.property.vue-frame',
+  'print-designer.property.vue-table',
+  'print-designer.property.vue-material',
+  'print-designer.property.vue-material-section',
+  'print-designer.property.vue-resume',
+  'print-designer.property.vue-resume-section',
+  'print-designer.property.group',
+  'print-designer.property.generic',
+  'print-designer.datasource-selector',
+  'print-designer.datasource-definition',
+  'print-designer.datasource-detail-import',
+  'print-designer.background',
+  'presentation-animation'
+] as const;
 
 const route = useRoute();
 const router = useRouter();
@@ -181,6 +206,12 @@ let suppressDirtyTracking = false;
 let designerInitialized = false;
 let savedWorkspaceSignature = '';
 let templateLoadRequestId = 0;
+let printTemplateEditPageCode = '';
+let printDesignerPagePrefetch: Promise<void> | null = null;
+
+if (import.meta.client) {
+  void prefetchPrintDesignerLowCodeResources();
+}
 
 const designerPlugins: VueEditorPlugin[] = [
   defineVueEditorPlugin({
@@ -243,13 +274,75 @@ onBeforeUnmount(() => {
 });
 
 async function handleDesignerReady() {
+  void prefetchPrintDesignerLowCodeResources();
   await refreshTemplates({ quiet: true });
+  void prefetchPrintDesignerDataSourceForms();
   await loadRouteTemplate();
   savedWorkspaceSignature = getWorkspaceDirtySignature(
     designerRef.value?.getWorkspaceTemplateConfig() ?? {}
   );
   editorReady.value = true;
   designerInitialized = true;
+}
+
+/** Warm the low-code page/form cache while the canvas finishes initializing. */
+async function prefetchPrintDesignerLowCodeResources() {
+  if (printDesignerPagePrefetch) return printDesignerPagePrefetch;
+
+  printDesignerPagePrefetch = (async () => {
+    try {
+      const pageServiceApi = serviceApi as Parameters<typeof getLowCodePage>[0];
+      const listPage = await getLowCodePage(pageServiceApi, {
+        code: PRINT_TEMPLATE_LIST_PAGE_CODE,
+        includeData: true
+      });
+
+      // The picker uses the data-bearing page, while save uses the lightweight
+      // page projection. Warm both variants so either path is a cache hit.
+      await getLowCodePage(pageServiceApi, {
+        code: PRINT_TEMPLATE_LIST_PAGE_CODE,
+        includeData: false
+      });
+
+      if (listPage.edit_page_id) {
+        const editPage = await getLowCodePage(pageServiceApi, {
+          id: listPage.edit_page_id,
+          includeData: false
+        });
+        printTemplateEditPageCode = readString(editPage.code);
+      }
+    } catch (error) {
+      console.warn('[print-designer] low-code page prefetch failed', error);
+    }
+
+    try {
+      await loadAvailableLowCodeFormDefinitions(serviceApi, PRINT_DESIGNER_FORM_CODES);
+    } catch (error) {
+      // Panels still have their normal loading/fallback behavior; prefetch is
+      // deliberately best-effort and must not prevent the designer from open.
+      console.warn('[print-designer] low-code form prefetch failed', error);
+    }
+  })();
+
+  return printDesignerPagePrefetch;
+}
+
+async function prefetchPrintDesignerDataSourceForms() {
+  const codes = templates.value.flatMap((template) => {
+    const contentWorkspace = isRecord(template.content.workspace)
+      ? template.content.workspace
+      : undefined;
+    const source = template.workspace?.printDataSource ?? contentWorkspace?.printDataSource;
+    return isRecord(source) && typeof source.formCode === 'string' ? [source.formCode] : [];
+  });
+  const uniqueCodes = [...new Set(codes.map((code) => code.trim()).filter(Boolean))];
+  if (!uniqueCodes.length) return;
+
+  try {
+    await loadAvailableLowCodeFormDefinitions(serviceApi, uniqueCodes);
+  } catch (error) {
+    console.warn('[print-designer] data-source form prefetch failed', error);
+  }
 }
 
 function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
@@ -440,6 +533,14 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
 }
 
 async function getPrintTemplateEditPage() {
+  await prefetchPrintDesignerLowCodeResources();
+  if (printTemplateEditPageCode) {
+    return getLowCodePage(
+      serviceApi as Parameters<typeof getLowCodePage>[0],
+      { code: printTemplateEditPageCode, includeData: false }
+    );
+  }
+
   const listPage = await getLowCodePage(
     serviceApi as Parameters<typeof getLowCodePage>[0],
     { code: PRINT_TEMPLATE_LIST_PAGE_CODE, includeData: false }
@@ -448,10 +549,12 @@ async function getPrintTemplateEditPage() {
     throw new Error('打印模板列表尚未关联编辑页面');
   }
 
-  return getLowCodePage(
+  const editPage = await getLowCodePage(
     serviceApi as Parameters<typeof getLowCodePage>[0],
     { id: listPage.edit_page_id, includeData: false }
   );
+  printTemplateEditPageCode = readString(editPage.code);
+  return editPage;
 }
 
 function createSaveDialogValues(mode: TemplateSaveMode, snapshot: TemplateSnapshot) {

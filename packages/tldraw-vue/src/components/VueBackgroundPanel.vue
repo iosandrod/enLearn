@@ -6,6 +6,7 @@ import { onMounted, ref, watch } from 'vue'
 import type { WorkspaceBackgroundConfig } from '@/editor/templateStore'
 
 const BACKGROUND_FORM_CODE = 'print-designer.background'
+const IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif']
 
 const props = defineProps<{ background: WorkspaceBackgroundConfig }>()
 const emit = defineEmits<{ 'update:background': [background: WorkspaceBackgroundConfig] }>()
@@ -48,7 +49,7 @@ async function loadSchema() {
 		if (row?.code !== BACKGROUND_FORM_CODE || !isLowCodeFormSchema(row.schema)) {
 			throw new Error('未找到背景设置低代码表单 schema。')
 		}
-		schema.value = structuredClone(row.schema)
+		schema.value = normalizeBackgroundSchema(structuredClone(row.schema))
 	} catch (error) {
 		schema.value = null
 		errorMessage.value = error instanceof Error ? error.message : '背景表单加载失败，请稍后重试。'
@@ -89,6 +90,29 @@ function onFileChange(event: Event) {
 }
 
 function clearImage() { uploadError.value = ''; handleModelUpdate({ imageUrl: '' }) }
+
+function normalizeBackgroundSchema(value: LowCodeFormSchema): LowCodeFormSchema {
+	return {
+		...value,
+		fields: value.fields.map((field) => {
+			if (field.field !== 'imageUrl' || field.component !== 'vxe-upload') return field
+			return {
+				...field,
+				props: {
+					...(field.props ?? {}),
+					mode: 'image',
+					imageTypes: [...IMAGE_TYPES],
+					fileTypes: [...IMAGE_TYPES],
+					multiple: false,
+					limitCount: 1,
+					previewType: 'image',
+					buttonText: '选择图片',
+					buttonIcon: 'ri-image-add-line',
+				},
+			}
+		}),
+	}
+}
 
 function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
 	if (!isRecord(value) || !Array.isArray(value.fields) || !Array.isArray(value.actions)) return false

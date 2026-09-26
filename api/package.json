@@ -93,6 +93,7 @@
     "db:apply-print-designer-material-load-fix": "tsx scripts/apply-print-designer-material-load-fix.ts",
     "db:apply-print-account-setting-form": "tsx scripts/apply-print-account-setting-form.ts",
     "db:apply-print-background-form": "tsx scripts/apply-print-background-form.ts",
+    "db:apply-print-background-image-upload": "tsx scripts/apply-print-background-image-upload.ts",
     "db:apply-runtime-form-default-value-procedure": "tsx scripts/apply-runtime-form-default-value-procedure.ts",
     "db:apply-runtime-form-relation-selects": "tsx scripts/apply-runtime-form-relation-selects.ts",
     "db:apply-document-number-generator": "tsx scripts/apply-document-number-generator.ts",
