@@ -23,6 +23,17 @@ type LowCodeListCacheEntry = {
 const lowCodeListCache = new Map<string, LowCodeListCacheEntry>();
 const lowCodeListRequests = new Map<string, Promise<unknown>>();
 
+function cloneLowCodeCacheValue<T>(value: T): T {
+  if (value === undefined || value === null) return value;
+  try {
+    return structuredClone(value);
+  } catch {
+    // Service responses are JSON in production. Keep a fallback for test
+    // adapters that return non-cloneable values rather than breaking reads.
+    return value;
+  }
+}
+
 function readLowCodeTable(postData: Record<string, unknown>) {
   const table = postData.resource ?? postData.tableName ?? postData.table_name;
   return table === 'lowcode_form_definitions' || table === 'lowcode_pages'
@@ -51,8 +62,30 @@ function readIncludeData(postData: Record<string, unknown>) {
   return postData.includeData === false ? '0' : '1';
 }
 
+function stableSerialize(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableSerialize).join(',')}]`;
+  if (typeof value !== 'object' || value === null) {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? 'undefined' : serialized;
+  }
+  return `{${Object.keys(value as Record<string, unknown>)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableSerialize((value as Record<string, unknown>)[key])}`)
+    .join(',')}}`;
+}
+
+function lowCodeCacheScope(postData: Record<string, unknown>) {
+  const filters = postData.filters;
+  const otherFilters = typeof filters === 'object' && filters !== null && !Array.isArray(filters)
+    ? Object.fromEntries(
+      Object.entries(filters as Record<string, unknown>).filter(([key]) => key !== 'code'),
+    )
+    : {};
+  return `${readIncludeData(postData)}:${stableSerialize(otherFilters)}`;
+}
+
 function lowCodeCacheKey(table: LowCodeDefinitionTable, code: string, postData: Record<string, unknown>) {
-  return `${table}:${readIncludeData(postData)}:${code}`;
+  return `${table}:${lowCodeCacheScope(postData)}:${code}`;
 }
 
 function readRows<T>(value: unknown) {
@@ -78,7 +111,9 @@ function withCachedLowCodeRows(
     if (typeof row !== 'object' || row === null || Array.isArray(row)) return;
     const code = (row as { code?: unknown }).code;
     if (typeof code === 'string' && code.trim()) {
-      lowCodeListCache.set(lowCodeCacheKey(table, code.trim(), postData), { value: row });
+      lowCodeListCache.set(lowCodeCacheKey(table, code.trim(), postData), {
+        value: cloneLowCodeCacheValue(row),
+      });
     }
   });
 }
@@ -91,7 +126,9 @@ function readCachedLowCodeRows(
   if (!codes.length) return undefined;
   const rows = codes.map((code) => {
     const key = lowCodeCacheKey(table, code, postData);
-    return lowCodeListCache.has(key) ? lowCodeListCache.get(key)?.value : undefined;
+    return lowCodeListCache.has(key)
+      ? cloneLowCodeCacheValue(lowCodeListCache.get(key)?.value)
+      : undefined;
   });
   return rows.every((_, index) =>
     lowCodeListCache.has(lowCodeCacheKey(table, codes[index], postData)),
@@ -104,6 +141,23 @@ function invalidateLowCodeListCache(table: LowCodeDefinitionTable) {
   for (const key of lowCodeListCache.keys()) {
     if (key.startsWith(`${table}:`)) lowCodeListCache.delete(key);
   }
+}
+
+function readLowCodeWriteTable(
+  serviceName: string,
+  serviceMethod: string,
+  postData: Record<string, unknown>,
+) {
+  if (serviceName === 'lowcode' && serviceMethod !== 'listItems') {
+    return readLowCodeTable(postData);
+  }
+  if (
+    serviceName === 'admin' &&
+    ['saveItem', 'createItem', 'updateItem', 'deleteItem'].includes(serviceMethod)
+  ) {
+    return readLowCodeTable(postData);
+  }
+  return undefined;
 }
 
 function isServiceEnvelope<T>(value: unknown): value is ServiceEnvelope<T> {
@@ -158,7 +212,7 @@ export function useServiceApi() {
       const cachedRows = readCachedLowCodeRows(postData, lowCodeTable);
       if (cachedRows) return cachedRows as TResponse;
 
-      const requestKey = `${lowCodeTable}:${readIncludeData(postData)}:${[...codeValues].sort().join(',')}`;
+      const requestKey = `${lowCodeTable}:${lowCodeCacheScope(postData)}:${[...codeValues].sort().join(',')}`;
       const pendingRequest = lowCodeListRequests.get(requestKey);
       if (pendingRequest) return await pendingRequest as TResponse;
 
@@ -185,7 +239,7 @@ export function useServiceApi() {
         });
         codeValues.forEach((code) => {
           lowCodeListCache.set(lowCodeCacheKey(lowCodeTable, code, postData), {
-            value: rowByCode.get(code),
+            value: cloneLowCodeCacheValue(rowByCode.get(code)),
           });
         });
         withCachedLowCodeRows(postData, rows, lowCodeTable);
@@ -213,10 +267,8 @@ export function useServiceApi() {
     });
 
     const data = isServiceEnvelope<TResponse>(response) ? response.data : response;
-    if (serviceName === 'lowcode' && serviceMethod !== 'listItems') {
-      const lowCodeTable = readLowCodeTable(postData);
-      if (lowCodeTable) invalidateLowCodeListCache(lowCodeTable);
-    }
+    const writtenLowCodeTable = readLowCodeWriteTable(serviceName, serviceMethod, postData);
+    if (writtenLowCodeTable) invalidateLowCodeListCache(writtenLowCodeTable);
     return data;
   }
 

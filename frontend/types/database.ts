@@ -95,6 +95,7 @@ export type AdminRoleRow = {
   code: string;
   name: string;
   description: string | null;
+  parent_id: string | null;
   status: 'active' | 'inactive';
   sort_order: number;
   is_system: boolean;

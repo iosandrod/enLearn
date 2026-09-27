@@ -17,6 +17,10 @@
 import { computed, onMounted, ref } from 'vue';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../../../utils/lowCodePages';
+import {
+  PRINT_DESIGNER_PAGE_CODE,
+  prefetchPrintDesignerLowCodeResources,
+} from '../../../utils/printDesignerLowCode';
 
 const route = useRoute();
 const router = useRouter();
@@ -24,6 +28,7 @@ const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const pagePrefetch = prefetchPrintDesignerLowCodeResources(serviceApi);
 const headerBlockTeleport = computed(() => (
   route.path.replace(/\/+$/, '') === '/print-designer'
     ? { kind: 'buttonGroup' as const, to: '#print-designer-header-actions' }
@@ -38,7 +43,11 @@ const pageRoute = computed(() => ({
 
 onMounted(async () => {
   try {
-    page.value = await getLowCodePage(serviceApi, { code: 'print-designer', includeData: true });
+    const prefetched = await pagePrefetch;
+    page.value = prefetched?.designerPage ?? await getLowCodePage(serviceApi, {
+      code: PRINT_DESIGNER_PAGE_CODE,
+      includeData: true,
+    });
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '打印设计器加载失败。';
   } finally {

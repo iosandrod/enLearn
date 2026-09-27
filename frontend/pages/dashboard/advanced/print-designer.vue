@@ -89,6 +89,10 @@ import TldrawVue, {
   type VueTemplateWorkspaceConfig
 } from 'tldraw-vue-phase-one';
 import { loadAvailableLowCodeFormDefinitions } from '@/utils/lowCodeFormDefinitions';
+import {
+  PRINT_TEMPLATE_LIST_PAGE_CODE,
+  prefetchPrintDesignerLowCodeResources as prefetchPrintDesignerPages,
+} from '@/utils/printDesignerLowCode';
 
 type TldrawVueExpose = {
   getEditor(): Editor | null;
@@ -162,32 +166,7 @@ const props = withDefaults(defineProps<{
 const embedded = computed(() => props.embedded);
 
 const PRINT_TEMPLATE_RESOURCE = 'print_templates';
-const PRINT_TEMPLATE_LIST_PAGE_CODE = 'print-templates';
 const PRINT_TEMPLATE_EDIT_FORM_ID = 'print-templates-edit-form';
-const PRINT_DESIGNER_FORM_CODES = [
-  'print-designer.property.workspace',
-  'print-designer.property.vue-box',
-  'print-designer.property.vue-text',
-  'print-designer.property.vue-image',
-  'print-designer.property.vue-line',
-  'print-designer.property.vue-arrow',
-  'print-designer.property.vue-draw',
-  'print-designer.property.vue-qr',
-  'print-designer.property.vue-barcode',
-  'print-designer.property.vue-frame',
-  'print-designer.property.vue-table',
-  'print-designer.property.vue-material',
-  'print-designer.property.vue-material-section',
-  'print-designer.property.vue-resume',
-  'print-designer.property.vue-resume-section',
-  'print-designer.property.group',
-  'print-designer.property.generic',
-  'print-designer.datasource-selector',
-  'print-designer.datasource-definition',
-  'print-designer.datasource-detail-import',
-  'print-designer.background',
-  'presentation-animation'
-] as const;
 
 const route = useRoute();
 const router = useRouter();
@@ -207,6 +186,7 @@ let designerInitialized = false;
 let savedWorkspaceSignature = '';
 let templateLoadRequestId = 0;
 let printTemplateEditPageCode = '';
+let printTemplateEditPage: LowCodePageRecord | null = null;
 let printDesignerPagePrefetch: Promise<void> | null = null;
 
 if (import.meta.client) {
@@ -291,36 +271,11 @@ async function prefetchPrintDesignerLowCodeResources() {
 
   printDesignerPagePrefetch = (async () => {
     try {
-      const pageServiceApi = serviceApi as Parameters<typeof getLowCodePage>[0];
-      const listPage = await getLowCodePage(pageServiceApi, {
-        code: PRINT_TEMPLATE_LIST_PAGE_CODE,
-        includeData: true
-      });
-
-      // The picker uses the data-bearing page, while save uses the lightweight
-      // page projection. Warm both variants so either path is a cache hit.
-      await getLowCodePage(pageServiceApi, {
-        code: PRINT_TEMPLATE_LIST_PAGE_CODE,
-        includeData: false
-      });
-
-      if (listPage.edit_page_id) {
-        const editPage = await getLowCodePage(pageServiceApi, {
-          id: listPage.edit_page_id,
-          includeData: false
-        });
-        printTemplateEditPageCode = readString(editPage.code);
-      }
+      const resources = await prefetchPrintDesignerPages(serviceApi);
+      printTemplateEditPage = resources.templateEditPage;
+      printTemplateEditPageCode = readString(resources.templateEditPage?.code);
     } catch (error) {
       console.warn('[print-designer] low-code page prefetch failed', error);
-    }
-
-    try {
-      await loadAvailableLowCodeFormDefinitions(serviceApi, PRINT_DESIGNER_FORM_CODES);
-    } catch (error) {
-      // Panels still have their normal loading/fallback behavior; prefetch is
-      // deliberately best-effort and must not prevent the designer from open.
-      console.warn('[print-designer] low-code form prefetch failed', error);
     }
   })();
 
@@ -393,6 +348,10 @@ async function refreshTemplates(options: { quiet?: boolean } = {}) {
 
 async function openTemplatePicker() {
   if (loadingTemplates.value || savingTemplate.value) return;
+
+  // The picker resolves its page by code. Wait for the shared page prefetch so
+  // confirmLowCodePage can reuse the cached low-code page instead of racing it.
+  await prefetchPrintDesignerLowCodeResources();
 
   loadingTemplates.value = true;
   try {
@@ -534,6 +493,7 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
 
 async function getPrintTemplateEditPage() {
   await prefetchPrintDesignerLowCodeResources();
+  if (printTemplateEditPage) return printTemplateEditPage;
   if (printTemplateEditPageCode) {
     return getLowCodePage(
       serviceApi as Parameters<typeof getLowCodePage>[0],
@@ -827,6 +787,7 @@ function normalizeTemplatePageContent(value: TLContent, pageId: string): TLConte
         : pageId;
       return {
         ...shape,
+        id: shape.id,
         x: Number.isFinite(shape.x) ? shape.x : 0,
         y: Number.isFinite(shape.y) ? shape.y : 0,
         parentId,

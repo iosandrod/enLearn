@@ -232,5 +232,5 @@ export function isMissingFileTable(error: { code?: string; message?: string } | 
 }
 
 export function fileMetadataRequiredMessage() {
-  return 'File metadata tables are not created yet. Run supabase/migrations/20260729090000_file_storage_system.sql first.';
+  return 'File metadata tables are not created yet. Run supabase/migrations/20260926170000_file_storage_upload_fix.sql first.';
 }

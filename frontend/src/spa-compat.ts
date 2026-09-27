@@ -16,6 +16,130 @@ const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
 const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
 let refreshSessionPromise: Promise<boolean> | null = null;
 
+type HttpCacheEntry = {
+  value: unknown;
+  expiresAt: number;
+};
+
+const LOW_CODE_HTTP_CACHE_TTL_MS = 5 * 60 * 1000;
+const lowCodeHttpResponseCache = new Map<string, HttpCacheEntry>();
+const lowCodeHttpResponseRequests = new Map<string, Promise<unknown>>();
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function cloneHttpCacheValue<T>(value: T): T {
+  if (value === undefined || value === null) return value;
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
+function getLowCodeHttpCacheScope() {
+  // The token/account scope prevents a page definition fetched by one session
+  // from being reused after account switching in the same browser tab.
+  return `${getStoredAccountId()}::${getStoredAccessToken()}`;
+}
+
+function readLowCodeHttpCacheKey(
+  apiPath: string,
+  method: RequestInit['method'] | undefined,
+  body: unknown,
+) {
+  if (apiPath !== '/service' || String(method ?? '').toUpperCase() !== 'POST' || !isRecord(body)) {
+    return undefined;
+  }
+
+  if (body.serviceName !== 'lowcode' || body.serviceMethod !== 'listItems' || !isRecord(body.postData)) {
+    return undefined;
+  }
+
+  const table = body.postData.tableName ?? body.postData.resource;
+  if (table !== 'lowcode_pages' && table !== 'lowcode_form_definitions') return undefined;
+
+  const filters = body.postData.filters;
+  const rawCode = body.postData.code ?? (isRecord(filters) ? filters.code : undefined);
+  const codes = Array.isArray(rawCode)
+    ? rawCode.filter((value): value is string => typeof value === 'string' && value.trim())
+      .map((value) => value.trim())
+    : typeof rawCode === 'string' && rawCode.trim()
+      ? [rawCode.trim()]
+      : [];
+  if (!codes.length) return undefined;
+
+  // Page code is the identity of a low-code definition. Ignore request-only
+  // fields such as limit/sorts so equivalent lookups share one HTTP cache.
+  const includeData = body.postData.includeData === false ? '0' : '1';
+  return `lowcode:${getLowCodeHttpCacheScope()}:${table}:${includeData}:${[...new Set(codes)].sort().join(',')}`;
+}
+
+function readLowCodeHttpCache<T>(key: string) {
+  const entry = lowCodeHttpResponseCache.get(key);
+  if (!entry) return undefined;
+  if (entry.expiresAt <= Date.now()) {
+    lowCodeHttpResponseCache.delete(key);
+    return undefined;
+  }
+  return cloneHttpCacheValue(entry.value as T);
+}
+
+function readRowsFromLowCodeResponse(value: unknown) {
+  if (Array.isArray(value)) return value;
+  if (!isRecord(value)) return [];
+  if (Array.isArray(value.rows)) return value.rows;
+  if (isRecord(value.data)) {
+    if (Array.isArray(value.data)) return value.data;
+    if (isRecord(value.data) && Array.isArray(value.data.rows)) return value.data.rows;
+  }
+  return [];
+}
+
+function cacheLowCodeResponseAliases(body: unknown, value: unknown) {
+  if (!isRecord(body) || body.serviceName !== 'lowcode' || body.serviceMethod !== 'listItems') return;
+  if (!isRecord(body.postData)) return;
+  const table = body.postData.tableName ?? body.postData.resource;
+  if (table !== 'lowcode_pages' && table !== 'lowcode_form_definitions') return;
+
+  const includeData = body.postData.includeData === false ? '0' : '1';
+  for (const row of readRowsFromLowCodeResponse(value)) {
+    if (!isRecord(row) || typeof row.code !== 'string' || !row.code.trim()) continue;
+    const key = `lowcode:${getLowCodeHttpCacheScope()}:${table}:${includeData}:${row.code.trim()}`;
+    lowCodeHttpResponseCache.set(key, {
+      value: cloneHttpCacheValue(value),
+      expiresAt: Date.now() + LOW_CODE_HTTP_CACHE_TTL_MS,
+    });
+  }
+}
+
+function clearLowCodeHttpResponseCache() {
+  lowCodeHttpResponseCache.clear();
+}
+
+function isLowCodeWriteRequest(apiPath: string, method: RequestInit['method'] | undefined, body: unknown) {
+  if (apiPath !== '/service' || String(method ?? '').toUpperCase() !== 'POST' || !isRecord(body)) {
+    return false;
+  }
+
+  if (body.serviceName === 'lowcode') {
+    return body.serviceMethod !== 'listItems';
+  }
+
+  if (body.serviceName !== 'admin' || !isRecord(body.postData)) return false;
+  if (!['saveItem', 'createItem', 'updateItem', 'deleteItem'].includes(String(body.serviceMethod))) {
+    return false;
+  }
+
+  const resource = body.postData.resource ?? body.postData.tableName;
+  return resource === 'lowcode_pages' || resource === 'lowcode_form_definitions';
+}
+
 function getApiBaseUrl() {
   return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '');
 }
@@ -39,11 +163,13 @@ function getStoredAccountId() {
 function persistAuthSession(payload: unknown) {
   const session = (payload as { session?: { access_token?: string; refresh_token?: string } | null })?.session;
   if (!session?.access_token) return;
+  clearLowCodeHttpResponseCache();
   localStorage.setItem(ACCESS_TOKEN_KEY, session.access_token);
   if (session.refresh_token) localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
 }
 
 function clearAuthSession() {
+  clearLowCodeHttpResponseCache();
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
@@ -238,6 +364,41 @@ export async function authenticatedFetchResponse(
 }
 
 async function fetchBackend<T>(url: string, options: FetchOptions = {}) {
+  const apiPath = normalizeApiPath(withQuery(url, options.query));
+  const method = resolveRequestMethod(apiPath, options.method, options.body);
+  const cacheKey = readLowCodeHttpCacheKey(apiPath, method, options.body);
+
+  if (cacheKey) {
+    const cached = readLowCodeHttpCache<T>(cacheKey);
+    if (cached !== undefined) return cached;
+
+    const pending = lowCodeHttpResponseRequests.get(cacheKey);
+    if (pending) return cloneHttpCacheValue(await pending as T);
+
+    const requestPromise = fetchBackendUncached<T>(url, options);
+    lowCodeHttpResponseRequests.set(cacheKey, requestPromise);
+    try {
+      const value = await requestPromise;
+      lowCodeHttpResponseCache.set(cacheKey, {
+        value: cloneHttpCacheValue(value),
+        expiresAt: Date.now() + LOW_CODE_HTTP_CACHE_TTL_MS,
+      });
+      cacheLowCodeResponseAliases(options.body, value);
+      return cloneHttpCacheValue(value);
+    } finally {
+      lowCodeHttpResponseRequests.delete(cacheKey);
+    }
+  }
+
+  const value = await fetchBackendUncached<T>(url, options);
+  cacheLowCodeResponseAliases(options.body, value);
+  if (isLowCodeWriteRequest(apiPath, method, options.body)) {
+    clearLowCodeHttpResponseCache();
+  }
+  return value;
+}
+
+async function fetchBackendUncached<T>(url: string, options: FetchOptions = {}) {
   const apiPath = normalizeApiPath(withQuery(url, options.query));
   const response = await authenticatedFetchResponse(url, options);
   const payload = parseResponsePayload(await response.text());

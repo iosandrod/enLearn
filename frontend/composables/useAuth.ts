@@ -420,10 +420,13 @@ export function useAuth() {
     setDefault?: boolean;
   }, options: { devAutoLogin?: boolean } = {}) {
     if (options.devAutoLogin) enableDevAutoLogin();
+    const requestAccountId = credentials.accountId ?? (
+      import.meta.server ? '' : window.localStorage.getItem(ACTIVE_ACCOUNT_KEY) ?? ''
+    );
     const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
       ...credentials,
       email: normalizeLoginEmail(credentials.email)
-    });
+    }, { accountId: requestAccountId });
     persistAuthTokens(payload);
     applyAuthPayload(payload);
     if (options.devAutoLogin && shouldUseDevAutoLogin()) {
@@ -440,15 +443,20 @@ export function useAuth() {
   }
 
   async function signUp(credentials: { email: string; password: string }) {
-    const payload = await $fetch<AppAuthPayload>('/api/auth/signup', {
-      method: 'POST',
-      body: credentials
-    });
-    applyAuthPayload(
-      payload.session
-        ? payload
-        : { user: null, profile: null, permissions: [], accounts: [], session: null }
-    );
+    const payload = await postAuthJson<AppAuthPayload>('/auth/signup', credentials);
+    const signupAccount = payload.activeAccount ?? payload.accounts[0];
+    if (!signupAccount?.account_id) {
+      throw createError({ statusCode: 500, statusMessage: '注册成功，但未返回可用账套。' });
+    }
+
+    disableDevAutoLogin();
+    clearAuthPayload();
+    if (!import.meta.server) {
+      window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+      window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+      window.localStorage.setItem(ACTIVE_ACCOUNT_KEY, signupAccount.account_id);
+    }
+    return payload;
   }
 
   async function signInWithOAuth(provider: OAuthProvider) {

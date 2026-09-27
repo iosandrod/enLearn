@@ -377,6 +377,21 @@
   gap: 10px;
 }
 
+.form-workbench-toolbar-copy {
+  min-width: 0;
+}
+
+.form-workbench-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-workbench-toolbar-actions .vxe-button {
+  margin: 0;
+}
+
 .form-workbench-header-form {
   width: 100%;
   min-width: 0;

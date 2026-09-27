@@ -80,10 +80,17 @@
 
 <script setup lang="ts">
 import { signInSchema } from '~/schemas/auth';
+import { clearPendingSignup, readPendingSignup } from '~/utils/pending-signup';
 import { SITE_NAME } from '../config/site';
 
 const LOGIN_ACCOUNT_KEY = 'enlearn_login_account';
 const LOGIN_ACCOUNT_SET_KEY = 'enlearn_login_account_set_id';
+const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
+const pendingSignup = readPendingSignup();
+if (pendingSignup) {
+  window.localStorage.setItem(ACTIVE_ACCOUNT_KEY, pendingSignup.accountId);
+  window.localStorage.setItem(LOGIN_ACCOUNT_SET_KEY, pendingSignup.accountId);
+}
 const auth = useAuth();
 const loading = ref(false);
 const message = ref('');
@@ -93,9 +100,12 @@ const loginFormRef = ref<{
   snapshot: () => Record<string, unknown>;
 } | null>(null);
 const form = ref<Record<string, unknown>>({
-  email: import.meta.server ? '' : window.localStorage.getItem(LOGIN_ACCOUNT_KEY) ?? '',
-  password: ''
+  email: pendingSignup?.email ?? (
+    import.meta.server ? '' : window.localStorage.getItem(LOGIN_ACCOUNT_KEY) ?? ''
+  ),
+  password: pendingSignup?.password ?? ''
 });
+const signupAccountId = ref(pendingSignup?.accountId ?? '');
 const selectingAccountForSession = computed(() =>
   Boolean(auth.user.value && !auth.activeAccount.value)
 );
@@ -141,8 +151,12 @@ async function handleSubmit(values: Record<string, unknown>) {
     } else {
       await auth.signInWithPassword({
         email: String(values.email),
-        password: String(values.password)
+        password: String(values.password),
+        accountId: signupAccountId.value || undefined,
+        setDefault: Boolean(signupAccountId.value)
       });
+      clearPendingSignup();
+      signupAccountId.value = '';
       if (rememberLoginAccount.value) {
         window.localStorage.setItem(LOGIN_ACCOUNT_KEY, String(values.email));
       } else {

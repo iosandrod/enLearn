@@ -22,4 +22,8 @@ assert.match(serviceSource, /PUBLIC_CATALOG_PAGE_SIZE = 1000/);
 assert.match(serviceSource, /\.range\(from, to\)/);
 assert.match(serviceSource, /return \{ materials, formDefinitions \}/);
 
+assert.ok(serviceSource.includes('assignSignupAccount(data.user.id)'));
+assert.ok(serviceSource.includes("admin.rpc('assign_signup_default_account'"));
+assert.ok(serviceSource.includes('activatePreferredAccount: true'));
+
 console.log('auth route regression tests passed');

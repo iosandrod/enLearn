@@ -68,6 +68,7 @@
 
 <script setup lang="ts">
 import { signUpSchema } from '~/schemas/auth';
+import { savePendingSignup } from '~/utils/pending-signup';
 import { SITE_NAME, SITE_SHORT_NAME } from '../config/site';
 
 const auth = useAuth();
@@ -95,12 +96,14 @@ async function handleSubmit(values: Record<string, unknown>) {
   message.value = '';
 
   try {
-    await auth.signUp({
-      email: String(values.email),
-      password: String(values.password)
-    });
-    message.value = '账号创建成功。如需验证，请前往邮箱完成确认。';
-    messageStatus.value = 'success';
+    const email = String(values.email).trim();
+    const password = String(values.password);
+    const payload = await auth.signUp({ email, password });
+    const accountId = payload.activeAccount?.account_id ?? payload.accounts[0]?.account_id ?? '';
+    if (!accountId) throw new Error('注册成功，但未返回可用账套。');
+
+    savePendingSignup({ email, password, accountId });
+    await navigateTo('/signin?registered=1', { replace: true });
   } catch (error) {
     message.value = error instanceof Error ? error.message : '注册失败，请稍后重试。';
     messageStatus.value = 'error';

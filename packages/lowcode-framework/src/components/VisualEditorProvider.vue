@@ -25,6 +25,7 @@ import GlobalDialogHost from './GlobalDialogHost';
 import { useLowCodeHost } from '../core/host';
 import {
   ensureUniqueVisualBlockIds,
+  type VisualEditorBlockData,
   type VisualEditorModelValue,
   type VisualEditorPage
 } from '../visual-editor/visual-editor.utils';
@@ -128,6 +129,34 @@ function getSnapshot() {
   };
 }
 
+function appendBlock(block: VisualEditorBlockData) {
+  const page = visualData.currentPage.value;
+  if (!page) return false;
+
+  const clearFocus = (blocks: VisualEditorBlockData[]) => {
+    blocks.forEach((item) => {
+      item.focus = false;
+      item.focusWithChild = false;
+      Object.values(item.props?.slots || {}).forEach((slot) => {
+        if (
+          typeof slot === 'object' &&
+          slot !== null &&
+          'children' in slot &&
+          Array.isArray((slot as { children?: unknown }).children)
+        ) {
+          clearFocus((slot as { children: VisualEditorBlockData[] }).children);
+        }
+      });
+    });
+  };
+
+  clearFocus(page.blocks);
+  block.focus = true;
+  visualData.updatePageBlock(visualData.currentPath.value, [...page.blocks, block]);
+  visualData.setCurrentBlock(block);
+  return true;
+}
+
 provideVisualEditorPersistence({
   saveProject: async () => {
     emit('save', getSnapshot());
@@ -135,7 +164,8 @@ provideVisualEditorPersistence({
 });
 
 defineExpose({
-  getSnapshot
+  getSnapshot,
+  appendBlock
 });
 
 onMounted(() => {

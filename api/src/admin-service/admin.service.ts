@@ -449,6 +449,22 @@ export class AdminService extends BaseService {
       return this.listAccountLoginUsers(context);
     }
 
+    if (method === 'listRoles') {
+      return this.listRoles(context);
+    }
+
+    if (method === 'getRole') {
+      return this.getRole(postData, context);
+    }
+
+    if (method === 'listPermissions') {
+      return this.listPermissions(context);
+    }
+
+    if (method === 'saveRole') {
+      return this.saveRole(postData, context);
+    }
+
     if (method === 'listNavigationRoutes') {
       return this.listNavigationRoutes(context);
     }
@@ -470,6 +486,96 @@ export class AdminService extends BaseService {
     }
 
     return super.executeAction(method, postData, context);
+  }
+
+  private async listRoles(context: ServiceContext) {
+    await requireAdmin(context);
+    const client = createSupabaseClient('admin', context);
+    const { data, error } = await client
+      .from('admin_roles')
+      .select('id, code, name, description, parent_id, status, sort_order, is_system, created_at, updated_at')
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true });
+    if (error) throw new BadRequestException(error.message);
+    return data ?? [];
+  }
+
+  private async getRole(postData: Record<string, unknown>, context: ServiceContext) {
+    await requireAdmin(context);
+    const roleId = this.readFilterString(postData, 'id');
+    if (!roleId) return {};
+    const client = createSupabaseClient('admin', context);
+    const { data: role, error } = await client
+      .from('admin_roles')
+      .select('id, code, name, description, parent_id, status, sort_order, is_system, created_at, updated_at')
+      .eq('id', roleId)
+      .maybeSingle();
+    if (error) throw new BadRequestException(error.message);
+    if (!role) throw new NotFoundException('Role was not found.');
+    const { data: permissionRows, error: permissionError } = await client
+      .from('admin_role_permissions')
+      .select('permission:admin_permissions(code)')
+      .eq('role_id', roleId);
+    if (permissionError) throw new BadRequestException(permissionError.message);
+    const permissionCodes = (permissionRows ?? [])
+      .map((row) => {
+        const permission = row.permission as { code?: unknown } | { code?: unknown }[] | null;
+        return Array.isArray(permission) ? permission[0]?.code : permission?.code;
+      })
+      .map((code) => String(code ?? '').trim())
+      .filter(Boolean);
+    return { ...role, permission_codes: permissionCodes };
+  }
+
+  private async listPermissions(context: ServiceContext) {
+    await requireAdmin(context);
+    const client = createSupabaseClient('admin', context);
+    const { data, error } = await client
+      .from('admin_permissions')
+      .select('id, code, name, description, status, sort_order')
+      .eq('status', 'active')
+      .order('sort_order', { ascending: true })
+      .order('code', { ascending: true });
+    if (error) throw new BadRequestException(error.message);
+    return data ?? [];
+  }
+
+  private async saveRole(postData: Record<string, unknown>, context: ServiceContext) {
+    await requireAdmin(context);
+    const payload = { ...this.readDataPayload(postData) };
+    const permissionCodes = Array.isArray(payload.permission_codes)
+      ? [...new Set(payload.permission_codes.map((code) => String(code ?? '').trim()).filter(Boolean))]
+      : [];
+    delete payload.permission_codes;
+    delete payload.permission_names;
+    const roleId = typeof payload.id === 'string' && payload.id.trim() ? payload.id.trim() : '';
+    const saved = await this.saveGenericTableItem(
+      'admin_roles',
+      { ...postData, ...(roleId ? { id: roleId } : {}), data: payload },
+      context
+    ) as Record<string, unknown>;
+    const savedRoleId = String(saved.id ?? roleId);
+    if (!savedRoleId) return saved;
+
+    const client = createSupabaseClient('admin', context);
+    const { error: deleteError } = await client.from('admin_role_permissions').delete().eq('role_id', savedRoleId);
+    if (deleteError) throw new BadRequestException(deleteError.message);
+    if (permissionCodes.length) {
+      const { data: permissions, error: permissionError } = await client
+        .from('admin_permissions')
+        .select('id, code')
+        .in('code', permissionCodes);
+      if (permissionError) throw new BadRequestException(permissionError.message);
+      const byCode = new Map((permissions ?? []).map((permission) => [String(permission.code), String(permission.id)]));
+      const missing = permissionCodes.filter((code) => !byCode.has(code));
+      if (missing.length) throw new BadRequestException(`Unknown permission code: ${missing.join(', ')}`);
+      const { error: insertError } = await client.from('admin_role_permissions').insert(
+        permissionCodes.map((code) => ({ role_id: savedRoleId, permission_id: byCode.get(code) }))
+      );
+      if (insertError) throw new BadRequestException(insertError.message);
+    }
+    clearAllUserAuthorizationCaches();
+    return { ...saved, permission_codes: permissionCodes };
   }
 
   protected override hooks(): ServiceHooks {

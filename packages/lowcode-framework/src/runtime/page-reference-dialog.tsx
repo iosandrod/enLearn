@@ -278,6 +278,7 @@ function prepareConfirmPage(
   const prepareBlocks = (blocks: LowCodePageBlock[]): LowCodePageBlock[] => blocks.map((block) => {
     if (block.kind === 'form') {
       formSourceKeys.add(block.id);
+      if (block.sourceKey) formSourceKeys.add(block.sourceKey);
       const values = initialValues[block.id];
       const dataSource = block.dataSource
         ? {

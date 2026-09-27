@@ -198,6 +198,18 @@ async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
       metadata: { group: 'system' },
     },
     {
+      code: 'system-permission-matrix',
+      title: '权限矩阵编辑',
+      path: '/permission-edit',
+      parent_id: systemRoot.id,
+      route_type: 'page',
+      icon: 'ri-layout-grid-line',
+      page_code: 'permission-matrix',
+      permission_code: 'admin.roles.manage',
+      sort_order: 45,
+      metadata: { group: 'system' },
+    },
+    {
       code: 'system-routes',
       title: '动态路由',
       path: '/dashboard/system/routes',

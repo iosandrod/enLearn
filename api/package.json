@@ -64,6 +64,7 @@
     "db:apply-file-storage": "tsx scripts/apply-file-storage-system.ts",
     "db:apply-chat-socket": "tsx scripts/apply-chat-socket-system.ts",
     "db:apply-account-sets": "tsx scripts/apply-account-set-migration.ts",
+    "db:apply-signup-account": "tsx scripts/apply-signup-default-account.ts",
     "db:unify-account-id-columns": "tsx scripts/apply-account-id-unification.ts",
     "db:apply-entity-design-rpc": "tsx scripts/apply-entity-design-rpc.ts",
     "db:apply-view-management": "tsx scripts/apply-view-management.ts",

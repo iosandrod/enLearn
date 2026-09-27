@@ -3,7 +3,10 @@ import { resolve } from 'node:path';
 import { Client } from 'pg';
 import { getEnv, normalizePostgresConnectionString } from '../src/common/utils/env';
 
-const MIGRATION_FILE = 'supabase/migrations/20260925120000_print_template_multipage_save.sql';
+const MIGRATION_FILES = [
+  'supabase/migrations/20260925120000_print_template_multipage_save.sql',
+  'supabase/migrations/20260927110000_print_template_save_confirm_page.sql',
+];
 
 async function main() {
   const env = getEnv();
@@ -15,7 +18,9 @@ async function main() {
   const repoRoot = process.cwd().toLowerCase().endsWith('api')
     ? resolve(process.cwd(), '..')
     : process.cwd();
-  const migration = await readFile(resolve(repoRoot, MIGRATION_FILE), 'utf8');
+  const migrations = await Promise.all(
+    MIGRATION_FILES.map((file) => readFile(resolve(repoRoot, file), 'utf8')),
+  );
   let lastError: unknown;
 
   for (const rawConnectionString of connectionStrings) {
@@ -32,7 +37,7 @@ async function main() {
     client.on('error', () => undefined);
     try {
       await client.connect();
-      await client.query(migration);
+      for (const migration of migrations) await client.query(migration);
       const { rows } = await client.query<{ action_count: number; load_action_count: number; save_script: string | null; source_text: string | null }>(`
         select
           (select count(*)::int from public.lowcode_node_actions
@@ -56,6 +61,11 @@ async function main() {
         rows[0]?.action_count !== 1 ||
         rows[0]?.load_action_count !== 1 ||
         !rows[0]?.save_script?.includes("method: 'getTemplateInfo'") ||
+        !rows[0]?.save_script?.includes('this.$dialog.confirmLowCodePage') ||
+        !rows[0]?.save_script?.includes("pageCode: 'print-templates-edit'") ||
+        !rows[0]?.save_script?.includes('submitOnConfirm: true') ||
+        !rows[0]?.save_script?.includes('formInitialValues') ||
+        !rows[0]?.save_script?.includes('savedRecord') ||
         source.includes('\\n') ||
         !source.includes('getTemplateInfo,') ||
         !source.includes('normalizePageContent')
@@ -81,7 +91,7 @@ async function main() {
       if ((invalidPageCount.rows[0]?.count ?? 0) > 0) {
         throw new Error('Print template page content validation failed.');
       }
-      console.log(JSON.stringify({ applied: true, nodeActions: ['labelDesigner.getTemplateInfo', 'labelDesigner.loadData'], saveScriptUpdated: true }));
+      console.log(JSON.stringify({ applied: true, nodeActions: ['labelDesigner.getTemplateInfo', 'labelDesigner.loadData'], saveScriptUpdated: true, saveScriptUsesConfirmPage: true }));
       return;
     } catch (error) {
       lastError = error;

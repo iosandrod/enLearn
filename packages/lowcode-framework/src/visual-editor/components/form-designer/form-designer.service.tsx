@@ -92,6 +92,7 @@ export interface FormDesignerServiceOption {
 }
 
 type FormProviderInstance = {
+  appendBlock: (block: VisualEditorBlockData) => boolean;
   getSnapshot: () => {
     model: VisualEditorModelValue;
     currentPath: string;
@@ -1159,6 +1160,62 @@ const ServiceComponent = defineComponent({
       }
     };
 
+    const appendCanvasBlock = (
+      componentKey: string,
+      configure?: (block: VisualEditorBlockData) => void,
+    ) => {
+      const component = visualConfig.componentMap[componentKey];
+      if (!component || !providerRef.value) return;
+
+      const block = createNewBlock(cloneDeep(component));
+      configure?.(block);
+      providerRef.value.appendBlock(block);
+    };
+
+    const addInputBlock = () => {
+      const snapshot = providerRef.value?.getSnapshot();
+      const fields = snapshot ? extractFields(snapshot.currentPage) : [];
+      const usedNames = new Set(fields.map((field) => field.field));
+      let index = fields.length + 1;
+      let fieldName = `field_${index}`;
+      while (usedNames.has(fieldName)) {
+        index += 1;
+        fieldName = `field_${index}`;
+      }
+
+      appendCanvasBlock('input', (block) => {
+        block.props.name = fieldName;
+        block.props.label = `字段${index}`;
+        block.props.placeholder = '请输入';
+        block.props.required = false;
+        block.props.__formSpan = 1;
+      });
+    };
+
+    const addHorizontalContainer = () =>
+      appendCanvasBlock('layout', (block) => {
+        block.props.slots = {
+          value: '12:12',
+          slot0: { key: 'slot0', span: 12, children: [] },
+          slot1: { key: 'slot1', span: 12, children: [] },
+        };
+      });
+
+    const addTabContainer = () =>
+      appendCanvasBlock('vxe-tabs', (block) => {
+        block.props.panes = [
+          { title: '基础信息', name: 'basic' },
+          { title: '详细信息', name: 'detail' },
+          { title: '操作记录', name: 'logs' },
+        ];
+        block.props.modelValue = 'basic';
+        block.props.slots = {
+          tab_basic: { key: 'tab_basic', label: '基础信息', children: [] },
+          tab_detail: { key: 'tab_detail', label: '详细信息', children: [] },
+          tab_logs: { key: 'tab_logs', label: '操作记录', children: [] },
+        };
+      });
+
     const methods = {
       service: async (option: FormDesignerServiceOption) => {
         closeCommitted = false;
@@ -1237,9 +1294,20 @@ const ServiceComponent = defineComponent({
           default: () => (
             <div class="form-workbench">
               <div class="form-workbench-toolbar">
-                <div>
+                <div class="form-workbench-toolbar-copy">
                   <strong>表单拖拽设计</strong>
                   <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
+                </div>
+                <div class="form-workbench-toolbar-actions" role="toolbar" aria-label="画布快捷添加">
+                  <ElButton type="primary" onClick={addInputBlock}>
+                    添加输入框
+                  </ElButton>
+                  <ElButton onClick={addHorizontalContainer}>
+                    添加水平容器
+                  </ElButton>
+                  <ElButton onClick={addTabContainer}>
+                    添加tab容器
+                  </ElButton>
                 </div>
                 {state.option.headerForm ? (
                   <div class="form-workbench-header-form">

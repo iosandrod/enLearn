@@ -7,6 +7,7 @@ import {
 import type { AuthError, Provider, Session, User } from '@supabase/supabase-js';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
+  type AccountSummary,
   clearUserAuthorizationCache,
   createSupabaseClient,
   getCurrentUser,
@@ -21,6 +22,8 @@ import type {
   SignInPasswordAuthDto
 } from './auth.dto';
 import { requireActiveAccount } from '../common/utils/account-context';
+
+const DEFAULT_ACCOUNT_ID = '00000000-0000-4000-8000-000000000001';
 
 type PublicUser = Pick<
   User,
@@ -244,7 +247,24 @@ export class AuthService {
       throwAuthError(error, 'Could not create account.');
     }
 
-    return this.buildAuthResponse(data.user, data.session);
+    const signupAccount = await this.assignSignupAccount(data.user.id);
+    clearUserAuthorizationCache(data.user.id);
+
+    if (!data.session?.access_token) {
+      return {
+        user: toPublicUser(data.user),
+        profile: null,
+        permissions: [],
+        accounts: [signupAccount],
+        activeAccount: signupAccount,
+        accountRequired: false,
+        session: null
+      };
+    }
+
+    return this.buildAuthResponse(data.user, data.session, {
+      activatePreferredAccount: true
+    });
   }
 
   async getOAuthUrl(dto: OAuthUrlDto) {
@@ -379,6 +399,38 @@ export class AuthService {
     }
 
     return { success: true };
+  }
+
+  private async assignSignupAccount(userId: string): Promise<AccountSummary> {
+    const admin = createSupabaseClient('admin');
+    const { data, error } = await admin.rpc('assign_signup_default_account', {
+      login_user_id: userId,
+      preferred_account_id: DEFAULT_ACCOUNT_ID
+    });
+
+    if (error || !data || typeof data !== 'object') {
+      throw new BadRequestException(error?.message ?? 'Could not assign an account set.');
+    }
+
+    const account = data as Record<string, unknown>;
+    return {
+      account_id: String(account.account_id ?? ''),
+      account_role: account.account_role === 'owner' ? 'owner' : 'member',
+      is_primary_owner: account.is_primary_owner === true,
+      name: typeof account.name === 'string' ? account.name : null,
+      slug: typeof account.slug === 'string' ? account.slug : null,
+      code: typeof account.code === 'string' ? account.code : null,
+      status: account.status === 'inactive' || account.status === 'archived'
+        ? account.status
+        : 'active',
+      base_currency: typeof account.base_currency === 'string' ? account.base_currency : null,
+      timezone: typeof account.timezone === 'string' ? account.timezone : null,
+      fiscal_year_start_month: typeof account.fiscal_year_start_month === 'number'
+        ? account.fiscal_year_start_month
+        : null,
+      is_default: true,
+      is_last_used: true
+    };
   }
 
   private async buildAuthResponse(
