@@ -14,6 +14,9 @@
     <template v-if="hasActionsSlot" #actions>
       <slot name="actions" />
     </template>
+    <template v-if="hasCanvasToolbarSlot" #canvas-toolbar>
+      <slot name="canvas-toolbar" />
+    </template>
   </VisualEditor>
   <GlobalDialogHost v-if="showGlobalDialogHost" />
 </template>
@@ -101,6 +104,7 @@ const host = useLowCodeHost({
 const slots = useSlots();
 const hasMetaSlot = computed(() => Boolean(slots.meta));
 const hasActionsSlot = computed(() => Boolean(slots.actions));
+const hasCanvasToolbarSlot = computed(() => Boolean(slots['canvas-toolbar']));
 
 provide(injectKey, visualData);
 

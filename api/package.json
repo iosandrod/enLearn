@@ -92,6 +92,7 @@
     "db:apply-print-template-picker-page-functions": "tsx scripts/apply-print-template-picker-page-functions.ts",
     "db:apply-print-template-multipage-save": "tsx scripts/apply-print-template-multipage-save.ts",
     "db:apply-print-designer-material-load-fix": "tsx scripts/apply-print-designer-material-load-fix.ts",
+    "db:apply-print-designer-material-camera-repair": "tsx scripts/apply-print-designer-material-camera-repair.ts",
     "db:apply-print-account-setting-form": "tsx scripts/apply-print-account-setting-form.ts",
     "db:apply-print-background-form": "tsx scripts/apply-print-background-form.ts",
     "db:apply-print-background-image-upload": "tsx scripts/apply-print-background-image-upload.ts",

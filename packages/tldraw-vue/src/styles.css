@@ -353,6 +353,7 @@ button {
 }
 
 .presentation-page-card {
+	position: relative;
 	display: grid;
 	width: 142px;
 	flex: 0 0 142px;
@@ -368,6 +369,14 @@ button {
 
 .presentation-page-card:hover { border-color: #94a3b8; background: #f1f5f9; }
 .presentation-page-card.is-current { border: 2px solid #2563eb; padding: 3px; background: #eff6ff; }
+
+.presentation-page-card__select {
+	display: contents;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	text-align: left;
+}
 
 .presentation-page-card__preview {
 	position: relative;
@@ -393,8 +402,8 @@ button {
 .presentation-page-card__empty { color: #cbd5e1; font-size: 20px; }
 .presentation-page-card__preview em {
 	position: absolute;
-	top: 4px;
-	left: 4px;
+	right: 28px;
+	bottom: 4px;
 	display: grid;
 	width: 18px;
 	height: 18px;
@@ -405,6 +414,39 @@ button {
 	font-size: 10px;
 	font-style: normal;
 	font-weight: 700;
+}
+
+.presentation-page-card__delete {
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	display: grid;
+	width: 20px;
+	height: 20px;
+	place-items: center;
+	border: 0;
+	border-radius: 3px;
+	background: rgb(15 23 42 / 70%);
+	color: #ffffff;
+	cursor: pointer;
+	font-size: 13px;
+	line-height: 1;
+	opacity: 1;
+	transition: opacity 120ms ease, background 120ms ease;
+}
+
+.presentation-page-card:hover .presentation-page-card__delete,
+.presentation-page-card:focus-within .presentation-page-card__delete {
+	opacity: 1;
+}
+
+.presentation-page-card__delete:hover:not(:disabled) {
+	background: #dc2626;
+}
+
+.presentation-page-card__delete:disabled {
+	cursor: not-allowed;
+	opacity: 0;
 }
 
 .presentation-page-card__name {
@@ -612,6 +654,11 @@ button {
 	height: 22px;
 	font-size: 18px;
 	line-height: 1;
+}
+
+.designer-mobile-backdrop,
+.designer-mobile-panel-toggle {
+	display: none;
 }
 
 .designer-side-content {
@@ -1152,6 +1199,163 @@ button {
 	display: none;
 }
 
+@media (max-width: 1024px) {
+	.editor-host {
+		display: block;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.designer-stage {
+		width: 100%;
+		height: 100%;
+	}
+
+	.designer-mobile-backdrop {
+		position: fixed;
+		inset: 58px 0 0;
+		z-index: 98;
+		display: block;
+		padding: 0;
+		border: 0;
+		background: rgb(15 23 42 / 30%);
+	}
+
+	.designer-side-panel {
+		position: fixed;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 100;
+		display: grid;
+		width: 100% !important;
+		height: min(56dvh, 460px);
+		max-height: calc(100dvh - 74px);
+		grid-template-rows: 52px minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr);
+		padding-top: 8px;
+		border: 1px solid #d9dee6;
+		border-bottom: 0;
+		border-radius: 16px 16px 0 0;
+		box-shadow: 0 -12px 32px rgb(15 23 42 / 20%);
+		transform: translateY(102%);
+		transition: transform 180ms ease;
+		pointer-events: none;
+	}
+
+	.designer-side-panel::before {
+		position: absolute;
+		top: 5px;
+		left: 50%;
+		width: 34px;
+		height: 4px;
+		border-radius: 999px;
+		background: #cbd5e1;
+		content: '';
+		transform: translateX(-50%);
+	}
+
+	.editor-host.is-mobile-panel-open .designer-side-panel {
+		transform: translateY(0);
+		pointer-events: auto;
+	}
+
+	.designer-side-tabs {
+		flex-direction: row;
+		gap: 3px;
+		padding: 8px 6px 4px;
+		border-right: 0;
+		border-bottom: 1px solid #e7ebf0;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+	}
+
+	.designer-side-tabs::-webkit-scrollbar {
+		display: none;
+	}
+
+	.designer-side-tab {
+		width: 46px;
+		height: 36px;
+		flex: 0 0 46px;
+		gap: 1px;
+		padding: 2px;
+		border-radius: 7px;
+		font-size: 9px;
+	}
+
+	.designer-side-tab__icon {
+		width: 17px;
+		height: 17px;
+		font-size: 14px;
+	}
+
+	.designer-side-content {
+		overflow: auto;
+	}
+
+	.designer-mobile-panel-toggle {
+		position: fixed;
+		right: 12px;
+		bottom: max(12px, env(safe-area-inset-bottom));
+		z-index: 102;
+		display: inline-flex;
+		height: 36px;
+		min-width: 58px;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		padding: 0 10px;
+		border: 1px solid #cbd5e1;
+		border-radius: 18px;
+		background: #fff;
+		box-shadow: 0 7px 20px rgb(15 23 42 / 18%);
+		color: #1d4ed8;
+		cursor: pointer;
+		font-size: 11px;
+		font-weight: 700;
+	}
+
+	.designer-side-panel .designer-tool-view--tools .designer-tool-section,
+	.designer-side-panel .bottom-toolbar,
+	.designer-side-panel .component-palette-grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 5px;
+	}
+
+	.designer-side-panel .bottom-toolbar-button,
+	.designer-side-panel .top-menu-labeled-button,
+	.designer-side-panel .top-menu-action-button {
+		height: 44px;
+		gap: 2px;
+		padding: 4px 2px;
+	}
+
+	.designer-side-panel .component-palette-button {
+		height: 50px;
+		gap: 2px;
+	}
+
+	.designer-side-panel .bottom-toolbar-label,
+	.designer-side-panel .component-palette-label,
+	.designer-side-panel .top-menu-button-label,
+	.designer-side-panel .top-menu-action-label {
+		font-size: 9px;
+	}
+
+	.designer-side-panel .bottom-toolbar-icon,
+	.designer-side-panel .component-palette-icon,
+	.designer-side-panel .top-menu-button-icon,
+	.designer-side-panel .top-menu-grid-icon {
+		font-size: 14px;
+	}
+
+	.designer-tool-section__title {
+		font-size: 10px;
+		line-height: 14px;
+	}
+}
+
 .vue-canvas {
 	position: absolute;
 	inset: 0;
@@ -1371,6 +1575,10 @@ button {
 	padding: 0;
 	font-size: 16px;
 	line-height: 1;
+}
+
+.workspace-fit-button {
+	font-size: 15px;
 }
 
 .workspace-zoom-value {
@@ -3085,11 +3293,12 @@ button {
 	display: grid;
 	flex: 1;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	grid-template-rows: minmax(0, 1fr);
+	grid-template-rows: auto;
 	gap: 16px;
 	padding: 18px;
 	min-height: 0;
-	align-items: stretch;
+	align-items: center;
+	align-content: center;
 	overflow: hidden;
 	background: #eef2f7;
 }
@@ -3097,9 +3306,17 @@ button {
 .print-preview-page {
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	min-width: 0;
 	min-height: 0;
 	margin: 0;
+	width: 100%;
+}
+
+.print-preview-page-frame {
+	display: block;
+	width: 100%;
+	min-height: 0;
 	border: 1px solid #d7dee9;
 	border-radius: 8px;
 	background: #ffffff;
@@ -3107,19 +3324,16 @@ button {
 	overflow: hidden;
 }
 
-.print-preview-page img {
+.print-preview-page-frame img {
 	display: block;
-	flex: 1;
 	width: 100%;
-	height: 0;
-	min-height: 0;
+	height: 100%;
 	object-fit: contain;
 	background: #ffffff;
 }
 
 .print-preview-page figcaption {
-	padding: 8px 10px;
-	border-top: 1px solid #edf1f6;
+	padding: 7px 10px 0;
 	color: #64748b;
 	font-size: 12px;
 	font-weight: 650;
@@ -3190,6 +3404,94 @@ button {
 .print-preview-print-button:disabled {
 	background: #9aa4b2;
 	cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+	.print-preview-modal {
+		width: 100vw !important;
+		height: 100dvh !important;
+		overflow: hidden !important;
+	}
+
+	.print-preview-modal .vxe-modal--box {
+		position: fixed !important;
+		inset: 6px !important;
+		width: auto !important;
+		height: auto !important;
+		max-width: none !important;
+		max-height: none !important;
+		margin: 0 !important;
+		border-radius: 12px;
+	}
+
+	.print-preview-modal .vxe-modal--header {
+		min-height: 44px;
+		padding: 0 12px;
+	}
+
+	.print-preview-modal .vxe-modal--body,
+	.print-preview-modal .vxe-modal--body-default,
+	.print-preview-modal .vxe-modal--content {
+		width: 100% !important;
+		min-width: 0 !important;
+	}
+
+	.print-preview-modal .vxe-modal--body {
+		min-height: 0;
+		flex: 1;
+	}
+
+	.print-preview-modal .vxe-modal--content {
+		flex: 1;
+		height: auto !important;
+		overflow: hidden !important;
+	}
+
+	.print-preview-pages {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding: 10px;
+		overflow: auto;
+	}
+
+	.print-preview-page {
+		width: min(100%, 520px);
+		min-height: min-content;
+	}
+
+	.print-preview-page-frame {
+		width: 100%;
+		max-width: calc(100vw - 34px);
+		flex: none;
+		border-radius: 6px;
+		box-shadow: 0 5px 16px rgb(15 23 42 / 16%);
+	}
+
+	.print-preview-page-frame img {
+		width: 100%;
+		height: auto;
+		min-height: 0;
+		object-fit: contain;
+	}
+
+	.print-preview-page figcaption {
+		padding-top: 5px;
+		font-size: 10px;
+	}
+
+	.print-preview-footer {
+		min-height: 48px;
+		padding: 0 10px;
+		gap: 8px;
+	}
+
+	.print-preview-print-button {
+		height: 32px;
+		min-width: 70px;
+		padding: 0 12px;
+		font-size: 12px;
+	}
 }
 
 .side-panel-toggle {

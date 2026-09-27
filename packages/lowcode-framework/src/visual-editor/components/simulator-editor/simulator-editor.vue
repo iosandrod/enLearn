@@ -1,6 +1,9 @@
 <template>
   <div class="simulator-container" :class="{ 'is-form-workbench': workbenchMode === 'form' }">
     <div class="simulator-editor">
+      <div v-if="hasCanvasToolbarSlot" class="simulator-canvas-toolbar">
+        <slot name="canvas-toolbar" />
+      </div>
       <div v-if="overlayEntries.length" class="simulator-overlay-shelf">
         <div
           v-for="entry in overlayEntries"
@@ -72,7 +75,7 @@
 </template>
 
 <script lang="tsx" setup>
-  import { computed, provide, ref, watch } from 'vue';
+  import { computed, provide, ref, useSlots, watch } from 'vue';
   import { cloneDeep } from 'lodash-es';
   import DraggableTransitionGroup from './draggable-transition-group.vue';
   import CompRender from './comp-render';
@@ -126,6 +129,8 @@
   );
 
   const visualData = useVisualData();
+  const slots = useSlots();
+  const hasCanvasToolbarSlot = computed(() => Boolean(slots['canvas-toolbar']));
   const { currentPage, setCurrentBlock } = visualData;
   const host = useLowCodeHost();
   const readString = (value: unknown, fallback = '') =>
@@ -956,6 +961,24 @@
     flex-direction: column;
     contain: paint layout;
 
+    .simulator-canvas-toolbar {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #ffffff;
+      box-sizing: border-box;
+      flex: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
     &::-webkit-scrollbar {
       width: 0;
     }
@@ -976,14 +999,23 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .simulator-container {
-      padding: 10px;
+      padding: 6px;
     }
 
     .simulator-editor,
     .simulator-editor-content {
-      border-radius: 8px;
+      border-radius: 6px;
+    }
+
+    .simulator-editor .simulator-canvas-toolbar {
+      min-height: 48px;
+      padding: 8px 10px;
+
+      :deep(> *) {
+        flex: 0 0 auto;
+      }
     }
   }
 

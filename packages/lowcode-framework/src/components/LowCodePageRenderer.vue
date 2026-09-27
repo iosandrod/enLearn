@@ -5,7 +5,7 @@
     :style="themeStyle"
     :aria-busy="runtime.state.status.mesCommandExecuting"
     :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'"
-  >
+  > 
     <LowCodeCategoryDrawer
       v-if="hasCategoryRelation"
       :config="page.relate_config"
@@ -101,7 +101,6 @@ import {
 import { onBeforeMount } from 'vue';
 import { initializeLowCodeMaterialCatalog } from '../lowcode/material-runtime/catalog';
 import { useLowCodeHost } from '../core/host';
-
 const props = withDefaults(defineProps<LowCodePageRendererProps>(), {
   showGlobalDialogHost: true,
 });

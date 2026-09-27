@@ -67,6 +67,7 @@ const printPreviewLoading = ref(false)
 const printPreviewError = ref<string | null>(null)
 const printPreviewPages = ref<PrintPageRenderResult[]>([])
 const printPreviewPageIndex = ref(0)
+const printPreviewPageSize = ref(3)
 const printPreviewModalSize = ref({
 	width: 'min(920px, calc(100vw - 40px))',
 	height: 'min(720px, calc(100vh - 40px))',
@@ -90,7 +91,6 @@ const PRINT_MATERIAL_SAMPLE_ROWS = Array.from({ length: 23 }, (_, index) => {
 
 const DEFAULT_PRINT_PAGE_SIZE_MM = { w: 80, h: 80 }
 const DEFAULT_PRINT_PX_PER_MM = 10
-const PRINT_PREVIEW_PAGE_SIZE = 3
 
 type TemplatePageContent = { id: TLPageId; name: string; content: TLContent }
 type TemplateDocumentContent = VueTemplateDocument
@@ -111,11 +111,11 @@ const hasReachedMaxPages = computed(() => pages.value.length >= props.editor.opt
 const canPreviewPrint = computed(() => props.canRunCommand?.('print.preview') ?? false)
 const canPrint = computed(() => props.canRunCommand?.('print.print') ?? false)
 const printPreviewPageCount = computed(() =>
-	Math.max(1, Math.ceil(printPreviewPages.value.length / PRINT_PREVIEW_PAGE_SIZE))
+	Math.max(1, Math.ceil(printPreviewPages.value.length / printPreviewPageSize.value))
 )
 const pagedPrintPreviewPages = computed(() => {
-	const start = printPreviewPageIndex.value * PRINT_PREVIEW_PAGE_SIZE
-	return printPreviewPages.value.slice(start, start + PRINT_PREVIEW_PAGE_SIZE)
+	const start = printPreviewPageIndex.value * printPreviewPageSize.value
+	return printPreviewPages.value.slice(start, start + printPreviewPageSize.value)
 })
 const printPreviewPageLabel = computed(
 	() => `${printPreviewPageIndex.value + 1} / ${printPreviewPageCount.value}`
@@ -373,6 +373,17 @@ function updatePrintPreviewModalSize() {
 	const canvasRect = container.getBoundingClientRect()
 	const viewportWidth = document.documentElement.clientWidth || window.innerWidth
 	const viewportHeight = document.documentElement.clientHeight || window.innerHeight
+	const isMobilePreview = viewportWidth <= 680
+	printPreviewPageSize.value = isMobilePreview ? 1 : 3
+
+	if (isMobilePreview) {
+		printPreviewModalSize.value = {
+			width: `${Math.max(280, viewportWidth - 12)}px`,
+			height: `${Math.max(240, viewportHeight - 12)}px`,
+		}
+		return
+	}
+
 	const availableWidth = Math.min(canvasRect.width || viewportWidth, viewportWidth) - 32
 	const availableHeight = Math.min(canvasRect.height || viewportHeight, viewportHeight) - 32
 	const width = Math.max(280, Math.floor(availableWidth))
@@ -643,6 +654,12 @@ function applyTemplateDocumentContent(editor: Editor, content: TemplateDocumentC
 			if (!editor.getPage(page.id)) editor.createPage({ id: page.id, name: page.name })
 			else if (editor.getPage(page.id)?.name !== page.name) editor.renamePage(page.id, page.name)
 		}
+		// Repair camera and page-state records before switching to a restored
+		// page. This also handles templates saved by older editor versions.
+		const ensureStoreIsUsable = (editor.store as unknown as {
+			ensureStoreIsUsable?: () => void
+		}).ensureStoreIsUsable
+		ensureStoreIsUsable?.call(editor.store)
 		editor.setCurrentPage(pages[0].id)
 		for (const page of editor.getPages()) {
 			if (!targetPageIds.has(page.id) && editor.getPages().length > 1) editor.deletePage(page.id)
@@ -1049,67 +1066,78 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<vxe-modal
-			v-model="printPreviewOpen"
-			class-name="print-preview-modal"
-			title="打印预览"
-			:width="printPreviewModalSize.width"
-			:height="printPreviewModalSize.height"
-			min-width="280px"
-			min-height="240px"
-			:show-footer="true"
-			:show-zoom="false"
-			:show-maximize="false"
-			:show-close="true"
-			:mask-closable="true"
-			@hide="closePrintPreview"
-		>
-			<div class="print-preview-body" @pointerdown.stop @wheel.stop>
-				<div v-if="printPreviewLoading" class="print-preview-loading">正在生成预览...</div>
-				<div v-else-if="printPreviewError" class="print-preview-error">{{ printPreviewError }}</div>
-				<div v-else class="print-preview-pages">
-					<figure v-for="page in pagedPrintPreviewPages" :key="`${page.pageNo}:${page.index}`" class="print-preview-page">
-						<img :src="page.dataUrl" :alt="`Page ${page.pageNo}`" />
-						<figcaption>Page {{ page.pageNo }}</figcaption>
-					</figure>
+		<Teleport to="body">
+			<vxe-modal
+				v-model="printPreviewOpen"
+				class-name="print-preview-modal"
+				title="打印预览"
+				:width="printPreviewModalSize.width"
+				:height="printPreviewModalSize.height"
+				min-width="280px"
+				min-height="240px"
+				:show-footer="true"
+				:show-zoom="false"
+				:show-maximize="false"
+				:show-close="true"
+				:mask-closable="true"
+				@hide="closePrintPreview"
+			>
+				<div class="print-preview-body" @pointerdown.stop @wheel.stop>
+					<div v-if="printPreviewLoading" class="print-preview-loading">正在生成预览...</div>
+					<div v-else-if="printPreviewError" class="print-preview-error">{{ printPreviewError }}</div>
+					<div v-else class="print-preview-pages">
+						<figure
+							v-for="page in pagedPrintPreviewPages"
+							:key="`${page.pageNo}:${page.index}`"
+							class="print-preview-page"
+						>
+							<div
+								class="print-preview-page-frame"
+								:style="{ aspectRatio: `${Math.max(1, page.width)} / ${Math.max(1, page.height)}` }"
+							>
+								<img :src="page.dataUrl" :alt="`Page ${page.pageNo}`" />
+							</div>
+							<figcaption>Page {{ page.pageNo }}</figcaption>
+						</figure>
+					</div>
 				</div>
-			</div>
-			<template #footer>
-				<div class="print-preview-footer">
-					<div v-if="printPreviewPageCount > 1" class="print-preview-pagination">
+				<template #footer>
+					<div class="print-preview-footer">
+						<div v-if="printPreviewPageCount > 1" class="print-preview-pagination">
+							<button
+								type="button"
+								class="print-preview-page-button"
+								:disabled="printPreviewPageIndex === 0"
+								aria-label="上一页"
+								title="上一页"
+								@click="goToPreviousPrintPreviewPage"
+							>
+								&lt;
+							</button>
+							<span class="print-preview-page-label">{{ printPreviewPageLabel }}</span>
+							<button
+								type="button"
+								class="print-preview-page-button"
+								:disabled="printPreviewPageIndex >= printPreviewPageCount - 1"
+								aria-label="下一页"
+								title="下一页"
+								@click="goToNextPrintPreviewPage"
+							>
+								&gt;
+							</button>
+						</div>
 						<button
 							type="button"
-							class="print-preview-page-button"
-							:disabled="printPreviewPageIndex === 0"
-							aria-label="上一页"
-							title="上一页"
-							@click="goToPreviousPrintPreviewPage"
+							class="print-preview-print-button"
+							:disabled="printPreviewLoading || printPreviewPages.length === 0"
+							@click="printPreviewPagesNow"
 						>
-							&lt;
-						</button>
-						<span class="print-preview-page-label">{{ printPreviewPageLabel }}</span>
-						<button
-							type="button"
-							class="print-preview-page-button"
-							:disabled="printPreviewPageIndex >= printPreviewPageCount - 1"
-							aria-label="下一页"
-							title="下一页"
-							@click="goToNextPrintPreviewPage"
-						>
-							&gt;
+							打印
 						</button>
 					</div>
-					<button
-						type="button"
-						class="print-preview-print-button"
-						:disabled="printPreviewLoading || printPreviewPages.length === 0"
-						@click="printPreviewPagesNow"
-					>
-						打印
-					</button>
-				</div>
-			</template>
-		</vxe-modal>
+				</template>
+			</vxe-modal>
+		</Teleport>
 
 	</div>
 </template>

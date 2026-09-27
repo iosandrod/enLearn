@@ -21,6 +21,7 @@ import type {
   LowCodeMaterialRow,
   LowCodeMaterialServiceApi,
 } from './types';
+import { USE_DATABASE_LABEL_DESIGNER_MATERIAL } from '../block-materials/label-designer/config';
 
 export const lowCodeMaterialCatalogState = shallowReactive({
   loading: false,
@@ -99,6 +100,15 @@ function normalizeMaterialRow(value: unknown): LowCodeMaterialRow | undefined {
   };
 }
 
+// The label designer is a first-party editor with a local Vue implementation.
+// Keep its database row available for migrations, but never compile or replace
+// the local component with online source text.
+function isStaticBlockMaterial(row: LowCodeMaterialRow) {
+  return !USE_DATABASE_LABEL_DESIGNER_MATERIAL
+    && row.material_kind === 'page'
+    && row.code === 'label-designer';
+}
+
 function resolveCompiledSource(_sourcePath: string, request: string) {
   return compiledSourceModules.get(normalizeSourcePath(request));
 }
@@ -118,7 +128,8 @@ async function fetchMaterialRows(serviceApi: LowCodeMaterialServiceApi) {
       });
   return (Array.isArray(result) ? result : [])
     .map(normalizeMaterialRow)
-    .filter((row): row is LowCodeMaterialRow => Boolean(row));
+    .filter((row): row is LowCodeMaterialRow => Boolean(row))
+    .filter((row) => !isStaticBlockMaterial(row));
 }
 
 async function compileAndRegister(rows: LowCodeMaterialRow[]) {

@@ -72,6 +72,7 @@ const canvasRef = ref<{
 	cancelToolbarDrag(event: PointerEvent): void
 	closeContextMenu(): void
 	endToolbarDrag(event: PointerEvent): void
+	workspaceFitCanvas(): void
 	getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig
 	isContextMenuOpen(): boolean
 	moveToolbarDrag(event: PointerEvent): void
@@ -89,6 +90,7 @@ const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
 	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'style' | 'background' | 'animation'
 >('tools')
+const mobilePanelOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
 const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
 const workspaceBackground = ref<WorkspaceBackgroundConfig>({
@@ -189,6 +191,7 @@ function onKeyDown(event: KeyboardEvent) {
 	}
 
 	if (event.key === 'Escape') {
+		mobilePanelOpen.value = false
 		topMenuRef.value?.closeMenus()
 		return
 	}
@@ -285,16 +288,23 @@ function updateWorkspaceBackground(background: WorkspaceBackgroundConfig) {
 	workspaceBackground.value = { ...background }
 	canvasRef.value?.applyWorkspaceTemplateConfig({ background: { ...background } })
 }
-
+let _size: any = null
 function setDesignerMode(mode: DesignerMode) {
 	if (designerMode.value === mode) return
 	designerMode.value = mode
 	if (mode === 'presentation' && presentationConfig.value.pageSizeMm) {
+		let oldPrintPageSize = canvasRef.value?.getWorkspaceTemplateConfig()?.pageSizeMm 
+		_size = oldPrintPageSize//
 		canvasRef.value?.applyWorkspaceTemplateConfig({ pageSizeMm: presentationConfig.value.pageSizeMm })
+	} else if (mode === 'print' && _size) {
+		canvasRef.value?.applyWorkspaceTemplateConfig({ pageSizeMm: _size })
 	}
 	emit('mode-change', mode)
 	notifyDesignerModeState(mode)
 	handleWorkspaceConfigChange(getWorkspaceTemplateConfig() ?? {})
+	setTimeout(() => {
+		canvasRef?.value?.workspaceFitCanvas()
+	}, 10)
 }
 
 function togglePresentationPreview() {
@@ -336,8 +346,11 @@ function printCurrentPage() {
 function getPluginIds() {
 	return pluginHost?.getPluginIds() ?? []
 }
-
+function workspaceFitCanvas() {
+	return canvasRef?.value?.workspaceFitCanvas()
+}
 defineExpose({
+	workspaceFitCanvas,
 	editor,
 	applyWorkspaceTemplateConfig,
 	canRunCommand,
@@ -376,31 +389,25 @@ onBeforeUnmount(() => {
 	<main class="app-shell" :class="{ 'has-mode-toolbar': props.showModeControls }">
 		<header v-if="props.showModeControls" class="designer-mode-toolbar">
 			<div class="designer-mode-switch" role="tablist" aria-label="设计模式">
-				<button type="button" :class="{ 'is-active': designerMode === 'print' }" @click="setDesignerMode('print')">打印设计</button>
-				<button type="button" :class="{ 'is-active': designerMode === 'presentation' }" @click="setDesignerMode('presentation')">PPT 设计</button>
+				<button type="button" :class="{ 'is-active': designerMode === 'print' }"
+					@click="setDesignerMode('print')">打印设计</button>
+				<button type="button" :class="{ 'is-active': designerMode === 'presentation' }"
+					@click="setDesignerMode('presentation')">PPT 设计</button>
 			</div>
 			<div v-if="designerMode === 'presentation'" class="designer-mode-actions">
 				<button type="button" title="预览当前演示文稿" @click="togglePresentationPreview">▶ 预览</button>
 			</div>
 		</header>
-		<section
-			ref="editorHost"
-			class="editor-host flex flex-row w-full"
-			:class="{
-			}"
-		>
+		<section ref="editorHost" class="editor-host flex flex-row w-full"
+			:class="{ 'is-mobile-panel-open': mobilePanelOpen }">
+			<button v-if="mobilePanelOpen" class="designer-mobile-backdrop" type="button" aria-label="关闭设计器工具面板"
+				@click="mobilePanelOpen = false" />
 			<div style="width:350px;" class="designer-side-panel" aria-label="设计器工具面板">
 				<nav class="designer-side-tabs" aria-label="设计器功能分类">
-					<button
-						v-for="tab in designerTabs"
-						v-show="tab.id !== 'animation' || designerMode === 'presentation'"
-						:key="tab.id"
-						type="button"
-						class="designer-side-tab"
-						:class="{ 'is-active': activeDesignerTab === tab.id }"
-						:aria-selected="activeDesignerTab === tab.id"
-						@click="activeDesignerTab = tab.id"
-					>
+					<button v-for="tab in designerTabs"
+						v-show="tab.id !== 'animation' || designerMode === 'presentation'" :key="tab.id" type="button"
+						class="designer-side-tab" :class="{ 'is-active': activeDesignerTab === tab.id }"
+						:aria-selected="activeDesignerTab === tab.id" @click="activeDesignerTab = tab.id">
 						<span class="designer-side-tab__icon" aria-hidden="true">{{ tab.icon }}</span>
 						<span>{{ tab.label }}</span>
 					</button>
@@ -409,117 +416,75 @@ onBeforeUnmount(() => {
 					<div v-show="activeDesignerTab === 'tools'" class="designer-tool-view designer-tool-view--tools">
 						<section class="designer-tool-section" aria-label="绘制工具">
 							<h2 class="designer-tool-section__title">绘制工具</h2>
-							<VueBottomToolbar
-								v-if="editor"
-								ref="bottomToolbarRef"
-								:editor="editor"
-								:active-tool="activeTool"
-								:current-geo-shape="currentGeoShape"
-								:toolbar-tools="toolbarTools"
-								@before-action="closeContextAndTopMenus"
-								@tool-select="selectTool"
-								@tool-drag-cancel="cancelToolbarDrag"
-								@tool-drag-end="endToolbarDrag"
-								@tool-drag-move="moveToolbarDrag"
-								@tool-drag-start="startToolbarDrag"
-							/>
-							<VueTopLeftMenu
-								v-if="editor"
-								ref="topMenuRef"
-								:editor="editor"
+							<VueBottomToolbar v-if="editor" ref="bottomToolbarRef" :editor="editor"
+								:active-tool="activeTool" :current-geo-shape="currentGeoShape"
+								:toolbar-tools="toolbarTools" @before-action="closeContextAndTopMenus"
+								@tool-select="selectTool" @tool-drag-cancel="cancelToolbarDrag"
+								@tool-drag-end="endToolbarDrag" @tool-drag-move="moveToolbarDrag"
+								@tool-drag-start="startToolbarDrag" />
+							<VueTopLeftMenu v-if="editor" ref="topMenuRef" :editor="editor"
 								:can-run-command="canRunCommand"
 								:get-workspace-template-config="getWorkspaceTemplateConfig"
 								:load-templates="props.loadTemplates"
 								:apply-workspace-template-config="applyWorkspaceTemplateConfig"
 								:save-templates="props.saveTemplates"
-								:show-template-controls="props.showTemplateControls"
-								embedded
-								@before-action="canvasRef?.closeContextMenu()"
-							/>
+								:show-template-controls="props.showTemplateControls" embedded
+								@before-action="canvasRef?.closeContextMenu()" />
 						</section>
 					</div>
 					<div v-show="activeDesignerTab === 'components'" class="designer-tool-view">
-						<VueComponentPalette
-							v-if="editor"
-							:active-tool="activeTool"
-							:compact="false"
-							:current-geo-shape="currentGeoShape"
-							:toolbar-tools="toolbarTools"
-							@before-action="closeContextAndTopMenus"
-							@tool-select="selectTool"
-							@tool-drag-cancel="cancelToolbarDrag"
-							@tool-drag-end="endToolbarDrag"
-							@tool-drag-move="moveToolbarDrag"
-							@tool-drag-start="startToolbarDrag"
-						/>
+						<VueComponentPalette v-if="editor" :active-tool="activeTool" :compact="false"
+							:current-geo-shape="currentGeoShape" :toolbar-tools="toolbarTools"
+							@before-action="closeContextAndTopMenus" @tool-select="selectTool"
+							@tool-drag-cancel="cancelToolbarDrag" @tool-drag-end="endToolbarDrag"
+							@tool-drag-move="moveToolbarDrag" @tool-drag-start="startToolbarDrag" />
 					</div>
 					<div v-show="activeDesignerTab === 'layers'" class="designer-tool-view designer-tool-view--layers">
 						<VueLayersPanel v-if="editor" :editor="editor" />
 					</div>
-					<div v-show="activeDesignerTab === 'dataSource'" class="designer-tool-view designer-tool-view--data-source">
-						<VueDataSourcePanel
-							v-if="editor"
-							:editor="editor"
-							:workspace-revision="workspaceRevision"
+					<div v-show="activeDesignerTab === 'dataSource'"
+						class="designer-tool-view designer-tool-view--data-source">
+						<VueDataSourcePanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
 							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
-							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
-						/>
+							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
 					</div>
-					<div v-show="activeDesignerTab === 'properties'" class="designer-tool-view designer-tool-view--properties">
-						<LowCodeFormPanel
-							v-if="editor"
-							:editor="editor"
-							:workspace-revision="workspaceRevision"
+					<div v-show="activeDesignerTab === 'properties'"
+						class="designer-tool-view designer-tool-view--properties">
+						<LowCodeFormPanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
 							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
-							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
-						/>
+							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
 					</div>
 					<div v-show="activeDesignerTab === 'style'" class="designer-tool-view">
 						<VueStylePanel v-if="editor" :compact="false" :editor="editor" />
 					</div>
 					<div v-show="activeDesignerTab === 'background'" class="designer-tool-view">
-						<VueBackgroundPanel
-							:background="workspaceBackground"
-							@update:background="updateWorkspaceBackground"
-						/>
+						<VueBackgroundPanel :background="workspaceBackground"
+							@update:background="updateWorkspaceBackground" />
 					</div>
 					<div v-show="activeDesignerTab === 'animation'" class="designer-tool-view">
 						<VueAnimationPanel v-if="editor && designerMode === 'presentation'" :editor="editor" />
 					</div>
 				</div>
 			</div>
+			<button class="designer-mobile-panel-toggle" type="button" :aria-expanded="mobilePanelOpen"
+				aria-label="打开设计器工具面板" @click="mobilePanelOpen = !mobilePanelOpen">
+				<span aria-hidden="true">{{ mobilePanelOpen ? '⌄' : '✦' }}</span>
+				{{ mobilePanelOpen ? '收起' : '工具' }}
+			</button>
 			<div style="flex:1;" ref="designerStage" class="designer-stage flex-1">
-				<VueCanvas
-					v-if="editor"
-					ref="canvasRef"
-					:editor="editor"
-					:active-tool="activeTool"
-					:current-geo-shape="currentGeoShape"
-					:handle-shortcut="handlePluginShortcut"
-					:toolbar-tools="toolbarTools"
-					@tool-change="selectTool"
-					@workspace-config-change="handleWorkspaceConfigChange"
-				/>
-				<VueNavigationPanel
-					v-if="editor"
-					:editor="editor"
-					@before-action="closeContextAndTopMenus"
-				>
+				<VueCanvas v-if="editor" ref="canvasRef" :editor="editor" :active-tool="activeTool"
+					:current-geo-shape="currentGeoShape" :handle-shortcut="handlePluginShortcut"
+					:toolbar-tools="toolbarTools" @tool-change="selectTool"
+					@workspace-config-change="handleWorkspaceConfigChange" />
+				<VueNavigationPanel v-if="editor" :editor="editor" @before-action="closeContextAndTopMenus">
 					<template #presentation-pages>
-						<VuePresentationPages
-							v-if="designerMode === 'presentation'"
-							class="presentation-pages--dock"
-							:editor="editor"
-							:page-size-mm="presentationConfig.pageSizeMm"
-						/>
+						<VuePresentationPages v-if="designerMode === 'presentation'" class="presentation-pages--dock"
+							:editor="editor" :canvas="canvasRef" :page-size-mm="presentationConfig.pageSizeMm" />
 					</template>
 				</VueNavigationPanel>
 			</div>
 		</section>
-		<VuePresentationPreview
-			v-if="editor && presentationPreviewOpen && designerMode === 'presentation'"
-			:editor="editor"
-			@close="presentationPreviewOpen = false"
-		/>
+		<VuePresentationPreview v-if="editor && presentationPreviewOpen && designerMode === 'presentation'"
+			:editor="editor" @close="presentationPreviewOpen = false" />
 	</main>
 </template>

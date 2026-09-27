@@ -16,6 +16,7 @@ import type {
   LowCodePageBlock,
   LowCodePageFormBlock,
   LowCodePageRecord,
+  LowCodeFormSchema,
   LowCodeRuntimeEvent,
 } from '../types/lowcode';
 import {
@@ -107,6 +108,8 @@ export type LowCodePageConfirmPayload = {
 };
 
 export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & {
+  /** Open a database-backed form definition directly instead of a page. */
+  formCode?: string;
   confirmLabel?: string;
   cancelLabel?: string;
   confirmAction?: string;
@@ -123,6 +126,196 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
     payload: LowCodePageConfirmPayload,
   ) => Promise<void> | void;
 };
+
+async function resolveFormDefinitionPage(config: LowCodePageConfirmDialogConfig) {
+  const formCode = readString(config.formCode);
+  if (!formCode) return undefined;
+
+  const serviceApi = config.serviceApi ?? getDefaultServiceApi();
+  if (!serviceApi) throw new Error('Low-code serviceApi is not configured.');
+  const rows = await serviceApi.invoke<Array<Record<string, unknown>>>('lowcode', 'listItems', {
+    resource: 'lowcode_form_definitions',
+    filters: { code: formCode, enabled: true },
+    limit: 1,
+  });
+  const definition = Array.isArray(rows) && isRecord(rows[0]) ? rows[0] : undefined;
+  const schema = definition?.schema;
+  if (!isRecord(schema) || !Array.isArray(schema.fields) || !Array.isArray(schema.actions)) {
+    throw new Error(`数据源表单“${formCode}”不存在或配置无效。`);
+  }
+
+  const formSchema = createImportFormSchema(schema as Record<string, unknown>);
+  const formId = `confirm-form-${formCode.replace(/[^a-zA-Z0-9_-]+/g, '-')}`;
+  const initialValues = config.formInitialValues?.[formId]
+    ?? config.formInitialValues?.[formCode]
+    ?? {};
+  return {
+    id: `confirm-form-page-${formCode}`,
+    code: formCode,
+    route: '',
+    title: readString(definition.name, readString(formSchema.title, formCode)),
+    description: typeof definition.description === 'string' ? definition.description : null,
+    layout: 'blank',
+    status: 'published',
+    keep_alive: false,
+    page_type: 'custom',
+    edit_page_id: null,
+    view_name: null,
+    table_name: typeof definition.table_name === 'string' ? definition.table_name : null,
+    relate_config: {},
+    schema: {
+      code: formCode,
+      route: '',
+      title: readString(formSchema.title, formCode),
+      blocks: [{
+        id: formId,
+        kind: 'form',
+        formType: 'default',
+        title: readString(formSchema.title, '数据源'),
+        schema: formSchema,
+        initialValues: isRecord(initialValues) ? cloneValue(initialValues) : {},
+      } satisfies LowCodePageFormBlock],
+      overlays: [],
+      dataSources: {},
+      apis: {},
+      functions: [],
+      scriptPolicy: { capabilities: [] },
+    },
+    node_actions: [],
+    runtime_functions: [],
+    version: 1,
+    published_at: null,
+    created_at: '',
+    updated_at: '',
+  } as LowCodePageRecord;
+}
+
+function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeFormSchema {
+  const fields = Array.isArray(rawSchema.fields)
+    ? rawSchema.fields.filter(isRecord).map((field) => cloneValue(field))
+    : [];
+  const detailFields = new Map<string, Record<string, unknown>>();
+
+  fields.forEach((field) => {
+    if (field.component === 'lc-array-table' || field.field === 'detail') {
+      const fieldName = readString(field.field);
+      if (fieldName) detailFields.set(fieldName, field);
+    }
+  });
+
+  const printDetail = Array.isArray(rawSchema.printDetail) ? rawSchema.printDetail : [];
+  const legacyPrintFields = printDetail.length > 0 && printDetail.every((item) =>
+    isRecord(item) && typeof item.field === 'string' && typeof item.component === 'string' && !Array.isArray(item.columns),
+  );
+  if (legacyPrintFields) {
+    detailFields.set('detail', { field: 'detail', label: '明细', columns: printDetail });
+  } else {
+    printDetail.forEach((item, index) => {
+      if (isRecord(item) && typeof item.field === 'string') {
+        const fieldName = readString(item.field, `detail_${index + 1}`);
+        const existing = detailFields.get(fieldName) ?? {};
+        detailFields.set(fieldName, { ...existing, ...cloneValue(item), field: fieldName });
+      } else if (isRecord(item)) {
+        const fieldName = `detail_${index + 1}`;
+        detailFields.set(fieldName, { field: fieldName, label: `明细${index + 1}`, columns: [item] });
+      }
+    });
+  }
+
+  if (!detailFields.size) return rawSchema as unknown as LowCodeFormSchema;
+
+  const normalizedDetailFields = [...detailFields.values()].map((field, index) => {
+    const fieldName = readString(field.field, `detail_${index + 1}`);
+    const existingProps = isRecord(field.props) ? field.props : {};
+    const rawColumns = Array.isArray(field.columns)
+      ? field.columns
+      : Array.isArray(existingProps.columns)
+        ? existingProps.columns
+        : [];
+    const columns = rawColumns.filter(isRecord).map((column): Record<string, unknown> => ({
+      ...cloneValue(column),
+      field: readString(column.field),
+      title: readString(column.title, readString(column.field)),
+      component: column.component ?? 'vxe-input',
+    })).filter((column) => column.field);
+    const defaultRow = isRecord(existingProps.defaultRow)
+      ? cloneValue(existingProps.defaultRow)
+      : Object.fromEntries(columns.map((column) => [column.field, column.defaultValue ?? '']));
+    return {
+      field: fieldName,
+      label: readString(field.label, `明细${index + 1}`),
+      component: 'lc-array-table',
+      showTitle: false,
+      props: {
+        ...cloneValue(existingProps),
+        columns,
+        defaultRow,
+        rowKey: readString(existingProps.rowKey, '_rowId'),
+        showSeq: existingProps.showSeq !== false,
+        fillAvailableHeight: existingProps.fillAvailableHeight !== false,
+        copyable: existingProps.copyable !== false,
+        removable: existingProps.removable !== false,
+        toolbarButtons: [
+          { code: 'add', label: '新增行', command: 'add', status: 'primary' },
+          {
+            code: 'import',
+            label: '导入',
+            command: 'import',
+            status: 'info',
+            execute: ({ rows }: {
+              rows: Record<string, unknown>[];
+            }) => {
+              if (typeof window === 'undefined') return;
+              window.dispatchEvent(new CustomEvent('enlearn:print-data-source-import', {
+                detail: {
+                  field: fieldName,
+                  onImported: (
+                    importedRows: Record<string, unknown>[],
+                    mode: 'append' | 'replace',
+                  ) => {
+                    if (mode === 'replace') {
+                      rows.splice(0, rows.length, ...importedRows);
+                    } else {
+                      rows.push(...importedRows);
+                    }
+                  },
+                },
+              }));
+            },
+          },
+          {
+            code: 'clear',
+            label: '清空',
+            command: 'clear',
+            status: 'warning',
+            execute: ({ rows }: { rows: Record<string, unknown>[] }) => {
+              rows.splice(0, rows.length);
+            },
+          },
+        ],
+      },
+    };
+  });
+
+  const detailNames = new Set(normalizedDetailFields.map((field) => field.field));
+  const headerFields = fields.filter((field) => !detailNames.has(readString(field.field)));
+  const headerLayout = headerFields.map((field) => ({
+    kind: 'field' as const,
+    field: readString(field.field),
+  }));
+  const detailLayout = normalizedDetailFields.map((field) => ({
+    kind: 'field' as const,
+    field: field.field,
+  }));
+
+  return {
+    title: readString(rawSchema.title, '数据源'),
+    columns: 1,
+    fields: [...headerFields, ...normalizedDetailFields] as LowCodeFormSchema['fields'],
+    layout: [...headerLayout, ...detailLayout],
+    actions: Array.isArray(rawSchema.actions) ? cloneValue(rawSchema.actions) : [],
+  };
+}
 
 export type LowCodePageConfirmDialogResult =
   GlobalDialogResult<Record<string, unknown>> & {
@@ -180,6 +373,8 @@ function getBuiltinReferencePage(code: string, route: string) {
 }
 
 async function resolveReferencePage(config: LowCodePageReferenceDialogConfig) {
+  const formPage = await resolveFormDefinitionPage(config as LowCodePageConfirmDialogConfig);
+  if (formPage) return formPage;
   if (config.page) return config.page;
 
   const code = readString(config.pageCode ?? config.code);
@@ -278,7 +473,8 @@ function prepareConfirmPage(
   const prepareBlocks = (blocks: LowCodePageBlock[]): LowCodePageBlock[] => blocks.map((block) => {
     if (block.kind === 'form') {
       formSourceKeys.add(block.id);
-      if (block.sourceKey) formSourceKeys.add(block.sourceKey);
+      const sourceKey = (block as LowCodePageFormBlock & { sourceKey?: string }).sourceKey;
+      if (sourceKey) formSourceKeys.add(sourceKey);
       const values = initialValues[block.id];
       const dataSource = block.dataSource
         ? {
@@ -585,7 +781,6 @@ export async function openLowCodePageConfirmDialog(
           role: 'confirm',
           status: 'primary',
           onClick: async () => {
-            debugger//
             let payload = createPayload();
             if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
 
@@ -634,7 +829,7 @@ export async function openLowCodePageConfirmDialog(
         ),
       },
     });
-    resolve(result)
+    resolve(result as LowCodePageConfirmDialogResult)
   })
 
 }

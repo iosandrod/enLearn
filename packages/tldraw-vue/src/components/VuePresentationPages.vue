@@ -5,6 +5,7 @@ import { useEditorValue } from '@/vue/useEditorValue'
 
 const props = withDefaults(
 	defineProps<{
+		canvas: any
 		editor: Editor
 		pageSizeMm?: { w: number; h: number }
 		pxPerMm?: number
@@ -40,7 +41,7 @@ function scheduleRefresh(delay = 180) {
 	}, delay)
 }
 
-function setThumbnailCanvas(pageId: string, element: Element | null) {
+function setThumbnailCanvas(pageId: string, element: unknown) {
 	if (element instanceof HTMLCanvasElement) thumbnailCanvasRefs.set(pageId, element)
 	else thumbnailCanvasRefs.delete(pageId)
 }
@@ -96,6 +97,13 @@ function selectPage(id: TLPageId) {
 	props.editor.setCurrentPage(id)
 }
 
+function deletePage(id: TLPageId) {
+	if (pages.value.length <= 1) return
+	props.editor.markHistoryStoppingPoint('deleting presentation page')
+	props.editor.deletePage(id)
+	scheduleRefresh(80)
+}
+
 function createPage() {
 	if (pages.value.length >= props.editor.options.maxPages) return
 
@@ -107,6 +115,11 @@ function createPage() {
 	})
 	props.editor.setCurrentPage(id)
 	scheduleRefresh(80)
+	nextTick(() => {
+		if (props.canvas?.workspaceFitCanvas) {
+			props.canvas.workspaceFitCanvas()//
+		}
+	})
 }
 
 function onDocumentChange() {
@@ -146,40 +159,31 @@ onBeforeUnmount(() => {
 
 		<div class="presentation-pages__body">
 			<div class="presentation-pages__list" role="listbox" aria-label="演示文稿页面列表">
-				<button
-					v-for="page in pageCards"
-					:key="page.id"
-					type="button"
-					role="option"
-					:aria-selected="page.isCurrent"
-					:aria-label="`${page.index + 1} ${page.name || '页面'}`"
-					class="presentation-page-card"
-					:class="{ 'is-current': page.isCurrent }"
-					@click="selectPage(page.id)"
-				>
-					<span
-						class="presentation-page-card__preview"
-						:style="{ aspectRatio: `${pageSizeMm.w} / ${pageSizeMm.h}` }"
-					>
-						<canvas
-							:ref="(element) => setThumbnailCanvas(page.id, element)"
-							class="presentation-page-card__thumbnail"
-							role="img"
-							:aria-label="`${page.name || '页面'}静态缩略图`"
-						/>
-						<em>{{ page.index + 1 }}</em>
-					</span>
-					<span class="presentation-page-card__name">{{ page.name || `Page ${page.index + 1}` }}</span>
-				</button>
+				<div v-for="page in pageCards" :key="page.id" role="option" :aria-selected="page.isCurrent"
+					:aria-label="`${page.index + 1} ${page.name || '页面'}`" class="presentation-page-card"
+					:class="{ 'is-current': page.isCurrent }">
+					<em>{{ page.index + 1 }}</em>
+					<button type="button" class="presentation-page-card__select" :aria-pressed="page.isCurrent"
+						:aria-label="`选择第 ${page.index + 1} 页`" @click="selectPage(page.id)">
+						<span class="presentation-page-card__preview"
+							:style="{ aspectRatio: `${pageSizeMm.w} / ${pageSizeMm.h}` }">
+							<canvas :ref="(element) => setThumbnailCanvas(page.id, element)"
+								class="presentation-page-card__thumbnail" role="img"
+								:aria-label="`${page.name || '页面'}静态缩略图`" />
+						</span>
+						<span class="presentation-page-card__name">{{ page.name || `Page ${page.index + 1}` }}</span>
+					</button>
+					<button type="button" class="presentation-page-card__delete" :disabled="pages.length <= 1"
+						:title="pages.length <= 1 ? '至少保留一个页面' : '删除页面'" :aria-label="`删除第 ${page.index + 1} 页`"
+						@click.stop="deletePage(page.id)">
+						<i class="ri-close-line" aria-hidden="true" />
+					</button>
+				</div>
 			</div>
 
-			<button
-				type="button"
-			class="presentation-pages__add"
-			:title="pages.length >= editor.options.maxPages ? '已达到页面数量上限' : '添加页面'"
-			:disabled="pages.length >= editor.options.maxPages"
-			@click="createPage"
-		>
+			<button type="button" class="presentation-pages__add"
+				:title="pages.length >= editor.options.maxPages ? '已达到页面数量上限' : '添加页面'"
+				:disabled="pages.length >= editor.options.maxPages" @click="createPage">
 				<i class="ri-add-line" aria-hidden="true" />
 				<span>添加页面</span>
 			</button>

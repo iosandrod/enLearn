@@ -112,4 +112,36 @@
     font-weight: 600;
     line-height: 18px;
   }
+
+  @media (max-width: 1024px) {
+    .outline-panel {
+      padding: 6px 6px 10px;
+      gap: 6px;
+    }
+
+    .outline-panel__header {
+      min-height: 34px;
+      padding: 4px 7px;
+      border-radius: 6px;
+
+      strong {
+        font-size: 12px;
+        line-height: 16px;
+      }
+
+      span {
+        font-size: 10px;
+        line-height: 14px;
+      }
+    }
+
+    .outline-group {
+      gap: 4px;
+    }
+
+    .outline-group__title {
+      font-size: 10px;
+      line-height: 14px;
+    }
+  }
 </style>

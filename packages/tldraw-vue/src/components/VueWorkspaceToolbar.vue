@@ -8,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+	'fit-canvas': []
 	'page-size-change': [size: WorkspacePageSizeMm]
 	'zoom-in': []
 	'zoom-out': []
@@ -47,6 +48,15 @@ function setHeight(event: Event) {
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
+		<button
+			type="button"
+			class="workspace-toolbar-button workspace-fit-button"
+			aria-label="自适应画布"
+			title="自适应画布"
+			@click="emit('fit-canvas')"
+		>
+			<i class="ri-fullscreen-line" aria-hidden="true" />
+		</button>
 		<label class="workspace-size-field" title="Page width">
 			<input
 				type="number"

@@ -1298,17 +1298,6 @@ const ServiceComponent = defineComponent({
                   <strong>表单拖拽设计</strong>
                   <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
                 </div>
-                <div class="form-workbench-toolbar-actions" role="toolbar" aria-label="画布快捷添加">
-                  <ElButton type="primary" onClick={addInputBlock}>
-                    添加输入框
-                  </ElButton>
-                  <ElButton onClick={addHorizontalContainer}>
-                    添加水平容器
-                  </ElButton>
-                  <ElButton onClick={addTabContainer}>
-                    添加tab容器
-                  </ElButton>
-                </div>
                 {state.option.headerForm ? (
                   <div class="form-workbench-header-form">
                     <LowCodeForm
@@ -1354,6 +1343,25 @@ const ServiceComponent = defineComponent({
                 serviceApi={state.option.serviceApi}
                 persistToSession={false}
                 showGlobalDialogHost={false}
+                v-slots={{
+                  'canvas-toolbar': () => (
+                    <div
+                      class="form-workbench-toolbar-actions"
+                      role="toolbar"
+                      aria-label="表单画布快捷添加"
+                    >
+                      <ElButton type="primary" onClick={addInputBlock}>
+                        添加输入框
+                      </ElButton>
+                      <ElButton onClick={addHorizontalContainer}>
+                        添加水平容器
+                      </ElButton>
+                      <ElButton onClick={addTabContainer}>
+                        添加tab容器
+                      </ElButton>
+                    </div>
+                  ),
+                }}
               />
             </div>
           ),

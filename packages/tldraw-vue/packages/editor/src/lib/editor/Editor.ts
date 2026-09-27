@@ -4984,6 +4984,11 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 */
 	setCurrentPage(page: TLPageId | TLPage): this {
 		const pageId = typeof page === 'string' ? page : page.id
+		// Template loaders can leave a page behind without its camera or page
+		// state. Repair those records before setCamera reads the current camera.
+		// This is intentionally kept at the editor boundary so older material
+		// implementations get the same protection as the current loader.
+		this.store.ensureStoreIsUsable()
 		if (!this.store.has(pageId)) {
 			console.error("Tried to set the current page id to a page that doesn't exist.")
 			return this

@@ -564,6 +564,7 @@ export class LowCodePageScriptRuntime {
     const allowedKeys = new Set([
       'code',
       'pageCode',
+      'formCode',
       'pageRoute',
       'title',
       'width',

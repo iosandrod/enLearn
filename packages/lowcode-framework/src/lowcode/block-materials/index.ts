@@ -3,10 +3,12 @@ import type { LowCodeBlockMaterial } from './types';
 import type { VisualToLowCodeConverter } from '../visual-converters/types';
 import { lowCodeBlockMaterialAdapters } from '../material-runtime/material-adapters';
 import { registerLowCodeBlockMaterialComponent } from '../material-runtime/component-bridge';
+import LabelDesignerMaterial from './label-designer/LabelDesignerMaterial.vue';
+import { USE_DATABASE_LABEL_DESIGNER_MATERIAL } from './label-designer/config';
 
 // Synchronous bootstrap entries keep schema/design-time APIs usable while the
-// database catalog is loading. Every entry is replaced by its compiled SFC
-// once initializeLowCodeMaterialCatalog completes.
+// database catalog is loading. Database-backed entries may be replaced by
+// compiled SFCs; first-party editors can stay local and deterministic.
 const DatabaseMaterialPending = defineComponent({
   name: 'LowCodeDatabaseMaterialPending',
   setup() {
@@ -43,7 +45,10 @@ export function registerLowCodeBlockMaterial(material: LowCodeBlockMaterial) {
 }
 
 Object.values(lowCodeBlockMaterialAdapters).forEach((adapter) => {
-  const component = DatabaseMaterialPending;
+  const component = adapter.type === 'label-designer' && !USE_DATABASE_LABEL_DESIGNER_MATERIAL
+    ? LabelDesignerMaterial
+    : DatabaseMaterialPending;
+  // const component = DatabaseMaterialPending;//
   registerLowCodeBlockMaterialComponent(adapter.type, component, adapter.aliases);
   registerLowCodeBlockMaterial({ ...adapter, component } as LowCodeBlockMaterial);
 });
@@ -72,5 +77,5 @@ export type {
   LowCodeBlockMaterialEmits,
   LowCodeBlockMaterialProps,
   LowCodeBlockValidationIssue,
-  LowCodeRuntimeBlock,
+  LowCodeRuntimeBlock,//
 } from './types';

@@ -44,6 +44,16 @@ type DetailImportConfig = {
 	mode: 'append' | 'replace'
 }
 
+type DetailImportRowsHandler = (
+	rows: Record<string, unknown>[],
+	mode: DetailImportConfig['mode'],
+) => void
+
+type PrintDataSourceImportRequest = {
+	field?: unknown
+	onImported?: DetailImportRowsHandler
+}
+
 type AddDetailTableModel = {
 	label: string
 	field: string
@@ -163,6 +173,7 @@ const actionMessage = ref('')
 const actionMessageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const importFileInput = ref<HTMLInputElement | null>(null)
 const pendingDetailImportConfig = ref<DetailImportConfig | null>(null)
+const pendingDetailImportHandler = ref<DetailImportRowsHandler | null>(null)
 const emit = defineEmits<{
 	'data-source-action': [action: DataSourceAction]
 }>()
@@ -412,19 +423,24 @@ function handleClearDetailRows() {
 	setActionMessage('当前明细数据已清空。')
 }
 
-async function handleImportData() {
+async function handleImportData(onImported?: DetailImportRowsHandler) {
 	if (!activeDetailTable.value) {
 		setActionMessage('请先选择一个明细子表。')
 		return
 	}
 	pendingDetailImportConfig.value = null
+	pendingDetailImportHandler.value = onImported ?? null
 	try {
 		const config = await openDetailImportDialog()
-		if (!config) return
+		if (!config) {
+			pendingDetailImportHandler.value = null
+			return
+		}
 		pendingDetailImportConfig.value = config
 		// The file picker must be opened only after the configuration is confirmed.
 		importFileInput.value?.click()
 	} catch (error) {
+		pendingDetailImportHandler.value = null
 		setActionMessage(error instanceof Error ? error.message : '导入配置打开失败。')
 	}
 }
@@ -434,10 +450,12 @@ async function handleImportFileChange(event: Event) {
 	const file = input.files?.[0]
 	input.value = ''
 	const config = pendingDetailImportConfig.value
+	const onImported = pendingDetailImportHandler.value
 	pendingDetailImportConfig.value = null
+	pendingDetailImportHandler.value = null
 	if (!file || !config) return
 	try {
-		await importDetailFile(file, config)
+		await importDetailFile(file, config, onImported ?? undefined)
 	} catch (error) {
 		setActionMessage(error instanceof Error ? error.message : '明细 Excel 导入失败。')
 	}
@@ -522,7 +540,11 @@ function createDetailImportSchema(): LowCodeFormSchema {
 	}
 }
 
-async function importDetailFile(file: File, config: DetailImportConfig) {
+async function importDetailFile(
+	file: File,
+	config: DetailImportConfig,
+	onImported?: DetailImportRowsHandler,
+) {
 	const table = activeDetailTable.value
 	if (!table) return
 	setActionMessage('正在解析 Excel 明细数据…')
@@ -533,7 +555,18 @@ async function importDetailFile(file: File, config: DetailImportConfig) {
 	const rows = convertImportedRows(matrix, table, config)
 	if (!rows.length) throw new Error('Excel 中没有可导入的明细数据。')
 	updateDetailRows(table.field, config.mode === 'replace' ? rows : [...detailRows.value, ...rows])
+	onImported?.(rows, config.mode)
 	setActionMessage(`已导入 ${rows.length} 行明细数据。`)
+}
+
+function handlePrintDataSourceImportRequest(event: Event) {
+	const request = (event as CustomEvent<PrintDataSourceImportRequest>).detail
+	const field = readString(request?.field)
+	const table = detailTables.value.find((item) => item.field === field)
+	if (!table) return
+	activeDetailTableId.value = table.id
+	activeSourceTab.value = 'detail'
+	void handleImportData(typeof request?.onImported === 'function' ? request.onImported : undefined)
 }
 
 function convertImportedRows(matrix: unknown[][], table: PrintDataSourceDetailTable, config: DetailImportConfig) {
@@ -905,10 +938,12 @@ function getWorkspaceDataSource() {
 }
 
 onMounted(() => {
+	window.addEventListener('enlearn:print-data-source-import', handlePrintDataSourceImportRequest)
 	void loadDefinitions()
 })
 
 onBeforeUnmount(() => {
+	window.removeEventListener('enlearn:print-data-source-import', handlePrintDataSourceImportRequest)
 	if (actionMessageTimer.value) clearTimeout(actionMessageTimer.value)
 })
 

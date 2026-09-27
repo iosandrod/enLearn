@@ -6,6 +6,7 @@ import styles from './index.module.scss';
 import type { VisualEditorComponent } from '../../../../visual-editor.utils';
 import { visualConfig } from '../../../../../visual.config';
 import { createNewBlock } from '../../../../visual-editor.utils';
+import { useVisualData } from '../../../../hooks/useVisualData';
 
 const DraggableView = Draggable as any;
 
@@ -15,6 +16,14 @@ export default defineComponent({
   icon: DataBoard,
   order: 5,
   setup() {
+    const { currentPath, currentPage, currentBlock, setCurrentBlock, updatePageBlock } = useVisualData();
+    const addMaterial = (component: VisualEditorComponent) => {
+      const block = createNewBlock(cloneDeep(component));
+      if (currentBlock.value?.focus) currentBlock.value.focus = false;
+      block.focus = true;
+      updatePageBlock(currentPath.value, [...(currentPage.value.blocks ?? []), block]);
+      setCurrentBlock(block);
+    };
     const cloneDog = (comp: VisualEditorComponent) => {
       const newComp = cloneDeep(comp);
       return createNewBlock(newComp);
@@ -32,9 +41,9 @@ export default defineComponent({
       >
         {{
           item: ({ element }: { element: VisualEditorComponent }) => (
-            <div class={styles.listGroupItem} data-label={element.label}>
+            <button type="button" class={styles.listGroupItem} data-label={element.label} onClick={() => addMaterial(element)}>
               {element.preview()}
-            </div>
+            </button>
           ),
         }}
       </DraggableView>

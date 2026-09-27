@@ -638,6 +638,48 @@
     }
   }
 
+  @media (max-width: 1024px) {
+    .layer-list {
+      gap: 3px;
+    }
+
+    .layer-list--nested {
+      margin-top: 3px;
+      padding-left: 8px;
+    }
+
+    .layer-row {
+      min-height: 30px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      gap: 5px;
+    }
+
+    .layer-row--slot {
+      min-height: 26px;
+      padding: 2px 6px;
+    }
+
+    .layer-row__text strong {
+      font-size: 11px;
+      line-height: 15px;
+    }
+
+    .layer-row__text small {
+      font-size: 9px;
+      line-height: 12px;
+    }
+
+    .layer-row__actions {
+      opacity: 1;
+    }
+
+    .layer-actions-trigger {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
   .layer-children {
     margin: 6px 0 0 18px;
   }

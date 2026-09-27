@@ -6,6 +6,7 @@ import styles from '../base-widgets/index.module.scss';
 import type { VisualEditorComponent } from '../../../../visual-editor.utils';
 import { visualConfig } from '../../../../../visual.config';
 import { createNewBlock } from '../../../../visual-editor.utils';
+import { useVisualData } from '../../../../hooks/useVisualData';
 
 const DraggableView = Draggable as any;
 
@@ -15,11 +16,19 @@ export default defineComponent({
   icon: DocumentChecked,
   order: 3.5,
   setup() {
+    const { currentPath, currentPage, currentBlock, setCurrentBlock, updatePageBlock } = useVisualData();
     const formComponents = ref(visualConfig.componentModules.formComponents);
 
     const cloneComponent = (comp: VisualEditorComponent) => {
       const newComp = cloneDeep(comp);
       return createNewBlock(newComp);
+    };
+    const addMaterial = (component: VisualEditorComponent) => {
+      const block = cloneComponent(component);
+      if (currentBlock.value?.focus) currentBlock.value.focus = false;
+      block.focus = true;
+      updatePageBlock(currentPath.value, [...(currentPage.value.blocks ?? []), block]);
+      setCurrentBlock(block);
     };
 
     return () => (
@@ -34,12 +43,14 @@ export default defineComponent({
       >
         {{
           item: ({ element }: { element: VisualEditorComponent }) => (
-            <div
+            <button
+              type="button"
               class={[styles.listGroupItem, styles.formMaterialItem]}
               data-label={element.label}
+              onClick={() => addMaterial(element)}
             >
               <div class={styles.formMaterialPreview}>{element.preview()}</div>
-            </div>
+            </button>
           ),
         }}
       </DraggableView>

@@ -3,8 +3,12 @@ import type {
   VisualEditorBlockData,
   VisualEditorComponent,
 } from '../../../visual-editor/visual-editor.utils';
-import { resolveLowCodeBlockMaterialComponent } from '../../../lowcode/material-runtime/component-bridge';
-import { lowCodeMaterialComponentRevision } from '../../../lowcode/material-runtime/component-bridge';
+import LabelDesignerMaterial from '../../../lowcode/block-materials/label-designer/LabelDesignerMaterial.vue';
+import { USE_DATABASE_LABEL_DESIGNER_MATERIAL } from '../../../lowcode/block-materials/label-designer/config';
+import {
+  lowCodeMaterialComponentRevision,
+  resolveLowCodeBlockMaterialComponent,
+} from '../../../lowcode/material-runtime/component-bridge';
 
 function previewCard() {
   return (
@@ -36,9 +40,7 @@ const labelDesigner: VisualEditorComponent = {
   preview: previewCard,
   render({ props, styles, block }) {
     return () => {
-      // Re-render when the database material catalog replaces its pending component.
       lowCodeMaterialComponentRevision.value;
-      const RuntimeComponent = resolveLowCodeBlockMaterialComponent('label-designer') as any;
       const runtimeBlock = {
         id: String(props.blockId || block._vid),
         kind: 'label-designer',
@@ -53,6 +55,10 @@ const labelDesigner: VisualEditorComponent = {
         minHeight: '560px',
         overflow: 'hidden',
       };
+
+      const RuntimeComponent = USE_DATABASE_LABEL_DESIGNER_MATERIAL
+        ? resolveLowCodeBlockMaterialComponent('label-designer') as any
+        : LabelDesignerMaterial;
 
       if (!RuntimeComponent) {
         return (

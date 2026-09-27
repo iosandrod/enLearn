@@ -7,7 +7,14 @@
       </div>
 
       <ClientOnly v-else>
-        <div class="visual-designer-layout">
+        <div class="visual-designer-layout" :class="{ 'is-mobile-designer': isMobileDesigner }">
+          <button
+            v-if="showMenuDrawer && isMobileDesigner && !menuDrawerCollapsed"
+            class="visual-designer-drawer__backdrop"
+            type="button"
+            aria-label="关闭页面菜单"
+            @click="menuDrawerCollapsed = true"
+          />
           <aside v-if="showMenuDrawer" class="visual-designer-drawer" :class="{ 'is-collapsed': menuDrawerCollapsed }">
             <div class="visual-designer-drawer__panel" :aria-hidden="menuDrawerCollapsed">
               <header class="visual-designer-drawer__header">
@@ -52,7 +59,16 @@
             <button class="visual-designer-drawer__toggle" type="button" :aria-expanded="!menuDrawerCollapsed"
               :aria-label="menuDrawerCollapsed ? '展开页面菜单' : '收起页面菜单'" :title="menuDrawerCollapsed ? '展开页面菜单' : '收起页面菜单'"
               @click="toggleMenuDrawer">
-              <i :class="menuDrawerCollapsed ? 'ri-arrow-right-s-line' : 'ri-arrow-left-s-line'" aria-hidden="true" />
+              <i
+                :class="isMobileDesigner
+                  ? menuDrawerCollapsed
+                    ? 'ri-menu-unfold-line'
+                    : 'ri-arrow-down-s-line'
+                  : menuDrawerCollapsed
+                    ? 'ri-arrow-right-s-line'
+                    : 'ri-arrow-left-s-line'"
+                aria-hidden="true"
+              />
             </button>
           </aside>
 
@@ -211,6 +227,7 @@ function subscribeLowCodeDesignerLoadPage(subscriber: (code: string) => void) {
 }
 
 let unsubscribeDesignerLoadPage: (() => void) | null = null;
+let mobileDesignerMediaQuery: MediaQueryList | null = null;
 
 const host = useLowCodeHost(() => ({
   serviceApi: props.serviceApi,
@@ -244,6 +261,7 @@ const menuTreeLoading = ref(false);
 const menuTreeError = ref('');
 const menuActionLoadingCode = ref('');
 const menuDrawerCollapsed = ref(false);
+const isMobileDesigner = ref(false);
 const expandedGroups = reactive<Record<string, boolean>>({});
 let menuTreeLoadPromise: Promise<void> | null = null;
 let pageLoadRequestSeq = 0;
@@ -972,6 +990,11 @@ function toggleMenuDrawer() {
   menuDrawerCollapsed.value = !menuDrawerCollapsed.value;
 }
 
+function handleDesignerViewportChange(event: MediaQueryListEvent | MediaQueryList) {
+  isMobileDesigner.value = event.matches;
+  if (event.matches) menuDrawerCollapsed.value = true;
+}
+
 watch(
   () => props.code,
   (nextCode) => {
@@ -981,6 +1004,9 @@ watch(
 );
 
 onMounted(() => {
+  mobileDesignerMediaQuery = window.matchMedia('(max-width: 1024px)');
+  handleDesignerViewportChange(mobileDesignerMediaQuery);
+  mobileDesignerMediaQuery.addEventListener('change', handleDesignerViewportChange);
   try {
     void initializeLowCodeMaterialCatalog(host.getServiceApi()).catch((error) => {
       console.warn('[LowCode Material] Designer catalog initialization failed.', error);
@@ -995,6 +1021,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  mobileDesignerMediaQuery?.removeEventListener('change', handleDesignerViewportChange);
   unsubscribeDesignerLoadPage?.();
   unsubscribeDesignerLoadPage = null;
 });
@@ -1555,13 +1582,114 @@ defineExpose({
   }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 1024px) {
   .visual-designer-layout {
-    --visual-designer-drawer-width: min(320px, calc(100vw - 36px));
+    --visual-designer-drawer-width: 100%;
+  }
+
+  .visual-designer-drawer__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 34;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: rgb(15 23 42 / 28%);
+  }
+
+  .visual-designer-drawer {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 35;
+    width: 100%;
+    height: min(56vh, 460px);
+    max-height: calc(100% - 56px);
+  }
+
+  .visual-designer-drawer.is-collapsed {
+    z-index: 21;
+    height: 0;
+  }
+
+  .visual-designer-drawer__panel {
+    width: 100%;
+    height: 100%;
+    padding-top: 10px;
+    border-top: 1px solid #d8e0ea;
+    border-right: 0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -10px 32px rgb(15 23 42 / 18%);
+    transform: translateY(0);
+
+    &::before {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      width: 36px;
+      height: 4px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      content: '';
+      transform: translateX(-50%);
+    }
+  }
+
+  .visual-designer-drawer.is-collapsed .visual-designer-drawer__panel {
+    transform: translateY(102%);
   }
 
   .visual-designer-drawer__toggle {
-    height: 62px;
+    top: -32px;
+    left: 50%;
+    width: 48px;
+    height: 28px;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgb(15 23 42 / 14%);
+    font-size: 16px;
+    transform: translateX(-50%);
+  }
+
+  .visual-designer-drawer.is-collapsed .visual-designer-drawer__toggle {
+    position: fixed;
+    top: auto;
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 12px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    transform: none;
+  }
+
+  .visual-designer-drawer__header {
+    min-height: 40px;
+    padding: 0 8px 0 10px;
+  }
+
+  .visual-designer-drawer__heading strong {
+    font-size: 12px;
+  }
+
+  .visual-designer-drawer__heading span,
+  .visual-designer-drawer__notice {
+    font-size: 10px;
+  }
+
+  .visual-designer-drawer__refresh {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+  }
+
+  .visual-designer-drawer .admin-filter {
+    padding: 6px 8px;
+  }
+
+  .visual-designer-drawer .admin-filter input {
+    height: 30px;
+    font-size: 11px;
   }
 }
 </style>

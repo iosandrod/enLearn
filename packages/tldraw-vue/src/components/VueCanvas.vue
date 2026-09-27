@@ -352,6 +352,11 @@ function onWorkspaceZoomReset() {
 	controller.resetZoom()
 }
 
+function onWorkspaceFitCanvas() {
+	updateViewportSize()
+	controller.updateViewport(true)
+}
+
 function onGuideCreate(guide: { axis: GuideAxis; position: number }) {
 	const position = normalizeGuidePosition(guide.axis, guide.position)
 	const nextGuide = {
@@ -764,6 +769,7 @@ defineExpose({
 	isContextMenuOpen: () => controller.isContextMenuOpen(),
 	moveToolbarDrag,
 	startToolbarDrag,
+	workspaceFitCanvas:onWorkspaceFitCanvas,
 })
 
 onMounted(() => {
@@ -1006,6 +1012,7 @@ onBeforeUnmount(() => {
 		<VueWorkspaceToolbar
 			:page-size-mm="workspacePageSizeMm"
 			:zoom="camera.z"
+			@fit-canvas="onWorkspaceFitCanvas"
 			@page-size-change="onWorkspacePageSizeChange"
 			@zoom-in="onWorkspaceZoomIn"
 			@zoom-out="onWorkspaceZoomOut"

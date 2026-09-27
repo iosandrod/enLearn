@@ -89,7 +89,7 @@ export default defineComponent({
   icon: Document,
   order: 6.5,
   setup() {
-    const { currentPage } = useVisualData();
+    const { currentPath, currentPage, currentBlock, setCurrentBlock, updatePageBlock } = useVisualData();
     const mode = inject(formDesignerModeKey, null);
     const injectedTableFieldOptions = inject(formDesignerTableFieldOptionsKey, null);
     const inputComponent = visualConfig.componentMap.input;
@@ -122,6 +122,13 @@ export default defineComponent({
       block.props.placeholder = `请输入${material.columnLabel}`;
       return block;
     };
+    const addMaterial = (material: ColumnInputMaterial) => {
+      const block = cloneComponent(material);
+      if (currentBlock.value?.focus) currentBlock.value.focus = false;
+      block.focus = true;
+      updatePageBlock(currentPath.value, [...(currentPage.value.blocks ?? []), block]);
+      setCurrentBlock(block);
+    };
 
     return () => (
       <div class="column-components-panel">
@@ -137,9 +144,9 @@ export default defineComponent({
           >
             {{
               item: ({ element }: { element: ColumnInputMaterial }) => (
-                <div class={styles.listGroupItem} data-label={element.columnLabel}>
+                <button type="button" class={styles.listGroupItem} data-label={element.columnLabel} onClick={() => addMaterial(element)}>
                   {element.preview()}
-                </div>
+                </button>
               ),
             }}
           </DraggableView>

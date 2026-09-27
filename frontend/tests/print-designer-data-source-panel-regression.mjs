@@ -109,9 +109,12 @@ assert.match(panelSource, /导入数据/);
 assert.match(panelSource, /清空数据/);
 assert.match(panelSource, /DETAIL_IMPORT_FORM_CODE/);
 assert.match(panelSource, /pendingDetailImportConfig/);
+assert.match(panelSource, /enlearn:print-data-source-import/);
+assert.match(panelSource, /handlePrintDataSourceImportRequest/);
+assert.match(panelSource, /pendingDetailImportHandler/);
 assert.match(
   panelSource,
-  /async function handleImportData\(\)\s*\{[\s\S]*?openDetailImportDialog\(\)[\s\S]*?pendingDetailImportConfig\.value\s*=\s*config[\s\S]*?importFileInput\.value\?\.click\(\)/,
+  /async function handleImportData\([^)]*\)\s*\{[\s\S]*?openDetailImportDialog\(\)[\s\S]*?pendingDetailImportConfig\.value\s*=\s*config[\s\S]*?importFileInput\.value\?\.click\(\)/,
 );
 assert.doesNotMatch(
   panelSource,

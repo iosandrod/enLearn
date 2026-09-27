@@ -10,9 +10,7 @@
           <small>PRINT STUDIO</small>
         </span>
       </RouterLink>
-
       <span class="print-app-header__divider" aria-hidden="true" />
-
       <div class="print-app-context">
         <strong>{{ accountSetting ? '账号设置' : '打印设计器' }}</strong>
         <span><i aria-hidden="true" />{{ accountSetting ? '账号中心' : '在线工作区' }}</span>
@@ -161,11 +159,19 @@ defineProps<{ accountSetting?: boolean }>();
 
 const auth = useAuth();
 const headerRef = ref<HTMLElement | null>(null);
-const userMenuOpen = ref(false);
+const userMenuOpen = ref(false);//
 const signingOut = ref(false);
-const templateName = ref('新建模板');
-const templateStatus = ref('尚未保存');
-const templateDirty = ref(false);
+const templateConfig:any=inject('printTemplateConfig');
+// const templateName = ref('新建模板');
+// const templateId = ref('');
+// const templateVersion = ref(1);
+// const templateStatus = ref('尚未保存');
+// const templateDirty = ref(false);
+const templateName=toRef(templateConfig,'templateName');
+const templateId=toRef(templateConfig,'templateId');
+const templateVersion=toRef(templateConfig,'templateVersion');
+const templateStatus=toRef(templateConfig,'templateStatus');
+const templateDirty=toRef(templateConfig,'templateDirty');
 const designerMode = ref<'print' | 'presentation'>('print');
 
 type TemplateInfoDetail = {
@@ -716,25 +722,75 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 680px) {
-  .print-app-header { flex-basis: 58px; }
+  .print-app-header {
+    flex-basis: 126px;
+    min-height: 126px;
+  }
+  .print-app-header__inner {
+    display: grid;
+    height: 126px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 50px minmax(0, 1fr);
+    gap: 0 8px;
+    padding: 0 10px 8px;
+  }
+  .print-app-brand { grid-column: 1; grid-row: 1; }
   .print-app-brand__copy small,
   .print-app-context,
   .print-app-action-link--dashboard { display: none; }
   .print-app-header__divider { display: none; }
   .print-app-workspace {
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none;
+    display: contents;
   }
-  .print-app-workspace::-webkit-scrollbar { display: none; }
+  .print-app-mode-switch {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+  }
   .print-app-mode-switch button span { display: none; }
   .print-app-mode-switch button { width: 32px; justify-content: center; padding: 0; }
-  .print-app-header__designer-actions { flex: 0 0 auto; }
+  .print-app-header__designer-actions {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-self: stretch;
+  }
+  .print-app-header__designer-actions :deep(.lc-node-button-group) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .print-app-header__designer-actions :deep(.lc-button-group) {
+    display: grid !important;
+    width: 100%;
+    height: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: minmax(30px, 1fr);
+    gap: 5px !important;
+  }
+  .print-app-header__designer-actions :deep(.vxe-button) {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 30px !important;
+    justify-content: center;
+    padding: 0 7px !important;
+    font-size: 10px !important;
+  }
+  .print-app-header__designer-actions :deep(.vxe-button .vxe-button--icon) {
+    margin-right: 3px !important;
+    font-size: 12px !important;
+  }
+  .print-app-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
   .print-app-user__trigger { max-width: 170px; }
 }
 
 @media (max-width: 480px) {
-  .print-app-header__inner { gap: 8px; padding: 0 9px; }
+  .print-app-header__inner { gap: 0 7px; padding: 0 8px 8px; }
   .print-app-brand__copy,
   .print-app-header__divider,
   .print-app-action-link--home,
@@ -744,5 +800,7 @@ onBeforeUnmount(() => {
   .print-app-user__trigger { width: 42px; padding: 3px; }
   .print-app-user__trigger > i { display: none; }
   .print-app-user-menu { right: -2px; width: min(260px, calc(100vw - 18px)); }
+  .print-app-mode-switch { padding: 2px; }
+  .print-app-mode-switch button { width: 28px; height: 28px; }
 }
 </style>

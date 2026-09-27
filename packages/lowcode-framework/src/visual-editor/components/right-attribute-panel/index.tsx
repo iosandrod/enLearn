@@ -8,7 +8,7 @@
  * RightAttributePanel
  */
 
-import { defineComponent, reactive, watch } from 'vue';
+import { defineComponent, onBeforeUnmount, onMounted, reactive, watch } from 'vue';
 import { ElTabPane, ElTabs } from '../common/designer-ui';
 import { DArrowLeft, DArrowRight } from '../common/remix-icons';
 import styles from './index.module.scss';
@@ -38,6 +38,23 @@ export default defineComponent({
       isOpen: true,
     });
 
+    const syncViewport = () => {
+      if (typeof window === 'undefined') return;
+      const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+      state.isOpen = !isMobile;
+    };
+    let mediaQuery: MediaQueryList | null = null;
+
+    onMounted(() => {
+      mediaQuery = window.matchMedia('(max-width: 1024px)');
+      syncViewport();
+      mediaQuery.addEventListener('change', syncViewport);
+    });
+
+    onBeforeUnmount(() => {
+      mediaQuery?.removeEventListener('change', syncViewport);
+    });
+
     watch(
       () => currentBlock.value.componentKey,
       () => {
@@ -50,7 +67,16 @@ export default defineComponent({
     return () => (
       <>
         <div class={[styles.drawer, { [styles.isOpen]: state.isOpen }]}>
-          <div class={styles.floatingActionBtn} onClick={() => (state.isOpen = !state.isOpen)}>
+          <div
+            class={styles.floatingActionBtn}
+            role="button"
+            tabindex={0}
+            aria-label={state.isOpen ? '收起属性面板' : '打开属性面板'}
+            onClick={() => (state.isOpen = !state.isOpen)}
+            onKeydown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') state.isOpen = !state.isOpen;
+            }}
+          >
             {state.isOpen ? <DArrowRight /> : <DArrowLeft />}
           </div>
           <div class={styles.attrs}>

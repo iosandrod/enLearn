@@ -276,6 +276,60 @@
     }
   }
 
+  @media (max-width: 1024px) {
+    .visual-editor-toolbar {
+      height: 38px;
+      padding: 0 4px;
+      gap: 4px;
+
+      .toolbar-tools {
+        flex-basis: 104px;
+        gap: 0;
+      }
+
+      .tool-item {
+        width: 34px;
+        height: 34px;
+        padding: 1px;
+        flex-basis: 34px;
+        gap: 1px;
+
+        .toolbar-icon {
+          font-size: 13px;
+        }
+
+        .title {
+          max-width: 32px;
+          font-size: 8px;
+        }
+      }
+
+      .toolbar-actions {
+        max-width: 54vw;
+        gap: 2px;
+
+        :deep(.vxe-button) {
+          min-height: 24px;
+          height: 24px;
+          padding: 0 5px;
+          font-size: 10px;
+          white-space: nowrap;
+        }
+      }
+
+      .right-tools {
+        gap: 4px;
+      }
+
+      :deep(.run-button) {
+        width: 24px;
+        height: 24px;
+        min-height: 24px;
+        font-size: 13px;
+      }
+    }
+  }
+
   .repo-dropdown {
     position: relative;
   }

@@ -9,6 +9,8 @@ const [topMenu, designer, migration] = await Promise.all([
 ]);
 
 assert.match(topMenu, /defineExpose\(\{[\s\S]*?previewPrint,[\s\S]*?printCurrentPage,[\s\S]*?\}\)/);
+assert.match(topMenu, /<Teleport to="body">[\s\S]*?class-name="print-preview-modal"[\s\S]*?<\/Teleport>/);
+assert.match(topMenu, /class="print-preview-page-frame"[\s\S]*?aspectRatio:[\s\S]*?page\.width[\s\S]*?page\.height/);
 assert.match(designer, /topMenuRef[\s\S]*?previewPrint\(\): Promise<void>/);
 assert.match(designer, /defineExpose\(\{[\s\S]*?previewPrint,[\s\S]*?printCurrentPage,[\s\S]*?\}\)/);
 assert.match(migration, /label-preview/);

@@ -719,6 +719,14 @@ function applyTemplateDocumentContent(editor: Editor, content: TemplateDocumentC
     }
   }
 
+  // Page creation normally creates these records through the editor's page
+  // side effect. Older templates can still leave a page without its camera;
+  // repair the store before the first setCurrentPage call can read it.
+  const ensureStoreIsUsable = (editor.store as unknown as {
+    ensureStoreIsUsable?: () => void;
+  }).ensureStoreIsUsable;
+  ensureStoreIsUsable?.call(editor.store);
+
   const firstPageId = pages[0].id;
   if (editor.getCurrentPageId() !== firstPageId) editor.setCurrentPage(firstPageId);
   for (const page of editor.getPages()) {

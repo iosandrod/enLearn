@@ -60,6 +60,14 @@ $primary: #1d73d8;
   justify-content: center;
   align-items: center;
 
+  @media (max-width: 1024px) {
+    width: 42px;
+    height: 64px;
+    border-radius: 10px 0 0 10px;
+    transform: translate(-42px, -50%);
+    font-size: 18px;
+  }
+
   &:hover {
     background: #eef6ff;
     color: #1d73d8;
@@ -422,6 +430,24 @@ $primary: #1d73d8;
 
   :global(.vxe-select) {
     width: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .drawer {
+    width: min(92vw, 420px);
+    max-width: calc(100vw - 12px);
+  }
+
+  .panelBody {
+    padding: 12px 12px 40px;
+  }
+
+  .attrs .tabs :global(.vxe-tabs--item) {
+    min-width: 58px;
+    height: 42px;
+    padding: 0 8px;
+    font-size: 12px;
   }
 }
 

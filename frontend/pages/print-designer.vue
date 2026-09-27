@@ -10,6 +10,11 @@
 // actions come from the `print-designer` low-code page schema at runtime.
 import PrintDesignerHeader from '../components/PrintDesignerHeader.vue';
 import PrintDesignerPage from './dashboard/print/lowcode-designer.vue';
+
+const printTemplateConfig = reactive({
+ 
+});
+provide('printTemplateConfig', printTemplateConfig);
 </script>
 
 <style>

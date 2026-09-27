@@ -26,5 +26,10 @@ assert.match(applyScript, /20260927110000_print_template_save_confirm_page\.sql/
 assert.match(applyScript, /this\.\$dialog\.confirmLowCodePage/);
 assert.match(applyScript, /pageCode: 'print-templates-edit'/);
 assert.match(designer, /async function openTemplatePicker\(\)[\s\S]*await prefetchPrintDesignerLowCodeResources\(\)/);
+assert.match(
+  designer,
+  /function applyTemplateDocumentContent\([\s\S]*?ensureStoreIsUsable[\s\S]*?editor\.setCurrentPage\(firstPageId\)/,
+  'Template loading must repair missing camera/page-state records before switching pages.',
+);
 
 console.log('Print template save confirm-page regression test passed.');
