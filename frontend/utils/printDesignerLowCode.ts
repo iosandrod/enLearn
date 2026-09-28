@@ -7,6 +7,7 @@ export const PRINT_DESIGNER_PAGE_CODE = 'print-designer';
 export const PRINT_TEMPLATE_LIST_PAGE_CODE = 'print-templates';
 
 export const PRINT_DESIGNER_FORM_CODES = [
+  'print-designer.style',
   'print-designer.property.workspace',
   'print-designer.property.vue-box',
   'print-designer.property.vue-text',

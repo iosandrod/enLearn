@@ -16,6 +16,10 @@ const props = withDefaults(
 	}
 )
 
+const emit = defineEmits<{
+	play: []
+}>()
+
 const pages = useEditorValue('presentation page thumbnails pages', () => props.editor.getPages())
 const currentPageId = useEditorValue(
 	'presentation page thumbnails current page',
@@ -95,6 +99,9 @@ async function refreshThumbnails() {
 function selectPage(id: TLPageId) {
 	if (id === currentPageId.value) return
 	props.editor.setCurrentPage(id)
+	nextTick(() => {
+		props.canvas?.workspaceFitCanvas()//
+	})
 }
 
 function deletePage(id: TLPageId) {
@@ -186,6 +193,11 @@ onBeforeUnmount(() => {
 				:disabled="pages.length >= editor.options.maxPages" @click="createPage">
 				<i class="ri-add-line" aria-hidden="true" />
 				<span>添加页面</span>
+			</button>
+			<button type="button" class="presentation-pages__play" title="播放演示文稿"
+				aria-label="播放演示文稿" @click="emit('play')">
+				<i class="ri-play-line" aria-hidden="true" />
+				<span>播放</span>
 			</button>
 		</div>
 	</section>

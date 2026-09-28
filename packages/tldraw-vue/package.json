@@ -52,6 +52,7 @@
     "lodash.uniq": "^4.5.0",
     "qrcode": "^1.5.4",
     "rbush": "^3.0.1",
+    "reveal.js": "^6.0.2",
     "vxe-pc-ui": "^4.16.22",
     "vxe-table": "^4.20.7",
     "vxe-table-plugin-extend-cell-area": "0.1.0",

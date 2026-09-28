@@ -15,7 +15,7 @@ import type { FormDesignerResult } from '@enlearn/lowcode-framework/visual-edito
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dialog'
 import type { Editor } from '@tldraw/editor'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import * as XLSX from 'xlsx'
 import {
 	createInlinePrintDataSource,
@@ -30,6 +30,7 @@ import {
 } from '@/editor/dataSourceForm'
 import type { PrintDataSourceDetailTable } from '@/print/types'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
+import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
 
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
 const DATA_SOURCE_DEFINITION_FORM_CODE = 'print-designer.datasource-definition'
@@ -209,35 +210,51 @@ async function handleAddDataSource() {
 	notifyAction('add')
 	if (definitionsLoading.value) return
 	setActionMessage('正在打开数据源表单设计器…')
+	const randomStr= Math.random().toString(36).slice(2)
 	const headerModel: Record<string, unknown> = {
-		code: 'print-designer.datasource.',
+		code: 'print-designer.datasource.'+randomStr,
 		name: '',
 		tableName: '',
 		description: '',
 	}
+	const detailTablesDraft = shallowRef<PrintDataSourceDetailTable[]>([])
+	const serviceApi = host.getServiceApi()
 	void $$formDesigner({
 		title: '新增打印数据源',
 		mode: 'edit',
 		fields: [
-			{
-				field: 'value',
-				label: '值',
-				component: 'vxe-input',
-				placeholder: '请输入值',
-			},
+			
 		],
 		columns: 1,
+		primaryTabLabel: '表单',
+		contentTabs: [{
+			name: 'detail',
+			label: '明细',
+			render: () => h(PrintDataSourceDetailDesigner, {
+				modelValue: detailTablesDraft.value,
+				serviceApi,
+				'onUpdate:modelValue': (value: PrintDataSourceDetailTable[]) => {
+					detailTablesDraft.value = value
+				},
+			}),
+		}],
 		headerForm: {
 			schema: dataSourceDefinitionForm.value?.schema ?? createDataSourceDefinitionSchema(),
-			model: headerModel,
+			model: headerModel,//
 		},
-		serviceApi: host.getServiceApi(),
+		serviceApi,//
 		onConfirm: async (result) => {
-			const code = await saveDataSourceDefinition(result.header ?? headerModel, result)
+			const code = await saveDataSourceDefinition(
+				result.header ?? headerModel,
+				result,
+				undefined,
+				undefined,
+				detailTablesDraft.value,
+			)
 			await loadDefinitions()
 			await activateDefinition(code, true)
 			setActionMessage('数据源已创建。')
-		},
+		},//
 	})
 }
 
@@ -258,22 +275,48 @@ function handleDesignDataSource() {
 		code: definition.code,
 		name: definition.name,
 		tableName: definition.table_name,
+		table_name:"print_source",////
 		description: definition.description ?? '',
 	}
+	const detailTablesDraft = shallowRef<PrintDataSourceDetailTable[]>(
+		getPrintDataSourceDetailTables(definition.schema).map((table) => ({
+			...table,
+			columns: table.columns.map((column) => ({ ...column })),
+		})),
+	)
+	const serviceApi = host.getServiceApi()
 	void $$formDesigner({
 		title: `设计打印数据源 - ${definition.name}`,
 		mode: 'edit',
 		fields: createFormDesignerFieldsFromSchema(getPrintDataSourceHeaderSchema(definition.schema)),
 		layout: getPrintDataSourceHeaderSchema(definition.schema).layout,
 		columns: getPrintDataSourceHeaderSchema(definition.schema).columns,
+		primaryTabLabel: '表单',
+		contentTabs: [{
+			name: 'detail',
+			label: '明细',
+			render: () => h(PrintDataSourceDetailDesigner, {
+				modelValue: detailTablesDraft.value,
+				serviceApi,
+				'onUpdate:modelValue': (value: PrintDataSourceDetailTable[]) => {
+					detailTablesDraft.value = value
+				},
+			}),
+		}],
 		headerForm: {
 			schema: dataSourceDefinitionForm.value?.schema ?? createDataSourceDefinitionSchema(true),
 			model: headerModel,
 		},
 		designerModel: null,
-		serviceApi: host.getServiceApi(),
+		serviceApi,
 		onConfirm: async (result) => {
-			await saveDataSourceDefinition(result.header ?? headerModel, result, definition.id, definition.schema)
+			await saveDataSourceDefinition(
+				result.header ?? headerModel,
+				result,
+				definition.id,
+				definition.schema,
+				detailTablesDraft.value,
+			)
 			await loadDefinitions()
 			setActionMessage('数据源设计已保存。')
 		},
@@ -661,6 +704,7 @@ async function saveDataSourceDefinition(
 	result: FormDesignerResult,
 	id?: string,
 	existingSchema?: PrintDataSourceFormDefinition['schema'],
+	detailTableDefinitions?: PrintDataSourceDetailTable[],
 ): Promise<string> {
 	const code = readString(model.code)
 	const name = readString(model.name)
@@ -685,7 +729,7 @@ async function saveDataSourceDefinition(
 		...createLowCodeFormSchemaFromDesignerResult(result),
 		title: name || code,
 		columns: 1,
-		printDetail: existingSchema?.printDetail ?? [],
+		printDetail: detailTableDefinitions ?? existingSchema?.printDetail ?? [],
 	}
 	await serviceApi.invoke('lowcode', id ? 'updateItem' : 'createItem', {
 		resource: 'lowcode_form_definitions',

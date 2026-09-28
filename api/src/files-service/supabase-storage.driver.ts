@@ -50,7 +50,7 @@ export class SupabaseStorageDriver implements FileStorageDriver {
   ): Promise<CreateUploadUrlResult> {
     const { data, error } = await this.client.storage
       .from(input.bucket)
-      .createSignedUploadUrl(input.objectKey);
+      .createSignedUploadUrl(input.objectKey, { upsert: false });
 
     if (error) {
       throw new BadRequestException(error.message);

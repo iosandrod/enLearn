@@ -12,7 +12,7 @@ import VuePresentationPreview from './components/VuePresentationPreview.vue'
 import VueLayersPanel from './components/VueLayersPanel.vue'
 import LowCodeFormPanel from './components/LowCodeFormPanel.vue'
 import VueNavigationPanel from './components/VueNavigationPanel.vue'
-import VueStylePanel from './components/VueStylePanel.vue'
+import LowCodeStylePanel from './components/LowCodeStylePanel.vue'
 import VueTopLeftMenu from './components/VueTopLeftMenu.vue'
 import { createVueEditor } from './editor/createVueEditor'
 import { getDefaultVueEditorExtensions } from './editor/extensions/defaultExtensions'
@@ -386,7 +386,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<main class="app-shell" :class="{ 'has-mode-toolbar': props.showModeControls }">
+	<main class="app-shell" :class="{
+		'has-mode-toolbar': props.showModeControls,
+		'is-presentation-preview': presentationPreviewOpen,
+	}">
 		<header v-if="props.showModeControls" class="designer-mode-toolbar">
 			<div class="designer-mode-switch" role="tablist" aria-label="设计模式">
 				<button type="button" :class="{ 'is-active': designerMode === 'print' }"
@@ -455,7 +458,7 @@ onBeforeUnmount(() => {
 							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
 					</div>
 					<div v-show="activeDesignerTab === 'style'" class="designer-tool-view">
-						<VueStylePanel v-if="editor" :compact="false" :editor="editor" />
+						<LowCodeStylePanel v-if="editor" :editor="editor" />
 					</div>
 					<div v-show="activeDesignerTab === 'background'" class="designer-tool-view">
 						<VueBackgroundPanel :background="workspaceBackground"
@@ -479,12 +482,14 @@ onBeforeUnmount(() => {
 				<VueNavigationPanel v-if="editor" :editor="editor" @before-action="closeContextAndTopMenus">
 					<template #presentation-pages>
 						<VuePresentationPages v-if="designerMode === 'presentation'" class="presentation-pages--dock"
-							:editor="editor" :canvas="canvasRef" :page-size-mm="presentationConfig.pageSizeMm" />
+							:editor="editor" :canvas="canvasRef" :page-size-mm="presentationConfig.pageSizeMm"
+							@play="togglePresentationPreview" />
 					</template>
 				</VueNavigationPanel>
 			</div>
 		</section>
 		<VuePresentationPreview v-if="editor && presentationPreviewOpen && designerMode === 'presentation'"
-			:editor="editor" @close="presentationPreviewOpen = false" />
+			:editor="editor" :canvas="canvasRef" :config="presentationConfig"
+			:page-size-mm="presentationConfig.pageSizeMm" @close="presentationPreviewOpen = false" />
 	</main>
 </template>

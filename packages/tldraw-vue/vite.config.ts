@@ -32,6 +32,7 @@ const externalPackages = [
 	'lodash.uniq',
 	'qrcode',
 	'rbush',
+	'reveal.js',
 	'react',
 	'react-dom',
 	'vue',

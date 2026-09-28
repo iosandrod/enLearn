@@ -74,6 +74,14 @@ export type FormDesignerHeaderForm = {
   onUpdateModel?: (value: Record<string, unknown>) => void;
 };
 
+export type FormDesignerContentTab = {
+  name: string;
+  label: string;
+  // The service is consumed by both Vue-JSX and React-JSX packages in this
+  // workspace, so the render callback deliberately stays JSX-runtime neutral.
+  render: () => any;
+};
+
 export interface FormDesignerServiceOption {
   title?: string;
   /** The layer is allocated by $$formDesigner so nested designers stack above their parent. */
@@ -87,6 +95,8 @@ export interface FormDesignerServiceOption {
   pageRecord?: LowCodePageRecord | null;
   serviceApi?: LowCodeHostServiceApi;
   headerForm?: FormDesignerHeaderForm;
+  primaryTabLabel?: string;
+  contentTabs?: FormDesignerContentTab[];
   onConfirm: (value: FormDesignerResult) => Promise<void> | void;
   onCancel?: () => void;
 }
@@ -1125,6 +1135,7 @@ const ServiceComponent = defineComponent({
     const state = reactive({
       option: props.option,
       showFlag: false,
+      activeContentTab: 'form',
       providerKey: 0,
       initialData: createFormModel([], props.option.title || '表单设计'),
       mounted: (() => {
@@ -1220,6 +1231,7 @@ const ServiceComponent = defineComponent({
       service: async (option: FormDesignerServiceOption) => {
         closeCommitted = false;
         state.option = option;
+        state.activeContentTab = 'form';
         void loadTableFieldOptions();
         state.initialData = resolveInitialModel(option);
         state.providerKey += 1;
@@ -1277,6 +1289,125 @@ const ServiceComponent = defineComponent({
 
     Object.assign(ctx.proxy!, methods);
 
+    const renderDesigner = () => (
+      <VisualEditorProvider
+        key={state.providerKey}
+        ref={providerRef}
+        initialData={state.initialData}
+        initialPath="/"
+        showHeader={false}
+        leftExcludeLabels={['页面', '数据源']}
+        leftWidth="300px"
+        allowFormDesign={false}
+        showPageSetting={false}
+        workbenchMode="form"
+        serviceApi={state.option.serviceApi}
+        persistToSession={false}
+        showGlobalDialogHost={false}
+        v-slots={{
+          'canvas-toolbar': () => (
+            <div
+              class="form-workbench-toolbar-actions"
+              role="toolbar"
+              aria-label="表单画布快捷添加"
+            >
+              <ElButton type="primary" onClick={addInputBlock}>
+                添加输入框
+              </ElButton>
+              <ElButton onClick={addHorizontalContainer}>
+                添加水平容器
+              </ElButton>
+              <ElButton onClick={addTabContainer}>
+                添加tab容器
+              </ElButton>
+            </div>
+          ),
+        }}
+      />
+    );
+
+    const renderPrimaryTab = () => (
+      <div class="form-workbench-primary">
+        <div class="form-workbench-toolbar">
+          <div class="form-workbench-toolbar-copy">
+            <strong>表单拖拽设计</strong>
+            <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
+          </div>
+          {state.option.headerForm ? (
+            <div class="form-workbench-header-form">
+              <LowCodeForm
+                ref={headerFormRef}
+                schema={state.option.headerForm.schema}
+                modelValue={state.option.headerForm.model}
+                onUpdate:modelValue={(value: Record<string, unknown>) => {
+                  const nextModel = { ...value };
+                  state.option.headerForm?.onUpdateModel?.(nextModel);
+                  if (state.option.headerForm) {
+                    const model = state.option.headerForm.model;
+                    Object.keys(model).forEach((key) => delete model[key]);
+                    Object.assign(model, nextModel);
+                  }
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
+        {renderDesigner()}
+      </div>
+    );
+
+    const renderWorkbenchContent = () => {
+      const contentTabs = state.option.contentTabs ?? [];
+      if (!contentTabs.length) return renderPrimaryTab();
+
+      return (
+        <div class="form-workbench-content-tabs">
+          <div class="form-workbench-content-tabs__header" role="tablist" aria-label="数据源设计区域">
+            <button
+              type="button"
+              class={{ 'is-active': state.activeContentTab === 'form' }}
+              role="tab"
+              aria-selected={state.activeContentTab === 'form'}
+              onClick={() => { state.activeContentTab = 'form'; }}
+            >
+              {state.option.primaryTabLabel || '表单'}
+            </button>
+            {contentTabs.map((tab) => (
+              <button
+                key={tab.name}
+                type="button"
+                class={{ 'is-active': state.activeContentTab === tab.name }}
+                role="tab"
+                aria-selected={state.activeContentTab === tab.name}
+                onClick={() => { state.activeContentTab = tab.name; }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div class="form-workbench-content-tabs__body">
+            <div
+              class="form-workbench-tab-pane form-workbench-tab-pane--designer"
+              style={{ display: state.activeContentTab === 'form' ? 'flex' : 'none' }}
+              role="tabpanel"
+            >
+              {renderPrimaryTab()}
+            </div>
+            {contentTabs.map((tab) => (
+              <div
+                key={tab.name}
+                class="form-workbench-tab-pane form-workbench-tab-pane--custom"
+                style={{ display: state.activeContentTab === tab.name ? 'flex' : 'none' }}
+                role="tabpanel"
+              >
+                {tab.render()}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
     return () => (
       <ElDialog
         v-model={state.showFlag}
@@ -1293,76 +1424,7 @@ const ServiceComponent = defineComponent({
         {{
           default: () => (
             <div class="form-workbench">
-              <div class="form-workbench-toolbar">
-                <div class="form-workbench-toolbar-copy">
-                  <strong>表单拖拽设计</strong>
-                  <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
-                </div>
-                {state.option.headerForm ? (
-                  <div class="form-workbench-header-form">
-                    <LowCodeForm
-                      ref={headerFormRef}
-                      schema={state.option.headerForm.schema}
-                      modelValue={state.option.headerForm.model}
-                      onUpdate:modelValue={(value: Record<string, unknown>) => {
-                        const nextModel = { ...value };
-                        state.option.headerForm?.onUpdateModel?.(nextModel);
-                        if (state.option.headerForm) {
-                          const model = state.option.headerForm.model;
-                          Object.keys(model).forEach((key) => delete model[key]);
-                          Object.assign(model, nextModel);
-                        }
-                      }}
-                    />
-                  </div>
-                ) : null}
-                {false ? (
-                <label>
-                  <span>表单列数</span>
-                  <input
-                    value={1}
-                    min={1}
-                    max={6}
-                    type="number"
-                    onInput={() => undefined}
-                  />
-                </label>
-                ) : null}
-              </div>
-              <VisualEditorProvider
-                key={state.providerKey}
-                ref={providerRef}
-                initialData={state.initialData}
-                initialPath="/"
-                showHeader={false}
-                leftExcludeLabels={['页面', '数据源']}
-                leftWidth="300px"
-                allowFormDesign={false}
-                showPageSetting={false}
-                workbenchMode="form"
-                serviceApi={state.option.serviceApi}
-                persistToSession={false}
-                showGlobalDialogHost={false}
-                v-slots={{
-                  'canvas-toolbar': () => (
-                    <div
-                      class="form-workbench-toolbar-actions"
-                      role="toolbar"
-                      aria-label="表单画布快捷添加"
-                    >
-                      <ElButton type="primary" onClick={addInputBlock}>
-                        添加输入框
-                      </ElButton>
-                      <ElButton onClick={addHorizontalContainer}>
-                        添加水平容器
-                      </ElButton>
-                      <ElButton onClick={addTabContainer}>
-                        添加tab容器
-                      </ElButton>
-                    </div>
-                  ),
-                }}
-              />
+              {renderWorkbenchContent()}
             </div>
           ),
           footer: () => (

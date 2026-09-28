@@ -152,7 +152,7 @@ export async function uploadMobileAsset(
       uri: asset.uri,
       url,
       method: 'PUT',
-      headers: { 'x-upsert': 'false', ...headers },
+      headers,
       fieldName: '',
       formData: { cacheControl: '3600' },
     });
@@ -175,7 +175,7 @@ export async function uploadMobileAsset(
   body.append('', file);
   const response = await fetch(url, {
     method: 'PUT',
-    headers: { 'x-upsert': 'false', ...headers },
+    headers,
     body,
   });
   if (!response.ok) {

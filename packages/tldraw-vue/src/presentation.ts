@@ -112,9 +112,7 @@ export class PresentationAnimationController {
 		for (const shape of this.editor.getCurrentPageShapesSorted()) {
 			const element = getShapeElement(shape.id)
 			if (!element) continue
-			element.style.opacity = ''
-			element.style.translate = ''
-			element.style.scale = ''
+			clearAnimationStyles(element)
 		}
 	}
 
@@ -152,14 +150,31 @@ export class PresentationAnimationController {
 			}
 		)
 		this.animations.set(shape.id, player)
-		return player.finished.catch(() => undefined).then(() => {
-			this.animations.delete(shape.id)
-		})
+		return player.finished.then(
+			() => {
+				if (this.animations.get(shape.id) !== player) return
+				// Persist the natural final state before removing the WAAPI effect.
+				// Otherwise the inline initial state (opacity: 0) resurfaces after
+				// a renderer update or when the browser discards the filling animation.
+				clearAnimationStyles(element)
+				this.animations.delete(shape.id)
+				player.cancel()
+			},
+			() => {
+				if (this.animations.get(shape.id) === player) this.animations.delete(shape.id)
+			}
+		)
 	}
 }
 
 function getShapeElement(shapeId: string) {
 	return document.querySelector<HTMLElement>(`[data-shape-id="${CSS.escape(shapeId)}"]`)
+}
+
+function clearAnimationStyles(element: HTMLElement) {
+	element.style.opacity = ''
+	element.style.translate = ''
+	element.style.scale = ''
 }
 
 function getInitialKeyframe(preset: PresentationAnimationPreset): Keyframe {

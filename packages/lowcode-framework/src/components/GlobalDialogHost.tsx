@@ -713,6 +713,10 @@ export default defineComponent({
               config.className,
               'lc-monaco-editor-dialog',
             );
+            const isGridDesignerDialog = hasDialogClass(
+              config.className,
+              'grid-designer-dialog',
+            );
             const modalProps = {
               modelValue: instance.visible,
               title: readValue(config.title, ''),
@@ -732,7 +736,7 @@ export default defineComponent({
               // layer so the editor remains interactive.
               zIndex:
                 10000 + globalDialogInstances.indexOf(instance) +
-                (isMonacoEditorDialog ? 2500 : 0),
+                (isMonacoEditorDialog ? 2500 : isGridDesignerDialog ? 2000 : 0),
               'onUpdate:modelValue': (visible: boolean) => {
                 if (!visible) {
                   void closeGlobalDialog(instance.id, {

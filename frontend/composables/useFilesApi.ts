@@ -205,8 +205,10 @@ async function uploadFileToSignedUrl(
     xhr.onerror = () => reject(new Error('File upload failed because the network request failed.'));
     xhr.onabort = () => reject(new Error('File upload was cancelled.'));
 
+    // The signed URL already contains the non-upsert policy. Sending the
+    // x-upsert header here needlessly expands the CORS preflight headers and
+    // fails against storage endpoints that do not allow custom headers.
     xhr.open('PUT', upload.signedUrl);
-    xhr.setRequestHeader('x-upsert', 'false');
     xhr.send(body);
   });
 }
