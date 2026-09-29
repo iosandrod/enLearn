@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ForbiddenException,
@@ -60,6 +60,7 @@ const STORAGE_ENTITY_DEFINITIONS = [
       { field_name: 'id', label: '文件ID', data_type: 'uuid', required: true, description: '文件元数据主键。' },
       { field_name: 'bucket', label: '存储桶', data_type: 'text', required: true, description: '对象存储 bucket。' },
       { field_name: 'object_key', label: '对象路径', data_type: 'text', required: true, description: 'Storage 内部对象 key。' },
+      { field_name: 'file_url', label: '文件地址', data_type: 'text', required: false, description: '对象存储中的稳定文件地址。' },
       { field_name: 'original_name', label: '原始文件名', data_type: 'text', required: true, description: '用户上传时的文件名。' },
       { field_name: 'mime_type', label: 'MIME 类型', data_type: 'text', required: false, description: '文件内容类型。' },
       { field_name: 'size_bytes', label: '文件大小', data_type: 'bigint', required: false, description: '文件字节数。' },
@@ -138,7 +139,7 @@ const FILE_RESOURCE_CONFIGS: ResourceConfigMap = {
     create: {
       allowedFields: [
         'id', 'bucket', 'object_key', 'original_name', 'mime_type', 'size_bytes',
-        'checksum', 'owner_id', 'visibility', 'status', 'locked', 'metadata',
+        'file_url', 'checksum', 'owner_id', 'visibility', 'status', 'locked', 'metadata',
         'upload_expires_at'
       ],
       requiredFields: ['object_key', 'original_name'],
@@ -147,7 +148,7 @@ const FILE_RESOURCE_CONFIGS: ResourceConfigMap = {
     update: {
       allowedFields: [
         'bucket', 'object_key', 'original_name', 'mime_type', 'size_bytes',
-        'checksum', 'visibility', 'status', 'locked', 'metadata',
+        'file_url', 'checksum', 'visibility', 'status', 'locked', 'metadata',
         'upload_expires_at', 'deleted_at'
       ]
     },
@@ -226,6 +227,9 @@ export class FilesService extends BaseService {
       case 'createUploadIntent':
       case 'createUploadUrl':
         ctx.result = await this.createUploadIntent(ctx.input, ctx.context);
+        return;
+      case 'uploadFile':
+        ctx.result = await this.uploadFile(ctx.input, ctx.context);
         return;
       case 'confirmUpload':
         ctx.result = await this.confirmUpload(ctx.input, ctx.context);
@@ -360,6 +364,111 @@ export class FilesService extends BaseService {
         expiresAt: upload.expiresAt ?? uploadExpiresAt
       }
     };
+  }
+
+  private async uploadFile(postData: PostData, context: ServiceContext) {
+    const { client, user } = await getCurrentUser(context);
+    const storageClient = resolveAdminClient(client);
+    const storage = this.createStorageDriver(storageClient);
+    const config = resolveConfig();
+
+    const encodedBody = postData.fileBase64 ?? postData.file_base64;
+    if (typeof encodedBody !== 'string') {
+      throw new BadRequestException('fileBase64 is required.');
+    }
+
+    const body = Buffer.from(encodedBody, 'base64');
+    const originalName = readString(
+      postData.originalName ?? postData.original_name ?? postData.fileName,
+      'originalName'
+    );
+    const mimeType = readOptionalString(postData.mimeType ?? postData.mime_type) || null;
+    const visibility = readVisibility(postData.visibility);
+    const metadata = readJsonObject(postData.metadata);
+    const folderPath = normalizeFolderPath(postData.folderPath ?? postData.folder_path);
+    const bucket = readOptionalString(postData.bucket) || config.bucket;
+
+    if (body.length > config.maxUploadBytes) {
+      throw new BadRequestException(
+        'File size must be between 0 and ' + config.maxUploadBytes + ' bytes.'
+      );
+    }
+
+    const id = randomUUID();
+    const objectKey =
+      readOptionalString(postData.objectKey ?? postData.object_key) ||
+      buildObjectKey(user.id, id, originalName, folderPath);
+    const checksum = createHash('sha256').update(body).digest('hex');
+
+    const created = await this.createItem({
+      resource: 'file_objects',
+      data: {
+        id,
+        bucket,
+        object_key: objectKey,
+        file_url: null,
+        original_name: originalName,
+        mime_type: mimeType,
+        size_bytes: body.length,
+        checksum,
+        owner_id: user.id,
+        visibility,
+        status: 'uploading',
+        metadata
+      }
+    }, context) as FileObjectRow;
+
+    try {
+      const object = await storage.uploadObject({
+        bucket,
+        objectKey,
+        body,
+        contentType: mimeType
+      });
+      const file = await this.updateItem({
+        resource: 'file_objects',
+        id,
+        data: {
+          file_url: object.objectUrl,
+          object_key: object.objectKey,
+          mime_type: mimeType,
+          size_bytes: body.length,
+          checksum,
+          status: 'ready',
+          upload_expires_at: null,
+          metadata: {
+            ...metadata,
+            storageAdapter: object.adapter,
+            uploadedAt: new Date().toISOString()
+          }
+        }
+      }, context) as FileObjectRow;
+
+      return {
+        file: normalizeFile(file),
+        object: {
+          ...object,
+          sizeBytes: body.length,
+          mimeType,
+          checksum
+        }
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await this.updateItem({
+        resource: 'file_objects',
+        id: created.id,
+        data: {
+          status: 'rejected',
+          metadata: {
+            ...metadata,
+            uploadError: message,
+            uploadFailedAt: new Date().toISOString()
+          }
+        }
+      }, context).catch(() => undefined);
+      throw error;
+    }
   }
 
   private async confirmUpload(postData: PostData, context: ServiceContext) {

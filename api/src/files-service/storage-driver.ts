@@ -28,6 +28,20 @@ export type CreateDownloadUrlResult = {
   expiresAt: string;
 };
 
+export type UploadObjectInput = {
+  bucket: string;
+  objectKey: string;
+  body: Buffer;
+  contentType?: string | null;
+};
+
+export type UploadObjectResult = {
+  adapter: string;
+  bucket: string;
+  objectKey: string;
+  objectUrl: string;
+};
+
 export type StoredObjectHead = {
   exists: boolean;
   size?: number | null;
@@ -38,6 +52,7 @@ export type StoredObjectHead = {
 export interface FileStorageDriver {
   readonly adapter: string;
   createUploadUrl(input: CreateUploadUrlInput): Promise<CreateUploadUrlResult>;
+  uploadObject(input: UploadObjectInput): Promise<UploadObjectResult>;
   createDownloadUrl(input: CreateDownloadUrlInput): Promise<CreateDownloadUrlResult>;
   deleteObject(bucket: string, objectKey: string): Promise<void>;
   headObject(bucket: string, objectKey: string): Promise<StoredObjectHead>;

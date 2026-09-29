@@ -95,6 +95,7 @@ const designerMode = ref<DesignerMode>(props.mode)
 const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
 const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 	color: '#ffffff',
+	imageFileId: '',
 	imageUrl: '',
 	imageSize: 'cover',
 	imagePosition: 'center',
@@ -262,6 +263,7 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 		workspaceBackground.value = {
 			...workspaceBackground.value,
 			...config.background,
+			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
 		}
 	}
@@ -274,6 +276,7 @@ function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
 		workspaceBackground.value = {
 			...workspaceBackground.value,
 			...config.background,
+			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
 		}
 	}

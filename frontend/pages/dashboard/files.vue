@@ -206,6 +206,9 @@
           <div>
             <h2 id="upload-progress-title">{{ uploadDialogTitle }}</h2>
             <p>{{ uploadDialogStatusText }}</p>
+            <p v-if="uploadDialog.phase === 'failed' && errorMessage" class="upload-progress-error">
+              {{ errorMessage }}
+            </p>
           </div>
           <button
             v-if="uploadDialog.phase === 'failed'"
@@ -685,7 +688,12 @@ function formatDate(value: string) {
 }
 
 async function loadThumbnails() {
-  const images = filteredFiles.value.filter(isImage).slice(0, 24);
+  // Uploading/rejected records do not have a downloadable object yet. Asking
+  // the API for signed download URLs for them produces noisy 400 responses
+  // and makes an otherwise healthy file list look broken.
+  const images = filteredFiles.value
+    .filter((file) => isImage(file) && ['uploaded', 'ready'].includes(file.status))
+    .slice(0, 24);
 
   await Promise.all(
     images.map(async (file) => {
@@ -1265,6 +1273,12 @@ watch(filteredFiles, () => {
   margin: 4px 0 0;
   color: #667085;
   font-size: 12px;
+}
+
+.upload-progress-header .upload-progress-error {
+  max-width: 320px;
+  color: #b42318;
+  overflow-wrap: anywhere;
 }
 
 .upload-current-file {

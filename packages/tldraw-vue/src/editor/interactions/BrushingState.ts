@@ -277,6 +277,25 @@ function getMaterialInteractionShape(editor: Editor, shape: TLShape) {
 	return parent?.type === ('vue-material' as string) ? parent : undefined
 }
 
+function findChildShapeAtPoint(editor: Editor, point: Vec, parentId: TLShapeId) {
+	const margin = editor.getHitTestMargin()
+	const shapes = editor.getCurrentPageShapesSorted()
+
+	for (let i = shapes.length - 1; i >= 0; i--) {
+		const shape = shapes[i]
+		if (!shape || shape.id === parentId || !editor.hasAncestor(shape, parentId)) continue
+		if (editor.isShapeOrAncestorLocked(shape) && !editor.options.selectLockedShapes) continue
+		if (editor.isPointInShape(shape, point, { hitInside: true, margin })) return shape
+	}
+
+	return undefined
+}
+
+function resolveMaterialInteractionShapeAtPoint(editor: Editor, point: Vec, shape: TLShape) {
+	if (shape.type !== ('vue-material-section' as string)) return shape
+	return findChildShapeAtPoint(editor, point, shape.id) ?? getMaterialInteractionShape(editor, shape)
+}
+
 function findMaterialInteractionShapeAtPoint(editor: Editor, point: Vec) {
 	const margin = editor.getHitTestMargin()
 	const shapes = editor.getCurrentPageShapesSorted()
@@ -284,10 +303,9 @@ function findMaterialInteractionShapeAtPoint(editor: Editor, point: Vec) {
 	for (let i = shapes.length - 1; i >= 0; i--) {
 		const shape = shapes[i]
 		if (!shape || shape.type !== ('vue-material-section' as string)) continue
-		if ((shape as TLShape & { props: { zone?: string } }).props.zone !== 'tableBody') continue
 		if (editor.isShapeOrAncestorLocked(shape) && !editor.options.selectLockedShapes) continue
 		if (!editor.isPointInShape(shape, point, { hitInside: true, margin })) continue
-		return getMaterialInteractionShape(editor, shape)
+		return resolveMaterialInteractionShapeAtPoint(editor, point, shape)
 	}
 
 	return undefined
@@ -307,7 +325,7 @@ export function selectOnCanvasPointerUp(editor: Editor, currentPagePoint: Vec, e
 		renderingOnly: true,
 	})
 	const hitShape = rawHitShape
-		? getMaterialInteractionShape(editor, rawHitShape)
+		? resolveMaterialInteractionShapeAtPoint(editor, currentPagePoint, rawHitShape)
 		: findMaterialInteractionShapeAtPoint(editor, currentPagePoint)
 
 	if (hitShape) {

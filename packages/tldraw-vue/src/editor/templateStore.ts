@@ -59,6 +59,7 @@ export interface VueTemplateWorkspaceConfig {
 
 export interface WorkspaceBackgroundConfig {
 	color: string
+	imageFileId?: string
 	imageUrl?: string
 	imageSize: 'cover' | 'contain' | 'auto'
 	imagePosition: string
@@ -280,6 +281,7 @@ function isBackgroundConfig(value: unknown): value is WorkspaceBackgroundConfig 
 	return (
 		isObject(value) &&
 		typeof value.color === 'string' &&
+		(value.imageFileId === undefined || typeof value.imageFileId === 'string') &&
 		(value.imageUrl === undefined || typeof value.imageUrl === 'string') &&
 		(value.imageSize === 'cover' || value.imageSize === 'contain' || value.imageSize === 'auto') &&
 		typeof value.imagePosition === 'string'

@@ -55,6 +55,7 @@ const workspaceRevision = ref(0)
 const workspacePageSizeMm = ref(workspaceBounds.getPageSizeMm())
 const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 	color: '#ffffff',
+	imageFileId: '',
 	imageUrl: '',
 	imageSize: 'cover',
 	imagePosition: 'center',
@@ -659,6 +660,7 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 		workspaceBackground.value = {
 			...workspaceBackground.value,
 			...cloneJson(config.background),
+			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
 		}
 		workspaceRevision.value++

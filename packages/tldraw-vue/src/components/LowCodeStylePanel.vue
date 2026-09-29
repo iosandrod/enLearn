@@ -172,12 +172,19 @@ async function loadDefinition() {
 	loading.value = true
 	error.value = ''
 	try {
-		const rows = await host.getServiceApi().invoke<FormDefinitionRow[]>('lowcode', 'listItems', {
+		const rows = await host.getServiceApi().invoke<unknown>('lowcode', 'listItems', {
 			resource: 'lowcode_form_definitions',
-			filters: { code: STYLE_FORM_CODE, enabled: true },
+			filters: { code: [STYLE_FORM_CODE], enabled: true },
 			limit: 1,
 		})
-		const stored = Array.isArray(rows) ? rows.find((row) => row.code === STYLE_FORM_CODE) : undefined
+		const rowList = Array.isArray(rows)
+			? rows
+			: isRecord(rows) && Array.isArray(rows.rows)
+				? rows.rows
+				: []
+		const stored = rowList.find((row): row is FormDefinitionRow =>
+			isRecord(row) && row.code === STYLE_FORM_CODE && isSchema(row.schema),
+		)
 		schema.value = isSchema(stored?.schema) ? structuredClone(stored.schema) : structuredClone(fallbackSchema)
 	} catch (cause) {
 		schema.value = structuredClone(fallbackSchema)

@@ -9,8 +9,10 @@ import type {
 import { isShapeId, type Editor, type TLShape, type TLShapePartial } from '@tldraw/editor'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
+	getVueMaterialVisibilityModel,
 	normalizeVueMaterialSections,
 	updateVueMaterialShapeLayout,
+	type VueMaterialShape,
 } from '@/editor/extensions/material/vueMaterialShape'
 import {
 	getVueResumeSectionDefinition,
@@ -495,6 +497,13 @@ const materialZoneOptions = [
 	{ label: '页尾', value: 'pageFooter' },
 ] satisfies LowCodeOption[]
 
+const materialVisibilityFields = [
+	switchField('showPageHeader', '显示页头'),
+	switchField('showTableHeader', '显示表头'),
+	switchField('showTableFooter', '显示表尾'),
+	switchField('showPageFooter', '显示页尾'),
+] satisfies LowCodeField[]
+
 const resumeZoneOptions = [
 	{ label: '简历页头', value: 'pageHeader' },
 	{ label: '自动填充内容', value: 'content' },
@@ -677,15 +686,18 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			numberField('w', '宽度', { min: 280, step: 1 }),
 			numberField('h', '高度', { min: 272, step: 1 }),
 			inputField('name', '物料名称'),
+			...materialVisibilityFields,
 		]),
 		toModel(shape) {
 			return {
 				...getCommonModel(shape),
 				...getFlatPropsModel(shape),
+				...getVueMaterialVisibilityModel(shape as VueMaterialShape),
 			}
 		},
 		apply(editor, shape, model) {
 			const partial = getCommonPartial(shape, model)
+			const currentMeta = (shape.meta as Record<string, unknown> | undefined) ?? {}
 			editor.run(() => {
 				editor.updateShape({
 					id: partial.id,
@@ -693,6 +705,13 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 					rotation: partial.rotation,
 					opacity: partial.opacity,
 					isLocked: partial.isLocked,
+					meta: {
+						...currentMeta,
+						showPageHeader: Boolean(model.showPageHeader),
+						showTableHeader: Boolean(model.showTableHeader),
+						showTableFooter: Boolean(model.showTableFooter),
+						showPageFooter: Boolean(model.showPageFooter),
+					},
 					props: {
 						name: String(model.name ?? getProps(shape).name ?? ''),
 					},

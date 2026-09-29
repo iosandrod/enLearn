@@ -239,7 +239,7 @@ export class VueEditorController {
 
 	private getContextMenuHitShape(pagePoint: Vec) {
 		const editor = this.options.editor
-		return (
+		const hitShape =
 			editor.getShapeAtPoint(pagePoint, {
 				filter: () => true,
 				hitInside: false,
@@ -248,9 +248,16 @@ export class VueEditorController {
 				margin: editor.getHitTestMargin(),
 				renderingOnly: true,
 			}) ??
-			editor.getSelectedShapeAtPoint(pagePoint) ??
-			this.findMaterialInteractionShapeAtPoint(pagePoint)
-		)
+			editor.getSelectedShapeAtPoint(pagePoint)
+
+		if (hitShape?.type === ('vue-material-section' as string)) {
+			return (
+				this.findChildShapeAtPoint(pagePoint, hitShape.id) ??
+				this.getMaterialInteractionShape(hitShape)
+			)
+		}
+
+		return hitShape ?? this.findMaterialInteractionShapeAtPoint(pagePoint)
 	}
 
 	private selectOnShapePointerDown(hitShape: TLShape, pagePoint: Vec, event: PointerEvent) {
@@ -440,7 +447,14 @@ export class VueEditorController {
 			return
 		}
 
-		const hitShape = this.getMaterialInteractionShape(this.findShapeAt(pagePoint))
+		// Prefer the shape that actually rendered the pointer target. Geometry hit
+		// testing is still the fallback for canvas overlays and transparent areas,
+		// but an edge-only geometry test must not discard clicks inside a rendered
+		// text/image node (most noticeably its lower-right area).
+		const eventTargetShape = this.findShapeFromEventTarget(event)
+		const hitShape = this.getMaterialInteractionShape(
+			eventTargetShape ?? this.findShapeAt(pagePoint)
+		)
 		if (!hitShape) {
 			if (this.isPointInRotatedSelectionBounds(pagePoint)) {
 				this.transitionTo(
@@ -1442,6 +1456,25 @@ export class VueEditorController {
 		return this.options.editor.screenToPage(this.getScreenPoint(event))
 	}
 
+	private findShapeFromEventTarget(event: Event) {
+		const target = event.target
+		if (!(target instanceof Element)) return undefined
+
+		const shapeId = target.closest<HTMLElement>('[data-shape-id]')?.dataset.shapeId
+		if (!shapeId || !isShapeId(shapeId)) return undefined
+
+		const shape = this.options.editor.getShape(shapeId)
+		if (!shape) return undefined
+		if (
+			this.options.editor.isShapeOrAncestorLocked(shape) &&
+			!this.options.editor.options.selectLockedShapes
+		) {
+			return undefined
+		}
+
+		return shape
+	}
+
 	private findShapeAt(point: VecLike) {
 		const editor = this.options.editor
 		const hitOptions = {
@@ -1474,6 +1507,13 @@ export class VueEditorController {
 			editor.getSelectedShapeIds().includes(hitShape.id)
 		) {
 			return this.findChildShapeAtPoint(point, hitShape.id) ?? hitShape
+		}
+
+		if (hitShape?.type === ('vue-material-section' as string)) {
+			return (
+				this.findChildShapeAtPoint(point, hitShape.id) ??
+				this.getMaterialInteractionShape(hitShape)
+			)
 		}
 
 		return hitShape ?? this.findMaterialInteractionShapeAtPoint(point)
@@ -1513,9 +1553,16 @@ export class VueEditorController {
 		for (let i = shapes.length - 1; i >= 0; i--) {
 			const shape = shapes[i]
 			if (!shape || shape.type !== ('vue-material-section' as string)) continue
-			if ((shape as TLShape & { props: { zone?: string } }).props.zone !== 'tableBody') continue
 			if (editor.isShapeOrAncestorLocked(shape) && !editor.options.selectLockedShapes) continue
 			if (!editor.isPointInShape(shape, point, { hitInside: true, margin })) continue
+
+			// Section geometry covers its children. When the regular edge-only hit test
+			// lands on the section (or misses entirely), prefer the actual child under
+			// the pointer using an inside hit test. This keeps text selectable across
+			// its full bounds instead of only near the top/left edges.
+			const childShape = this.findChildShapeAtPoint(point, shape.id)
+			if (childShape) return childShape
+
 			return this.getMaterialInteractionShape(shape)
 		}
 

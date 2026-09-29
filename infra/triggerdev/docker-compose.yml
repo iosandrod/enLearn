@@ -79,6 +79,10 @@ services:
       RUN_REPLICATION_LOG_LEVEL: ${RUN_REPLICATION_LOG_LEVEL:-info}
       INTERNAL_OTEL_TRACE_LOGGING_ENABLED: ${INTERNAL_OTEL_TRACE_LOGGING_ENABLED:-0}
       TRIGGER_TELEMETRY_DISABLED: ${TRIGGER_TELEMETRY_DISABLED:-1}
+      # The bundled image's goose command exits non-zero when ClickHouse is
+      # already at the newest schema version. The deployment script can opt in
+      # to migrations explicitly by setting SKIP_CLICKHOUSE_MIGRATIONS=0.
+      SKIP_CLICKHOUSE_MIGRATIONS: ${SKIP_CLICKHOUSE_MIGRATIONS:-1}
 
   supervisor:
     image: ghcr.io/triggerdotdev/supervisor:${TRIGGER_IMAGE_TAG:-latest}

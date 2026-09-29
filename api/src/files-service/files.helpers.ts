@@ -189,6 +189,7 @@ export function normalizeFile(row: FileObjectRow) {
     id: row.id,
     bucket: row.bucket,
     objectKey: row.object_key,
+    fileUrl: row.file_url,
     originalName: row.original_name,
     mimeType: row.mime_type,
     sizeBytes: row.size_bytes,

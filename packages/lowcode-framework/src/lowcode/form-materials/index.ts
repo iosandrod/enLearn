@@ -42,6 +42,25 @@ const PendingFormMaterial = defineComponent({
         });
       }
       if (component === 'vxe-radio-group') return h('input', { ...common, type: 'radio' });
+      if (component === 'lc-color-picker') {
+        const colorValue = typeof props.modelValue === 'string' && props.modelValue
+          ? props.modelValue
+          : '#ffffff';
+        return h('div', { class: 'lc-color-picker' }, [
+          h('input', {
+            ...common,
+            type: 'color',
+            value: colorValue,
+            onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLInputElement).value),
+          }),
+          h('input', {
+            ...common,
+            type: 'text',
+            value: colorValue,
+            onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLInputElement).value),
+          }),
+        ]);
+      }
       return h('input', {
         ...common,
         type: component === 'lc-number-input' ? 'number' : component === 'vxe-password-input' ? 'password' : 'text',

@@ -13,6 +13,7 @@ export type FileObjectRow = {
   id: string;
   bucket: string;
   object_key: string;
+  file_url: string | null;
   original_name: string;
   mime_type: string | null;
   size_bytes: number | null;

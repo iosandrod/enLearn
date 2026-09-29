@@ -11,6 +11,7 @@ export type FileObject = {
   id: string;
   bucket: string;
   objectKey: string;
+  fileUrl: string | null;
   originalName: string;
   mimeType: string | null;
   sizeBytes: number | null;
@@ -113,6 +114,7 @@ type FileObjectRow = {
   id: string;
   bucket: string;
   object_key: string;
+  file_url: string | null;
   original_name: string;
   mime_type: string | null;
   size_bytes: number | null;
@@ -170,14 +172,22 @@ type FileUsageRow = {
 async function uploadFileToSignedUrl(
   file: File,
   upload: SignedUpload,
-  onProgress?: (progress: UploadProgress) => void
+  onProgress?: (progress: UploadProgress) => void,
+  attempt = 0
 ) {
-  const body = new FormData();
-  body.append('cacheControl', '3600');
-  body.append('', file);
-
   return new Promise<XMLHttpRequest>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    xhr.timeout = 120_000;
+
+    const retry = () => {
+      if (attempt >= 2) return false;
+      onProgress?.({ loaded: 0, total: file.size || 1, progress: 0 });
+      window.setTimeout(() => {
+        void uploadFileToSignedUrl(file, upload, onProgress, attempt + 1)
+          .then(resolve, reject);
+      }, 500);
+      return true;
+    };
 
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
@@ -202,14 +212,24 @@ async function uploadFileToSignedUrl(
       reject(new Error(xhr.responseText || `File upload failed with ${xhr.status}.`));
     };
 
-    xhr.onerror = () => reject(new Error('File upload failed because the network request failed.'));
+    xhr.onerror = () => {
+      if (retry()) return;
+      reject(new Error('File upload failed because the network request failed.'));
+    };
+    xhr.ontimeout = () => {
+      if (retry()) return;
+      reject(new Error('File upload timed out.'));
+    };
     xhr.onabort = () => reject(new Error('File upload was cancelled.'));
 
     // The signed URL already contains the non-upsert policy. Sending the
     // x-upsert header here needlessly expands the CORS preflight headers and
     // fails against storage endpoints that do not allow custom headers.
     xhr.open('PUT', upload.signedUrl);
-    xhr.send(body);
+    // Supabase signed upload URLs accept the file bytes as the PUT body. A
+    // multipart FormData body changes the object bytes and is rejected by
+    // some Storage deployments even when the local adapter accepts it.
+    xhr.send(file);
   });
 }
 
@@ -218,6 +238,7 @@ function normalizeFile(row: FileObjectRow): FileObject {
     id: row.id,
     bucket: row.bucket,
     objectKey: row.object_key,
+    fileUrl: row.file_url ?? null,
     originalName: row.original_name,
     mimeType: row.mime_type,
     sizeBytes: row.size_bytes,
@@ -253,6 +274,109 @@ export function useFilesApi() {
   const serviceApi = useServiceApi();
   const { user } = useAuthState();
 
+  function uploadEndpoint() {
+    if (import.meta.env.DEV) return '/api/files/upload';
+    return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '') + '/files/upload';
+  }
+
+  function uploadAuthHeaders() {
+    const headers: Record<string, string> = {};
+    if (typeof window === 'undefined') return headers;
+    const token = window.localStorage.getItem('enlearn_access_token');
+    const accountId = window.localStorage.getItem('enlearn_active_account_id');
+    if (token) headers.Authorization = 'Bearer ' + token;
+    if (accountId) headers['X-Account-Id'] = accountId;
+    headers['X-Request-Id'] = 'web-upload-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    return headers;
+  }
+
+  async function uploadFileToBackend(input: UploadFileInput) {
+    return new Promise<{ file: FileObject; object: unknown }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const form = new FormData();
+      form.append('file', input.file, input.file.name);
+      form.append('visibility', input.visibility ?? 'private');
+      form.append('metadata', JSON.stringify(input.metadata ?? {}));
+      if (input.bucket) form.append('bucket', input.bucket);
+      if (input.folderPath) form.append('folderPath', input.folderPath);
+
+      let attempt = 0;
+      let settled = false;
+      const retry = () => {
+        if (attempt >= 2) return false;
+        attempt += 1;
+        input.onProgress?.({
+          loaded: 0,
+          total: input.file.size || 1,
+          progress: 0
+        });
+        window.setTimeout(() => {
+          void send();
+        }, 500 * attempt);
+        return true;
+      };
+      const fail = (message: string) => {
+        if (settled) return;
+        settled = true;
+        reject(new Error(message));
+      };
+      const send = () => {
+        xhr.open('POST', uploadEndpoint());
+        xhr.timeout = 180_000;
+        Object.entries(uploadAuthHeaders()).forEach(([key, value]) => {
+          xhr.setRequestHeader(key, value);
+        });
+        xhr.upload.onprogress = (event) => {
+          if (!event.lengthComputable) return;
+          input.onProgress?.({
+            loaded: event.loaded,
+            total: event.total,
+            progress: Math.min(100, Math.round((event.loaded / event.total) * 100))
+          });
+        };
+        xhr.onload = () => {
+          const payload = (() => {
+            try {
+              return JSON.parse(xhr.responseText) as {
+                success?: boolean;
+                data?: { file: FileObject; object: unknown };
+                message?: string;
+              };
+            } catch {
+              return null;
+            }
+          })();
+          if (xhr.status >= 200 && xhr.status < 300 && payload?.success && payload.data?.file) {
+            settled = true;
+            input.onProgress?.({
+              loaded: input.file.size || 1,
+              total: input.file.size || 1,
+              progress: 100
+            });
+            resolve(payload.data);
+            return;
+          }
+          if (xhr.status === 0 || xhr.status >= 500) {
+            if (retry()) return;
+          }
+          fail(payload?.message || xhr.responseText || 'File upload failed with ' + xhr.status + '.');
+        };
+        xhr.onerror = () => {
+          if (retry()) return;
+          fail('File upload failed because the network request failed.');
+        };
+        xhr.ontimeout = () => {
+          if (retry()) return;
+          fail('File upload timed out.');
+        };
+        xhr.onabort = () => fail('File upload was cancelled.');
+        xhr.send(form);
+      };
+
+      send();
+    });
+  }
+
   async function createUploadIntent(input: CreateUploadIntentInput) {
     return serviceApi.invoke<UploadIntentResponse>('files', 'runAction', {
       resource: 'file_objects',
@@ -283,12 +407,7 @@ export function useFilesApi() {
   }
 
   async function upload(input: UploadFileInput) {
-    const intent = await createUploadIntent(input);
-    await uploadFileToSignedUrl(input.file, intent.upload, input.onProgress);
-    return confirmUpload({
-      fileId: intent.file.id,
-      status: 'ready'
-    });
+    return uploadFileToBackend(input);
   }
 
   async function getDownloadUrl(fileId: string, expiresInSeconds?: number) {

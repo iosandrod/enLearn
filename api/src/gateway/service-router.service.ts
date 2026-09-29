@@ -21,6 +21,7 @@ import type { ServiceContext } from '../common/interfaces/service-executor';
 import { getEnv } from '../common/utils/env';
 
 const DOMAIN_SERVICE_TIMEOUT_MS = 20_000;
+const FILE_UPLOAD_TIMEOUT_MS = 180_000;
 
 @Injectable()
 export class ServiceRouterService {
@@ -53,6 +54,12 @@ export class ServiceRouterService {
     }
 
     const pattern = resolveServiceExecutePattern(serviceName, this.independentServices);
+    const timeoutMs =
+      serviceName === 'files' &&
+      serviceMethod === 'runAction' &&
+      postData.operation === 'uploadFile'
+        ? FILE_UPLOAD_TIMEOUT_MS
+        : DOMAIN_SERVICE_TIMEOUT_MS;
 
     const response = await firstValueFrom(
       this.domainClient
@@ -65,11 +72,11 @@ export class ServiceRouterService {
             serviceName
           }
         })
-        .pipe(timeout(DOMAIN_SERVICE_TIMEOUT_MS))
+        .pipe(timeout(timeoutMs))
     ).catch((error: unknown) => {
       if (error instanceof TimeoutError) {
         throw new GatewayTimeoutException(
-          `Domain service did not respond within ${DOMAIN_SERVICE_TIMEOUT_MS}ms.`
+          `Domain service did not respond within ${timeoutMs}ms.`
         );
       }
 

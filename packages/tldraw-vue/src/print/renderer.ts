@@ -5,7 +5,10 @@ import {
 	clearVueResumePrintOverrides,
 	setVueResumePrintOverrides,
 } from '@/editor/vueSvgExport'
-import { runWithVueMaterialPrintLayoutUpdates } from '@/editor/extensions/material/vueMaterialShape'
+import {
+	getVueMaterialHiddenShapeIds,
+	runWithVueMaterialPrintLayoutUpdates,
+} from '@/editor/extensions/material/vueMaterialShape'
 import { resolvePrintPreviewRows } from './dataSource'
 import { PrintShapePreviewResolver } from './shapePreviewStrategies'
 import {
@@ -97,6 +100,18 @@ export class PrintRenderer {
 		if (options.resumePlan) {
 			setVueResumePrintOverrides(getResumeOverrides(options.resumePlan, options.resumePageIndex ?? index))
 		}
+
+		updates.push(
+			...getVueMaterialHiddenShapeIds(this.editor, shapeIds).flatMap((shapeId) => {
+				const shape = this.editor.getShape(shapeId)
+				if (!shape) return []
+				return [{
+					id: shapeId,
+					type: shape.type,
+					opacity: 0,
+				} as TLShapePartial]
+			})
+		)
 
 		if (updates.length && this.editor.getIsReadonly()) {
 			clearVueMaterialPrintTableOverrides()

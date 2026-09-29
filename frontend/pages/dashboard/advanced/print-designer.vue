@@ -171,6 +171,7 @@ const PRINT_TEMPLATE_EDIT_FORM_ID = 'print-templates-edit-form';
 const route = useRoute();
 const router = useRouter();
 const serviceApi = useServiceApi();
+const { ready: authReady } = useAuthState();
 const designerRef = ref<TldrawVueExpose | null>(null);
 const editorReady = ref(false);
 const templates = ref<PrintTemplateRecord[]>([]);
@@ -242,11 +243,16 @@ watch(
 );
 
 watch(
-  () => embedded.value ? undefined : route.query.templateId,
+  [
+    () => embedded.value ? undefined : route.query.templateId,
+    authReady,
+  ],
   async () => {
+    if (!authReady.value) return;
     await refreshTemplates({ quiet: true });
     await loadRouteTemplate();
-  }
+  },
+  { immediate: true }
 );
 
 onBeforeUnmount(() => {
@@ -263,6 +269,16 @@ async function handleDesignerReady() {
   );
   editorReady.value = true;
   designerInitialized = true;
+
+  // The designer can finish mounting before the auth/account bootstrap has
+  // completed. In that case the first quiet template request may return an
+  // empty list and the initial route watcher has nothing to retry. Re-run the
+  // route load once the editor is fully interactive so a deep-link template
+  // cannot remain on the blank canvas after the data becomes available.
+  if (getRouteTemplateId() && !selectedTemplateId.value) {
+    await refreshTemplates({ quiet: true });
+    await loadRouteTemplate();
+  }
 }
 
 /** Warm the low-code page/form cache while the canvas finishes initializing. */

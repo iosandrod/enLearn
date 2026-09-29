@@ -5,6 +5,7 @@ import { ChatModule } from './chat-service/chat.module';
 import { DomainClientModule } from './gateway/domain-client.module';
 import { AiModule } from './ai/ai.module';
 import { InternalServiceController } from './gateway/internal-service.controller';
+import { FileUploadController } from './gateway/file-upload.controller';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { InternalServiceController } from './gateway/internal-service.controller
     DomainClientModule,
     AiModule.forGateway('gateway')
   ],
-  controllers: [ServiceGatewayController, InternalServiceController]
+  controllers: [ServiceGatewayController, FileUploadController, InternalServiceController]
 })
 export class AppModule {}

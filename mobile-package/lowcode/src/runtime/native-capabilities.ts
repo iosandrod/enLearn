@@ -154,7 +154,6 @@ export async function uploadMobileAsset(
       method: 'PUT',
       headers,
       fieldName: '',
-      formData: { cacheControl: '3600' },
     });
     const record = isRecord(result) ? result : {};
     const status = typeof record.status === 'number'
@@ -170,13 +169,10 @@ export async function uploadMobileAsset(
 
   const file = webFileFromAsset(asset);
   if (!file) throw new Error('Web 预览未保留可上传的文件对象。');
-  const body = new FormData();
-  body.append('cacheControl', '3600');
-  body.append('', file);
   const response = await fetch(url, {
     method: 'PUT',
     headers,
-    body,
+    body: file,
   });
   if (!response.ok) {
     throw new Error((await response.text()) || `文件上传失败（${response.status}）。`);

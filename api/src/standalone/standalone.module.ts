@@ -20,6 +20,7 @@ import { WorkflowModule } from '../workflow/workflow.module';
 import { StandaloneServiceRouter } from './standalone-service-router.service';
 import { AiModule } from '../ai/ai.module';
 import { InternalServiceController } from '../gateway/internal-service.controller';
+import { FileUploadController } from '../gateway/file-upload.controller';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { InternalServiceController } from '../gateway/internal-service.controlle
     WorkflowModule,
     AiModule.forGateway('standalone')
   ],
-  controllers: [ServiceGatewayController, InternalServiceController],
+  controllers: [ServiceGatewayController, FileUploadController, InternalServiceController],
   providers: [
     DomainServiceRouter,
     StandaloneServiceRouter,

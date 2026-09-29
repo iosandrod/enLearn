@@ -25,6 +25,19 @@ export type VueMaterialSectionZone =
 	| 'tableFooter'
 	| 'pageFooter'
 
+export type VueMaterialVisibilityKey =
+	| 'showPageHeader'
+	| 'showTableHeader'
+	| 'showTableFooter'
+	| 'showPageFooter'
+
+const VISIBILITY_KEY_BY_ZONE: Partial<Record<VueMaterialSectionZone, VueMaterialVisibilityKey>> = {
+	pageHeader: 'showPageHeader',
+	tableHeader: 'showTableHeader',
+	tableFooter: 'showTableFooter',
+	pageFooter: 'showPageFooter',
+}
+
 export interface VueMaterialSectionDefinition {
 	zone: VueMaterialSectionZone
 	label: string
@@ -323,17 +336,8 @@ export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSec
 		return false
 	}
 
-	override getClipPath(shape: VueMaterialSectionShape) {
-		return [
-			new Vec(0, 0),
-			new Vec(shape.props.w, 0),
-			new Vec(shape.props.w, shape.props.h),
-			new Vec(0, shape.props.h),
-		]
-	}
-
 	override shouldClipChild() {
-		return true
+		return false
 	}
 
 	override onBeforeUpdate(_prev: VueMaterialSectionShape, next: VueMaterialSectionShape) {
@@ -431,6 +435,12 @@ export function createVueMaterialShapePartials({
 			type: 'vue-material',
 			x: rect.x,
 			y: rect.y,
+			meta: {
+				showPageHeader: true,
+				showTableHeader: true,
+				showTableFooter: true,
+				showPageFooter: true,
+			},
 			props: {
 				w,
 				h,
@@ -667,6 +677,47 @@ export function isVueMaterialSectionShape(
 	shape: TLShape | undefined
 ): shape is VueMaterialSectionShape {
 	return shape?.type === 'vue-material-section'
+}
+
+export function isVueMaterialSectionVisible(
+	editor: Editor,
+	section: VueMaterialSectionShape
+) {
+	const parent = editor.getShape(section.parentId)
+	if (!isVueMaterialShape(parent)) return true
+
+	const key = VISIBILITY_KEY_BY_ZONE[section.props.zone]
+	if (!key) return true
+	return (parent.meta as Record<string, unknown> | undefined)?.[key] !== false
+}
+
+export function getVueMaterialVisibilityModel(shape: VueMaterialShape) {
+	const meta = (shape.meta as Record<string, unknown> | undefined) ?? {}
+	return {
+		showPageHeader: meta.showPageHeader !== false,
+		showTableHeader: meta.showTableHeader !== false,
+		showTableFooter: meta.showTableFooter !== false,
+		showPageFooter: meta.showPageFooter !== false,
+	}
+}
+
+export function getVueMaterialHiddenShapeIds(
+	editor: Editor,
+	shapeIds: readonly TLShapeId[]
+) {
+	const hiddenShapeIds = new Set<TLShapeId>()
+	const shapeAndDescendantIds = editor.getShapeAndDescendantIds([...shapeIds])
+
+	for (const shapeId of shapeAndDescendantIds) {
+		const shape = editor.getShape(shapeId)
+		if (!isVueMaterialSectionShape(shape) || isVueMaterialSectionVisible(editor, shape)) continue
+
+		for (const descendantId of editor.getShapeAndDescendantIds([shape.id])) {
+			hiddenShapeIds.add(descendantId)
+		}
+	}
+
+	return [...hiddenShapeIds]
 }
 
 function getVueMaterialSectionsByZone(editor: Editor, materialId: TLShapeId) {

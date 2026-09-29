@@ -1501,7 +1501,7 @@ button {
 	position: absolute;
 	z-index: 0;
 	border: calc(1px * var(--inverse-zoom)) solid rgb(15 23 42 / 0.48);
-	background: #ffffff;
+	background-color: #ffffff;
 	box-shadow:
 		0 calc(1px * var(--inverse-zoom)) calc(2px * var(--inverse-zoom)) rgb(15 23 42 / 0.18),
 		0 0 0 calc(1px * var(--inverse-zoom)) rgb(255 255 255 / 0.85) inset;

@@ -87,7 +87,9 @@ export function resolvePrintPreviewRows(
 	const sourceRow = normalizeRows(rows ?? dataSource.rows)[0]
 	const detailRows = sourceRow?.[detailField]
 	const normalized = normalizeRows(detailRows).filter((row) => isRecord(row))
-	return normalized.length ? normalized : [{}]
+	return normalized.length
+		? normalized.map((detailRow) => ({ ...detailRow, ...sourceRow }))
+		: [{}]
 }
 
 export function normalizeRows(value: unknown): PrintDataRow[] {

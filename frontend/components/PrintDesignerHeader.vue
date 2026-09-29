@@ -189,7 +189,7 @@ const signedIn = computed(() => Boolean(auth.user.value));
 
 function readDisplayString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : '';
-}
+}//
 
 const displayEmail = computed(() => auth.user.value?.email ?? '已登录用户');
 const displayName = computed(() => {

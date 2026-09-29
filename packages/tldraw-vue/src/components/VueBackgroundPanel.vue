@@ -12,21 +12,27 @@ const props = defineProps<{ background: WorkspaceBackgroundConfig }>()
 const emit = defineEmits<{ 'update:background': [background: WorkspaceBackgroundConfig] }>()
 
 const host = useLowCodeHost()
-const fileInput = ref<HTMLInputElement | null>(null)
 const schema = ref<LowCodeFormSchema | null>(null)
 const model = ref<Record<string, unknown>>({})
 const loading = ref(true)
 const errorMessage = ref('')
 const uploadError = ref('')
+let previewRequest = 0
+let hydratedFileId = ''
 
 watch(
 	() => props.background,
 	(background) => {
+		const fileId = getBackgroundFileId(background)
 		model.value = {
 			color: background.color,
-			imageUrl: background.imageUrl ?? '',
+			imageUrl: fileId || background.imageUrl || '',
 			imageSize: background.imageSize,
 			imagePosition: background.imagePosition,
+		}
+		if (fileId && fileId !== hydratedFileId) {
+			hydratedFileId = fileId
+			void hydrateBackgroundImage(fileId)
 		}
 	},
 	{ immediate: true, deep: true },
@@ -59,37 +65,96 @@ async function loadSchema() {
 }
 
 function handleModelUpdate(value: Record<string, unknown>) {
-	model.value = { ...model.value, ...value }
-	const imageSize = value.imageSize
+	const nextModel = { ...model.value, ...value }
+	model.value = nextModel
+	const imageSize = nextModel.imageSize
+	const hasImageValue = Object.prototype.hasOwnProperty.call(value, 'imageUrl')
+	const imageValue = hasImageValue ? readImageValue(nextModel.imageUrl) : null
+	const imageFileId = imageValue && isFileObjectId(imageValue) ? imageValue : undefined
+	if (hasImageValue && !imageFileId && !imageValue) {
+		clearBackgroundImage()
+		return
+	}
+	const imageUrl = !hasImageValue
+		? props.background.imageUrl ?? ''
+		: imageFileId
+			? imageFileId === props.background.imageFileId ? props.background.imageUrl ?? '' : ''
+			: imageValue ?? ''
+
 	emit('update:background', {
 		...props.background,
-		color: typeof value.color === 'string' ? value.color : props.background.color,
-		imageUrl: typeof value.imageUrl === 'string' ? value.imageUrl : props.background.imageUrl ?? '',
+		color: typeof nextModel.color === 'string' ? nextModel.color : props.background.color,
+		imageFileId: imageFileId ?? '',
+		imageUrl,
 		imageSize: imageSize === 'cover' || imageSize === 'contain' || imageSize === 'auto' ? imageSize : props.background.imageSize,
-		imagePosition: typeof value.imagePosition === 'string' ? value.imagePosition : props.background.imagePosition,
+		imagePosition: typeof nextModel.imagePosition === 'string' ? nextModel.imagePosition : props.background.imagePosition,
+	})
+
+	if (imageFileId && imageFileId !== hydratedFileId) {
+		hydratedFileId = imageFileId
+		void hydrateBackgroundImage(imageFileId)
+	}
+}
+
+function clearBackgroundImage() {
+	previewRequest += 1
+	hydratedFileId = ''
+	uploadError.value = ''
+	model.value = {
+		...model.value,
+		imageUrl: '',
+	}
+	emit('update:background', {
+		...props.background,
+		imageFileId: '',
+		imageUrl: '',
 	})
 }
 
-function openFilePicker() { uploadError.value = ''; fileInput.value?.click() }
-
-function onFileChange(event: Event) {
-	const input = event.target as HTMLInputElement
-	const file = input.files?.[0]
-	input.value = ''
-	if (!file) return
-	if (!file.type.startsWith('image/')) { uploadError.value = '请选择图片文件'; return }
-	if (file.size > 8 * 1024 * 1024) { uploadError.value = '图片不能超过 8MB'; return }
-	const reader = new FileReader()
-	reader.onload = () => {
-		if (typeof reader.result !== 'string') return
-		uploadError.value = ''
-		handleModelUpdate({ imageUrl: reader.result })
+async function hydrateBackgroundImage(fileId: string) {
+	const request = ++previewRequest
+	uploadError.value = ''
+	try {
+		const result = await host.getServiceApi().invoke<{
+			download?: { signedUrl?: unknown }
+		}>('files', 'runAction', {
+			resource: 'file_objects',
+			operation: 'getDownloadUrl',
+			fileId,
+			expiresInSeconds: 86400,
+		})
+		if (request !== previewRequest) return
+		const signedUrl = typeof result?.download?.signedUrl === 'string'
+			? result.download.signedUrl
+			: ''
+		if (!signedUrl) throw new Error('未获取到背景图预览地址。')
+		emit('update:background', {
+			...props.background,
+			imageFileId: fileId,
+			imageUrl: signedUrl,
+		})
+	} catch (error) {
+		if (request !== previewRequest) return
+		uploadError.value = error instanceof Error ? error.message : '背景图预览加载失败。'
 	}
-	reader.onerror = () => { uploadError.value = '图片读取失败' }
-	reader.readAsDataURL(file)
 }
 
-function clearImage() { uploadError.value = ''; handleModelUpdate({ imageUrl: '' }) }
+function getBackgroundFileId(background: WorkspaceBackgroundConfig) {
+	const explicit = String(background.imageFileId ?? '').trim()
+	if (isFileObjectId(explicit)) return explicit
+	const legacy = String(background.imageUrl ?? '').trim()
+	return isFileObjectId(legacy) ? legacy : ''
+}
+
+function readImageValue(value: unknown) {
+	const candidate = Array.isArray(value) ? value[0] : value
+	if (isRecord(candidate)) return String(candidate.fileId ?? candidate.id ?? candidate.url ?? '').trim()
+	return typeof candidate === 'string' ? candidate.trim() : ''
+}
+
+function isFileObjectId(value: string) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
 
 function normalizeBackgroundSchema(value: LowCodeFormSchema): LowCodeFormSchema {
 	return {
@@ -105,7 +170,10 @@ function normalizeBackgroundSchema(value: LowCodeFormSchema): LowCodeFormSchema 
 					fileTypes: [...IMAGE_TYPES],
 					multiple: false,
 					limitCount: 1,
+					showList: true,
+					showPreview: true,
 					previewType: 'image',
+					previewExpiresInSeconds: 86400,
 					buttonText: '选择图片',
 					buttonIcon: 'ri-image-add-line',
 				},
@@ -153,24 +221,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 				:schema="schema"
 				@update:model-value="handleModelUpdate"
 			/>
-			<div class="background-panel__actions">
-				<button type="button" class="background-panel__button background-panel__button--primary" @click="openFilePicker">
-					<i class="ri-image-add-line" aria-hidden="true" />
-					上传图片
-				</button>
-				<button type="button" class="background-panel__button" :disabled="!background.imageUrl" @click="clearImage">
-					<i class="ri-delete-bin-6-line" aria-hidden="true" />
-					清除
-				</button>
-			</div>
-			<input ref="fileInput" type="file" accept="image/*" hidden @change="onFileChange" />
 			<p v-if="uploadError" class="background-panel__error">{{ uploadError }}</p>
-			<div
-				v-if="background.imageUrl"
-				class="background-panel__image-preview"
-				:style="{ backgroundImage: `url(${JSON.stringify(background.imageUrl)})` }"
-				aria-label="背景图预览"
-			/>
 		</template>
 	</section>
 </template>

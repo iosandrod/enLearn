@@ -230,7 +230,10 @@ async function loadData(options: Record<string, any> = {}) {
   await setData(record);
   return getTemplateInfo();//
 }
-
+setTimeout(() => {
+  loadData({ templateId: '55f5c24e-14a8-435b-9a96-4a778f2ecf4e' }).catch((error) => {
+  });
+},500)
 async function save(options: Record<string, any> = {}) {
   if (options?.savedRecord && typeof options.savedRecord === 'object') {
     const result = options.savedRecord;

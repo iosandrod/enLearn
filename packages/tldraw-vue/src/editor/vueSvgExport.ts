@@ -5,7 +5,6 @@ import {
 	type Editor,
 	type SvgExportContext,
 	type SvgExportNode,
-	type SvgExportStyle,
 	type SvgExportChild,
 	type TLShapeId,
 } from '@tldraw/editor'
@@ -30,7 +29,6 @@ import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
 import type { VueResumeSectionShape, VueResumeShape } from './extensions/resume/vueResumeShape'
 
-const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 const VUE_VISIBLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_GRID_COLOR = '#d1d5db'
@@ -154,21 +152,26 @@ export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNo
 
 export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExportNode {
 	const fontSize = getVueFontSize(editor, shape.props.size)
-	const textStyle: SvgExportStyle = {
-		boxSizing: 'border-box',
-		display: 'block',
-		width: `${shape.props.w}px`,
-		height: `${shape.props.h}px`,
-		padding: '0',
-		color: getVueThemeColor(editor, shape.props.color, 'solid'),
-		fontFamily: getVueFontFamily(editor, shape.props.font),
-		fontSize: `${fontSize}px`,
-		lineHeight: String(editor.getCurrentTheme().lineHeight),
-		whiteSpace: 'pre-wrap',
-		wordBreak: 'break-word',
-		overflowWrap: 'anywhere',
-		overflow: 'hidden',
-	}
+	const lineHeight = Math.max(fontSize, Math.ceil(fontSize * editor.getCurrentTheme().lineHeight))
+	// Keep the glyph ink away from the export bounds. SVG text can have a small
+	// right-side overhang even when its measured advance width fits exactly.
+	const horizontalPadding = 2
+	const verticalPadding = 1
+	const lines = wrapVueTextForSvg(
+		shape.props.text,
+		Math.max(1, shape.props.w - horizontalPadding * 2),
+		fontSize
+	)
+	const textChildren = lines.map((line, index) =>
+		createElement(
+			'tspan',
+			{
+				x: horizontalPadding,
+				y: verticalPadding + fontSize + index * lineHeight,
+			},
+			line || '\u00a0'
+		)
+	)
 
 	return createElement(
 		'g',
@@ -180,12 +183,17 @@ export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExport
 			...getOptionalBorderSvgProps(shape),
 		}),
 		createElement(
-			'foreignObject',
+			'text',
 			{
-				width: shape.props.w,
-				height: shape.props.h,
+				x: horizontalPadding,
+				y: verticalPadding + fontSize,
+				fill: getVueThemeColor(editor, shape.props.color, 'solid'),
+				fontFamily: getVueFontFamily(editor, shape.props.font),
+				fontSize,
+				dominantBaseline: 'alphabetic',
+				pointerEvents: 'none',
 			},
-			createElement('div', { xmlns: XHTML_NAMESPACE, style: textStyle }, shape.props.text)
+			textChildren
 		)
 	)
 }
@@ -373,7 +381,7 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 		let cellX = 0
 		for (const [columnIndex, column] of columns.entries()) {
 			const cellWidth = columnWidths[columnIndex] ?? 0
-			const text = fitVueTableCellText(row?.[column.field] ?? '', cellWidth)
+			const text = fitVueTableCellText(row?.[column.field] ?? '', cellWidth, 12, 8)
 			if (text) {
 				gridChildren.push(
 					createElement(
@@ -428,36 +436,13 @@ export function createVueMaterialSvg(shape: VueMaterialSvgShape): SvgExportNode 
 export function createVueMaterialSectionSvg(shape: VueMaterialSectionSvgShape): SvgExportNode {
 	const width = Math.max(1, shape.props.w)
 	const height = Math.max(1, shape.props.h)
-	const zone = shape.props.zone
-	const isTableBody = zone === 'tableBody'
-	const children: SvgExportChild[] = [
-		createElement('rect', {
-			width,
-			height,
-			fill: '#ffffff',
-			stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
-			strokeWidth: 1,
-		}),
-	]
 
-	if (isTableBody) {
-		const override = vueMaterialPrintTableOverrides.get(shape.id)
-		children.push(
-			override
-				? createVueMaterialPrintTableSvg(shape.id, width, height, override)
-				: createVueMaterialPlaceholderTableSvg(shape.id, width, height)
-		)
-	} else {
-		children.push(
-			createCenteredSvgText(shape.props.label, width, height, {
-				fill: '#9aa1ac',
-				fontSize: 15,
-				fontWeight: 500,
-			})
-		)
-	}
+	if (shape.props.zone !== 'tableBody') return createElement('g', null)
 
-	return createElement('g', null, children)
+	const override = vueMaterialPrintTableOverrides.get(shape.id)
+	return override
+		? createVueMaterialPrintTableSvg(shape.id, width, height, override)
+		: createVueMaterialPlaceholderTableSvg(shape.id, width, height)
 }
 
 function createVueMaterialPlaceholderTableSvg(
@@ -526,7 +511,7 @@ function createVueMaterialPlaceholderTableSvg(
 					dominantBaseline: 'middle',
 					pointerEvents: 'none',
 				},
-				fitVueTableCellText(columnLabels[index] ?? '', columnWidth)
+				fitVueTableCellText(columnLabels[index] ?? '', columnWidth, 13, 8)
 			)
 		)
 		x += columnWidth
@@ -603,7 +588,7 @@ function createVueMaterialPrintTableSvg(
 					dominantBaseline: 'middle',
 					pointerEvents: 'none',
 				},
-				fitVueTableCellText(column.label, columnWidth)
+				fitVueTableCellText(column.label, columnWidth, override.fontSize, override.paddingX)
 			)
 		)
 		x += columnWidth
@@ -629,7 +614,7 @@ function createVueMaterialPrintTableSvg(
 						x: cellX + override.paddingX,
 						dy: lineIndex === 0 ? 0 : override.lineHeight,
 					},
-					fitVueTableCellText(line, columnWidth)
+						fitVueTableCellText(line, columnWidth, override.fontSize, override.paddingX)
 				)
 			)
 
@@ -682,7 +667,18 @@ function createVueMaterialPrintTableSvg(
 				clipPath: `url(#${clipId})`,
 			},
 			children
-		)
+		),
+		createElement('rect', {
+			x: 0.5,
+			y: 0.5,
+			width: Math.max(0, width - 1),
+			height: Math.max(0, renderedHeight - 1),
+			fill: 'none',
+			stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
+			strokeWidth: 1,
+			strokeDasharray: 'none',
+			vectorEffect: 'non-scaling-stroke',
+		})
 	)
 }
 
@@ -826,16 +822,63 @@ function createVueTableGridLine(x1: number, y1: number, x2: number, y2: number) 
 		y2,
 		stroke: VUE_MATERIAL_TABLE_GRID_COLOR,
 		strokeWidth: 1,
+		strokeDasharray: 'none',
 		vectorEffect: 'non-scaling-stroke',
 	})
 }
 
-function fitVueTableCellText(value: string, width: number) {
-	const maxChars = Math.max(0, Math.floor((width - 12) / 7))
-	if (maxChars <= 0) return ''
-	if (value.length <= maxChars) return value
-	if (maxChars <= 3) return value.slice(0, maxChars)
-	return `${value.slice(0, maxChars - 3)}...`
+function wrapVueTextForSvg(text: string, width: number, fontSize: number) {
+	const lines: string[] = []
+
+	for (const paragraph of String(text ?? '').replace(/\r\n?/g, '\n').split('\n')) {
+		if (!paragraph) {
+			lines.push('')
+			continue
+		}
+
+		let line = ''
+		for (const character of paragraph) {
+			const candidate = `${line}${character}`
+			if (line && getApproximateSvgTextWidth(candidate, fontSize) > width) {
+				lines.push(line)
+				line = character
+			} else {
+				line = candidate
+			}
+		}
+		lines.push(line)
+	}
+
+	return lines.length ? lines : ['']
+}
+
+function getApproximateSvgTextWidth(text: string, fontSize: number) {
+	let width = 0
+	for (const character of text) {
+		if (/\s/u.test(character)) width += fontSize * 0.33
+		else if (/^[\x00-\x7F]$/u.test(character)) width += fontSize * 0.56
+		else width += fontSize
+	}
+	return width
+}
+
+function fitVueTableCellText(value: string, width: number, fontSize = 12, paddingX = 8) {
+	const text = String(value ?? '')
+	const availableWidth = Math.max(0, width - paddingX * 2 - 2)
+	if (!text || availableWidth <= 0) return ''
+	if (getApproximateSvgTextWidth(text, fontSize) <= availableWidth) return text
+
+	const ellipsis = '...'
+	const ellipsisWidth = getApproximateSvgTextWidth(ellipsis, fontSize)
+	if (availableWidth <= ellipsisWidth) return ''
+
+	let fitted = ''
+	for (const character of text) {
+		const candidate = `${fitted}${character}`
+		if (getApproximateSvgTextWidth(`${candidate}${ellipsis}`, fontSize) > availableWidth) break
+		fitted = candidate
+	}
+	return fitted ? `${fitted}${ellipsis}` : ''
 }
 
 function createBoxMarkSvg(
