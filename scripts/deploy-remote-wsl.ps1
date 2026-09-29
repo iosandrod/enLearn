@@ -12,6 +12,7 @@ $composeFile = '/mnt/c/project/enLearn/docker-compose.yml'
 $envFile = '/mnt/c/project/enLearn/.env.production'
 $projectDir = '/mnt/c/project/enLearn'
 $hostForwardPort = 18081
+$localhostWebPort = 8081
 
 if (-not (Test-Path -LiteralPath $wsl)) {
   throw "WSL executable not found: $wsl"
@@ -37,11 +38,26 @@ function Invoke-Compose {
 
 function Ensure-WindowsPortProxy {
   Write-Host 'Refreshing Windows HTTP port forwarding...' -ForegroundColor Cyan
+  & $wsl -d $Distro -u root -e bash -lc 'systemctl restart enlearn-host-tunnel.service'
+  if ($LASTEXITCODE -ne 0) {
+    throw 'Could not restart the WSL-to-Windows HTTP tunnel.'
+  }
+
+  Start-Sleep -Seconds 3
   & netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=80 2>$null
   & netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=80 connectaddress=127.0.0.1 connectport=$hostForwardPort
   if ($LASTEXITCODE -ne 0) {
     throw 'Could not configure Windows port 80 forwarding.'
   }
+
+  & netsh interface portproxy delete v4tov4 listenaddress=127.0.0.1 listenport=$localhostWebPort 2>$null
+  & netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=$localhostWebPort connectaddress=127.0.0.1 connectport=$hostForwardPort
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not configure Windows localhost:$localhostWebPort forwarding."
+  }
+
+  & netsh interface portproxy delete v6tov4 listenaddress=::1 listenport=$localhostWebPort 2>$null
+  & netsh interface portproxy add v6tov4 listenaddress=::1 listenport=$localhostWebPort connectaddress=127.0.0.1 connectport=$hostForwardPort 2>$null
 }
 
 Write-Host "Checking WSL and Docker..." -ForegroundColor Cyan
@@ -68,6 +84,14 @@ Write-Host 'Checking internal HTTP endpoints...' -ForegroundColor Cyan
 & $wsl -d $Distro -e bash -lc "curl -fsS -o /dev/null http://127.0.0.1:8081/ && curl -fsS -o /dev/null http://127.0.0.1:8030/healthcheck"
 if ($LASTEXITCODE -ne 0) {
   throw 'Internal web or Trigger health check failed.'
+}
+
+try {
+  $localResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:$localhostWebPort/" -TimeoutSec 10
+  if ($localResponse.StatusCode -ne 200) { throw "HTTP $($localResponse.StatusCode)" }
+  Write-Host "Windows localhost:$localhostWebPort returned HTTP $($localResponse.StatusCode)." -ForegroundColor Green
+} catch {
+  throw "Windows localhost:$localhostWebPort check failed: $($_.Exception.Message)"
 }
 
 if ($PublicUrl) {
