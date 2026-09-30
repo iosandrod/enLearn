@@ -9,11 +9,15 @@ import type {
 import { isShapeId, type Editor, type TLShape, type TLShapePartial } from '@tldraw/editor'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
+	getVueMaterialSectionHeightModel,
 	getVueMaterialVisibilityModel,
+	getVueMaterialSections,
 	normalizeVueMaterialSections,
 	updateVueMaterialShapeLayout,
 	type VueMaterialShape,
 } from '@/editor/extensions/material/vueMaterialShape'
+import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
+import type { PrintDataSourceDetailTable } from '@/print/types'
 import {
 	getVueResumeSectionDefinition,
 	normalizeVueResumeSections,
@@ -49,6 +53,7 @@ const formDefinitionsLoading = ref(true)
 const formDefinitionError = ref('')
 const imageSourceError = ref('')
 const host = useLowCodeHost()
+const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const imageSourceCache = new Map<string, { src: string }>()
 const imageSourceRequests = new Map<string, Promise<{ src: string }>>()
 
@@ -82,8 +87,42 @@ const activeFormCode = computed(() =>
 )
 const activeSchema = computed(() => {
 	const code = activeFormCode.value
-	return code ? formDefinitions.value[code] ?? null : null
+	const schema = code ? formDefinitions.value[code] ?? null : null
+	if (!schema || activeFormCode.value !== propertyFormCode('vue-material')) return schema
+
+	const options = getMaterialDataSourceFieldOptions(editorPrintDataSource.value)
+	return {
+		...schema,
+		fields: schema.fields.map((field) =>
+			field.field === 'dataSourceField'
+				? { ...field, component: 'vxe-select', options, props: { ...(field.props ?? {}), clearable: false } }
+				: field
+		),
+	}
 })
+
+function getMaterialDataSourceFieldOptions(source: VueTemplateWorkspaceConfig['printDataSource']): LowCodeOption[] {
+	if (!source || source.type !== 'inline' || !source.formCode) {
+		return [{ label: '未设置数据源', value: '' }]
+	}
+	const tables = getPrintDataSourceDetailTablesFromSource(source)
+	return tables.length
+		? tables.map((table) => ({ label: table.label || table.field, value: table.field }))
+		: [{ label: '未设置明细表', value: '' }]
+}
+
+function getPrintDataSourceDetailTablesFromSource(source: VueTemplateWorkspaceConfig['printDataSource']) {
+	if (!source || source.type !== 'inline') return []
+	if (Array.isArray(source.detailTables) && source.detailTables.length) {
+		return source.detailTables as readonly PrintDataSourceDetailTable[]
+	}
+	const detailField = typeof source.detailField === 'string' ? source.detailField : ''
+	const detailColumns = Array.isArray(source.detailColumns) ? source.detailColumns : []
+	if (detailField && detailColumns.length) {
+		return [{ id: detailField, field: detailField, label: detailField, columns: detailColumns }]
+	}
+	return []
+}
 const imagePropertySchema = computed(() =>
 	formDefinitions.value[propertyFormCode('vue-image')] ?? null
 )
@@ -122,9 +161,8 @@ const formKey = computed(() => {
 })
 
 function handleModelUpdate(value: ShapeFormModel) {
-	formModel.value = value
-
 	if (isCanvasFormActive.value) {
+		formModel.value = value
 		if (!props.editor.getIsReadonly()) {
 			applyWorkspaceFormModel(value)
 		}
@@ -132,8 +170,13 @@ function handleModelUpdate(value: ShapeFormModel) {
 	}
 
 	const shape = selectedShape.value
+	const modelShapeId = typeof value.shapeId === 'string' ? value.shapeId : ''
+	if (!shape || modelShapeId !== shape.id) return
+
+	formModel.value = value
+
 	const descriptor = activeDescriptor.value
-	if (!shape || !descriptor || props.editor.getIsReadonly()) return
+	if (!descriptor || props.editor.getIsReadonly()) return
 
 	descriptor.apply(props.editor, shape, value)
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
@@ -504,6 +547,13 @@ const materialVisibilityFields = [
 	switchField('showPageFooter', '显示页尾'),
 ] satisfies LowCodeField[]
 
+const materialHeightFields = [
+	numberField('pageHeaderHeight', '页头高度', { min: 0, step: 1 }),
+	numberField('tableHeaderHeight', '表头高度', { min: 0, step: 1 }),
+	numberField('tableFooterHeight', '表尾高度', { min: 0, step: 1 }),
+	numberField('pageFooterHeight', '页尾高度', { min: 0, step: 1 }),
+] satisfies LowCodeField[]
+
 const resumeZoneOptions = [
 	{ label: '简历页头', value: 'pageHeader' },
 	{ label: '自动填充内容', value: 'content' },
@@ -686,6 +736,8 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			numberField('w', '宽度', { min: 280, step: 1 }),
 			numberField('h', '高度', { min: 272, step: 1 }),
 			inputField('name', '物料名称'),
+			selectField('dataSourceField', '数据源字段', []),
+			...materialHeightFields,
 			...materialVisibilityFields,
 		]),
 		toModel(shape) {
@@ -693,11 +745,22 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 				...getCommonModel(shape),
 				...getFlatPropsModel(shape),
 				...getVueMaterialVisibilityModel(shape as VueMaterialShape),
+				dataSourceField: String(getProps(shape).dataSourceField ?? ''),
+				...getVueMaterialSectionHeightModel(props.editor, shape.id),
 			}
 		},
 		apply(editor, shape, model) {
 			const partial = getCommonPartial(shape, model)
 			const currentMeta = (shape.meta as Record<string, unknown> | undefined) ?? {}
+			const currentHeightCache = currentMeta.__materialSectionHeights &&
+				typeof currentMeta.__materialSectionHeights === 'object'
+				? currentMeta.__materialSectionHeights as Record<string, unknown>
+				: {}
+			const visibleHeightCache = Object.fromEntries(
+				getVueMaterialSections(editor, shape.id)
+					.filter((section) => section.props.zone !== 'tableBody' && section.props.h > 0)
+					.map((section) => [section.props.zone, section.props.h])
+			)
 			editor.run(() => {
 				editor.updateShape({
 					id: partial.id,
@@ -707,6 +770,10 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 					isLocked: partial.isLocked,
 					meta: {
 						...currentMeta,
+						__materialSectionHeights: {
+							...currentHeightCache,
+							...visibleHeightCache,
+						},
 						showPageHeader: Boolean(model.showPageHeader),
 						showTableHeader: Boolean(model.showTableHeader),
 						showTableFooter: Boolean(model.showTableFooter),
@@ -714,6 +781,9 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 					},
 					props: {
 						name: String(model.name ?? getProps(shape).name ?? ''),
+						dataSourceField: String(
+							model.dataSourceField ?? getProps(shape).dataSourceField ?? ''
+						),
 					},
 				} as TLShapePartial)
 				updateVueMaterialShapeLayout(editor, shape.id, {
@@ -722,6 +792,18 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 					w: clampNumber(model.w, 280, 4096, toFiniteNumber(getProps(shape).w, 500)),
 					h: clampNumber(model.h, 272, 4096, toFiniteNumber(getProps(shape).h, 500)),
 				})
+				normalizeVueMaterialSections(editor, shape.id, { fitToMaterialHeight: false })
+				const sections = getVueMaterialSections(editor, shape.id).filter(
+					(section) => section.props.zone !== 'tableBody'
+				)
+				const heightChanges = sections.map((section) => {
+					const value = Number(model[`${section.props.zone}Height`])
+					return Number.isFinite(value) && value > 0
+						? { id: section.id, type: 'vue-material-section', props: { h: value } }
+						: null
+				}).filter(Boolean) as TLShapePartial[]
+				if (heightChanges.length) editor.updateShapes(heightChanges)
+				normalizeVueMaterialSections(editor, shape.id, { fitToMaterialHeight: false })
 			})
 		},
 	},

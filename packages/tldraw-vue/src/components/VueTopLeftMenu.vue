@@ -473,16 +473,16 @@ function createMaterialGridConfigs(
 	const materialGrids: Record<string, PrintMaterialGridConfig> = {}
 	const hasConfiguredDataSource =
 		dataSource?.type === 'inline' && typeof dataSource.formCode === 'string'
-	const inlineDetail = hasConfiguredDataSource ? getPrintDataSourceDetailRows(dataSource) : null
-	const configuredColumns = hasConfiguredDataSource
-		? getPrintDataSourceDetailColumns(dataSource)
-		: []
-	const columns = configuredColumns.length ? configuredColumns : PRINT_MATERIAL_SAMPLE_COLUMNS
-	const data = inlineDetail ?? PRINT_MATERIAL_SAMPLE_ROWS
 
 	for (const shapeId of shapeIds) {
 		const shape = props.editor.getShape(shapeId)
 		if (!isVueMaterialShape(shape)) continue
+		const dataSourceField = String(shape.props.dataSourceField ?? '').trim()
+		const isBound = Boolean(hasConfiguredDataSource && dataSourceField)
+		const inlineDetail = isBound ? getPrintDataSourceDetailRows(dataSource, dataSourceField) : []
+		const configuredColumns = isBound ? getPrintDataSourceDetailColumns(dataSource, dataSourceField) : []
+		const columns = isBound && configuredColumns.length ? configuredColumns : (isBound ? [] : PRINT_MATERIAL_SAMPLE_COLUMNS)
+		const data = isBound ? inlineDetail : []
 		materialGrids[shape.id] = {
 			data,
 			columns,
@@ -492,7 +492,7 @@ function createMaterialGridConfigs(
 			lineHeight: 10,
 			cellPaddingX: 4,
 			cellPaddingY: 3,
-			emptyText: '暂无物料',
+			emptyText: isBound ? '暂无物料' : '未设置数据源',
 		}
 	}
 

@@ -38,6 +38,13 @@ const VISIBILITY_KEY_BY_ZONE: Partial<Record<VueMaterialSectionZone, VueMaterial
 	pageFooter: 'showPageFooter',
 }
 
+const FIXED_MATERIAL_SECTION_ZONES = new Set<VueMaterialSectionZone>([
+	'pageHeader',
+	'tableHeader',
+	'tableFooter',
+	'pageFooter',
+])
+
 export interface VueMaterialSectionDefinition {
 	zone: VueMaterialSectionZone
 	label: string
@@ -115,6 +122,7 @@ export type VueMaterialShape = TLBaseShape<
 		w: number
 		h: number
 		name: string
+		dataSourceField: string
 	}
 >
 
@@ -142,6 +150,7 @@ export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 		w: T.number,
 		h: T.number,
 		name: T.string,
+		dataSourceField: T.string.optional(),
 	}
 
 	override getDefaultProps(): VueMaterialShape['props'] {
@@ -149,6 +158,7 @@ export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 			w: 500,
 			h: getVueMaterialDefaultHeight(),
 			name: '物料节点',
+			dataSourceField: '',
 		}
 	}
 
@@ -343,7 +353,10 @@ export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSec
 	override onBeforeUpdate(_prev: VueMaterialSectionShape, next: VueMaterialSectionShape) {
 		const parent = getVueMaterialParent(this.editor, next)
 		const definition = getVueMaterialSectionDefinition(next.props.zone)
-		const h = Math.max(definition.minHeight, next.props.h)
+		const isHidden = parent ? !isVueMaterialSectionVisible(this.editor, next) : false
+		const h = isHidden || next.props.zone === 'tableBody'
+			? Math.max(0, next.props.h)
+			: Math.max(definition.minHeight, next.props.h)
 		const w = parent ? parent.props.w : Math.max(VUE_MATERIAL_MIN_WIDTH, next.props.w)
 		const x = parent ? 0 : next.x
 		const label = definition.label
@@ -445,6 +458,7 @@ export function createVueMaterialShapePartials({
 				w,
 				h,
 				name: '物料节点',
+				dataSourceField: '',
 			},
 		},
 		...VUE_MATERIAL_SECTION_DEFINITIONS.map((definition, index) => {
@@ -476,96 +490,68 @@ export function updateVueMaterialShapeLayout(
 	if (!isVueMaterialShape(material)) return
 
 	const w = Math.max(VUE_MATERIAL_MIN_WIDTH, rect.w)
-	const heights = fitVueMaterialSectionHeights(
-		Math.max(rect.h, getVueMaterialMinHeight()),
-		VUE_MATERIAL_SECTION_DEFINITIONS.map((definition) => definition.defaultHeight)
-	)
-	const h = sum(heights)
-	let y = 0
+	const h = Math.max(rect.h, getVueMaterialMinHeight())
 
-	const changes: TLShapePartial[] = [
-		{
-			id: material.id,
-			type: 'vue-material',
-			x: rect.x,
-			y: rect.y,
-			props: { w, h },
-		},
-	]
-
-	const sectionsByZone = getVueMaterialSectionsByZone(editor, material.id)
-	for (const [index, definition] of VUE_MATERIAL_SECTION_DEFINITIONS.entries()) {
-		const section = sectionsByZone.get(definition.zone)
-		if (section) {
-			changes.push({
-				id: section.id,
-				type: 'vue-material-section',
-				x: 0,
-				y,
-				props: {
-					w,
-					h: heights[index],
-					label: definition.label,
-				},
-			})
-		}
-		y += heights[index]
-	}
-
-	editor.updateShapes(changes)
+	editor.updateShape<VueMaterialShape>({
+		id: material.id,
+		type: 'vue-material',
+		x: rect.x,
+		y: rect.y,
+		props: { w, h },
+	})
+	normalizeVueMaterialSections(editor, material.id, { fitToMaterialHeight: true })
 }
 
 export function normalizeVueMaterialSections(
 	editor: Editor,
 	materialId: TLShapeId,
-	options: { fitToMaterialHeight?: boolean } = {}
+	_options: { fitToMaterialHeight?: boolean } = {}
 ) {
 	const material = editor.getShape<VueMaterialShape>(materialId)
 	if (!isVueMaterialShape(material)) return
 
 	const sectionsByZone = getVueMaterialSectionsByZone(editor, material.id)
+	const materialMeta = (material.meta as Record<string, unknown> | undefined) ?? {}
+	const cachedHeights = getVueMaterialCachedSectionHeights(material)
 	const targetWidth = Math.max(VUE_MATERIAL_MIN_WIDTH, material.props.w)
-	const seedHeights = VUE_MATERIAL_SECTION_DEFINITIONS.map((definition) => {
-		return sectionsByZone.get(definition.zone)?.props.h ?? definition.defaultHeight
-	})
-	const targetHeight = options.fitToMaterialHeight
-		? Math.max(material.props.h, getVueMaterialMinHeight())
-		: undefined
-	const heights = options.fitToMaterialHeight
-		? fitVueMaterialSectionHeights(targetHeight!, seedHeights)
-		: seedHeights.map((height, index) =>
-				Math.max(VUE_MATERIAL_SECTION_DEFINITIONS[index].minHeight, height)
-			)
-	const nextMaterialHeight = options.fitToMaterialHeight ? targetHeight! : sum(heights)
+	const nextCachedHeights = { ...cachedHeights }
+	delete nextCachedHeights.tableBody
+	const heightsByZone = new Map<VueMaterialSectionZone, number>()
 
-	if (
-		!approximatelyEqual(material.props.w, targetWidth) ||
-		!approximatelyEqual(material.props.h, nextMaterialHeight)
-	) {
-		editor.updateShape<VueMaterialShape>({
-			id: material.id,
-			type: 'vue-material',
-			props: {
-				w: targetWidth,
-				h: nextMaterialHeight,
-			},
-		})
+	for (const definition of VUE_MATERIAL_SECTION_DEFINITIONS) {
+		if (!FIXED_MATERIAL_SECTION_ZONES.has(definition.zone)) continue
+
+		const section = sectionsByZone.get(definition.zone)
+		const cached = Number(cachedHeights[definition.zone])
+		const configuredHeight = section?.props.h && section.props.h > 0
+			? section.props.h
+			: Number.isFinite(cached) && cached > 0 ? cached : definition.defaultHeight
+		nextCachedHeights[definition.zone] = configuredHeight
+
+		const visibilityKey = VISIBILITY_KEY_BY_ZONE[definition.zone]
+		const visible = !visibilityKey || materialMeta[visibilityKey] !== false
+		heightsByZone.set(
+			definition.zone,
+			visible ? Math.max(definition.minHeight, configuredHeight) : 0
+		)
 	}
 
-	const existingMaterial = editor.getShape<VueMaterialShape>(material.id) ?? material
+	const fixedHeight = sum([...heightsByZone.values()])
+	heightsByZone.set('tableBody', Math.max(0, material.props.h - fixedHeight))
+
 	let y = 0
 	const changes: TLShapePartial[] = []
 	const missingSections: TLShapePartial<VueMaterialSectionShape>[] = []
 
-	for (const [index, definition] of VUE_MATERIAL_SECTION_DEFINITIONS.entries()) {
+	for (const definition of VUE_MATERIAL_SECTION_DEFINITIONS) {
 		const section = sectionsByZone.get(definition.zone)
-		const h = heights[index]
+		const h = heightsByZone.get(definition.zone) ?? 0
 
 		if (!section) {
 			missingSections.push({
 				id: createShapeId(),
 				type: 'vue-material-section',
-				parentId: existingMaterial.id,
+				parentId: material.id,
 				x: 0,
 				y,
 				props: {
@@ -598,12 +584,28 @@ export function normalizeVueMaterialSections(
 		y += h
 	}
 
-	if (missingSections.length > 0) {
-		editor.createShapes<VueMaterialSectionShape>(missingSections)
-	}
-	if (changes.length > 0) {
-		editor.updateShapes(changes)
-	}
+	runWithVueMaterialPrintLayoutUpdates(() => {
+		if (!approximatelyEqual(material.props.w, targetWidth)) {
+			editor.updateShape<VueMaterialShape>({
+				id: material.id,
+				type: 'vue-material',
+				props: { w: targetWidth },
+			})
+		}
+		if (JSON.stringify(nextCachedHeights) !== JSON.stringify(cachedHeights)) {
+			editor.updateShape({
+				id: material.id,
+				type: 'vue-material',
+				meta: { ...materialMeta, __materialSectionHeights: nextCachedHeights },
+			} as TLShapePartial)
+		}
+		if (missingSections.length > 0) {
+			editor.createShapes<VueMaterialSectionShape>(missingSections)
+		}
+		if (changes.length > 0) {
+			editor.updateShapes(changes)
+		}
+	})
 }
 
 export function reparentShapesIntoVueMaterialSections(editor: Editor, materialId: TLShapeId) {
@@ -659,6 +661,28 @@ export function getVueMaterialSections(editor: Editor, materialId: TLShapeId) {
 				(SECTION_ORDER_BY_ZONE.get(a.props.zone) ?? 0) -
 				(SECTION_ORDER_BY_ZONE.get(b.props.zone) ?? 0)
 		)
+}
+
+export function getVueMaterialSectionHeightModel(editor: Editor, materialId: TLShapeId) {
+	const material = editor.getShape<VueMaterialShape>(materialId)
+	if (!isVueMaterialShape(material)) return {}
+
+	const cachedHeights = getVueMaterialCachedSectionHeights(material)
+	const sectionsByZone = getVueMaterialSectionsByZone(editor, material.id)
+	return Object.fromEntries(
+		VUE_MATERIAL_SECTION_DEFINITIONS
+			.filter((definition) => FIXED_MATERIAL_SECTION_ZONES.has(definition.zone))
+			.map((definition) => {
+				const sectionHeight = sectionsByZone.get(definition.zone)?.props.h ?? 0
+				const cachedHeight = Number(cachedHeights[definition.zone])
+				const height = sectionHeight > 0
+					? sectionHeight
+					: Number.isFinite(cachedHeight) && cachedHeight > 0
+						? cachedHeight
+						: definition.defaultHeight
+				return [definition.zone + 'Height', height]
+			})
+	)
 }
 
 export function canVueMaterialSectionReceiveChildren(section: VueMaterialSectionShape) {
@@ -731,6 +755,13 @@ function getVueMaterialSectionsByZone(editor: Editor, materialId: TLShapeId) {
 	}
 
 	return sectionsByZone
+}
+
+function getVueMaterialCachedSectionHeights(material: VueMaterialShape) {
+	const meta = (material.meta as Record<string, unknown> | undefined) ?? {}
+	return meta.__materialSectionHeights && typeof meta.__materialSectionHeights === 'object'
+		? meta.__materialSectionHeights as Record<string, unknown>
+		: {}
 }
 
 function getVueMaterialParent(editor: Editor, shape: VueMaterialSectionShape) {

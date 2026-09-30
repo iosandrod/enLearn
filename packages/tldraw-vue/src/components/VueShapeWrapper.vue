@@ -16,7 +16,7 @@ const pageTransform = useEditorValue(`shape page transform:${props.shape.id}`, (
 	Mat.toCssString(props.editor.getShapePageTransform(props.shape))
 )
 const shapeComponent = computed(() => getVueShapeComponent(props.shape.type))
-const isVisible = computed(() => {
+const isVisible = useEditorValue(`shape visibility:${props.shape.id}`, () => {
 	let current: TLShape | undefined = props.shape
 	while (current && current.parentId !== props.editor.getCurrentPageId()) {
 		if (isVueMaterialSectionShape(current) && !isVueMaterialSectionVisible(props.editor, current)) {

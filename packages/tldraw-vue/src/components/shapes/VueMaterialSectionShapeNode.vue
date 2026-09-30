@@ -12,17 +12,50 @@ import {
 	type VueMaterialSectionShape,
 } from '@/editor/extensions/material/vueMaterialShape'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
+import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
 
 const props = defineProps<VueShapeNodeProps<VueMaterialSectionShape>>()
 
 const isTableBody = computed(() => props.shape.props.zone === 'tableBody')
 const printDataSource = getEditorPrintDataSource(props.editor)
-const previewColumns = computed(() => getPrintDataSourceDetailColumns(printDataSource.value))
+const materialShape = useEditorValue(
+	`material parent shape:${props.shape.id}`,
+	() => props.editor.getShape(props.shape.parentId)
+)
+const dataSourceField = computed(() =>
+	isVueMaterialShape(materialShape.value) ? materialShape.value.props.dataSourceField : ''
+)
+const availableDataSourceFields = computed(() => {
+	const source = printDataSource.value
+	if (!source || source.type !== 'inline') return []
+	const tableFields = Array.isArray(source.detailTables)
+		? source.detailTables
+			.map((table) => (typeof table?.field === 'string' ? table.field : ''))
+			.filter(Boolean)
+		: []
+	if (tableFields.length) return tableFields
+	return typeof source.detailField === 'string' && source.detailField ? [source.detailField] : []
+})
+const hasConfiguredDataSource = computed(() =>
+	printDataSource.value?.type === 'inline' &&
+	Boolean(printDataSource.value.formCode) &&
+	Boolean(dataSourceField.value) &&
+	availableDataSourceFields.value.includes(dataSourceField.value)
+)
+const previewColumns = computed(() =>
+	hasConfiguredDataSource.value
+		? getPrintDataSourceDetailColumns(printDataSource.value, dataSourceField.value)
+		: []
+)
 const previewGridTemplate = computed(() =>
 	previewColumns.value.map((column) => `minmax(0, ${column.width ?? 100}fr)`).join(' ')
 )
-const previewRows = computed(() => getPrintDataSourceDetailRows(printDataSource.value))
+const previewRows = computed(() =>
+	hasConfiguredDataSource.value
+		? getPrintDataSourceDetailRows(printDataSource.value, dataSourceField.value)
+		: []
+)
 const visiblePreviewRows = computed(() => {
 	const availableHeight = Math.max(0, props.shape.props.h - 36)
 	const maxRows = Math.max(1, Math.floor(availableHeight / 28))
@@ -160,7 +193,7 @@ function formatPreviewValue(row: Record<string, unknown>, field: string) {
 		class="vue-material-section-shape"
 		:class="[
 			`vue-material-section-shape--${shape.props.zone}`,
-			{ 'is-selected': selected, 'is-table-body': isTableBody },
+			{ 'is-selected': selected, 'is-table-body': isTableBody, 'is-zero-height': shape.props.h <= 0 },
 		]"
 		:data-shape-id="shape.id"
 		:style="{
@@ -188,7 +221,7 @@ function formatPreviewValue(row: Record<string, unknown>, field: string) {
 				</div>
 			</div>
 			<div v-else class="vue-material-table-fill">
-				<span>暂无 Detail 预览数据</span>
+				<span>{{ hasConfiguredDataSource ? '暂无明细数据' : '未设置数据源' }}</span>
 			</div>
 		</template>
 		<div v-else class="vue-material-section-label">{{ shape.props.label }}</div>

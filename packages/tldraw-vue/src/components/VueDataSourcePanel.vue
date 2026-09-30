@@ -185,7 +185,7 @@ const panelSubtitle = computed(() => {
 let definitionRequestRevision = 0
 
 function notifyAction(action: DataSourceAction) {
-	emit('data-source-action', action)
+	emit('data-source-action', action)//
 	if (typeof window !== 'undefined') {
 		window.dispatchEvent(new CustomEvent('enlearn:print-data-source-action', {
 			detail: {
