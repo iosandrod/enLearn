@@ -1,9 +1,8 @@
 import { BaseBoxShapeUtil } from '@tldraw/editor'
 import type { TLBaseShape } from '@tldraw/tlschema'
-import { T } from '@tldraw/validate'
 import { createVueBarcodeSvg } from './vueBarcodeSvgExport'
 import { baseProps, type BaseProps } from '../../shapeProps/base'
-import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueBarcodePropertyRegistry } from '../../shapeProps/vueBarcode'
 import { vueBarcodeDefaultProps } from '../../defaults'
 
 export type VueBarcodeFormat = 'code128' | 'code39' | 'ean13' | 'ean8' | 'upca'
@@ -30,15 +29,7 @@ declare module '@tldraw/tlschema' {
 export class VueBarcodeShapeUtil extends BaseBoxShapeUtil<VueBarcodeShape> {
 	static override type = 'vue-barcode' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		text: T.string,
-		format: T.literalEnum('code128', 'code39', 'ean13', 'ean8', 'upca'),
-		barColor: T.string,
-		background: T.string,
-		includeText: T.boolean,
-		padding: T.number,
-		showBorder: T.boolean.optional(),
-	}).validators
+	static override props = vueBarcodePropertyRegistry.validators
 
 	override getDefaultProps(): VueBarcodeShape['props'] {
 		return {

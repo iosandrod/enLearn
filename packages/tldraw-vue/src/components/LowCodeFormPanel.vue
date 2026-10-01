@@ -41,6 +41,7 @@ import {
 } from '@/editor/extensions/resume/vueResumeShape'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
 import { useEditorValue } from '@/vue/useEditorValue'
+import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 
 type ShapeFormModel = Record<string, unknown>
 
@@ -65,6 +66,8 @@ const props = withDefaults(
 )
 
 const formModel = ref<ShapeFormModel>({})
+let skipNextMultiModelChange = false
+let previousMultiFormModel: ShapeFormModel = {}
 const formDefinitions = ref<Record<string, LowCodeFormSchema>>({})
 const formDefinitionsLoading = ref(true)
 const formDefinitionError = ref('')
@@ -85,6 +88,16 @@ const selectedShape = useEditorValue('lowcode form selected shape', () => {
 	if (ids.length !== 1) return null
 	return props.editor.getShape(ids[0]) ?? null
 })
+const selectedShapes = computed(() =>
+	selectedShapeIds.value
+		.map((id) => props.editor.getShape(id))
+		.filter((shape): shape is TLShape => Boolean(shape))
+)
+const multiSelectedShapeType = computed(() => {
+	if (selectedShapes.value.length < 2) return null
+	const type = selectedShapes.value[0].type
+	return selectedShapes.value.every((shape) => shape.type === type) ? type : null
+})
 const workspaceCamera = useEditorValue('lowcode form workspace camera', () => props.editor.getCamera())
 const uploadedImageShapeKeys = useEditorValue('uploaded image shape keys', () =>
 	props.editor.getCurrentPageShapes()
@@ -99,8 +112,13 @@ const uploadedImageShapeKeys = useEditorValue('uploaded image shape keys', () =>
 )
 
 const isCanvasFormActive = computed(() => selectedShapeIds.value.length === 0)
+const isMultiShapeFormActive = computed(() => multiSelectedShapeType.value !== null)
 const activeDescriptor = computed(() =>
-	selectedShape.value ? getShapeFormDescriptor(selectedShape.value.type) : null
+	selectedShape.value
+		? getShapeFormDescriptor(selectedShape.value.type)
+		: multiSelectedShapeType.value
+			? getShapeFormDescriptor(multiSelectedShapeType.value)
+			: null
 )
 const activeFormCode = computed(() =>
 	isCanvasFormActive.value ? workspaceFormDescriptor.formCode : activeDescriptor.value?.formCode ?? null
@@ -148,7 +166,7 @@ const imagePropertySchema = computed(() =>
 )
 const panelTitle = computed(() => {
 	if (isCanvasFormActive.value) return workspaceFormDescriptor.title
-	if (selectedShapeIds.value.length === 0) return '低代码属性表单'
+	if (isMultiShapeFormActive.value) return `${activeDescriptor.value?.title ?? '节点'} · 批量属性`
 	if (selectedShapeIds.value.length > 1) return '多选属性'
 	return activeDescriptor.value?.title ?? '未知节点'
 })
@@ -167,7 +185,9 @@ const panelSubtitle = computed(() => {
 	return `${getShapeTypeLabel(shape.type)} · ${shape.id}`
 })
 const emptyMessage = computed(() => {
-	if (selectedShapeIds.value.length > 1) return '当前选择了多个节点，请只选择一个节点'
+	if (selectedShapeIds.value.length > 1 && !isMultiShapeFormActive.value) {
+		return '当前选择的节点类型不同，无法批量编辑属性'
+	}
 	if (!activeDescriptor.value && !isCanvasFormActive.value) return '当前节点类型暂未配置表单'
 	if (!formDefinitionsLoading.value && !formDefinitionError.value && !activeSchema.value) {
 		return `未找到属性表单：${activeFormCode.value ?? '未知表单'}`
@@ -177,7 +197,11 @@ const emptyMessage = computed(() => {
 const formKey = computed(() => {
 	if (isCanvasFormActive.value) return 'workspace'
 	const shape = selectedShape.value
-	return shape ? `${shape.id}:${shape.type}` : 'empty'
+	if (shape) return `${shape.id}:${shape.type}`
+	if (isMultiShapeFormActive.value) {
+		return `multi:${multiSelectedShapeType.value}:${selectedShapeIds.value.join(',')}`
+	}
+	return 'empty'
 })
 
 const designSchema = computed(() => {
@@ -245,6 +269,11 @@ function handleModelUpdate(value: ShapeFormModel) {
 		if (!props.editor.getIsReadonly()) {
 			applyWorkspaceFormModel(value)
 		}
+		return
+	}
+
+	if (isMultiShapeFormActive.value) {
+		formModel.value = value
 		return
 	}
 
@@ -537,6 +566,18 @@ const fontOptions = [
 	{ label: '等宽', value: 'mono' },
 ] satisfies LowCodeOption[]
 
+const textJustifyContentOptions = [
+	{ label: '居左', value: 'start' },
+	{ label: '居中', value: 'center' },
+	{ label: '居右', value: 'end' },
+] satisfies LowCodeOption[]
+
+const textAlignItemsOptions = [
+	{ label: '居上', value: 'start' },
+	{ label: '居中', value: 'center' },
+	{ label: '居下', value: 'end' },
+] satisfies LowCodeOption[]
+
 const qrLevelOptions = [
 	{ label: 'L - 低', value: 'L' },
 	{ label: 'M - 中', value: 'M' },
@@ -614,6 +655,8 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		selectField('color', '颜色', colorOptions),
 		selectField('font', '字体', fontOptions),
 		selectField('size', '字号', sizeOptions),
+		selectField('justifyContent', '水平对齐', textJustifyContentOptions),
+		selectField('alignItems', '垂直对齐', textAlignItemsOptions),
 		switchField('autoSize', '自动尺寸'),
 		...borderVisibilityFields,
 	]),
@@ -675,19 +718,28 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			}
 		},
 		apply(editor, shape, model) {
-			const size = clampNumber(model.qrSize, 24, 4096, toFiniteNumber(getProps(shape).w, 180))
+			const currentProps = getProps(shape)
+			const propsPartial: Record<string, unknown> = {}
+			if ('qrSize' in model) {
+				const size = clampNumber(model.qrSize, 24, 4096, toFiniteNumber(currentProps.w, 180))
+				propsPartial.w = size
+				propsPartial.h = size
+			}
+			if ('text' in model) propsPartial.text = String(model.text ?? '')
+			if ('color' in model) propsPartial.color = getOptionValue(model.color, colorOptions, currentProps.color ?? 'black')
+			if ('background' in model) propsPartial.background = String(model.background ?? '#ffffff')
+			if ('errorCorrectionLevel' in model) {
+				propsPartial.errorCorrectionLevel = getOptionValue(
+					model.errorCorrectionLevel,
+					qrLevelOptions,
+					currentProps.errorCorrectionLevel ?? 'M'
+				)
+			}
+			if ('margin' in model) propsPartial.margin = clampNumber(model.margin, 0, 24, toFiniteNumber(currentProps.margin, 4))
+			if ('showBorder' in model) propsPartial.showBorder = Boolean(model.showBorder)
 			editor.updateShape({
 				...getCommonPartial(shape, model),
-				props: {
-					w: size,
-					h: size,
-					text: String(model.text ?? ''),
-					color: getOptionValue(model.color, colorOptions, 'black'),
-					background: String(model.background ?? '#ffffff'),
-					errorCorrectionLevel: getOptionValue(model.errorCorrectionLevel, qrLevelOptions, 'M'),
-					margin: clampNumber(model.margin, 0, 24, 4),
-					showBorder: Boolean(model.showBorder),
-				},
+				...(Object.keys(propsPartial).length ? { props: propsPartial } : {}),
 			} as TLShapePartial)
 		},
 	},
@@ -720,19 +772,20 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			}
 		},
 		apply(editor, shape, model) {
+			const currentProps = getProps(shape)
+			const propsPartial: Record<string, unknown> = {}
+			if ('w' in model) propsPartial.w = clampNumber(model.w, 40, 4096, toFiniteNumber(currentProps.w, 240))
+			if ('h' in model) propsPartial.h = clampNumber(model.h, 24, 4096, toFiniteNumber(currentProps.h, 96))
+			if ('text' in model) propsPartial.text = String(model.text ?? '')
+			if ('format' in model) propsPartial.format = getOptionValue(model.format, barcodeFormatOptions, currentProps.format ?? 'code128')
+			if ('barColor' in model) propsPartial.barColor = String(model.barColor ?? '#000000')
+			if ('background' in model) propsPartial.background = String(model.background ?? '#ffffff')
+			if ('includeText' in model) propsPartial.includeText = Boolean(model.includeText)
+			if ('padding' in model) propsPartial.padding = clampNumber(model.padding, 0, 48, toFiniteNumber(currentProps.padding, 4))
+			if ('showBorder' in model) propsPartial.showBorder = Boolean(model.showBorder)
 			editor.updateShape({
 				...getCommonPartial(shape, model),
-				props: {
-					w: clampNumber(model.w, 40, 4096, 240),
-					h: clampNumber(model.h, 24, 4096, 96),
-					text: String(model.text ?? ''),
-					format: getOptionValue(model.format, barcodeFormatOptions, 'code128'),
-					barColor: String(model.barColor ?? '#000000'),
-					background: String(model.background ?? '#ffffff'),
-					includeText: Boolean(model.includeText),
-					padding: clampNumber(model.padding, 0, 48, 4),
-					showBorder: Boolean(model.showBorder),
-				},
+				...(Object.keys(propsPartial).length ? { props: propsPartial } : {}),
 			} as TLShapePartial)
 		},
 	},
@@ -768,6 +821,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		},
 		apply(editor, shape, model) {
 			const partial = getCommonPartial(shape, model)
+			const currentProps = getProps(shape)
 			const currentMeta = (shape.meta as Record<string, unknown> | undefined) ?? {}
 			const currentHeightCache = currentMeta.__materialSectionHeights &&
 				typeof currentMeta.__materialSectionHeights === 'object'
@@ -778,42 +832,47 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 					.filter((section) => section.props.zone !== 'tableBody' && section.props.h > 0)
 					.map((section) => [section.props.zone, section.props.h])
 			)
+			const shapePartial: TLShapePartial = { ...partial }
+			const metaPartial: Record<string, unknown> = {}
+			for (const key of ['showPageHeader', 'showTableHeader', 'showTableFooter', 'showPageFooter']) {
+				if (key in model) metaPartial[key] = Boolean(model[key])
+			}
+			if (Object.keys(metaPartial).length) {
+				shapePartial.meta = {
+					...currentMeta,
+					__materialSectionHeights: { ...currentHeightCache, ...visibleHeightCache },
+					...metaPartial,
+				} as TLShapePartial['meta']
+			}
+			const propsPartial: Record<string, unknown> = {}
+			if ('name' in model) propsPartial.name = String(model.name ?? currentProps.name ?? '')
+			if ('dataSourceField' in model) propsPartial.dataSourceField = String(model.dataSourceField ?? currentProps.dataSourceField ?? '')
+			if (Object.keys(propsPartial).length) shapePartial.props = propsPartial
+
+			const layoutModel: Record<string, number> = {}
+			if ('x' in model) layoutModel.x = toFiniteNumber(model.x, shape.x)
+			if ('y' in model) layoutModel.y = toFiniteNumber(model.y, shape.y)
+			if ('w' in model) layoutModel.w = clampNumber(model.w, 280, 4096, toFiniteNumber(currentProps.w, 500))
+			if ('h' in model) layoutModel.h = clampNumber(model.h, 272, 4096, toFiniteNumber(currentProps.h, 500))
+
 			editor.run(() => {
-				editor.updateShape({
-					id: partial.id,
-					type: partial.type,
-					rotation: partial.rotation,
-					opacity: partial.opacity,
-					isLocked: partial.isLocked,
-					meta: {
-						...currentMeta,
-						__materialSectionHeights: {
-							...currentHeightCache,
-							...visibleHeightCache,
-						},
-						showPageHeader: Boolean(model.showPageHeader),
-						showTableHeader: Boolean(model.showTableHeader),
-						showTableFooter: Boolean(model.showTableFooter),
-						showPageFooter: Boolean(model.showPageFooter),
-					},
-					props: {
-						name: String(model.name ?? getProps(shape).name ?? ''),
-						dataSourceField: String(
-							model.dataSourceField ?? getProps(shape).dataSourceField ?? ''
-						),
-					},
-				} as TLShapePartial)
-				updateVueMaterialShapeLayout(editor, shape.id, {
-					x: toFiniteNumber(model.x, shape.x),
-					y: toFiniteNumber(model.y, shape.y),
-					w: clampNumber(model.w, 280, 4096, toFiniteNumber(getProps(shape).w, 500)),
-					h: clampNumber(model.h, 272, 4096, toFiniteNumber(getProps(shape).h, 500)),
-				})
-				normalizeVueMaterialSections(editor, shape.id, { fitToMaterialHeight: false })
+				if (Object.keys(shapePartial).length > 2) editor.updateShape(shapePartial)
+				if (Object.keys(layoutModel).length) {
+					updateVueMaterialShapeLayout(editor, shape.id, {
+						x: layoutModel.x ?? shape.x,
+						y: layoutModel.y ?? shape.y,
+						w: layoutModel.w ?? currentProps.w,
+						h: layoutModel.h ?? currentProps.h,
+					})
+				}
+				if (Object.keys(metaPartial).length || Object.keys(layoutModel).length) {
+					normalizeVueMaterialSections(editor, shape.id, { fitToMaterialHeight: false })
+				}
 				const sections = getVueMaterialSections(editor, shape.id).filter(
 					(section) => section.props.zone !== 'tableBody'
 				)
 				const heightChanges = sections.map((section) => {
+					if (!( `${section.props.zone}Height` in model)) return null
 					const value = Number(model[`${section.props.zone}Height`])
 					return Number.isFinite(value) && value > 0
 						? { id: section.id, type: 'vue-material-section', props: { h: value } }
@@ -840,12 +899,13 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			}
 		},
 		apply(editor, shape, model) {
+			const currentProps = getProps(shape)
+			const propsPartial: Record<string, unknown> = {}
+			if ('h' in model) propsPartial.h = clampNumber(model.h, 24, 4096, toFiniteNumber(currentProps.h, 60))
+			if ('zone' in model) propsPartial.zone = getOptionValue(model.zone, materialZoneOptions, currentProps.zone ?? 'pageHeader')
 			editor.updateShape({
 				...getCommonPartial(shape, model),
-				props: {
-					h: clampNumber(model.h, 24, 4096, toFiniteNumber(getProps(shape).h, 60)),
-					zone: getOptionValue(model.zone, materialZoneOptions, getProps(shape).zone ?? 'pageHeader'),
-				},
+				...(Object.keys(propsPartial).length ? { props: propsPartial } : {}),
 			} as TLShapePartial)
 
 			if (isShapeId(shape.parentId)) {
@@ -870,10 +930,17 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			return { ...getCommonModel(shape), ...getFlatPropsModel(shape) }
 		},
 		apply(editor, shape, model) {
-			const zone = String(getOptionValue(model.zone, resumeZoneOptions, getProps(shape).zone ?? 'content')) as 'pageHeader' | 'content' | 'pageFooter'
+			const currentProps = getProps(shape)
+			const propsPartial: Record<string, unknown> = {}
+			let zone = String(currentProps.zone ?? 'content') as 'pageHeader' | 'content' | 'pageFooter'
+			if ('zone' in model) {
+				zone = String(getOptionValue(model.zone, resumeZoneOptions, zone)) as 'pageHeader' | 'content' | 'pageFooter'
+				propsPartial.zone = zone
+			}
+			if ('h' in model) propsPartial.h = clampNumber(model.h, getVueResumeSectionDefinition(zone).minHeight, 4096, toFiniteNumber(currentProps.h, 180))
 			editor.updateShape({
 				...getCommonPartial(shape, model),
-				props: { h: clampNumber(model.h, getVueResumeSectionDefinition(zone).minHeight, 4096, toFiniteNumber(getProps(shape).h, 180)), zone },
+				...(Object.keys(propsPartial).length ? { props: propsPartial } : {}),
 			} as TLShapePartial)
 			if (isShapeId(shape.parentId)) normalizeVueResumeSections(editor, shape.parentId)
 		},
@@ -963,6 +1030,8 @@ async function loadPropertyFormDefinitions() {
 			}
 		}
 
+		ensureVueTextLayoutFields(loaded[propertyFormCode('vue-text')])
+
 		formDefinitions.value = loaded
 		formDefinitionIds.value = ids
 	} catch (error) {
@@ -972,6 +1041,33 @@ async function loadPropertyFormDefinitions() {
 			error instanceof Error ? error.message : '属性表单加载失败，请稍后重试。'
 	} finally {
 		formDefinitionsLoading.value = false
+	}
+}
+
+function ensureVueTextLayoutFields(schema: LowCodeFormSchema | undefined) {
+	if (!schema) return
+	const normalizedFields = [] as typeof schema.fields
+	const normalizedFieldNames = new Set<string>()
+	for (const field of schema.fields) {
+		const normalizedName = field.field === 'align-items'
+			? 'alignItems'
+			: field.field === 'justify-content'
+				? 'justifyContent'
+				: field.field
+		if (normalizedFieldNames.has(normalizedName)) continue
+		field.field = normalizedName
+		normalizedFieldNames.add(normalizedName)
+		normalizedFields.push(field)
+	}
+	schema.fields = normalizedFields
+	const existingFields = new Set(schema.fields.map((field) => field.field))
+	const localTextFields = shapeFormDescriptors['vue-text']?.schema.fields ?? []
+	for (const fieldName of ['justifyContent', 'alignItems']) {
+		if (existingFields.has(fieldName)) continue
+		const field = localTextFields.find((candidate) => candidate.field === fieldName)
+		if (!field) continue
+		schema.fields.push(structuredClone(field))
+		existingFields.add(fieldName)
 	}
 }
 
@@ -993,7 +1089,15 @@ onMounted(() => {
 })
 
 watch(
-	[selectedShape, isCanvasFormActive, activeSchema, workspaceCamera, () => props.workspaceRevision],
+	[
+		selectedShape,
+		isMultiShapeFormActive,
+		multiSelectedShapeType,
+		isCanvasFormActive,
+		activeSchema,
+		workspaceCamera,
+		() => props.workspaceRevision,
+	],
 	() => {
 		syncFormModel()
 		const shape = selectedShape.value
@@ -1004,6 +1108,24 @@ watch(
 		}
 	},
 	{ immediate: true }
+)
+
+watch(
+	formModel,
+	(model) => {
+		if (!isMultiShapeFormActive.value) return
+		if (skipNextMultiModelChange) {
+			skipNextMultiModelChange = false
+			return
+		}
+		const changedModel: ShapeFormModel = {}
+		for (const key of Object.keys(model)) {
+			if (!Object.is(model[key], previousMultiFormModel[key])) changedModel[key] = model[key]
+		}
+		previousMultiFormModel = { ...model }
+		applyMultiShapeFormModel(changedModel)
+	},
+	{ deep: true }
 )
 
 watch(
@@ -1018,8 +1140,17 @@ watch(
 )
 
 function syncFormModel() {
+	skipNextMultiModelChange = false
+	previousMultiFormModel = {}
+
 	if (isCanvasFormActive.value) {
 		formModel.value = getWorkspaceFormModel()
+		return
+	}
+
+	if (isMultiShapeFormActive.value) {
+		skipNextMultiModelChange = true
+		formModel.value = {}
 		return
 	}
 
@@ -1028,10 +1159,32 @@ function syncFormModel() {
 	formModel.value = shape && descriptor ? descriptor.toModel(shape) : {}
 }
 
+function applyMultiShapeFormModel(model: ShapeFormModel) {
+	const descriptor = activeDescriptor.value
+	if (!descriptor || !Object.keys(model).length || props.editor.getIsReadonly()) return
+
+	const selected = selectedShapeIds.value
+		.map((id) => props.editor.getShape(id))
+		.filter((shape): shape is TLShape => Boolean(shape))
+	if (selected.length < 2 || !multiSelectedShapeType.value) return
+
+	props.editor.run(() => {
+		for (const shape of selected) {
+			descriptor.apply(props.editor, shape, model)
+		}
+	}, { history: 'record' })
+
+	if (multiSelectedShapeType.value === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
+		for (const shape of selected) {
+			void hydrateUploadedImageShape(shape.id, readImageFileId(model.src))
+		}
+	}
+}
+
 function getWorkspaceFormModel(): ShapeFormModel {
 	const config = getWorkspaceConfigSnapshot()
 	const pageSizeMm = config.pageSizeMm ?? { w: 80, h: 80 }
-	const pxPerMm = toFiniteNumber(config.pxPerMm, 10)
+	const pxPerMm = toFiniteNumber(config.pxPerMm, DEFAULT_PX_PER_MM)
 	const pageBounds = config.pageBounds ?? {
 		x: 0,
 		y: 0,
@@ -1049,7 +1202,7 @@ function getWorkspaceFormModel(): ShapeFormModel {
 		zoomPercent: roundNumber(camera.z * 100),
 		cameraX: roundNumber(camera.x),
 		cameraY: roundNumber(camera.y),
-		pxPerMm: roundNumber(pxPerMm),
+		pxPerMm: roundNumber(pxPerMm, 6),
 		viewportW: roundNumber(viewportSize.w),
 		viewportH: roundNumber(viewportSize.h),
 		...getDataSourceFormModel(config.printDataSource),
@@ -1248,9 +1401,10 @@ function createPropsDescriptor(type: string, title: string, fields: LowCodeField
 			}
 		},
 		apply(editor, shape, model) {
+			const props = getPropsPartial(shape, model)
 			editor.updateShape({
 				...getCommonPartial(shape, model),
-				props: getPropsPartial(shape, model),
+				...(Object.keys(props).length ? { props } : {}),
 			} as TLShapePartial)
 		},
 	}
@@ -1293,20 +1447,27 @@ function getFlatPropsModel(shape: TLShape): ShapeFormModel {
 		const fileId = readImageFileId(props.fileId)
 		if (fileId) model.src = fileId
 	}
+	if (shape.type === 'vue-text') {
+		model.justifyContent = getOptionValue(props.justifyContent, textJustifyContentOptions, 'start')
+		model.alignItems = getOptionValue(props.alignItems, textAlignItemsOptions, 'center')
+	}
 
 	return model
 }
 
 function getCommonPartial(shape: TLShape, model: ShapeFormModel): TLShapePartial {
-	return {
+	const partial: TLShapePartial = {
 		id: shape.id,
 		type: shape.type,
-		x: toFiniteNumber(model.x, shape.x),
-		y: toFiniteNumber(model.y, shape.y),
-		rotation: degreesToRadians(toFiniteNumber(model.rotation, radiansToDegrees(shape.rotation))),
-		opacity: clampNumber(model.opacity, 0, 100, shape.opacity * 100) / 100,
-		isLocked: Boolean(model.isLocked),
 	} as TLShapePartial
+	if ('x' in model) partial.x = toFiniteNumber(model.x, shape.x)
+	if ('y' in model) partial.y = toFiniteNumber(model.y, shape.y)
+	if ('rotation' in model) {
+		partial.rotation = degreesToRadians(toFiniteNumber(model.rotation, radiansToDegrees(shape.rotation)))
+	}
+	if ('opacity' in model) partial.opacity = clampNumber(model.opacity, 0, 100, shape.opacity * 100) / 100
+	if ('isLocked' in model) partial.isLocked = Boolean(model.isLocked)
+	return partial
 }
 
 function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
@@ -1314,7 +1475,12 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 	const nextProps: Record<string, unknown> = {}
 
 	for (const field of activeSchema.value?.fields ?? []) {
-		const key = field.field
+		const key = field.field === 'align-items'
+			? 'alignItems'
+			: field.field === 'justify-content'
+				? 'justifyContent'
+				: field.field
+		if (!(key in model)) continue
 		if (key in commonModelKeys || key === 'shapeTypeLabel') continue
 		if (key === 'assetId' || key === 'pointsCount' || key === 'propsJson') continue
 		if (shape.type === 'vue-box' && vueBoxPropertyRegistry.has(key)) {
@@ -1366,6 +1532,14 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 		}
 		if (key === 'geo') {
 			nextProps.geo = getOptionValue(model.geo, geoOptions, currentProps.geo ?? 'rectangle')
+			continue
+		}
+		if (key === 'justifyContent') {
+			nextProps.justifyContent = getOptionValue(model.justifyContent, textJustifyContentOptions, currentProps.justifyContent ?? 'start')
+			continue
+		}
+		if (key === 'alignItems') {
+			nextProps.alignItems = getOptionValue(model.alignItems, textAlignItemsOptions, currentProps.alignItems ?? 'center')
 			continue
 		}
 		if (key === 'autoSize') {
@@ -1460,8 +1634,9 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
 	return Math.min(max, Math.max(min, numeric))
 }
 
-function roundNumber(value: number) {
-	return Math.round(value * 100) / 100
+function roundNumber(value: number, digits = 2) {
+	const factor = 10 ** digits
+	return Math.round(value * factor) / factor
 }
 
 function radiansToDegrees(value: number) {

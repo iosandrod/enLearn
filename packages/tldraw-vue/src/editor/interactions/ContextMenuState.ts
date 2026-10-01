@@ -698,6 +698,8 @@ export class ContextMenuState {
 				color: editor.getStyleForNextShape(DefaultColorStyle),
 				font,
 				size,
+				justifyContent: 'start',
+				alignItems: 'center',
 				autoSize: true,
 			},
 		})

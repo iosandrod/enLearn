@@ -36,6 +36,7 @@ import {
 	type PrintPageRenderResult,
 } from '@/print'
 import { useEditorValue } from '@/vue/useEditorValue'
+import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 
 const props = defineProps<{
 	editor: Editor
@@ -90,7 +91,7 @@ const PRINT_MATERIAL_SAMPLE_ROWS = Array.from({ length: 23 }, (_, index) => {
 })
 
 const DEFAULT_PRINT_PAGE_SIZE_MM = { w: 80, h: 80 }
-const DEFAULT_PRINT_PX_PER_MM = 10
+const DEFAULT_PRINT_PX_PER_MM = DEFAULT_PX_PER_MM
 
 type TemplatePageContent = { id: TLPageId; name: string; content: TLContent }
 type TemplateDocumentContent = VueTemplateDocument

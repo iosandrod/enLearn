@@ -5,7 +5,6 @@ import {
 	type TLShape,
 } from '@tldraw/editor'
 import { type TLBaseShape } from '@tldraw/tlschema'
-import { T } from '@tldraw/validate'
 import { createVueTableSvg } from '../../vueSvgExport'
 import {
 	VUE_TABLE_ROW_ID_FIELD,
@@ -14,7 +13,7 @@ import {
 	type VueTableRowHeightMap,
 } from './tableRowHeight'
 import { baseProps, type BaseProps } from '../../shapeProps/base'
-import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueTablePropertyRegistry } from '../../shapeProps/vueTable'
 import {
 	vueTableDefaultColumns,
 	vueTableDefaultRowHeight,
@@ -45,14 +44,6 @@ export type VueTableShape = TLBaseShape<
 	}
 >
 
-const tableColumnValidator = T.object<VueTableColumn>({
-	field: T.string,
-	title: T.string,
-	width: T.number,
-})
-
-const tableRowValidator = T.dict(T.string, T.string)
-
 declare module '@tldraw/tlschema' {
 	interface TLGlobalShapePropsMap {
 		'vue-table': VueTableShape['props']
@@ -62,13 +53,7 @@ declare module '@tldraw/tlschema' {
 export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 	static override type = 'vue-table' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		columns: T.arrayOf(tableColumnValidator),
-		rows: T.arrayOf(tableRowValidator),
-		rowHeight: T.number,
-		rowHeights: T.dict(T.string, T.number).optional(),
-		showBorder: T.boolean.optional(),
-	}).validators
+	static override props = vueTablePropertyRegistry.validators
 
 	override getDefaultProps(): VueTableShape['props'] {
 		return createDefaultVueTableProps()

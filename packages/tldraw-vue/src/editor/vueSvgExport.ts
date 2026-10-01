@@ -171,12 +171,22 @@ export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExport
 		Math.max(1, shape.props.w - horizontalPadding * 2),
 		fontSize
 	)
+	const textX = getVueTextSvgX(shape.props.justifyContent, shape.props.w, horizontalPadding)
+	const textAnchor = getVueTextSvgAnchor(shape.props.justifyContent)
+	const lineHeightTotal = lines.length * lineHeight
+	const extraHeight = Math.max(0, shape.props.h - verticalPadding * 2 - lineHeightTotal)
+	const blockOffset = shape.props.alignItems === 'end'
+		? extraHeight
+		: shape.props.alignItems === 'center'
+			? extraHeight / 2
+			: 0
+	const firstBaseline = verticalPadding + blockOffset + fontSize
 	const textChildren = lines.map((line, index) =>
 		createElement(
 			'tspan',
 			{
-				x: horizontalPadding,
-				y: verticalPadding + fontSize + index * lineHeight,
+				x: textX,
+				y: firstBaseline + index * lineHeight,
 			},
 			line || '\u00a0'
 		)
@@ -194,8 +204,9 @@ export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExport
 		createElement(
 			'text',
 			{
-				x: horizontalPadding,
-				y: verticalPadding + fontSize,
+				x: textX,
+				textAnchor,
+				y: firstBaseline,
 				fill: getVueThemeColor(editor, shape.props.color, 'solid'),
 				fontFamily: getVueFontFamily(editor, shape.props.font),
 				fontSize,
@@ -205,6 +216,18 @@ export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExport
 			textChildren
 		)
 	)
+}
+
+function getVueTextSvgX(
+	justifyContent: VueTextShape['props']['justifyContent'],
+	width: number,
+	padding: number
+) {
+	return justifyContent === 'center' ? width / 2 : justifyContent === 'end' ? width - padding : padding
+}
+
+function getVueTextSvgAnchor(justifyContent: VueTextShape['props']['justifyContent']) {
+	return justifyContent === 'center' ? 'middle' : justifyContent === 'end' ? 'end' : 'start'
 }
 
 export async function createVueImageSvg(

@@ -64,6 +64,8 @@ function createFooterSampleTextShape(parentId: TLShapeId, width: number): TLShap
 			color: 'black',
 			font: 'draw',
 			size: 's',
+			justifyContent: 'start',
+			alignItems: 'center',
 			autoSize: false,
 		},
 		meta: {

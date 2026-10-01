@@ -63,8 +63,12 @@ export interface TLBaseShape<Type extends string, Props extends object> {
 	// and for that reason those "base members" have to be declared manually here
 	readonly id: TLShapeId
 	readonly typeName: 'shape'
-
+	paddingTop?: number
+	paddingBottom?: number
+	paddingLeft?: number
+	paddingRight?: number
 	type: Type
+	fontSize?: number
 	x: number
 	y: number
 	rotation: number

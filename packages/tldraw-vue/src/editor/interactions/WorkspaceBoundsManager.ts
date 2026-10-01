@@ -34,7 +34,8 @@ export interface RulerTick {
 
 const DEFAULT_CAMERA_MARGIN_PX = 96
 const DEFAULT_MIN_SHAPE_SIZE = 28
-const DEFAULT_PX_PER_MM = 10
+/** CSS reference-pixel conversion: 96 CSS px per inch and 25.4 mm per inch. */
+export const DEFAULT_PX_PER_MM = 96 / 25.4
 const TARGET_MAJOR_TICK_PX = 80
 const MIN_PAGE_SIZE_MM = 10
 const MAX_PAGE_SIZE_MM = 1000

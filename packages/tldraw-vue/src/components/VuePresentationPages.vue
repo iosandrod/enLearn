@@ -2,6 +2,7 @@
 import { PageRecordType, type Editor, type TLPageId } from '@tldraw/editor'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useEditorValue } from '@/vue/useEditorValue'
+import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 
 const props = withDefaults(
 	defineProps<{
@@ -12,7 +13,7 @@ const props = withDefaults(
 	}>(),
 	{
 		pageSizeMm: () => ({ w: 338.7, h: 190.5 }),
-		pxPerMm: 10,
+		pxPerMm: DEFAULT_PX_PER_MM,
 	}
 )
 

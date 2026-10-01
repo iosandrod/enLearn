@@ -7,7 +7,7 @@ const props = defineProps<VueShapeNodeProps<VueDrawShape>>()
 
 const {
 	getDashArray,
-	getStrokeWidth,
+	getCanvasStrokeWidth,
 	getThemeColor,
 } = useVueShapeTheme(props.editor, `draw shape:${props.shape.id}`)
 
@@ -32,8 +32,8 @@ function getPointsAttribute(points: { x: number; y: number }[]) {
 			<polyline
 				:points="getPointsAttribute(shape.props.points)"
 				:stroke="getThemeColor(shape.props.color, 'solid')"
-				:stroke-width="getStrokeWidth(shape.props.size)"
-				:stroke-dasharray="getDashArray(shape.props.dash, getStrokeWidth(shape.props.size))"
+				:stroke-width="getCanvasStrokeWidth(shape.props.size, zoom)"
+				:stroke-dasharray="getDashArray(shape.props.dash, getCanvasStrokeWidth(shape.props.size, zoom))"
 			/>
 		</svg>
 	</div>

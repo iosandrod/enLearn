@@ -12,13 +12,13 @@ import {
 	type TLShapePartial,
 } from '@tldraw/editor'
 import { type TLBaseShape } from '@tldraw/tlschema'
-import { T } from '@tldraw/validate'
 import {
 	createVueMaterialSectionSvg,
 	createVueMaterialSvg,
 } from '../../vueSvgExport'
 import { baseProps, type BaseProps } from '../../shapeProps/base'
-import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueMaterialPropertyRegistry } from '../../shapeProps/vueMaterial'
+import { vueMaterialSectionPropertyRegistry } from '../../shapeProps/vueMaterialSection'
 import { vueMaterialDefaultProps, vueMaterialDefaultSize } from '../../defaults'
 
 export type VueMaterialSectionZone =
@@ -145,10 +145,7 @@ declare module '@tldraw/tlschema' {
 export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 	static override type = 'vue-material' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		name: T.string,
-		dataSourceField: T.string.optional(),
-	}).validators
+	static override props = vueMaterialPropertyRegistry.validators
 
 	override getDefaultProps(): VueMaterialShape['props'] {
 		return {
@@ -254,16 +251,7 @@ export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSectionShape> {
 	static override type = 'vue-material-section' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		zone: T.literalEnum(
-			'pageHeader',
-			'tableHeader',
-			'tableBody',
-			'tableFooter',
-			'pageFooter'
-		),
-		label: T.string,
-	}).validators
+	static override props = vueMaterialSectionPropertyRegistry.validators
 
 	override getDefaultProps(): VueMaterialSectionShape['props'] {
 		const definition = VUE_MATERIAL_SECTION_DEFINITIONS[0]

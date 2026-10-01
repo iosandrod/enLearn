@@ -12,10 +12,10 @@ import {
 	type TLShapePartial,
 } from '@tldraw/editor'
 import { type TLBaseShape } from '@tldraw/tlschema'
-import { T } from '@tldraw/validate'
 import { createVueResumeSectionSvg, createVueResumeSvg } from '../../vueSvgExport'
 import { baseProps, type BaseProps } from '../../shapeProps/base'
-import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueResumePropertyRegistry } from '../../shapeProps/vueResume'
+import { vueResumeSectionPropertyRegistry } from '../../shapeProps/vueResumeSection'
 import { vueResumeDefaultProps, vueResumeDefaultSize } from '../../defaults'
 
 export type VueResumeSectionZone = 'pageHeader' | 'content' | 'pageFooter'
@@ -57,7 +57,7 @@ declare module '@tldraw/tlschema' {
 
 export class VueResumeShapeUtil extends BaseBoxShapeUtil<VueResumeShape> {
 	static override type = 'vue-resume' as const
-	static override props = extendShapeProperties(baseProps, { name: T.string }).validators
+	static override props = vueResumePropertyRegistry.validators
 
 	override getDefaultProps(): VueResumeShape['props'] {
 		return { ...baseProps.defaults, ...vueResumeDefaultSize, h: getVueResumeDefaultHeight(), ...vueResumeDefaultProps }
@@ -102,10 +102,7 @@ export class VueResumeShapeUtil extends BaseBoxShapeUtil<VueResumeShape> {
 
 export class VueResumeSectionShapeUtil extends BaseBoxShapeUtil<VueResumeSectionShape> {
 	static override type = 'vue-resume-section' as const
-	static override props = extendShapeProperties(baseProps, {
-		zone: T.literalEnum('pageHeader', 'content', 'pageFooter'),
-		label: T.string,
-	}).validators
+	static override props = vueResumeSectionPropertyRegistry.validators
 
 	override getDefaultProps(): VueResumeSectionShape['props'] {
 		const definition = VUE_RESUME_SECTION_DEFINITIONS[0]

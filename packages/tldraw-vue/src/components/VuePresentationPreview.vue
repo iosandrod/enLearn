@@ -8,6 +8,7 @@ import {
 	type PresentationConfig,
 	type PresentationPageTransition,
 } from '@/presentation'
+import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 
 interface RevealSlideModel {
 	id: TLPageId
@@ -42,7 +43,7 @@ let resizeObserver: ResizeObserver | null = null
 let transitionFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
 const pageSize = computed(() => props.pageSizeMm ?? props.config?.pageSizeMm ?? { w: 200, h: 130 })
-const pxPerMm = computed(() => props.pxPerMm ?? 10)
+const pxPerMm = computed(() => props.pxPerMm ?? DEFAULT_PX_PER_MM)
 
 function getTransition(pageId: string): PresentationPageTransition | undefined {
 	return props.config?.pages?.[pageId]?.transition ?? props.config?.defaultTransition

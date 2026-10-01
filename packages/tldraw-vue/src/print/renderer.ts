@@ -9,6 +9,7 @@ import {
 	getVueMaterialHiddenShapeIds,
 	runWithVueMaterialPrintLayoutUpdates,
 } from '@/editor/extensions/material/vueMaterialShape'
+import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { resolvePrintPreviewRows } from './dataSource'
 import { PrintShapePreviewResolver } from './shapePreviewStrategies'
 import {
@@ -19,8 +20,6 @@ import {
 } from './materialGrid'
 import { createResumePrintPlan, getResumeOverrides, type ResumePrintPlan } from './resume'
 import type { PrintJobConfig, PrintPageRenderResult } from './types'
-
-const DEFAULT_PX_PER_MM = 10
 
 export interface PrintRenderJob {
 	row: Record<string, unknown>

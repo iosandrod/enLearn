@@ -7,13 +7,17 @@ export const vueTextDefaultProps = {
 	text: 'Text',
 	color: 'black' as const,
 	font: 'draw' as const,
-	size: 'm' as const,
+	size: 's' as const,
+	justifyContent: 'start' as const,
+	alignItems: 'start' as const,
 	autoSize: true,
 	showBorder: false,
 } as const
 
 export const vueTextCreateDefaultProps = {
 	text: 'Text',
+	justifyContent: 'start' as const,
+	alignItems: 'start' as const,
 	autoSize: false,
 } as const
 
@@ -24,6 +28,8 @@ export const vueNoteDefaultProps = {
 	color: 'black' as const,
 	font: 'draw' as const,
 	size: 'm' as const,
+	justifyContent: 'start' as const,
+	alignItems: 'start' as const,
 	autoSize: false,
 	showBorder: true,
 } as const

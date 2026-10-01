@@ -1308,7 +1308,7 @@ interface VueTemplateWorkspaceConfig {
 | `camera` | `{ x: number; y: number; z: number }` | 视图相机，`z` 为缩放倍数且必须大于 `0`。 |
 | `guides` | `{ axis; id; position }[]` | 辅助线列表，`axis` 为 `x` 或 `y`，`position` 是页面坐标。 |
 | `viewportSize` | `{ w: number; h: number }` | 当前可视区域大小。 |
-| `pxPerMm` | `number` | 页面单位换算，默认实现中为 `10` 像素/mm。 |
+| `pxPerMm` | `number` | 页面单位换算，默认实现中为 `96 / 25.4 ≈ 3.779528` CSS 像素/mm。 |
 
 ### `VueTemplateLoadHandler`
 
@@ -1506,7 +1506,7 @@ interface PrintTemplateConfig {
 | --- | --- | --- |
 | `shapeIds` | `TLShapeId[]` | 要导出的顶层 shape id。未传时导出当前页所有 shape。导出时会包含这些 shape 的 descendants。 |
 | `pageBounds` | `PrintBounds` | 导出区域。未传时使用 `{ x: 0, y: 0, w: widthMm * pxPerMm, h: heightMm * pxPerMm }`。 |
-| `pxPerMm` | `number` | 毫米到页面单位换算，默认 `10`。 |
+| `pxPerMm` | `number` | 毫米到页面单位换算，默认 `96 / 25.4 ≈ 3.779528` CSS 像素/mm。 |
 | `materialGrid` | `PrintMaterialGridConfig | object` | 单个物料节点的表格配置；模板中只有一个物料节点时使用。 |
 | `materialGrids` | `PrintMaterialGridCollection` | 多物料配置入口；当前实现同页只允许一个物料节点，但支持按 id 映射配置。 |
 

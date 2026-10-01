@@ -9,12 +9,12 @@ const props = defineProps<VueShapeNodeProps<VueBoxShape>>()
 
 const {
 	getDashArray,
+	getCanvasStrokeWidth,
 	getFillColor,
-	getStrokeWidth,
 	getThemeColor,
 } = useVueShapeTheme(props.editor, `box shape:${props.shape.id}`)
 
-const strokeWidth = computed(() => getStrokeWidth(props.shape.props.size))
+const strokeWidth = computed(() => getCanvasStrokeWidth(props.shape.props.size, props.zoom))
 const strokeColor = computed(() => getThemeColor(props.shape.props.color, 'solid'))
 const markColor = computed(() => props.shape.props.fill === 'solid' ? '#ffffff' : strokeColor.value)
 const patternId = computed(() => `vue-box-pattern-${props.shape.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`)

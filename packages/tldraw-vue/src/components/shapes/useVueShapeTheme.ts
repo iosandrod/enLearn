@@ -43,6 +43,12 @@ export function useVueShapeTheme(editor: Editor, scope: string) {
 		return VUE_STROKE_SIZES[size]
 	}
 
+	/** Keep vector strokes visible when the canvas is zoomed far out. */
+	function getCanvasStrokeWidth(size: TLDefaultSizeStyle, zoom: number) {
+		const safeZoom = Math.max(zoom, 0.01)
+		return Math.max(getStrokeWidth(size), 1 / safeZoom)
+	}
+
 	function getFontSize(size: TLDefaultSizeStyle) {
 		return Math.round(theme.value.fontSize * VUE_FONT_SIZE_SCALE[size])
 	}
@@ -55,6 +61,7 @@ export function useVueShapeTheme(editor: Editor, scope: string) {
 	return {
 		colorMode,
 		getBorderStyle,
+		getCanvasStrokeWidth,
 		getDashArray,
 		getFillColor,
 		getFillImage,

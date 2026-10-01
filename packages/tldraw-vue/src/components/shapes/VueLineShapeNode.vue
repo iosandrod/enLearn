@@ -7,7 +7,7 @@ const props = defineProps<VueShapeNodeProps<VueLineShape>>()
 
 const {
 	getDashArray,
-	getStrokeWidth,
+	getCanvasStrokeWidth,
 	getThemeColor,
 } = useVueShapeTheme(props.editor, `line shape:${props.shape.id}`)
 </script>
@@ -31,8 +31,8 @@ const {
 				:x2="shape.props.end.x"
 				:y2="shape.props.end.y"
 				:stroke="getThemeColor(shape.props.color, 'solid')"
-				:stroke-width="getStrokeWidth(shape.props.size)"
-				:stroke-dasharray="getDashArray(shape.props.dash, getStrokeWidth(shape.props.size))"
+				:stroke-width="getCanvasStrokeWidth(shape.props.size, zoom)"
+				:stroke-dasharray="getDashArray(shape.props.dash, getCanvasStrokeWidth(shape.props.size, zoom))"
 			/>
 		</svg>
 	</div>

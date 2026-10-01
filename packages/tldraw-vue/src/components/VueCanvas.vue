@@ -104,6 +104,7 @@ const selectionBounds = useEditorValue('selection rotated page bounds', () =>
 	props.editor.getSelectionRotatedPageBounds()
 )
 const selectionRotation = useEditorValue('selection rotation', () => props.editor.getSelectionRotation())
+const editingShapeId = useEditorValue('editing shape id', () => props.editor.getEditingShapeId())
 
 const workspacePageStyle = computed(() => ({
 	backgroundColor: workspaceBackground.value.color,
@@ -150,6 +151,9 @@ const brushBox = computed(() => {
 	}
 })
 const selectionControl = computed(() => {
+	const editingId = editingShapeId.value
+	if (editingId && props.editor.getShape(editingId)?.type === 'vue-text') return null
+
 	const bounds = selectionBounds.value
 	if (!bounds || selectedShapeIds.value.length === 0) return null
 

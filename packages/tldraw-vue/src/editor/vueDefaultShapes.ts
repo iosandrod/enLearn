@@ -1,11 +1,5 @@
 import { BaseBoxShapeUtil, type SvgExportContext } from '@tldraw/editor'
 import {
-	DefaultColorStyle,
-	DefaultFontStyle,
-	DefaultDashStyle,
-	DefaultFillStyle,
-	DefaultSizeStyle,
-	assetIdValidator,
 	type TLAssetId,
 	type TLBaseShape,
 	type TLDefaultColorStyle,
@@ -14,7 +8,6 @@ import {
 	type TLDefaultFillStyle,
 	type TLDefaultSizeStyle,
 } from '@tldraw/tlschema'
-import { T } from '@tldraw/validate'
 import {
 	createVueArrowSvg,
 	createVueDrawSvg,
@@ -23,7 +16,16 @@ import {
 	createVueTextSvg,
 } from './vueSvgExport'
 import { baseProps, type BaseProps } from './shapeProps/base'
-import { extendShapeProperties } from './shapeProps/registry'
+import {
+	vueTextPropertyRegistry,
+	vueTextShapeMigrations,
+	type VueTextAlignItems,
+	type VueTextJustifyContent,
+} from './shapeProps/vueText'
+import { vueImagePropertyRegistry } from './shapeProps/vueImage'
+import { vueLinePropertyRegistry } from './shapeProps/vueLine'
+import { vueArrowPropertyRegistry } from './shapeProps/vueArrow'
+import { vueDrawPropertyRegistry } from './shapeProps/vueDraw'
 import {
 	vueArrowShapeDefaultSize,
 	vueArrowShapeDefaultProps,
@@ -40,18 +42,20 @@ export interface VuePoint {
 	y: number
 }
 
-const pointValidator = T.object<VuePoint>({
-	x: T.number,
-	y: T.number,
-})
-
 export type VueTextShape = TLBaseShape<
 	'vue-text',
 	BaseProps & {
+		paddingTop?: number
+		paddingBottom?: number
+		paddingLeft?: number
+		paddingRight?: number
 		text: string
 		color: TLDefaultColorStyle
 		font: TLDefaultFontStyle
 		size: TLDefaultSizeStyle
+		fontSize?: number
+		justifyContent: VueTextJustifyContent
+		alignItems: VueTextAlignItems
 		autoSize?: boolean
 		showBorder?: boolean
 	}
@@ -114,15 +118,9 @@ declare module '@tldraw/tlschema' {
 
 export class VueTextShapeUtil extends BaseBoxShapeUtil<VueTextShape> {
 	static override type = 'vue-text' as const
+	static override migrations = vueTextShapeMigrations
 
-	static override props = extendShapeProperties(baseProps, {
-		text: T.string,
-		color: DefaultColorStyle,
-		font: DefaultFontStyle,
-		size: DefaultSizeStyle,
-		autoSize: T.boolean.optional(),
-		showBorder: T.boolean.optional(),
-	}).validators
+	static override props = vueTextPropertyRegistry.validators
 
 	override getDefaultProps(): VueTextShape['props'] {
 		return {
@@ -151,13 +149,7 @@ export class VueTextShapeUtil extends BaseBoxShapeUtil<VueTextShape> {
 export class VueImageShapeUtil extends BaseBoxShapeUtil<VueImageShape> {
 	static override type = 'vue-image' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		assetId: assetIdValidator.nullable(),
-		fileId: T.string.optional(),
-		src: T.string,
-		name: T.string,
-		showBorder: T.boolean.optional(),
-	}).validators
+	static override props = vueImagePropertyRegistry.validators
 
 	override getDefaultProps(): VueImageShape['props'] {
 		return {
@@ -182,13 +174,7 @@ export class VueImageShapeUtil extends BaseBoxShapeUtil<VueImageShape> {
 export class VueLineShapeUtil extends BaseBoxShapeUtil<VueLineShape> {
 	static override type = 'vue-line' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		start: pointValidator,
-		end: pointValidator,
-		color: DefaultColorStyle,
-		dash: DefaultDashStyle,
-		size: DefaultSizeStyle,
-	}).validators
+	static override props = vueLinePropertyRegistry.validators
 
 	override getDefaultProps(): VueLineShape['props'] {
 		return {
@@ -214,14 +200,7 @@ export class VueLineShapeUtil extends BaseBoxShapeUtil<VueLineShape> {
 export class VueArrowShapeUtil extends BaseBoxShapeUtil<VueArrowShape> {
 	static override type = 'vue-arrow' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		start: pointValidator,
-		end: pointValidator,
-		color: DefaultColorStyle,
-		fill: DefaultFillStyle,
-		dash: DefaultDashStyle,
-		size: DefaultSizeStyle,
-	}).validators
+	static override props = vueArrowPropertyRegistry.validators
 
 	override getDefaultProps(): VueArrowShape['props'] {
 		return {
@@ -247,13 +226,7 @@ export class VueArrowShapeUtil extends BaseBoxShapeUtil<VueArrowShape> {
 export class VueDrawShapeUtil extends BaseBoxShapeUtil<VueDrawShape> {
 	static override type = 'vue-draw' as const
 
-	static override props = extendShapeProperties(baseProps, {
-		points: T.arrayOf(pointValidator),
-		color: DefaultColorStyle,
-		fill: DefaultFillStyle,
-		dash: DefaultDashStyle,
-		size: DefaultSizeStyle,
-	}).validators
+	static override props = vueDrawPropertyRegistry.validators
 
 	override getDefaultProps(): VueDrawShape['props'] {
 		return {
