@@ -8,6 +8,7 @@ param(
   [System.Security.SecureString]$TaskPassword,
   [switch]$Build,
   [switch]$NoCache,
+  [switch]$CleanMemory,
   [switch]$SkipTrigger,
   [switch]$SkipCompose
 )
@@ -217,6 +218,25 @@ function Repair-LongRunningTask {
   }
 }
 
+function Invoke-MemoryCleanup {
+  Write-Host 'Releasing Linux page cache...' -ForegroundColor Cyan
+  Invoke-WslRoot 'sync; echo 3 > /proc/sys/vm/drop_caches'
+
+  if (-not $CleanMemory) {
+    return
+  }
+
+  Write-Host 'Cleaning stopped containers, dangling images, and build cache...' -ForegroundColor Cyan
+  Invoke-WslRoot 'timeout --foreground 20s docker container prune -f || true'
+  Invoke-WslRoot 'timeout --foreground 20s docker image prune -f || true'
+  Invoke-WslRoot 'timeout --foreground 20s docker builder prune -f || true'
+
+  if (-not $SkipTrigger) {
+    Write-Host 'Restarting ClickHouse to release long-lived memory pages...' -ForegroundColor Cyan
+    Invoke-WslRoot 'docker restart trigger-clickhouse-1'
+  }
+}
+
 Write-Host 'Removing the 72-hour limit from WSL startup tasks...' -ForegroundColor Cyan
 Repair-LongRunningTask -TaskName $keepAliveTask
 Repair-LongRunningTask -TaskName $startupTask
@@ -241,6 +261,8 @@ for ($i = 1; $i -le 30; $i++) {
 if (-not $dockerReady) {
   throw 'Docker did not become ready inside WSL.'
 }
+
+Invoke-MemoryCleanup
 
 if (-not $SkipCompose) {
   if ($Build) {
