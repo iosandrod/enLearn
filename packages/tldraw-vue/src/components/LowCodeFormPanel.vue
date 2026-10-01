@@ -35,7 +35,10 @@ import {
 	type VueMaterialShape,
 } from '@/editor/extensions/material/vueMaterialShape'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
-import type { PrintDataSourceDetailTable } from '@/print/types'
+import {
+	getMaterialDataSourceFieldOptions,
+	getMaterialDataSourceFieldOptionsKey,
+} from '@/editor/materialDataSourceFields'
 import {
 	getVueResumeSectionDefinition,
 	normalizeVueResumeSections,
@@ -124,44 +127,28 @@ const activeDescriptor = computed(() =>
 const activeFormCode = computed(() =>
 	isCanvasFormActive.value ? workspaceFormDescriptor.formCode : activeDescriptor.value?.formCode ?? null
 )
+const materialDataSourceFieldOptions = computed(() =>
+	getMaterialDataSourceFieldOptions(editorPrintDataSource.value)
+)
 const activeSchema = computed(() => {
 	const code = activeFormCode.value
 	const schema = code ? formDefinitions.value[code] ?? null : null
 	if (!schema || activeFormCode.value !== propertyFormCode('vue-material')) return schema
 
-	const options = getMaterialDataSourceFieldOptions(editorPrintDataSource.value)
 	return {
 		...schema,
 		fields: schema.fields.map((field) =>
 			field.field === 'dataSourceField'
-				? { ...field, component: 'vxe-select', options, props: { ...(field.props ?? {}), clearable: false } }
+				? {
+					...field,
+					component: 'vxe-select',
+					options: materialDataSourceFieldOptions.value,
+					props: { ...(field.props ?? {}), clearable: false },
+				}
 				: field
 		),
 	}
 })
-
-function getMaterialDataSourceFieldOptions(source: VueTemplateWorkspaceConfig['printDataSource']): LowCodeOption[] {
-	if (!source || source.type !== 'inline' || !source.formCode) {
-		return [{ label: '未设置数据源', value: '' }]
-	}
-	const tables = getPrintDataSourceDetailTablesFromSource(source)
-	return tables.length
-		? tables.map((table) => ({ label: table.label || table.field, value: table.field }))
-		: [{ label: '未设置明细表', value: '' }]
-}
-
-function getPrintDataSourceDetailTablesFromSource(source: VueTemplateWorkspaceConfig['printDataSource']) {
-	if (!source || source.type !== 'inline') return []
-	if (Array.isArray(source.detailTables) && source.detailTables.length) {
-		return source.detailTables as readonly PrintDataSourceDetailTable[]
-	}
-	const detailField = typeof source.detailField === 'string' ? source.detailField : ''
-	const detailColumns = Array.isArray(source.detailColumns) ? source.detailColumns : []
-	if (detailField && detailColumns.length) {
-		return [{ id: detailField, field: detailField, label: detailField, columns: detailColumns }]
-	}
-	return []
-}
 const imagePropertySchema = computed(() =>
 	formDefinitions.value[propertyFormCode('vue-image')] ?? null
 )
@@ -196,13 +183,17 @@ const emptyMessage = computed(() => {
 	return ''
 })
 const formKey = computed(() => {
-	if (isCanvasFormActive.value) return 'workspace'
+	let key = 'empty'
+	if (isCanvasFormActive.value) key = 'workspace'
 	const shape = selectedShape.value
-	if (shape) return `${shape.id}:${shape.type}`
-	if (isMultiShapeFormActive.value) {
-		return `multi:${multiSelectedShapeType.value}:${selectedShapeIds.value.join(',')}`
+	if (shape) key = `${shape.id}:${shape.type}`
+	else if (isMultiShapeFormActive.value) {
+		key = `multi:${multiSelectedShapeType.value}:${selectedShapeIds.value.join(',')}`
 	}
-	return 'empty'
+	if (activeFormCode.value === propertyFormCode('vue-material')) {
+		return `${key}:data-source:${getMaterialDataSourceFieldOptionsKey(materialDataSourceFieldOptions.value)}`
+	}
+	return key
 })
 
 const designSchema = computed(() => {

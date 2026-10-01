@@ -194,7 +194,7 @@ function normalizeDetailTable(
 	value: Record<string, unknown>,
 	index: number,
 ): PrintDataSourceDetailTable | null {
-	const field = readString(value.field, `detail_${index + 1}`)
+	const field = readString(value.key, readString(value.field, `detail_${index + 1}`))
 	const columns = Array.isArray(value.columns)
 		? value.columns.filter(isRecord).map((column) => ({
 			...column,
@@ -207,7 +207,7 @@ function normalizeDetailTable(
 	return {
 		id: readString(value.id, field),
 		field,
-		label: readString(value.label, `明细${index + 1}`),
+		label: readString(value.title, readString(value.label, `明细${index + 1}`)),
 		columns,
 		...(isRecord(value.gridOptions) ? { gridOptions: value.gridOptions } : {}),
 		...(Array.isArray(value.gridEvents) ? { gridEvents: value.gridEvents.filter(isRecord) } : {}),
