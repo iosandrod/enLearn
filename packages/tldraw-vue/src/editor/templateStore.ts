@@ -1,5 +1,4 @@
 import type { TLContent } from '@tldraw/editor'
-import type { PrintDataSourceConfig } from '@/print/types'
 import type {
 	WorkspaceCamera,
 	WorkspacePageBounds,
@@ -37,8 +36,6 @@ export interface VueTemplateMetadata {
 	editor?: string
 	schemaVersion?: number
 	designerMode?: DesignerMode
-	dataSourceType?: string
-	dataSourceKey?: string
 	pageSizeMm?: WorkspacePageSizeMm
 	pageBounds?: WorkspacePageBounds
 	[key: string]: unknown
@@ -52,7 +49,6 @@ export interface VueTemplateWorkspaceConfig {
 	guides?: WorkspaceGuide[]
 	viewportSize?: WorkspaceViewportSize
 	pxPerMm?: number
-	printDataSource?: PrintDataSourceConfig
 	background?: WorkspaceBackgroundConfig
 	presentation?: PresentationConfig
 }
@@ -145,23 +141,11 @@ export function createVueTemplateMetadata(
 	workspace: VueTemplateWorkspaceConfig | undefined,
 	templateName?: string
 ): VueTemplateMetadata {
-	const source = workspace?.printDataSource
-	const dataSource = source && typeof source === 'object' ? source as Record<string, unknown> : undefined
-	const dataSourceType = typeof dataSource?.type === 'string' ? dataSource.type : 'none'
-	const dataSourceKey = typeof dataSource?.key === 'string' && dataSource.key.trim()
-		? dataSource.key.trim()
-		: typeof dataSource?.formCode === 'string' && dataSource.formCode.trim()
-			? dataSource.formCode.trim()
-			: typeof dataSource?.tableName === 'string' && dataSource.tableName.trim()
-				? dataSource.tableName.trim()
-				: undefined
 	return {
 		editor: 'tldraw-vue',
 		schemaVersion: 1,
 		designerMode: workspace?.designerMode,
-		dataSourceType,
 		...(templateName ? { templateName } : {}),
-		...(dataSourceKey ? { dataSourceKey } : {}),
 		...(workspace?.pageSizeMm ? { pageSizeMm: { ...workspace.pageSizeMm } } : {}),
 		...(workspace?.pageBounds ? { pageBounds: { ...workspace.pageBounds } } : {}),
 	}
@@ -171,7 +155,10 @@ export function cloneVueTemplateWorkspaceConfig(
 	workspace: VueTemplateWorkspaceConfig | undefined
 ): VueTemplateWorkspaceConfig | undefined {
 	if (!workspace) return undefined
-	return JSON.parse(JSON.stringify(workspace)) as VueTemplateWorkspaceConfig
+	const { printDataSource: _printDataSource, ...lightweightWorkspace } = workspace as VueTemplateWorkspaceConfig & {
+		printDataSource?: unknown
+	}
+	return JSON.parse(JSON.stringify(lightweightWorkspace)) as VueTemplateWorkspaceConfig
 }
 
 export function normalizeVueTemplates(value: unknown): VueTemplateRecord[] {
@@ -233,8 +220,6 @@ function isTemplateMetadata(value: unknown): value is VueTemplateMetadata {
 		(value.editor === undefined || typeof value.editor === 'string') &&
 		(value.schemaVersion === undefined || isFiniteNumber(value.schemaVersion)) &&
 		(value.designerMode === undefined || value.designerMode === 'print' || value.designerMode === 'presentation') &&
-		(value.dataSourceType === undefined || typeof value.dataSourceType === 'string') &&
-		(value.dataSourceKey === undefined || typeof value.dataSourceKey === 'string') &&
 		(value.pageSizeMm === undefined || isSizeLike(value.pageSizeMm)) &&
 		(value.pageBounds === undefined || isBoundsLike(value.pageBounds))
 	)
@@ -257,7 +242,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspaceConfig {
 	if (!isObject(value)) return false
-	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, printDataSource, background, presentation } = value
+	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, background, presentation } = value
 	return (
 		(designerMode === undefined || designerMode === 'print' || designerMode === 'presentation') &&
 		(pageSizeMm === undefined || isSizeLike(pageSizeMm)) &&
@@ -266,7 +251,6 @@ function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspac
 		(guides === undefined || isGuideList(guides)) &&
 		(viewportSize === undefined || isSizeLike(viewportSize)) &&
 		(pxPerMm === undefined || isFiniteNumber(pxPerMm)) &&
-		(printDataSource === undefined || isPrintDataSourceConfig(printDataSource)) &&
 		(background === undefined || isBackgroundConfig(background)) &&
 		(presentation === undefined || isObject(presentation))
 	)
@@ -286,10 +270,6 @@ function isBackgroundConfig(value: unknown): value is WorkspaceBackgroundConfig 
 		(value.imageSize === 'cover' || value.imageSize === 'contain' || value.imageSize === 'auto') &&
 		typeof value.imagePosition === 'string'
 	)
-}
-
-function isPrintDataSourceConfig(value: unknown): value is PrintDataSourceConfig {
-	return isObject(value) && typeof value.type === 'string'
 }
 
 function isGuideList(value: unknown): value is WorkspaceGuide[] {

@@ -28,8 +28,9 @@ import {
 	isPrintDataSourceFormDefinition,
 	type PrintDataSourceFormDefinition,
 } from '@/editor/dataSourceForm'
-import type { PrintDataSourceDetailTable } from '@/print/types'
+import type { PrintDataSourceConfig, PrintDataSourceDetailTable } from '@/print/types'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
+import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
 
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
@@ -83,6 +84,7 @@ const props = withDefaults(
 )
 
 const host = useLowCodeHost()
+const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const selectorDefinition = ref<StoredFormDefinition | null>(null)
 const dataSourceDefinitionForm = ref<StoredFormDefinition | null>(null)
 const activeDefinition = ref<PrintDataSourceFormDefinition | null>(null)
@@ -360,7 +362,6 @@ async function handleAddDetailTable() {
 			}
 		},
 	})
-	debugger//
 	if (result.action !== 'confirm') return
 
 	const label = readString(result.values.label)
@@ -377,7 +378,15 @@ async function handleAddDetailTable() {
 		setActionMessage(error instanceof Error ? error.message : '子表保存失败。')
 	}
 }
-
+watch(
+	() => {
+		return {
+			detailTables: detailTables.value.map((table) => ({ ...table })),
+		}
+	},
+	(value) => {
+	},
+)
 function createAddDetailTableSchema(): LowCodeFormSchema {
 	return {
 		title: '子表信息',
@@ -633,16 +642,12 @@ function convertImportedRows(matrix: unknown[][], table: PrintDataSourceDetailTa
 
 function updateDetailRows(field: string, rows: Record<string, unknown>[]) {
 	detailFormModel.value = { ...detailFormModel.value, [field]: rows }
-	const current = props.getWorkspaceTemplateConfig?.() ?? {}
-	const source = current.printDataSource
+	const source = editorPrintDataSource.value
 	if (!source || source.type !== 'inline') return
-	const inlineSource = source as Extract<NonNullable<VueTemplateWorkspaceConfig['printDataSource']>, { type: 'inline' }>
+	const inlineSource = source as Extract<PrintDataSourceConfig, { type: 'inline' }>
 	const sourceRows = inlineSource.rows.length ? inlineSource.rows.map((row) => ({ ...row })) : [{}]
 	sourceRows[0][field] = rows
-	props.applyWorkspaceTemplateConfig?.({
-		...current,
-		printDataSource: { ...inlineSource, rows: sourceRows },
-	})
+	editorPrintDataSource.value = { ...inlineSource, rows: sourceRows }
 }
 
 function syncDetailFormModel(source = getWorkspaceDataSource()) {
@@ -662,38 +667,30 @@ function handleDetailFormUpdate(value: Record<string, unknown>) {
 		]),
 	)
 	detailFormModel.value = nextModel as Record<string, unknown[]>
-	const current = props.getWorkspaceTemplateConfig?.() ?? {}
-	const source = current.printDataSource
+	const source = editorPrintDataSource.value
 	if (!source || source.type !== 'inline') return
-	const inlineSource = source as Extract<NonNullable<VueTemplateWorkspaceConfig['printDataSource']>, { type: 'inline' }>
+	const inlineSource = source as Extract<PrintDataSourceConfig, { type: 'inline' }>
 	const rows = inlineSource.rows.length ? inlineSource.rows : [{}]
-	props.applyWorkspaceTemplateConfig?.({
-		...current,
-		printDataSource: {
-			...inlineSource,
-			rows: rows.map((row) => ({
-				...row,
-				...nextModel,
-			})),
-		},
-	})
+	editorPrintDataSource.value = {
+		...inlineSource,
+		rows: rows.map((row) => ({
+			...row,
+			...nextModel,
+		})),
+	}
 }
 
 function handleDetailTabChange(key: string) {
 	const table = detailTables.value.find((item) => item.id === key)
 	if (!table) return
 	activeDetailTableId.value = table.id
-	const current = props.getWorkspaceTemplateConfig?.() ?? {}
-	const source = current.printDataSource
+	const source = editorPrintDataSource.value
 	if (!source || source.type !== 'inline' || source.detailField === table.field) return
-	props.applyWorkspaceTemplateConfig?.({
-		...current,
-		printDataSource: {
-			...source,
-			detailField: table.field,
-			detailColumns: table.columns.map((column) => ({ ...column })),
-		},
-	})
+	editorPrintDataSource.value = {
+		...source,
+		detailField: table.field,
+		detailColumns: table.columns.map((column) => ({ ...column })),
+	}
 }
 
 function createDataSourceDefinitionSchema(readonlyCode = false): LowCodeFormSchema {
@@ -785,10 +782,9 @@ async function saveDetailTables(
 }
 
 function applyWorkspaceDetailTables(tables: PrintDataSourceDetailTable[]) {
-	const current = props.getWorkspaceTemplateConfig?.() ?? {}
-	const source = current.printDataSource
+	const source = editorPrintDataSource.value
 	if (!source || source.type !== 'inline') return
-	const inlineSource = source as Extract<NonNullable<VueTemplateWorkspaceConfig['printDataSource']>, { type: 'inline' }>
+	const inlineSource = source as Extract<PrintDataSourceConfig, { type: 'inline' }>
 
 	const previousFields = new Set(
 		(inlineSource.detailTables ?? []).map((table) => readString(table.field)).filter(Boolean),
@@ -805,19 +801,16 @@ function applyWorkspaceDetailTables(tables: PrintDataSourceDetailTable[]) {
 		})
 		return nextRow
 	})
-	props.applyWorkspaceTemplateConfig?.({
-		...current,
-		printDataSource: {
-			...inlineSource,
-			rows,
-			detailField: tables.find((table) => table.id === activeDetailTableId.value)?.field ?? tables[0]?.field,
-			detailColumns: (tables.find((table) => table.id === activeDetailTableId.value)?.columns ?? tables[0]?.columns ?? []).map((column) => ({ ...column })),
-			detailTables: tables.map((table) => ({
+	editorPrintDataSource.value = {
+		...inlineSource,
+		rows,
+		detailField: tables.find((table) => table.id === activeDetailTableId.value)?.field ?? tables[0]?.field,
+		detailColumns: (tables.find((table) => table.id === activeDetailTableId.value)?.columns ?? tables[0]?.columns ?? []).map((column) => ({ ...column })),
+		detailTables: tables.map((table) => ({
 				...table,
 				columns: table.columns.map((column) => ({ ...column })),
 			})),
-		},
-	})
+	}
 }
 
 function createDetailTableId() {
@@ -890,11 +883,7 @@ function applyFormModel(
 	value: Record<string, unknown>,
 	definition: PrintDataSourceFormDefinition
 ) {
-	const current = props.getWorkspaceTemplateConfig?.() ?? {}
-	props.applyWorkspaceTemplateConfig?.({
-		...current,
-		printDataSource: createInlinePrintDataSource(value, definition, getWorkspaceDataSource()),
-	})
+	editorPrintDataSource.value = createInlinePrintDataSource(value, definition, getWorkspaceDataSource())
 }
 
 function syncFormModel() {
@@ -978,7 +967,7 @@ function isOptionalFormDefinitionError(error: unknown) {
 }
 
 function getWorkspaceDataSource() {
-	return props.getWorkspaceTemplateConfig?.()?.printDataSource
+	return editorPrintDataSource.value
 }
 
 onMounted(() => {
@@ -1009,6 +998,7 @@ watch(
 		syncFormModel()
 	}
 )
+
 </script>
 
 <template>

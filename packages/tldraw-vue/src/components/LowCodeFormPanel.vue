@@ -44,6 +44,7 @@ import {
 	normalizeVueResumeSections,
 } from '@/editor/extensions/resume/vueResumeShape'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
+import type { PrintDataSourceConfig } from '@/print/types'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 
@@ -1211,7 +1212,7 @@ function getWorkspaceFormModel(): ShapeFormModel {
 		pxPerMm: roundNumber(pxPerMm, 6),
 		viewportW: roundNumber(viewportSize.w),
 		viewportH: roundNumber(viewportSize.h),
-		...getDataSourceFormModel(config.printDataSource),
+		...getDataSourceFormModel(editorPrintDataSource.value),
 	}
 }
 
@@ -1245,8 +1246,8 @@ function applyWorkspaceFormModel(model: ShapeFormModel) {
 			y: cameraY,
 			z: clampNumber(zoomPercent, 20, 400, currentCamera.z * 100) / 100,
 		},
-		printDataSource: createDataSourceConfigFromModel(model),
 	}
+	editorPrintDataSource.value = createDataSourceConfigFromModel(model)
 
 	if (props.applyWorkspaceTemplateConfig) {
 		props.applyWorkspaceTemplateConfig(nextConfig)
@@ -1258,7 +1259,7 @@ function applyWorkspaceFormModel(model: ShapeFormModel) {
 	})
 }
 
-function getDataSourceFormModel(dataSource: VueTemplateWorkspaceConfig['printDataSource']) {
+function getDataSourceFormModel(dataSource: PrintDataSourceConfig | undefined) {
 	if (!dataSource || dataSource.type === 'none') return getEmptyDataSourceFormModel()
 
 	if (dataSource.type === 'inline') {
@@ -1321,7 +1322,7 @@ function getEmptyDataSourceFormModel() {
 
 function createDataSourceConfigFromModel(
 	model: ShapeFormModel
-): VueTemplateWorkspaceConfig['printDataSource'] {
+): PrintDataSourceConfig {
 	const type = String(model.dataSourceType ?? 'none')
 	const text = String(model.dataSourceText ?? '')
 	const dataPath = String(model.dataSourceDataPath ?? '').trim() || undefined

@@ -7,11 +7,11 @@ const editorPrintDataSources = new WeakMap<
 	ShallowRef<PrintDataSourceConfig | undefined>
 >()
 
-export function getEditorPrintDataSource(editor: Editor) {
+export function getEditorPrintDataSource(editor: Editor) {//
 	let source = editorPrintDataSources.get(editor)
 	if (!source) {
 		source = shallowRef<PrintDataSourceConfig | undefined>({ type: 'none' })
 		editorPrintDataSources.set(editor, source)
-	}
+	}//
 	return source
 }

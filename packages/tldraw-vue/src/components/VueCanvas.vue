@@ -22,7 +22,6 @@ import { getVueArrowPageTerminalPoint } from '@/editor/interactions/vueLineGeome
 import { getVueArrowTargetState } from '@/editor/interactions/vueArrowTargetState'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
 import type { VueTemplateWorkspaceConfig, WorkspaceBackgroundConfig } from '@/editor/templateStore'
-import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
 	WorkspaceBoundsManager,
 	type WorkspacePageSizeMm,
@@ -61,7 +60,6 @@ const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 	imagePosition: 'center',
 })
 const guides = ref<WorkspaceGuide[]>([])
-const printDataSource = getEditorPrintDataSource(props.editor)
 const selectedGuideId = ref<string | null>(null)
 let resizeObserver: ResizeObserver | null = null
 let lastSelectionPointerDown: { time: number; x: number; y: number } | null = null
@@ -647,7 +645,6 @@ function getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig {
 		guides: guides.value.map((guide) => ({ ...guide })),
 		viewportSize: { ...viewportSize.value },
 		pxPerMm: workspaceBounds.getPxPerMm(),
-		printDataSource: printDataSource.value ? cloneJson(printDataSource.value) : undefined,
 		background: cloneJson(workspaceBackground.value),
 	}
 }
@@ -698,10 +695,6 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 			})
 			.filter((guide) => isGuideInsidePage(guide, page))
 		clearMissingSelectedGuide()
-	}
-
-	if (config.printDataSource) {
-		printDataSource.value = cloneJson(config.printDataSource)
 	}
 
 	controller.updateViewport()

@@ -37,6 +37,8 @@ import {
 } from '@/print'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
+import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
+import type { PrintDataSourceConfig } from '@/print/types'
 
 const props = defineProps<{
 	editor: Editor
@@ -77,6 +79,7 @@ const embeddedPopoverStyle = ref<Record<string, string>>({})
 let printPreviewResizeObserver: ResizeObserver | null = null
 
 const controller = new TopMenuController(props.editor)
+const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 
 const PRINT_SAMPLE_ROWS = [] as any
 
@@ -409,8 +412,7 @@ function goToNextPrintPreviewPage() {
 
 function createPrintJobConfig(): PrintJobConfig {
 	const shapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	const workspace = props.getWorkspaceTemplateConfig?.()
-	const materialGrids = createMaterialGridConfigs(shapeIds, workspace?.printDataSource)
+	const materialGrids = createMaterialGridConfigs(shapeIds, editorPrintDataSource.value)
 	const printPage = getCurrentPrintPageConfig()
 
 	return {
@@ -421,7 +423,7 @@ function createPrintJobConfig(): PrintJobConfig {
 			materialGrids,
 		},
 		data: materialGrids ? [PRINT_SAMPLE_ROWS[0]] : PRINT_SAMPLE_ROWS,
-		dataSource: workspace?.printDataSource,
+		dataSource: editorPrintDataSource.value,
 		page: {
 			widthMm: printPage.pageSizeMm.w,
 			heightMm: printPage.pageSizeMm.h,
@@ -469,7 +471,7 @@ function getCurrentPrintPageConfig() {
 
 function createMaterialGridConfigs(
 	shapeIds: readonly TLShapeId[],
-	dataSource?: VueTemplateWorkspaceConfig['printDataSource']
+	dataSource?: PrintDataSourceConfig
 ): PrintMaterialGridCollection | undefined {
 	const materialGrids: Record<string, PrintMaterialGridConfig> = {}
 	const hasConfiguredDataSource =
