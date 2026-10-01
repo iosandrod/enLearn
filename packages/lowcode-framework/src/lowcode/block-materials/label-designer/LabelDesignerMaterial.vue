@@ -231,7 +231,7 @@ async function loadData(options: Record<string, any> = {}) {
   return getTemplateInfo();//
 }
 setTimeout(() => {
-  loadData({ templateId: '57538a39-ced5-4d90-8c12-14e7984f1b89' }).catch((error) => {
+  loadData({ templateId: '5332400f-fd64-49fb-a20d-1104dfe7ccce' }).catch((error) => {
   });
 },500)
 async function save(options: Record<string, any> = {}) {

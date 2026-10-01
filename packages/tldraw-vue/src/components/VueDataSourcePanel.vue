@@ -214,7 +214,7 @@ async function handleAddDataSource() {
 	const headerModel: Record<string, unknown> = {
 		code: 'print-designer.datasource.'+randomStr,
 		name: '',
-		tableName: '',
+		table_name: '',
 		description: '',
 	}
 	const detailTablesDraft = shallowRef<PrintDataSourceDetailTable[]>([])
@@ -244,6 +244,7 @@ async function handleAddDataSource() {
 		},
 		serviceApi,//
 		onConfirm: async (result) => {
+			// debugger//
 			const code = await saveDataSourceDefinition(
 				result.header ?? headerModel,
 				result,
@@ -708,12 +709,11 @@ async function saveDataSourceDefinition(
 ): Promise<string> {
 	const code = readString(model.code)
 	const name = readString(model.name)
-	const tableName = readString(model.tableName)
+	const tableName = readString(model.tableName)||readString(model.table_name)
 	const description = readString(model.description)
 	if (!/^print-designer\.datasource\./.test(code)) {
 		throw new Error('数据源编码必须以 print-designer.datasource. 开头')
-	}
-
+	}//
 	const serviceApi = host.getServiceApi()
 	if (!id) {
 		const existing = await serviceApi.invoke<unknown[]>('lowcode', 'listItems', {

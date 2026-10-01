@@ -17,6 +17,7 @@ import {
 	geoOptions,
 	sizeOptions,
 } from '@/editor/shapeProps/options'
+import { baseProps } from '@/editor/shapeProps/base'
 import { vueBoxPropertyRegistry } from '@/editor/shapeProps/vueBox'
 import type {
 	LowCodeField,
@@ -419,7 +420,7 @@ function propertyFormCode(type: string) {
 function createSchema(title: string, fields: LowCodeField[]): LowCodeFormSchema {
 	return {
 		title,
-		fields: [...baseFields, ...fields],
+		fields: [...baseFields, ...baseStyleFields, ...fields],
 		actions: [],
 	}
 }
@@ -631,6 +632,12 @@ const baseFields = [
 	switchField('isLocked', '锁定'),
 ] satisfies LowCodeField[]
 
+// Every custom node inherits these properties from baseProps. Keep their
+// panel fields in one place so local and database-backed schemas stay aligned.
+const baseStyleFields = baseProps.formFields.filter(
+	(field) => field.field !== 'w' && field.field !== 'h'
+)
+
 const sizeFields = [
 	numberField('w', '宽度', { min: 1, step: 1 }),
 	numberField('h', '高度', { min: 1, step: 1 }),
@@ -655,8 +662,6 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		selectField('color', '颜色', colorOptions),
 		selectField('font', '字体', fontOptions),
 		selectField('size', '字号', sizeOptions),
-		selectField('justifyContent', '水平对齐', textJustifyContentOptions),
-		selectField('alignItems', '垂直对齐', textAlignItemsOptions),
 		switchField('autoSize', '自动尺寸'),
 		...borderVisibilityFields,
 	]),
@@ -1030,7 +1035,11 @@ async function loadPropertyFormDefinitions() {
 			}
 		}
 
-		ensureVueTextLayoutFields(loaded[propertyFormCode('vue-text')])
+		for (const code of requiredPropertyFormCodes) {
+			if (code !== workspaceFormDescriptor.formCode) {
+				ensureBasePropertyFields(loaded[code])
+			}
+		}
 
 		formDefinitions.value = loaded
 		formDefinitionIds.value = ids
@@ -1044,16 +1053,12 @@ async function loadPropertyFormDefinitions() {
 	}
 }
 
-function ensureVueTextLayoutFields(schema: LowCodeFormSchema | undefined) {
+function ensureBasePropertyFields(schema: LowCodeFormSchema | undefined) {
 	if (!schema) return
 	const normalizedFields = [] as typeof schema.fields
 	const normalizedFieldNames = new Set<string>()
 	for (const field of schema.fields) {
-		const normalizedName = field.field === 'align-items'
-			? 'alignItems'
-			: field.field === 'justify-content'
-				? 'justifyContent'
-				: field.field
+		const normalizedName = normalizeBasePropertyFieldName(field.field)
 		if (normalizedFieldNames.has(normalizedName)) continue
 		field.field = normalizedName
 		normalizedFieldNames.add(normalizedName)
@@ -1061,14 +1066,24 @@ function ensureVueTextLayoutFields(schema: LowCodeFormSchema | undefined) {
 	}
 	schema.fields = normalizedFields
 	const existingFields = new Set(schema.fields.map((field) => field.field))
-	const localTextFields = shapeFormDescriptors['vue-text']?.schema.fields ?? []
-	for (const fieldName of ['justifyContent', 'alignItems']) {
+	for (const field of baseStyleFields) {
+		const fieldName = field.field
 		if (existingFields.has(fieldName)) continue
-		const field = localTextFields.find((candidate) => candidate.field === fieldName)
-		if (!field) continue
 		schema.fields.push(structuredClone(field))
 		existingFields.add(fieldName)
 	}
+}
+
+function normalizeBasePropertyFieldName(field: string) {
+	return {
+		'align-items': 'alignItems',
+		'justify-content': 'justifyContent',
+		'font-size': 'fontSize',
+		'padding-left': 'paddingLeft',
+		'padding-right': 'paddingRight',
+		'padding-top': 'paddingTop',
+		'padding-bottom': 'paddingBottom',
+	}[field] ?? field
 }
 
 function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
@@ -1475,11 +1490,7 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 	const nextProps: Record<string, unknown> = {}
 
 	for (const field of activeSchema.value?.fields ?? []) {
-		const key = field.field === 'align-items'
-			? 'alignItems'
-			: field.field === 'justify-content'
-				? 'justifyContent'
-				: field.field
+		const key = normalizeBasePropertyFieldName(field.field)
 		if (!(key in model)) continue
 		if (key in commonModelKeys || key === 'shapeTypeLabel') continue
 		if (key === 'assetId' || key === 'pointsCount' || key === 'propsJson') continue
@@ -1490,6 +1501,14 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 
 		if (key === 'w' || key === 'h') {
 			nextProps[key] = clampNumber(model[key], 1, 4096, toFiniteNumber(currentProps[key], 1))
+			continue
+		}
+		if (key === 'fontSize') {
+			nextProps.fontSize = clampNumber(model[key], 1, 512, toFiniteNumber(currentProps.fontSize, 14))
+			continue
+		}
+		if (key === 'paddingLeft' || key === 'paddingRight' || key === 'paddingTop' || key === 'paddingBottom') {
+			nextProps[key] = clampNumber(model[key], 0, 4096, toFiniteNumber(currentProps[key], 0))
 			continue
 		}
 		if (key === 'startX' || key === 'startY') {

@@ -29,15 +29,15 @@ watch(isTextEditing, (isEditing) => {
 })
 
 function getTextContentStyle() {
-	let obj= {
+	const fontSize = Number(props.shape.props.fontSize)
+	const resolvedFontSize = Number.isFinite(fontSize) && fontSize > 0
+		? fontSize
+		: getFontSize(props.shape.props.size)
+	return {
 		fontFamily: getTextFontFamily(props.shape.props.font),
-		fontSize: `${getFontSize(props.shape.props.size)}px`,
+		fontSize: `${resolvedFontSize}px`,
 		lineHeight: `${theme.value.lineHeight}`,
-	}//
-	if(props?.shape?.props?.fontSize){
-		obj.fontSize = `${props.shape.props.fontSize}px`//
-	}//
-	return obj
+	}
 }
 
 function getTextLayoutStyle() {
@@ -114,8 +114,13 @@ function syncTextShape(rawText: string) {
 	const nextSize = measureVueTextShape(props.editor, nextText, {
 		font: props.shape.props.font,
 		size: props.shape.props.size,
+		fontSize: props.shape.props.fontSize,
 		width: props.shape.props.w,
 		autoSize,
+		paddingLeft: props.shape.props.paddingLeft,
+		paddingRight: props.shape.props.paddingRight,
+		paddingTop: props.shape.props.paddingTop,
+		paddingBottom: props.shape.props.paddingBottom,
 	})
 	const nextProps: Partial<VueTextShape['props']> = { text: nextText }
 	if (autoSize) {

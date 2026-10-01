@@ -32,10 +32,12 @@ export const vueTextPropertyRegistry = extendShapeProperties(baseProps, {
 	justifyContent: {
 		validator: T.literalEnum('start', 'center', 'end'),
 		defaultValue: vueTextDefaultProps.justifyContent,
+		form: baseProps.definitions.justifyContent.form,
 	},
 	alignItems: {
 		validator: T.literalEnum('start', 'center', 'end'),
 		defaultValue: vueTextDefaultProps.alignItems,
+		form: baseProps.definitions.alignItems.form,
 	},
 	autoSize: T.boolean.optional(),
 	showBorder: T.boolean.optional(),

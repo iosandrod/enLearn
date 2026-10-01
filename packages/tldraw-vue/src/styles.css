@@ -2313,6 +2313,7 @@ button {
 
 .vue-text-shape {
 	display: flex;
+	box-sizing: border-box;
 	align-items: center;
 	border: calc(1px * var(--inverse-zoom)) solid rgb(15 23 42 / 0.22);
 	background: transparent;

@@ -45,15 +45,10 @@ export interface VuePoint {
 export type VueTextShape = TLBaseShape<
 	'vue-text',
 	BaseProps & {
-		paddingTop?: number
-		paddingBottom?: number
-		paddingLeft?: number
-		paddingRight?: number
 		text: string
 		color: TLDefaultColorStyle
 		font: TLDefaultFontStyle
 		size: TLDefaultSizeStyle
-		fontSize?: number
 		justifyContent: VueTextJustifyContent
 		alignItems: VueTextAlignItems
 		autoSize?: boolean

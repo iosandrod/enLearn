@@ -160,27 +160,27 @@ export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNo
 }
 
 export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExportNode {
-	const fontSize = getVueFontSize(editor, shape.props.size)
+	const fontSize = getVueFontSize(editor, shape.props.size, shape.props.fontSize)
 	const lineHeight = Math.max(fontSize, Math.ceil(fontSize * editor.getCurrentTheme().lineHeight))
-	// Keep the glyph ink away from the export bounds. SVG text can have a small
-	// right-side overhang even when its measured advance width fits exactly.
-	const horizontalPadding = 2
-	const verticalPadding = 1
+	const paddingLeft = 1 + Math.max(0, shape.props.paddingLeft)
+	const paddingRight = 1 + Math.max(0, shape.props.paddingRight)
+	const paddingTop = 1 + Math.max(0, shape.props.paddingTop)
+	const paddingBottom = 1 + Math.max(0, shape.props.paddingBottom)
 	const lines = wrapVueTextForSvg(
 		shape.props.text,
-		Math.max(1, shape.props.w - horizontalPadding * 2),
+		Math.max(1, shape.props.w - paddingLeft - paddingRight),
 		fontSize
 	)
-	const textX = getVueTextSvgX(shape.props.justifyContent, shape.props.w, horizontalPadding)
+	const textX = getVueTextSvgX(shape.props.justifyContent, shape.props.w, paddingLeft, paddingRight)
 	const textAnchor = getVueTextSvgAnchor(shape.props.justifyContent)
 	const lineHeightTotal = lines.length * lineHeight
-	const extraHeight = Math.max(0, shape.props.h - verticalPadding * 2 - lineHeightTotal)
+	const extraHeight = Math.max(0, shape.props.h - paddingTop - paddingBottom - lineHeightTotal)
 	const blockOffset = shape.props.alignItems === 'end'
 		? extraHeight
 		: shape.props.alignItems === 'center'
 			? extraHeight / 2
 			: 0
-	const firstBaseline = verticalPadding + blockOffset + fontSize
+	const firstBaseline = paddingTop + blockOffset + fontSize
 	const textChildren = lines.map((line, index) =>
 		createElement(
 			'tspan',
@@ -221,9 +221,10 @@ export function createVueTextSvg(editor: Editor, shape: VueTextShape): SvgExport
 function getVueTextSvgX(
 	justifyContent: VueTextShape['props']['justifyContent'],
 	width: number,
-	padding: number
+	paddingLeft: number,
+	paddingRight: number
 ) {
-	return justifyContent === 'center' ? width / 2 : justifyContent === 'end' ? width - padding : padding
+	return justifyContent === 'center' ? width / 2 : justifyContent === 'end' ? width - paddingRight : paddingLeft
 }
 
 function getVueTextSvgAnchor(justifyContent: VueTextShape['props']['justifyContent']) {
@@ -794,8 +795,11 @@ function getVueStrokeWidth(size: TLDefaultSizeStyle) {
 	return VUE_STROKE_SIZES[size]
 }
 
-function getVueFontSize(editor: Editor, size: TLDefaultSizeStyle) {
-	return Math.round(editor.getCurrentTheme().fontSize * VUE_FONT_SIZE_SCALE[size])
+function getVueFontSize(editor: Editor, size: TLDefaultSizeStyle, override?: number) {
+	const configuredFontSize = Number(override)
+	return Number.isFinite(configuredFontSize) && configuredFontSize > 0
+		? configuredFontSize
+		: Math.round(editor.getCurrentTheme().fontSize * VUE_FONT_SIZE_SCALE[size])
 }
 
 function getVueFontFamily(editor: Editor, font: TLDefaultFontStyle) {

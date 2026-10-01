@@ -6,6 +6,22 @@ function numberField(field: string, label: string, props: Record<string, unknown
 	return { field, label, component: 'lc-number-input', props }
 }
 
+function selectField(field: string, label: string, options: LowCodeField['options']): LowCodeField {
+	return {
+		field,
+		label,
+		component: 'vxe-select',
+		options,
+		props: { clearable: false },
+	}
+}
+
+const alignmentOptions = [
+	{ label: '居左/居上', value: 'start' },
+	{ label: '居中', value: 'center' },
+	{ label: '居右/居下', value: 'end' },
+]
+
 const baseDefinitions = {
 	w: {
 		validator: T.number,
@@ -20,10 +36,12 @@ const baseDefinitions = {
 	justifyContent: {
 		validator: T.literalEnum('start', 'center', 'end'),
 		defaultValue: 'start',
+		form: selectField('justifyContent', '水平对齐', alignmentOptions),
 	},
 	alignItems: {
 		validator: T.literalEnum('start', 'center', 'end'),
 		defaultValue: 'start',
+		form: selectField('alignItems', '垂直对齐', alignmentOptions),
 	},
 	paddingLeft: {
 		validator: T.number,
@@ -44,7 +62,7 @@ const baseDefinitions = {
 		validator: T.number,
 		defaultValue: 0,
 		form: numberField('paddingBottom', '下内边距', { min: 0, step: 1 }),
-	},//
+	},
 	fontSize: {
 		validator: T.number,
 		defaultValue: 14,
@@ -57,4 +75,11 @@ export const baseProps = defineShapeProperties(baseDefinitions)
 export type BaseProps = {
 	w: number
 	h: number
+	justifyContent: 'start' | 'center' | 'end'
+	alignItems: 'start' | 'center' | 'end'
+	paddingLeft: number
+	paddingRight: number
+	paddingTop: number
+	paddingBottom: number
+	fontSize: number
 }
