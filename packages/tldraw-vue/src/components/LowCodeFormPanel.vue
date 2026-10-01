@@ -1,6 +1,23 @@
 <script setup lang="ts">
 import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
+import {
+	$$formDesigner,
+	createLowCodeFormSchemaFromDesignerResult,
+	type FormDesignerResult,
+} from '@enlearn/lowcode-framework/visual-editor/components/form-designer/form-designer.service'
+import {
+	createFormDesignerFieldsFromSchema,
+	mergeRuntimeFormSchema,
+} from '@enlearn/lowcode-framework/lowcode/block-materials/runtime-form-designer'
+import {
+	colorOptions,
+	dashOptions,
+	fillOptions,
+	geoOptions,
+	sizeOptions,
+} from '@/editor/shapeProps/options'
+import { vueBoxPropertyRegistry } from '@/editor/shapeProps/vueBox'
 import type {
 	LowCodeField,
 	LowCodeFormSchema,
@@ -51,7 +68,10 @@ const formModel = ref<ShapeFormModel>({})
 const formDefinitions = ref<Record<string, LowCodeFormSchema>>({})
 const formDefinitionsLoading = ref(true)
 const formDefinitionError = ref('')
+const formDefinitionIds = ref<Record<string, string>>({})
 const imageSourceError = ref('')
+const designingForm = ref(false)
+const designFormMessage = ref('')
 const host = useLowCodeHost()
 const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const imageSourceCache = new Map<string, { src: string }>()
@@ -159,6 +179,65 @@ const formKey = computed(() => {
 	const shape = selectedShape.value
 	return shape ? `${shape.id}:${shape.type}` : 'empty'
 })
+
+const designSchema = computed(() => {
+	const code = activeFormCode.value
+	return code ? formDefinitions.value[code] ?? null : null
+})
+const canDesignForm = computed(() => {
+	const code = activeFormCode.value
+	return Boolean(
+		code &&
+		designSchema.value &&
+		formDefinitionIds.value[code] &&
+		!formDefinitionsLoading.value &&
+		!designingForm.value &&
+		!props.editor.getIsReadonly(),
+	)
+})
+
+async function handleDesignForm() {
+	const code = activeFormCode.value
+	const originalSchema = designSchema.value
+	const id = code ? formDefinitionIds.value[code] : ''
+	if (!code || !originalSchema || !id || designingForm.value) return
+
+	designingForm.value = true
+	designFormMessage.value = '正在打开表单设计器…'
+	try {
+		const saved = await new Promise<boolean>((resolve, reject) => {
+			void $$formDesigner({
+				title: `设计表单 - ${panelTitle.value}`,
+				mode: 'edit',
+				fields: createFormDesignerFieldsFromSchema(originalSchema),
+				layout: originalSchema.layout,
+				columns: originalSchema.columns,
+				serviceApi: host.getServiceApi(),
+				onCancel: () => resolve(false),
+				onConfirm: async (result: FormDesignerResult) => {
+					try {
+						const designedSchema = createLowCodeFormSchemaFromDesignerResult(result)
+						const schema = mergeRuntimeFormSchema(originalSchema, designedSchema, result.fields)
+						await host.getServiceApi().invoke('lowcode', 'saveItem', {
+							resource: 'lowcode_form_definitions',
+							id,
+							data: { schema },
+						})
+						await loadPropertyFormDefinitions()
+						resolve(true)
+					} catch (error) {
+						reject(error)
+					}
+				},
+			})
+		})
+		designFormMessage.value = saved ? '表单配置已保存。' : '已取消表单设计。'
+	} catch (error) {
+		designFormMessage.value = error instanceof Error ? error.message : '表单配置保存失败。'
+	} finally {
+		designingForm.value = false
+	}
+}
 
 function handleModelUpdate(value: ShapeFormModel) {
 	if (isCanvasFormActive.value) {
@@ -451,70 +530,11 @@ const workspaceFormDescriptor = {
 	},
 	} satisfies { title: string; formCode: string; schema: LowCodeFormSchema }
 
-const colorOptions = [
-	{ label: '黑色', value: 'black' },
-	{ label: '灰色', value: 'grey' },
-	{ label: '浅紫', value: 'light-violet' },
-	{ label: '紫色', value: 'violet' },
-	{ label: '蓝色', value: 'blue' },
-	{ label: '浅蓝', value: 'light-blue' },
-	{ label: '黄色', value: 'yellow' },
-	{ label: '橙色', value: 'orange' },
-	{ label: '绿色', value: 'green' },
-	{ label: '浅绿', value: 'light-green' },
-	{ label: '浅红', value: 'light-red' },
-	{ label: '红色', value: 'red' },
-	{ label: '白色', value: 'white' },
-] satisfies LowCodeOption[]
-
-const fillOptions = [
-	{ label: '无填充', value: 'none' },
-	{ label: '半透明', value: 'semi' },
-	{ label: '实心', value: 'solid' },
-	{ label: '图案', value: 'pattern' },
-	{ label: '填充', value: 'fill' },
-	{ label: '线性填充', value: 'lined-fill' },
-] satisfies LowCodeOption[]
-
-const dashOptions = [
-	{ label: '手绘', value: 'draw' },
-	{ label: '实线', value: 'solid' },
-	{ label: '虚线', value: 'dashed' },
-	{ label: '点线', value: 'dotted' },
-	{ label: '无', value: 'none' },
-] satisfies LowCodeOption[]
-
-const sizeOptions = [
-	{ label: '小', value: 's' },
-	{ label: '中', value: 'm' },
-	{ label: '大', value: 'l' },
-	{ label: '超大', value: 'xl' },
-] satisfies LowCodeOption[]
-
 const fontOptions = [
 	{ label: '手写', value: 'draw' },
 	{ label: '无衬线', value: 'sans' },
 	{ label: '衬线', value: 'serif' },
 	{ label: '等宽', value: 'mono' },
-] satisfies LowCodeOption[]
-
-const geoOptions = [
-	{ label: '矩形', value: 'rectangle' },
-	{ label: '椭圆', value: 'ellipse' },
-	{ label: '三角形', value: 'triangle' },
-	{ label: '菱形', value: 'diamond' },
-	{ label: '六边形', value: 'hexagon' },
-	{ label: '胶囊', value: 'oval' },
-	{ label: '平行四边形', value: 'rhombus' },
-	{ label: '星形', value: 'star' },
-	{ label: '云形', value: 'cloud' },
-	{ label: '心形', value: 'heart' },
-	{ label: '叉框', value: 'x-box' },
-	{ label: '勾选框', value: 'check-box' },
-	{ label: '左箭头', value: 'arrow-left' },
-	{ label: '上箭头', value: 'arrow-up' },
-	{ label: '下箭头', value: 'arrow-down' },
-	{ label: '右箭头', value: 'arrow-right' },
 ] satisfies LowCodeOption[]
 
 const qrLevelOptions = [
@@ -586,10 +606,7 @@ const borderVisibilityFields = [switchField('showBorder', '显示边框')] satis
 
 const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	'vue-box': createPropsDescriptor('vue-box', '几何节点', [
-		...sizeFields,
-		selectField('geo', '几何形状', geoOptions),
-		...strokeStyleFields,
-		...fillStyleFields,
+		...vueBoxPropertyRegistry.formFields,
 	]),
 	'vue-text': createPropsDescriptor('vue-text', '文字节点', [
 		...sizeFields,
@@ -895,6 +912,7 @@ const fallbackDescriptor: ShapeFormDescriptor = {
 }
 
 type PropertyFormDefinitionRow = {
+	id?: unknown
 	code?: unknown
 	schema?: unknown
 }
@@ -917,10 +935,12 @@ async function loadPropertyFormDefinitions() {
 			limit: requiredPropertyFormCodes.length,
 		})
 		const loaded: Record<string, LowCodeFormSchema> = {}
+		const ids: Record<string, string> = {}
 
 		for (const row of Array.isArray(rows) ? rows : []) {
 			if (typeof row.code !== 'string' || !isLowCodeFormSchema(row.schema)) continue
 			loaded[row.code] = structuredClone(row.schema)
+			if (typeof row.id === 'string' && row.id.trim()) ids[row.code] = row.id.trim()
 		}
 
 		const missing = requiredPropertyFormCodes.filter((code) => !loaded[code])
@@ -944,8 +964,10 @@ async function loadPropertyFormDefinitions() {
 		}
 
 		formDefinitions.value = loaded
+		formDefinitionIds.value = ids
 	} catch (error) {
 		formDefinitions.value = {}
+		formDefinitionIds.value = {}
 		formDefinitionError.value =
 			error instanceof Error ? error.message : '属性表单加载失败，请稍后重试。'
 	} finally {
@@ -1295,6 +1317,10 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 		const key = field.field
 		if (key in commonModelKeys || key === 'shapeTypeLabel') continue
 		if (key === 'assetId' || key === 'pointsCount' || key === 'propsJson') continue
+		if (shape.type === 'vue-box' && vueBoxPropertyRegistry.has(key)) {
+			nextProps[key] = vueBoxPropertyRegistry.normalize(key, model[key], currentProps[key])
+			continue
+		}
 
 		if (key === 'w' || key === 'h') {
 			nextProps[key] = clampNumber(model[key], 1, 4096, toFiniteNumber(currentProps[key], 1))
@@ -1465,11 +1491,27 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 		@contextmenu.prevent.stop
 	>
 		<header class="lowcode-form-panel__header">
-			<div>
+			<div class="lowcode-form-panel__heading">
 				<div class="lowcode-form-panel__title">{{ panelTitle }}</div>
 				<div class="lowcode-form-panel__subtitle">{{ panelSubtitle }}</div>
 			</div>
+			<div class="lowcode-form-panel__header-actions" aria-label="属性表单操作">
+				<button
+					type="button"
+					class="lowcode-form-panel__action lowcode-form-panel__action--primary"
+					:disabled="!canDesignForm"
+					:title="canDesignForm ? '设计当前属性表单' : '当前属性表单不可设计'"
+					@click="handleDesignForm"
+				>
+					<i :class="designingForm ? 'ri-loader-4-line print-spin' : 'ri-edit-2-line'" aria-hidden="true" />
+					<span>设计表单</span>
+				</button>
+			</div>
 		</header>
+		<div v-if="designFormMessage" class="lowcode-form-panel__action-message" role="status">
+			<i :class="designingForm ? 'ri-loader-4-line print-spin' : 'ri-checkbox-circle-line'" aria-hidden="true" />
+			<span>{{ designFormMessage }}</span>
+		</div>
 
 		<div v-if="formDefinitionsLoading" class="lowcode-form-panel__state" role="status">
 			正在加载属性表单...

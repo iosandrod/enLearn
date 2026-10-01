@@ -27,6 +27,10 @@ import type {
 } from './vueDefaultShapes'
 import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
+import {
+	clampVueTableRowHeight,
+	getVueTableRowLayouts,
+} from './extensions/table/tableRowHeight'
 import type { VueResumeSectionShape, VueResumeShape } from './extensions/resume/vueResumeShape'
 
 const VUE_VISIBLE_BORDER_COLOR = '#111827'
@@ -127,7 +131,12 @@ export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNo
 	const strokeWidth = getVueStrokeWidth(shape.props.size)
 	const strokeColor = getVueThemeColor(editor, shape.props.color, 'solid')
 	const fill = getVueFill(editor, shape.id, shape.props.color, shape.props.fill)
-	const path = getVueBoxPath(shape.props.geo, shape.props.w, shape.props.h)
+	const path = getVueBoxPath(
+		shape.props.geo,
+		shape.props.w,
+		shape.props.h,
+		shape.props.borderRadius
+	)
 	const dashArray = getDashArray(shape.props.dash, strokeWidth)
 
 	return createElement(
@@ -336,7 +345,7 @@ export function createVueFrameSvg(shape: VueFrameShape): SvgExportNode {
 export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 	const width = Math.max(1, shape.props.w)
 	const height = Math.max(1, shape.props.h)
-	const rowHeight = Math.min(72, Math.max(22, shape.props.rowHeight))
+	const defaultRowHeight = clampVueTableRowHeight(shape.props.rowHeight)
 	const columns = shape.props.columns.length
 		? shape.props.columns
 		: [{ field: 'value', title: 'Value', width }]
@@ -365,7 +374,19 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 	]
 
 	const gridChildren: SvgExportChild[] = []
-	for (let y = rowHeight; y < height; y += rowHeight) {
+	const rowLayouts = getVueTableRowLayouts(
+		shape.props.rows,
+		defaultRowHeight,
+		shape.props.rowHeights
+	).filter(layout => layout.y < height)
+	let rowY = 0
+	for (const layout of rowLayouts) {
+		rowY = layout.bottom
+		if (layout.bottom < height) {
+			gridChildren.push(createVueTableGridLine(0, layout.bottom, width, layout.bottom))
+		}
+	}
+	for (let y = rowY + defaultRowHeight; y < height; y += defaultRowHeight) {
 		gridChildren.push(createVueTableGridLine(0, y, width, y))
 	}
 
@@ -375,9 +396,8 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 		gridChildren.push(createVueTableGridLine(x, 0, x, height))
 	}
 
-	const visibleRowCount = Math.min(shape.props.rows.length, Math.ceil(height / rowHeight))
-	for (let rowIndex = 0; rowIndex < visibleRowCount; rowIndex++) {
-		const row = shape.props.rows[rowIndex]
+	for (const layout of rowLayouts) {
+		const row = shape.props.rows[layout.index]
 		let cellX = 0
 		for (const [columnIndex, column] of columns.entries()) {
 			const cellWidth = columnWidths[columnIndex] ?? 0
@@ -388,7 +408,7 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 						'text',
 						{
 							x: cellX + 8,
-							y: rowIndex * rowHeight + rowHeight / 2,
+							y: layout.y + layout.height / 2,
 							fill: '#111827',
 							fontFamily: 'Inter, Arial, sans-serif',
 							fontSize: 12,

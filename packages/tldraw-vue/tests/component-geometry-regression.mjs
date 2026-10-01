@@ -37,6 +37,12 @@ assert.match(paths.get('ellipse'), /A/, 'ellipse should use arc commands')
 assert.match(paths.get('cloud'), /C/, 'cloud should use smooth curve commands')
 assert.match(paths.get('heart'), /C/, 'heart should use smooth curve commands')
 
+const squareRectangle = getVueBoxPath('rectangle', 120, 76, 0)
+const roundedRectangle = getVueBoxPath('rectangle', 120, 76, 20)
+assert.notEqual(squareRectangle, roundedRectangle, 'rectangle border radius must affect its path')
+assert.match(squareRectangle, /^M0,0 /, 'a zero border radius must produce square corners')
+assert.match(roundedRectangle, /^M20,0 /, 'the configured border radius must be used')
+
 assert.equal(getVueBoxMarkSegments('x-box', 120, 76).length, 2)
 assert.equal(getVueBoxMarkSegments('check-box', 120, 76).length, 2)
 for (const geometry of geometries.filter((item) => item !== 'x-box' && item !== 'check-box')) {

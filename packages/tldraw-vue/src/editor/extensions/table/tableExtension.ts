@@ -1,5 +1,6 @@
 import VueTableShapeNode from '@/components/shapes/VueTableShapeNode.vue'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../../vueEditorExtensions'
+import { vueTableDefaultSize } from '../../defaults'
 import {
 	VueTableShapeUtil,
 	createDefaultVueTableProps,
@@ -8,7 +9,7 @@ import {
 
 const tableCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-table',
-	defaultSize: { w: 480, h: 260 },
+	defaultSize: vueTableDefaultSize,
 	createShape({ editor, id, rect }) {
 		const defaultProps = createDefaultVueTableProps()
 		editor.createShapes<VueTableShape>([

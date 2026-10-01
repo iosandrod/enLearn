@@ -3,6 +3,7 @@ import { canInsertCellAreaColumns, canInsertCellAreaRows, canRemoveCellAreaColum
 import { getStore } from '../core/store';
 import { getCellAreaSelectionInfo } from '../core/selection';
 import { closestByClass } from './traversal';
+import { CELL_AREA_CONTEXT_MENU_CLASS, CELL_AREA_CONTEXT_MENU_Z_INDEX, isCellAreaContextMenuTrigger, shouldCloseCellAreaContextMenu } from './context-menu-pointer';
 const tableContextMenuCleanupMap = new WeakMap();
 let contextMenuController = null;
 let activeContextMenuTable = null;
@@ -79,6 +80,37 @@ function isCellInActiveArea($table, cell) {
         columnIndex >= columnStartIndex &&
         columnIndex <= columnEndIndex;
 }
+function selectContextMenuCell($table, cell) {
+    if (isCellInActiveArea($table, cell)) {
+        return true;
+    }
+    const { row, column } = getCellRowAndColumn($table, cell);
+    if (!row || !column || !$table.setCellAreas) {
+        return false;
+    }
+    const areas = $table.setCellAreas([{
+            type: 'body',
+            startRow: row,
+            endRow: row,
+            activeRow: row,
+            startColumn: column,
+            endColumn: column,
+            activeColumn: column
+        }]);
+    return Array.isArray(areas) && areas.length > 0;
+}
+function isContextMenuTarget(target) {
+    const element = target instanceof Element ? target : null;
+    return Boolean(element?.closest(`.${CELL_AREA_CONTEXT_MENU_CLASS}`));
+}
+function handleDocumentPointerDown(evnt) {
+    const $table = activeContextMenuTable;
+    if (!$table ||
+        !shouldCloseCellAreaContextMenu(evnt.button, isContextMenuTarget(evnt.target))) {
+        return;
+    }
+    hideCellAreaContextMenu($table);
+}
 export function showCellAreaContextMenu($table, evnt) {
     if (!contextMenuController) {
         return;
@@ -87,7 +119,8 @@ export function showCellAreaContextMenu($table, evnt) {
     contextMenuController.open({
         x: evnt.clientX,
         y: evnt.clientY,
-        className: 'enlearn-context-menu',
+        zIndex: CELL_AREA_CONTEXT_MENU_Z_INDEX,
+        className: CELL_AREA_CONTEXT_MENU_CLASS,
         options: [
             [
                 {
@@ -171,17 +204,24 @@ export function bindCellAreaContextMenu($table) {
         return;
     }
     const handleContextMenu = (evnt) => {
+        if (!isCellAreaContextMenuTrigger(evnt.button)) {
+            return;
+        }
         const store = getStore($table);
         if (store.isSelecting || store.isExtending) {
             return;
         }
         const cell = getBodyCellFromEvent($table, evnt);
-        if (!cell || !isCellInActiveArea($table, cell)) {
+        if (!cell) {
             hideCellAreaContextMenu($table);
             return;
         }
         evnt.preventDefault();
         evnt.stopPropagation();
+        if (!selectContextMenuCell($table, cell)) {
+            hideCellAreaContextMenu($table);
+            return;
+        }
         $table.closeMenu?.();
         showCellAreaContextMenu($table, evnt);
     };
@@ -195,6 +235,9 @@ export function registerCellAreaContextMenuLifecycle(VxeUI) {
     contextMenuController = VxeUI.contextMenu ?? null;
     if (lifecycleInstalled || !VxeUI.interceptor) {
         return;
+    }
+    if (typeof document !== 'undefined') {
+        document.addEventListener('pointerdown', handleDocumentPointerDown, true);
     }
     VxeUI.interceptor.add('mounted', ({ $table }) => {
         if ($table?.getCellAreas && $table?.mergeActiveCellArea) {

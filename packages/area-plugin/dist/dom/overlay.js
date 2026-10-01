@@ -71,6 +71,14 @@ function toStylePosition(position) {
         height: `${Math.max(0, position.height)}px`
     };
 }
+function getElementScale(el, rect) {
+    const scaleX = el.offsetWidth > 0 ? rect.width / el.offsetWidth : 1;
+    const scaleY = el.offsetHeight > 0 ? rect.height / el.offsetHeight : 1;
+    return {
+        scaleX: Number.isFinite(scaleX) && scaleX > 0 ? scaleX : 1,
+        scaleY: Number.isFinite(scaleY) && scaleY > 0 ? scaleY : 1
+    };
+}
 function getCellContentPosition(areaEl, cell) {
     const rootEl = areaEl.parentElement;
     const rootRect = rootEl?.getBoundingClientRect();
@@ -78,13 +86,17 @@ function getCellContentPosition(areaEl, cell) {
     if (!rootEl || !rootRect) {
         return null;
     }
-    const left = cellRect.left - rootRect.left + rootEl.scrollLeft;
-    const top = cellRect.top - rootRect.top + rootEl.scrollTop;
+    // DOMRects are expressed in viewport pixels and therefore include any CSS
+    // transform/zoom applied by a host. Overlay styles are local, unscaled CSS
+    // coordinates, so convert the measured values back before positioning them.
+    const { scaleX, scaleY } = getElementScale(rootEl, rootRect);
+    const left = (cellRect.left - rootRect.left) / scaleX + rootEl.scrollLeft;
+    const top = (cellRect.top - rootRect.top) / scaleY + rootEl.scrollTop;
     return {
         left,
         top,
-        width: cellRect.width,
-        height: cellRect.height
+        width: cellRect.width / scaleX,
+        height: cellRect.height / scaleY
     };
 }
 function getAreaPosition(areaEl, startCell, endCell) {

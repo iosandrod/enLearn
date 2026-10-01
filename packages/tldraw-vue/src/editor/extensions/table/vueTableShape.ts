@@ -7,10 +7,24 @@ import {
 import { type TLBaseShape } from '@tldraw/tlschema'
 import { T } from '@tldraw/validate'
 import { createVueTableSvg } from '../../vueSvgExport'
+import {
+	VUE_TABLE_ROW_ID_FIELD,
+	clampVueTableRowHeight,
+	normalizeVueTableRowHeights,
+	type VueTableRowHeightMap,
+} from './tableRowHeight'
+import { baseProps, type BaseProps } from '../../shapeProps/base'
+import { extendShapeProperties } from '../../shapeProps/registry'
+import {
+	vueTableDefaultColumns,
+	vueTableDefaultRowHeight,
+	vueTableDefaultRows,
+	vueTableDefaultSize,
+} from '../../defaults'
 
 export const VUE_TABLE_MIN_WIDTH = 160
 export const VUE_TABLE_MIN_HEIGHT = 96
-export const VUE_TABLE_ROW_ID_FIELD = '_rowId'
+export { VUE_TABLE_ROW_ID_FIELD } from './tableRowHeight'
 
 export interface VueTableColumn {
 	field: string
@@ -22,12 +36,11 @@ export type VueTableRow = Record<string, string>
 
 export type VueTableShape = TLBaseShape<
 	'vue-table',
-	{
-		w: number
-		h: number
+	BaseProps & {
 		columns: VueTableColumn[]
 		rows: VueTableRow[]
 		rowHeight: number
+		rowHeights?: VueTableRowHeightMap
 		showBorder?: boolean
 	}
 >
@@ -49,14 +62,13 @@ declare module '@tldraw/tlschema' {
 export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 	static override type = 'vue-table' as const
 
-	static override props = {
-		w: T.number,
-		h: T.number,
+	static override props = extendShapeProperties(baseProps, {
 		columns: T.arrayOf(tableColumnValidator),
 		rows: T.arrayOf(tableRowValidator),
 		rowHeight: T.number,
+		rowHeights: T.dict(T.string, T.number).optional(),
 		showBorder: T.boolean.optional(),
-	}
+	}).validators
 
 	override getDefaultProps(): VueTableShape['props'] {
 		return createDefaultVueTableProps()
@@ -73,12 +85,14 @@ export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 	override onBeforeUpdate(_prev: VueTableShape, next: VueTableShape) {
 		const w = Math.max(VUE_TABLE_MIN_WIDTH, next.props.w)
 		const h = Math.max(VUE_TABLE_MIN_HEIGHT, next.props.h)
-		const rowHeight = clampRowHeight(next.props.rowHeight)
+		const rowHeight = clampVueTableRowHeight(next.props.rowHeight)
+		const rowHeights = normalizeVueTableRowHeights(next.props.rows, next.props.rowHeights)
 
 		if (
 			approximatelyEqual(w, next.props.w) &&
 			approximatelyEqual(h, next.props.h) &&
-			approximatelyEqual(rowHeight, next.props.rowHeight)
+			approximatelyEqual(rowHeight, next.props.rowHeight) &&
+			rowHeightMapsEqual(rowHeights, next.props.rowHeights)
 		) {
 			return
 		}
@@ -90,6 +104,7 @@ export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 				w,
 				h,
 				rowHeight,
+				rowHeights,
 			},
 		}
 	}
@@ -110,35 +125,24 @@ export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 
 export function createDefaultVueTableProps(): VueTableShape['props'] {
 	return {
-		w: 480,
-		h: 260,
+		...baseProps.defaults,
+		...vueTableDefaultSize,
 		columns: createDefaultVueTableColumns(),
 		rows: createDefaultVueTableRows(),
-		rowHeight: 32,
+		rowHeight: vueTableDefaultRowHeight,
+		rowHeights: {},
 		showBorder: true,
 	}
 }
 
 export function createDefaultVueTableColumns(): VueTableColumn[] {
-	return [
-		{ field: 'item', title: 'Item', width: 150 },
-		{ field: 'status', title: 'Status', width: 110 },
-		{ field: 'date', title: 'Date', width: 120 },
-		{ field: 'amount', title: 'Amount', width: 100 },
-	]
+	return vueTableDefaultColumns.map((column) => ({ ...column }))
 }
 
 export function createDefaultVueTableRows(): VueTableRow[] {
-	return [
-		createTableRow(1, 'Order 1001', 'Pending', '07-28', '128.00'),
-		createTableRow(2, 'Order 1002', 'Ready', '07-28', '256.00'),
-		createTableRow(3, 'Order 1003', 'Packed', '07-29', '89.50'),
-		createTableRow(4, 'Order 1004', 'Review', '07-29', '176.20'),
-		createTableRow(5, 'Order 1005', 'Ready', '07-30', '342.00'),
-		createTableRow(6, 'Order 1006', 'Pending', '07-30', '64.80'),
-		createTableRow(7, 'Order 1007', 'Packed', '07-31', '211.30'),
-		createTableRow(8, 'Order 1008', 'Ready', '07-31', '98.00'),
-	]
+	return vueTableDefaultRows.map(([item, status, date, amount], index) =>
+		createTableRow(index + 1, item, status, date, amount),
+	)
 }
 
 export function isVueTableShape(shape: TLShape | undefined): shape is VueTableShape {
@@ -161,10 +165,16 @@ function createTableRow(
 	}
 }
 
-function clampRowHeight(rowHeight: number) {
-	return Math.min(72, Math.max(22, rowHeight))
-}
-
 function approximatelyEqual(a: number, b: number) {
 	return Math.abs(a - b) < 0.01
+}
+
+function rowHeightMapsEqual(a: VueTableRowHeightMap, b?: VueTableRowHeightMap) {
+	const bMap = b ?? {}
+	const aKeys = Object.keys(a)
+	const bKeys = Object.keys(bMap)
+	return (
+		aKeys.length === bKeys.length &&
+		aKeys.every(key => approximatelyEqual(a[key] ?? 0, bMap[key] ?? 0))
+	)
 }

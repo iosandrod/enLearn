@@ -14,6 +14,9 @@ import {
 import { type TLBaseShape } from '@tldraw/tlschema'
 import { T } from '@tldraw/validate'
 import { createVueResumeSectionSvg, createVueResumeSvg } from '../../vueSvgExport'
+import { baseProps, type BaseProps } from '../../shapeProps/base'
+import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueResumeDefaultProps, vueResumeDefaultSize } from '../../defaults'
 
 export type VueResumeSectionZone = 'pageHeader' | 'content' | 'pageFooter'
 
@@ -39,10 +42,10 @@ const SECTION_ORDER = new Map(
 	VUE_RESUME_SECTION_DEFINITIONS.map((definition, index) => [definition.zone, index])
 )
 
-export type VueResumeShape = TLBaseShape<'vue-resume', { w: number; h: number; name: string }>
+export type VueResumeShape = TLBaseShape<'vue-resume', BaseProps & { name: string }>
 export type VueResumeSectionShape = TLBaseShape<
 	'vue-resume-section',
-	{ w: number; h: number; zone: VueResumeSectionZone; label: string }
+	BaseProps & { zone: VueResumeSectionZone; label: string }
 >
 
 declare module '@tldraw/tlschema' {
@@ -54,10 +57,10 @@ declare module '@tldraw/tlschema' {
 
 export class VueResumeShapeUtil extends BaseBoxShapeUtil<VueResumeShape> {
 	static override type = 'vue-resume' as const
-	static override props = { w: T.number, h: T.number, name: T.string }
+	static override props = extendShapeProperties(baseProps, { name: T.string }).validators
 
 	override getDefaultProps(): VueResumeShape['props'] {
-		return { w: 560, h: getVueResumeDefaultHeight(), name: '简历分页组件' }
+		return { ...baseProps.defaults, ...vueResumeDefaultSize, h: getVueResumeDefaultHeight(), ...vueResumeDefaultProps }
 	}
 	override component() { return null }
 	override toSvg(shape: VueResumeShape) { return createVueResumeSvg(shape) }
@@ -99,11 +102,14 @@ export class VueResumeShapeUtil extends BaseBoxShapeUtil<VueResumeShape> {
 
 export class VueResumeSectionShapeUtil extends BaseBoxShapeUtil<VueResumeSectionShape> {
 	static override type = 'vue-resume-section' as const
-	static override props = { w: T.number, h: T.number, zone: T.literalEnum('pageHeader', 'content', 'pageFooter'), label: T.string }
+	static override props = extendShapeProperties(baseProps, {
+		zone: T.literalEnum('pageHeader', 'content', 'pageFooter'),
+		label: T.string,
+	}).validators
 
 	override getDefaultProps(): VueResumeSectionShape['props'] {
 		const definition = VUE_RESUME_SECTION_DEFINITIONS[0]
-		return { w: 560, h: definition.defaultHeight, zone: definition.zone, label: definition.label }
+		return { ...baseProps.defaults, w: vueResumeDefaultSize.w, h: definition.defaultHeight, zone: definition.zone, label: definition.label }
 	}
 	override component() { return null }
 	override toSvg(shape: VueResumeSectionShape) { return createVueResumeSectionSvg(shape) }
@@ -145,7 +151,7 @@ export function createVueResumeShapePartials({ id, rect, sectionIds }: { id: TLS
 	const w = Math.max(VUE_RESUME_MIN_WIDTH, rect.w)
 	const heights = fitHeights(Math.max(rect.h, getVueResumeMinHeight()), VUE_RESUME_SECTION_DEFINITIONS.map((definition) => definition.defaultHeight))
 	let y = 0
-	const resume: TLShapePartial<VueResumeShape> = { id, type: 'vue-resume', x: rect.x, y: rect.y, props: { w, h: heights.reduce((a, b) => a + b, 0), name: '简历分页组件' } }
+	const resume: TLShapePartial<VueResumeShape> = { id, type: 'vue-resume', x: rect.x, y: rect.y, props: { w, h: heights.reduce((a, b) => a + b, 0), ...vueResumeDefaultProps } }
 	const sections = VUE_RESUME_SECTION_DEFINITIONS.map((definition, index) => {
 		const section: TLShapePartial<VueResumeSectionShape> = { id: sectionIds?.[index] ?? createShapeId(), type: 'vue-resume-section', parentId: id, x: 0, y, props: { w, h: heights[index], zone: definition.zone, label: definition.label } }
 		y += heights[index]

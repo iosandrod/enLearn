@@ -7,9 +7,15 @@ export interface VueBoxMarkSegment {
 	y2: number
 }
 
-export function getVueBoxPath(geo: VueGeoShape, rawWidth: number, rawHeight: number) {
+export function getVueBoxPath(
+	geo: VueGeoShape,
+	rawWidth: number,
+	rawHeight: number,
+	rawBorderRadius = 8
+) {
 	const width = Math.max(1, rawWidth)
 	const height = Math.max(1, rawHeight)
+	const borderRadius = Math.max(0, rawBorderRadius)
 
 	switch (geo) {
 		case 'ellipse':
@@ -53,7 +59,7 @@ export function getVueBoxPath(geo: VueGeoShape, rawWidth: number, rawHeight: num
 		case 'check-box':
 		case 'rectangle':
 		default:
-			return roundedRectPath(width, height, Math.min(8, width * 0.12, height * 0.12))
+			return roundedRectPath(width, height, borderRadius)
 	}
 }
 

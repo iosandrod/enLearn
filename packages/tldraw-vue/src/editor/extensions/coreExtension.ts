@@ -14,6 +14,19 @@ import VueTextShapeNode from '@/components/shapes/VueTextShapeNode.vue'
 import { VueArrowBindingUtil } from '../interactions/VueArrowBindingUtil'
 import type { VueGeoShape } from '../interactions/types'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../vueEditorExtensions'
+import {
+	vueArrowDefaultSize,
+	vueBoxDefaultSize,
+	vueHighlightDefaultSize,
+	vueImageDefaultProps,
+	vueImageDefaultSize,
+	vueLineDefaultSize,
+	vueLaserDefaultSize,
+	vueNoteDefaultProps,
+	vueNoteDefaultSize,
+	vueTextDefaultSize,
+	vueTextCreateDefaultProps,
+} from '../defaults'
 import { VueBoxShapeUtil, type VueBoxShape } from '../vueBoxShape'
 import {
 	VueArrowShapeUtil,
@@ -29,7 +42,7 @@ import {
 
 const textCanvasCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-text',
-	defaultSize: { w: 180, h: 44 },
+	defaultSize: vueTextDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueTextShape>([
 			{
@@ -40,11 +53,11 @@ const textCanvasCreate: VueShapeCreateDefinition = {
 				props: {
 					w: rect.w,
 					h: rect.h,
-					text: 'Text',
+					text: vueTextCreateDefaultProps.text,
 					color: editor.getStyleForNextShape(DefaultColorStyle),
 					font: editor.getStyleForNextShape(DefaultFontStyle),
 					size: editor.getStyleForNextShape(DefaultSizeStyle),
-					autoSize: false,
+					autoSize: vueTextCreateDefaultProps.autoSize,
 				},
 			},
 		])
@@ -62,7 +75,7 @@ const textToolbarCreate: VueShapeCreateDefinition = {
 
 const imageCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-image',
-	defaultSize: { w: 180, h: 120 },
+	defaultSize: vueImageDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueImageShape>([
 			{
@@ -73,10 +86,10 @@ const imageCreate: VueShapeCreateDefinition = {
 				props: {
 					w: rect.w,
 					h: rect.h,
-					assetId: null,
-					fileId: '',
-					src: '',
-					name: 'Image',
+					assetId: vueImageDefaultProps.assetId,
+					fileId: vueImageDefaultProps.fileId,
+					src: vueImageDefaultProps.src,
+					name: vueImageDefaultProps.name,
 				},
 			},
 		])
@@ -86,7 +99,7 @@ const imageCreate: VueShapeCreateDefinition = {
 function createGeoCreate(geo: VueGeoShape): VueShapeCreateDefinition {
 	return {
 		shapeType: 'vue-box',
-		defaultSize: { w: 120, h: 76 },
+		defaultSize: vueBoxDefaultSize,
 		createShape({ editor, id, rect }) {
 			editor.createShapes<VueBoxShape>([
 				{
@@ -111,7 +124,7 @@ function createGeoCreate(geo: VueGeoShape): VueShapeCreateDefinition {
 
 const noteCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-text',
-	defaultSize: { w: 180, h: 72 },
+	defaultSize: vueNoteDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueTextShape>([
 			{
@@ -122,12 +135,12 @@ const noteCreate: VueShapeCreateDefinition = {
 				props: {
 					w: rect.w,
 					h: rect.h,
-					text: 'Note',
+					text: vueNoteDefaultProps.text,
 					color: editor.getStyleForNextShape(DefaultColorStyle),
 					font: editor.getStyleForNextShape(DefaultFontStyle),
 					size: editor.getStyleForNextShape(DefaultSizeStyle),
-					autoSize: false,
-					showBorder: true,
+					autoSize: vueNoteDefaultProps.autoSize,
+					showBorder: vueNoteDefaultProps.showBorder,
 				},
 			},
 		])
@@ -136,7 +149,7 @@ const noteCreate: VueShapeCreateDefinition = {
 
 const highlightCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-box',
-	defaultSize: { w: 160, h: 48 },
+	defaultSize: vueHighlightDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueBoxShape>([
 			{
@@ -160,7 +173,7 @@ const highlightCreate: VueShapeCreateDefinition = {
 
 const lineCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-line',
-	defaultSize: { w: 160, h: 1 },
+	defaultSize: vueLineDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueLineShape>([
 			{
@@ -184,7 +197,7 @@ const lineCreate: VueShapeCreateDefinition = {
 
 const arrowCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-arrow',
-	defaultSize: { w: 160, h: 1 },
+	defaultSize: vueArrowDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueArrowShape>([
 			{
@@ -209,7 +222,7 @@ const arrowCreate: VueShapeCreateDefinition = {
 
 const laserCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-box',
-	defaultSize: { w: 48, h: 48 },
+	defaultSize: vueLaserDefaultSize,
 	isAspectRatioLocked: true,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueBoxShape>([

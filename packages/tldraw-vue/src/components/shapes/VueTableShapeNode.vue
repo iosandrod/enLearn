@@ -7,8 +7,17 @@ import {
 	type VueTableRow,
 	type VueTableShape,
 } from '@/editor/extensions/table/vueTableShape'
+import {
+	getVueTableRowId,
+	getVueTableRowLayouts,
+} from '@/editor/extensions/table/tableRowHeight'
 import type { VueShapeNodeProps } from './types'
 import { getLocalCellAreaGeometry } from './tableCellAreaGeometry'
+import {
+	cloneTableMergeCells,
+	getZoomAdjustedResizeValue,
+	type TableMergeCell,
+} from './tableResize'
 
 VxeUI.use(ExtendCellArea, {
 	allowBody: true,
@@ -21,6 +30,8 @@ const props = defineProps<VueShapeNodeProps<VueTableShape>>()
 const tableRef = ref<any | null>(null)
 let activeCellArea: TableCellArea | null = null
 let cellAreaAlignmentFrame: number | null = null
+let activeResizeCleanup: (() => void) | null = null
+let pendingResizeMergeCells: TableMergeCell[] | null = null
 
 interface TableCellArea {
 	startRow: VueTableRow | null
@@ -29,12 +40,29 @@ interface TableCellArea {
 	endColumn: unknown
 }
 
+interface TableResizePreview {
+	axis: 'column' | 'row'
+	index: number
+	position: number
+	value: number
+}
+
+const resizePreview = ref<TableResizePreview | null>(null)
+
 const tableColumns = computed(() => props.shape.props.columns)
 const tableRows = computed(() =>
 	props.shape.props.rows.map((row, index) => normalizeTableRow(row, index))
 )
 const tableHeight = computed(() => Math.max(1, props.shape.props.h))
 const rowHeight = computed(() => props.shape.props.rowHeight)
+const tableRowLayouts = computed(() =>
+	getVueTableRowLayouts(
+		props.shape.props.rows,
+		rowHeight.value,
+		props.shape.props.rowHeights
+	)
+)
+const tableRowHeights = computed(() => tableRowLayouts.value.map(layout => layout.height))
 const rowConfig = computed(() => ({
 	keyField: VUE_TABLE_ROW_ID_FIELD,
 	height: rowHeight.value,
@@ -43,6 +71,24 @@ const cellConfig = computed(() => ({
 	height: rowHeight.value,
 	padding: false,
 }))
+const columnResizeHandles = computed(() => {
+	let position = 0
+	return props.shape.props.columns
+		.map((column, index) => {
+			position += column.width
+			return { index, position }
+		})
+		.filter(handle => handle.position > 0 && handle.position <= props.shape.props.w)
+})
+const rowResizeHandles = computed(() => {
+	return tableRowLayouts.value
+		.map(layout => ({
+			index: layout.index,
+			position: layout.bottom,
+			value: layout.height,
+		}))
+		.filter(handle => handle.position > 0 && handle.position <= props.shape.props.h)
+})
 const mouseConfig = computed(() =>
 	props.selected
 		? {
@@ -65,20 +111,41 @@ const areaConfig = {
 }
 
 watch(
-	() => [props.shape.props.w, props.shape.props.h, props.shape.props.rowHeight, props.zoom],
+	() => [
+		props.shape.props.w,
+		props.shape.props.h,
+		props.shape.props.rowHeight,
+		tableRowHeights.value.join(','),
+		props.shape.props.columns.map(column => column.width).join(','),
+		props.zoom,
+	],
 	() => {
+		const mergeCells = pendingResizeMergeCells
+		pendingResizeMergeCells = null
 		void nextTick(async () => {
-			await tableRef.value?.recalculate?.()
-			await tableRef.value?.handleRecalculateCellAreaEvent?.()
+			const table = tableRef.value
+			await applyTableRowHeights(table)
+			await table?.recalculate?.()
+			if (mergeCells?.length) {
+				// VXE may queue its own column/row refresh for the same Vue tick.
+				// Restore after that refresh so it cannot clear the snapshot again.
+				await nextTick()
+				await table?.clearMergeCells?.()
+				await table?.setMergeCells?.(mergeCells)
+				await table?.recalculate?.()
+			}
+			await table?.handleRecalculateCellAreaEvent?.()
 			alignActiveCellArea()
 		})
-	}
+	},
+	{ immediate: true }
 )
 
 onBeforeUnmount(() => {
 	if (cellAreaAlignmentFrame !== null) {
 		window.cancelAnimationFrame(cellAreaAlignmentFrame)
 	}
+	activeResizeCleanup?.()
 })
 
 function normalizeTableRow(row: VueTableRow, index: number): VueTableRow {
@@ -86,6 +153,17 @@ function normalizeTableRow(row: VueTableRow, index: number): VueTableRow {
 		...row,
 		[VUE_TABLE_ROW_ID_FIELD]: row[VUE_TABLE_ROW_ID_FIELD] || `row-${index + 1}`,
 	}
+}
+
+async function applyTableRowHeights(table: any) {
+	if (!table?.setRowHeightConf) return
+	const heightConf = Object.fromEntries(
+		tableRows.value.map((row, index) => [
+			row[VUE_TABLE_ROW_ID_FIELD],
+			tableRowHeights.value[index] ?? rowHeight.value,
+		])
+	)
+	await table.setRowHeightConf(heightConf)
 }
 
 function alignActiveCellArea() {
@@ -143,6 +221,124 @@ function onCellAreaSelection(event: unknown) {
 	activeCellArea = area
 	alignActiveCellArea()
 	scheduleCellAreaAlignment()
+}
+
+// VXE's native resize bar measures screen pixels, so the table owns the handles
+// to keep the preview line and persisted logical size aligned with canvas zoom.
+function startColumnResize(event: PointerEvent, handle: { index: number; position: number }) {
+	const column = props.shape.props.columns[handle.index]
+	if (!column) return
+	startTableResize(event, 'column', handle.index, handle.position, column.width, 24)
+}
+
+function startRowResize(
+	event: PointerEvent,
+	handle: { index: number; position: number; value: number }
+) {
+	startTableResize(event, 'row', handle.index, handle.position, handle.value, 22, 72)
+}
+
+function startTableResize(
+	event: PointerEvent,
+	axis: 'column' | 'row',
+	index: number,
+	startPosition: number,
+	currentValue: number,
+	minValue: number,
+	maxValue = Number.POSITIVE_INFINITY
+) {
+	if (!props.selected || event.button !== 0) return
+	event.preventDefault()
+	event.stopPropagation()
+	activeResizeCleanup?.()
+
+	const pointerId = event.pointerId
+	const startClientPosition = axis === 'column' ? event.clientX : event.clientY
+	const previousCursor = document.body.style.cursor
+	const previousUserSelect = document.body.style.userSelect
+	document.body.style.cursor = axis === 'column' ? 'col-resize' : 'row-resize'
+	document.body.style.userSelect = 'none'
+	resizePreview.value = { axis, index, position: startPosition, value: currentValue }
+
+	const updatePreview = (moveEvent: PointerEvent) => {
+		if (moveEvent.pointerId !== pointerId) return
+		moveEvent.preventDefault()
+		moveEvent.stopPropagation()
+		const clientPosition = axis === 'column' ? moveEvent.clientX : moveEvent.clientY
+		const screenDelta = clientPosition - startClientPosition
+		const nextValue = getZoomAdjustedResizeValue(
+			currentValue,
+			currentValue + screenDelta,
+			props.zoom,
+			minValue,
+			maxValue
+		)
+		resizePreview.value = {
+			axis,
+			index,
+			position: startPosition + nextValue - currentValue,
+			value: nextValue,
+		}
+	}
+
+	const cleanup = () => {
+		window.removeEventListener('pointermove', updatePreview, true)
+		window.removeEventListener('pointerup', finishResize, true)
+		window.removeEventListener('pointercancel', cancelResize, true)
+		document.body.style.cursor = previousCursor
+		document.body.style.userSelect = previousUserSelect
+		resizePreview.value = null
+		if (activeResizeCleanup === cleanup) activeResizeCleanup = null
+	}
+
+	const finishResize = (upEvent: PointerEvent) => {
+		if (upEvent.pointerId !== pointerId) return
+		updatePreview(upEvent)
+		const nextValue = resizePreview.value?.value ?? currentValue
+		cleanup()
+		commitTableResize(axis, index, nextValue)
+	}
+
+	const cancelResize = (cancelEvent: PointerEvent) => {
+		if (cancelEvent.pointerId !== pointerId) return
+		cancelEvent.preventDefault()
+		cancelEvent.stopPropagation()
+		cleanup()
+	}
+
+	activeResizeCleanup = cleanup
+	window.addEventListener('pointermove', updatePreview, { capture: true, passive: false })
+	window.addEventListener('pointerup', finishResize, { capture: true, passive: false })
+	window.addEventListener('pointercancel', cancelResize, { capture: true, passive: false })
+}
+
+function commitTableResize(axis: 'column' | 'row', index: number, value: number) {
+	if (axis === 'column') {
+		const columns = props.shape.props.columns.map(column => ({ ...column }))
+		const column = columns[index]
+		if (!column || column.width === value) return
+		pendingResizeMergeCells = cloneTableMergeCells(tableRef.value?.getMergeCells?.())
+		column.width = value
+		props.editor.updateShape({
+			id: props.shape.id,
+			type: props.shape.type,
+			props: { columns },
+		} as never)
+		return
+	}
+
+	const row = props.shape.props.rows[index]
+	if (!row || tableRowHeights.value[index] === value) return
+	pendingResizeMergeCells = cloneTableMergeCells(tableRef.value?.getMergeCells?.())
+	const rowHeights = {
+		...(props.shape.props.rowHeights ?? {}),
+		[getVueTableRowId(row, index)]: value,
+	}
+	props.editor.updateShape({
+		id: props.shape.id,
+		type: props.shape.type,
+		props: { rowHeights },
+	} as never)
 }
 
 function focusShape(event: Event) {
@@ -230,5 +426,39 @@ function stopAlways(event: Event) {
 				:width="column.width"
 			/>
 		</VxeTable>
+		<div v-if="selected" class="vue-table-shape__resize-layer">
+			<button
+				v-for="handle in columnResizeHandles"
+				:key="`column-${handle.index}`"
+				type="button"
+				class="vue-table-shape__resize-handle vue-table-shape__resize-handle--column"
+				:style="{ left: `${handle.position}px` }"
+				:aria-label="`Resize column ${handle.index + 1}`"
+				tabindex="-1"
+				@pointerdown="startColumnResize($event, handle)"
+			/>
+			<button
+				v-for="handle in rowResizeHandles"
+				:key="`row-${handle.index}`"
+				type="button"
+				class="vue-table-shape__resize-handle vue-table-shape__resize-handle--row"
+				:style="{ top: `${handle.position}px` }"
+				:aria-label="`Resize row ${handle.index + 1}`"
+				tabindex="-1"
+				@pointerdown="startRowResize($event, handle)"
+			/>
+			<div
+				v-if="resizePreview"
+				class="vue-table-shape__resize-guide"
+				:class="`vue-table-shape__resize-guide--${resizePreview.axis}`"
+				:style="
+					resizePreview.axis === 'column'
+						? { left: `${resizePreview.position}px` }
+						: { top: `${resizePreview.position}px` }
+				"
+			>
+				<span class="vue-table-shape__resize-value">{{ resizePreview.value }} px</span>
+			</div>
+		</div>
 	</div>
 </template>

@@ -10,12 +10,13 @@ import {
 import { type TLBaseShape } from '@tldraw/tlschema'
 import { T } from '@tldraw/validate'
 import { createVueFrameSvg } from '../../vueSvgExport'
+import { baseProps, type BaseProps } from '../../shapeProps/base'
+import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueFrameDefaultProps } from '../../defaults'
 
 export type VueFrameShape = TLBaseShape<
 	'vue-frame',
-	{
-		w: number
-		h: number
+	BaseProps & {
 		name: string
 		showBorder?: boolean
 	}
@@ -30,19 +31,15 @@ declare module '@tldraw/tlschema' {
 export class VueFrameShapeUtil extends BaseBoxShapeUtil<VueFrameShape> {
 	static override type = 'vue-frame' as const
 
-	static override props = {
-		w: T.number,
-		h: T.number,
+	static override props = extendShapeProperties(baseProps, {
 		name: T.string,
 		showBorder: T.boolean.optional(),
-	}
+	}).validators
 
 	override getDefaultProps(): VueFrameShape['props'] {
 		return {
-			w: 320,
-			h: 180,
-			name: 'Frame',
-			showBorder: false,
+			...baseProps.defaults,
+			...vueFrameDefaultProps,
 		}
 	}
 

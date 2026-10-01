@@ -34,7 +34,7 @@ a {
 .vxe-context-menu--wrapper,
 .wx-menu[data-wx-menu="true"],
 .vue-canvas > .context-menu-layer {
-  z-index: 13000 !important;
+  z-index: 2147483647 !important;
 }
 
 .vxe-context-menu--wrapper.enlearn-context-menu {
@@ -2948,4 +2948,5 @@ body:has(.form-designer-dialog) .vxe-ico-picker--panel {
 
 .vxe-form--item-title-content{
   display:flex !important;
+  border-radius: 0%;
 }

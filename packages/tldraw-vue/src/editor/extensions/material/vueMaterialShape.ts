@@ -17,6 +17,9 @@ import {
 	createVueMaterialSectionSvg,
 	createVueMaterialSvg,
 } from '../../vueSvgExport'
+import { baseProps, type BaseProps } from '../../shapeProps/base'
+import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueMaterialDefaultProps, vueMaterialDefaultSize } from '../../defaults'
 
 export type VueMaterialSectionZone =
 	| 'pageHeader'
@@ -118,9 +121,7 @@ function isVueMaterialPrintLayoutUpdating() {
 
 export type VueMaterialShape = TLBaseShape<
 	'vue-material',
-	{
-		w: number
-		h: number
+	BaseProps & {
 		name: string
 		dataSourceField: string
 	}
@@ -128,9 +129,7 @@ export type VueMaterialShape = TLBaseShape<
 
 export type VueMaterialSectionShape = TLBaseShape<
 	'vue-material-section',
-	{
-		w: number
-		h: number
+	BaseProps & {
 		zone: VueMaterialSectionZone
 		label: string
 	}
@@ -146,19 +145,17 @@ declare module '@tldraw/tlschema' {
 export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 	static override type = 'vue-material' as const
 
-	static override props = {
-		w: T.number,
-		h: T.number,
+	static override props = extendShapeProperties(baseProps, {
 		name: T.string,
 		dataSourceField: T.string.optional(),
-	}
+	}).validators
 
 	override getDefaultProps(): VueMaterialShape['props'] {
 		return {
-			w: 500,
+			...baseProps.defaults,
+			w: vueMaterialDefaultSize.w,
 			h: getVueMaterialDefaultHeight(),
-			name: '物料节点',
-			dataSourceField: '',
+			...vueMaterialDefaultProps,
 		}
 	}
 
@@ -257,9 +254,7 @@ export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSectionShape> {
 	static override type = 'vue-material-section' as const
 
-	static override props = {
-		w: T.number,
-		h: T.number,
+	static override props = extendShapeProperties(baseProps, {
 		zone: T.literalEnum(
 			'pageHeader',
 			'tableHeader',
@@ -268,12 +263,13 @@ export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSec
 			'pageFooter'
 		),
 		label: T.string,
-	}
+	}).validators
 
 	override getDefaultProps(): VueMaterialSectionShape['props'] {
 		const definition = VUE_MATERIAL_SECTION_DEFINITIONS[0]
 		return {
-			w: 500,
+			...baseProps.defaults,
+			w: vueMaterialDefaultSize.w,
 			h: definition.defaultHeight,
 			zone: definition.zone,
 			label: definition.label,
@@ -457,8 +453,7 @@ export function createVueMaterialShapePartials({
 			props: {
 				w,
 				h,
-				name: '物料节点',
-				dataSourceField: '',
+				...vueMaterialDefaultProps,
 			},
 		},
 		...VUE_MATERIAL_SECTION_DEFINITIONS.map((definition, index) => {

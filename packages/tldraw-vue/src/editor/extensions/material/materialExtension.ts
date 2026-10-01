@@ -2,6 +2,7 @@ import { createShapeId, type Editor, type TLShape, type TLShapeId, type TLShapeP
 import VueMaterialSectionShapeNode from '@/components/shapes/VueMaterialSectionShapeNode.vue'
 import VueMaterialShapeNode from '@/components/shapes/VueMaterialShapeNode.vue'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../../vueEditorExtensions'
+import { vueMaterialDefaultSize } from '../../defaults'
 import {
 	VUE_MATERIAL_SECTION_DEFINITIONS,
 	VueMaterialSectionShapeUtil,
@@ -19,7 +20,7 @@ const FOOTER_SAMPLE_TEXT_HEIGHT = 24
 
 const materialCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-material',
-	defaultSize: { w: 500, h: 500 },
+	defaultSize: vueMaterialDefaultSize,
 	createShape({ editor, id, rect }) {
 		const sectionIds = VUE_MATERIAL_SECTION_DEFINITIONS.map(() => createShapeId())
 		const tableFooterIndex = VUE_MATERIAL_SECTION_DEFINITIONS.findIndex(

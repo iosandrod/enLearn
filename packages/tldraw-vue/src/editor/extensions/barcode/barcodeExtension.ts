@@ -1,10 +1,11 @@
 import VueBarcodeShapeNode from '@/components/shapes/VueBarcodeShapeNode.vue'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../../vueEditorExtensions'
+import { vueBarcodeDefaultProps, vueBarcodeDefaultSize } from '../../defaults'
 import { VueBarcodeShapeUtil, type VueBarcodeShape } from './vueBarcodeShape'
 
 const barcodeCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-barcode',
-	defaultSize: { w: 240, h: 96 },
+	defaultSize: vueBarcodeDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueBarcodeShape>([
 			{
@@ -15,12 +16,12 @@ const barcodeCreate: VueShapeCreateDefinition = {
 				props: {
 					w: rect.w,
 					h: rect.h,
-					text: '1234567890',
-					format: 'code128',
-					barColor: '#000000',
-					background: '#ffffff',
-					includeText: true,
-					padding: 4,
+					text: vueBarcodeDefaultProps.text,
+					format: vueBarcodeDefaultProps.format,
+					barColor: vueBarcodeDefaultProps.barColor,
+					background: vueBarcodeDefaultProps.background,
+					includeText: vueBarcodeDefaultProps.includeText,
+					padding: vueBarcodeDefaultProps.padding,
 				},
 			},
 		])

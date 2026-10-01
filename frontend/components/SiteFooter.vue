@@ -28,7 +28,14 @@
       <div>
         <a href="/docs">隐私政策</a>
         <a href="/docs">服务条款</a>
-        <span class="site-footer__filing">备案信息预留：ICP备案号 / 公安备案号</span>
+        <a
+          class="site-footer__filing"
+          href="https://beian.miit.gov.cn/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          粤ICP备2025429879号
+        </a>
       </div>
     </div>
   </footer>

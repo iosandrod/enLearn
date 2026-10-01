@@ -1,32 +1,15 @@
 import { BaseBoxShapeUtil } from '@tldraw/editor'
+import type { TLBaseShape } from '@tldraw/tlschema'
 import {
-	DefaultColorStyle,
-	DefaultDashStyle,
-	DefaultFillStyle,
-	DefaultSizeStyle,
-	type TLBaseShape,
-	type TLDefaultColorStyle,
-	type TLDefaultDashStyle,
-	type TLDefaultFillStyle,
-	type TLDefaultSizeStyle,
-} from '@tldraw/tlschema'
-import { T } from '@tldraw/validate'
-import type { VueGeoShape } from './interactions/types'
+	vueBoxPropertyRegistry,
+	vueBoxShapeMigrations,
+	type VueBoxProps,
+} from './shapeProps/vueBox'
 import { getVueBoxPath } from './vueBoxGeometry'
 import { createVueBoxSvg } from './vueSvgExport'
+import { vueBoxDefaultProps } from './defaults'
 
-export type VueBoxShape = TLBaseShape<
-	'vue-box',
-	{
-		w: number
-		h: number
-		color: TLDefaultColorStyle
-		fill: TLDefaultFillStyle
-		dash: TLDefaultDashStyle
-		size: TLDefaultSizeStyle
-		geo: VueGeoShape
-	}
->
+export type VueBoxShape = TLBaseShape<'vue-box', VueBoxProps>
 
 declare module '@tldraw/tlschema' {
 	interface TLGlobalShapePropsMap {
@@ -36,44 +19,12 @@ declare module '@tldraw/tlschema' {
 
 export class VueBoxShapeUtil extends BaseBoxShapeUtil<VueBoxShape> {
 	static override type = 'vue-box' as const
+	static override migrations = vueBoxShapeMigrations
 
-	static override props = {
-		w: T.number,
-		h: T.number,
-		color: DefaultColorStyle,
-		fill: DefaultFillStyle,
-		dash: DefaultDashStyle,
-		size: DefaultSizeStyle,
-		geo: T.literalEnum(
-			'rectangle',
-			'ellipse',
-			'triangle',
-			'diamond',
-			'hexagon',
-			'oval',
-			'rhombus',
-			'star',
-			'cloud',
-			'heart',
-			'x-box',
-			'check-box',
-			'arrow-left',
-			'arrow-up',
-			'arrow-down',
-			'arrow-right'
-		),
-	}
+	static override props = vueBoxPropertyRegistry.validators
 
 	override getDefaultProps(): VueBoxShape['props'] {
-		return {
-			w: 160,
-			h: 96,
-			color: 'blue',
-			fill: 'semi',
-			dash: 'draw',
-			size: 'm',
-			geo: 'rectangle',
-		}
+		return { ...vueBoxPropertyRegistry.defaults, ...vueBoxDefaultProps }
 	}
 
 	override component() {
@@ -85,6 +36,8 @@ export class VueBoxShapeUtil extends BaseBoxShapeUtil<VueBoxShape> {
 	}
 
 	override getIndicatorPath(shape: VueBoxShape): Path2D {
-		return new Path2D(getVueBoxPath(shape.props.geo, shape.props.w, shape.props.h))
+		return new Path2D(
+			getVueBoxPath(shape.props.geo, shape.props.w, shape.props.h, shape.props.borderRadius)
+		)
 	}
 }

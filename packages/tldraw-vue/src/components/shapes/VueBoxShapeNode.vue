@@ -23,7 +23,12 @@ const fillValue = computed(() =>
 		? `url(#${patternId.value})`
 		: getFillColor(props.shape.props.color, props.shape.props.fill)
 )
-const shapePath = computed(() => getVueBoxPath(props.shape.props.geo, props.shape.props.w, props.shape.props.h))
+const shapePath = computed(() => getVueBoxPath(
+	props.shape.props.geo,
+	props.shape.props.w,
+	props.shape.props.h,
+	props.shape.props.borderRadius
+))
 const markSegments = computed(() => getVueBoxMarkSegments(
 	props.shape.props.geo,
 	props.shape.props.w,

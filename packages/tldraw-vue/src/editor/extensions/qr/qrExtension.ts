@@ -1,11 +1,12 @@
 import { DefaultColorStyle } from '@tldraw/editor'
 import VueQrShapeNode from '@/components/shapes/VueQrShapeNode.vue'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../../vueEditorExtensions'
+import { vueQrDefaultProps, vueQrDefaultSize } from '../../defaults'
 import { VueQrShapeUtil, type VueQrShape } from './vueQrShape'
 
 const qrCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-qr',
-	defaultSize: { w: 180, h: 180 },
+	defaultSize: vueQrDefaultSize,
 	isAspectRatioLocked: true,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueQrShape>([
@@ -17,11 +18,11 @@ const qrCreate: VueShapeCreateDefinition = {
 				props: {
 					w: rect.w,
 					h: rect.h,
-					text: 'https://tldraw.dev',
+					text: vueQrDefaultProps.text,
 					color: editor.getStyleForNextShape(DefaultColorStyle),
-					background: '#ffffff',
-					errorCorrectionLevel: 'M',
-					margin: 4,
+					background: vueQrDefaultProps.background,
+					errorCorrectionLevel: vueQrDefaultProps.errorCorrectionLevel,
+					margin: vueQrDefaultProps.margin,
 				},
 			},
 		])

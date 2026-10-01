@@ -6,14 +6,15 @@ import {
 } from '@tldraw/tlschema'
 import { T } from '@tldraw/validate'
 import { createVueQrSvg } from './vueQrSvgExport'
+import { baseProps, type BaseProps } from '../../shapeProps/base'
+import { extendShapeProperties } from '../../shapeProps/registry'
+import { vueQrDefaultProps } from '../../defaults'
 
 export type VueQrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H'
 
 export type VueQrShape = TLBaseShape<
 	'vue-qr',
-	{
-		w: number
-		h: number
+	BaseProps & {
 		text: string
 		color: TLDefaultColorStyle
 		background: string
@@ -32,27 +33,19 @@ declare module '@tldraw/tlschema' {
 export class VueQrShapeUtil extends BaseBoxShapeUtil<VueQrShape> {
 	static override type = 'vue-qr' as const
 
-	static override props = {
-		w: T.number,
-		h: T.number,
+	static override props = extendShapeProperties(baseProps, {
 		text: T.string,
 		color: DefaultColorStyle,
 		background: T.string,
 		errorCorrectionLevel: T.literalEnum('L', 'M', 'Q', 'H'),
 		margin: T.number,
 		showBorder: T.boolean.optional(),
-	}
+	}).validators
 
 	override getDefaultProps(): VueQrShape['props'] {
 		return {
-			w: 180,
-			h: 180,
-			text: 'https://tldraw.dev',
-			color: 'black',
-			background: '#ffffff',
-			errorCorrectionLevel: 'M',
-			margin: 4,
-			showBorder: false,
+			...baseProps.defaults,
+			...vueQrDefaultProps,
 		}
 	}
 

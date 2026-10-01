@@ -1,11 +1,12 @@
 import VueResumeSectionShapeNode from '@/components/shapes/VueResumeSectionShapeNode.vue'
 import VueResumeShapeNode from '@/components/shapes/VueResumeShapeNode.vue'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../../vueEditorExtensions'
+import { vueResumeDefaultSize } from '../../defaults'
 import { createVueResumeShapePartials, getVueResumeSections, VueResumeSectionShapeUtil, VueResumeShapeUtil } from './vueResumeShape'
 
 const resumeCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-resume',
-	defaultSize: { w: 560, h: 678 },
+	defaultSize: vueResumeDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes(createVueResumeShapePartials({ id, rect }))
 	},

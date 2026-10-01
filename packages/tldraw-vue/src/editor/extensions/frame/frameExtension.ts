@@ -1,5 +1,6 @@
 import VueFrameShapeNode from '@/components/shapes/VueFrameShapeNode.vue'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../../vueEditorExtensions'
+import { vueFrameDefaultProps, vueFrameDefaultSize } from '../../defaults'
 import {
 	VueFrameShapeUtil,
 	getEnclosedVueFrameShapeIds,
@@ -8,7 +9,7 @@ import {
 
 const frameCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-frame',
-	defaultSize: { w: 320, h: 180 },
+	defaultSize: vueFrameDefaultSize,
 	createShape({ editor, id, rect }) {
 		editor.createShapes<VueFrameShape>([
 			{
@@ -19,7 +20,7 @@ const frameCreate: VueShapeCreateDefinition = {
 				props: {
 					w: rect.w,
 					h: rect.h,
-					name: 'Frame',
+					name: vueFrameDefaultProps.name,
 				},
 			},
 		])
