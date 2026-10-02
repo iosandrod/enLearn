@@ -2,6 +2,8 @@ import { defineComponent, h, ref, type PropType } from 'vue';
 import type { LowCodeFormMaterial } from './types';
 import { lowCodeFormMaterialAdapters } from '../material-runtime/material-adapters';
 import { registerLowCodeFormMaterialComponent } from '../material-runtime/component-bridge';
+import LocalArrayTableMaterial from './lc-array-table/index.vue';
+import { USE_LOCAL_ARRAY_TABLE_MATERIAL } from './lc-array-table/config';
 
 const PendingFormMaterial = defineComponent({
   name: 'LowCodePendingFormMaterial',
@@ -95,6 +97,14 @@ Object.values(lowCodeFormMaterialAdapters).forEach((adapter) => {
   registerLowCodeFormMaterialComponent(adapter.type, PendingFormMaterial, adapter.aliases);
   registerLowCodeFormMaterial({ ...adapter, component: PendingFormMaterial } as LowCodeFormMaterial);
 });
+
+if (USE_LOCAL_ARRAY_TABLE_MATERIAL) {
+  const adapter = lowCodeFormMaterialAdapters['lc-array-table'];
+  if (adapter) {
+    registerLowCodeFormMaterialComponent(adapter.type, LocalArrayTableMaterial, adapter.aliases);
+    registerLowCodeFormMaterial({ ...adapter, component: LocalArrayTableMaterial } as LowCodeFormMaterial);
+  }
+}
 
 export function getLowCodeFormMaterial(type?: string): LowCodeFormMaterial {
   const material =

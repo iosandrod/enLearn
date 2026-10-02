@@ -22,6 +22,8 @@ import type {
   LowCodeMaterialServiceApi,
 } from './types';
 import { USE_DATABASE_LABEL_DESIGNER_MATERIAL } from '../block-materials/label-designer/config';
+import LocalArrayTableMaterial from '../form-materials/lc-array-table/index.vue';
+import { USE_LOCAL_ARRAY_TABLE_MATERIAL } from '../form-materials/lc-array-table/config';
 
 export const lowCodeMaterialCatalogState = shallowReactive({
   loading: false,
@@ -109,6 +111,12 @@ function isStaticBlockMaterial(row: LowCodeMaterialRow) {
     && row.code === 'label-designer';
 }
 
+function isLocalFormMaterial(row: LowCodeMaterialRow) {
+  return USE_LOCAL_ARRAY_TABLE_MATERIAL
+    && row.material_kind === 'form'
+    && row.code === 'lc-array-table';
+}
+
 function resolveCompiledSource(_sourcePath: string, request: string) {
   return compiledSourceModules.get(normalizeSourcePath(request));
 }
@@ -139,13 +147,15 @@ async function compileAndRegister(rows: LowCodeMaterialRow[]) {
   for (const row of rows) {
     if (row.renderer_type !== 'vue-sfc') continue;
     try {
-      const result = await compileLowCodeMaterialSfc(row, resolveCompiledSource);
+      const component = isLocalFormMaterial(row)
+        ? LocalArrayTableMaterial
+        : (await compileLowCodeMaterialSfc(row, resolveCompiledSource)).component;
       compiledSourceModules.set(normalizeSourcePath(row.source_path), {
         __esModule: true,
-        default: result.component,
+        default: component,
       });
       if (row.material_kind === 'page') {
-        registerLowCodeBlockMaterialComponent(row.code, result.component, row.aliases);
+        registerLowCodeBlockMaterialComponent(row.code, component, row.aliases);
         const existing = getLowCodeBlockMaterial(row.code);
         const adapter = getLowCodeBlockMaterialAdapter(row.code);
         registerLowCodeBlockMaterial({
@@ -153,13 +163,13 @@ async function compileAndRegister(rows: LowCodeMaterialRow[]) {
           ...adapter,
           type: row.code,
           label: row.label,
-          component: result.component,
+          component,
           materialVersion: row.material_version,
           aliases: row.aliases,
           order: row.sort_order,
         });
       } else {
-        registerLowCodeFormMaterialComponent(row.code, result.component, row.aliases);
+        registerLowCodeFormMaterialComponent(row.code, component, row.aliases);
         let existing;
         try {
           existing = getLowCodeFormMaterial(row.code);
@@ -172,7 +182,7 @@ async function compileAndRegister(rows: LowCodeMaterialRow[]) {
           ...adapter,
           type: row.code,
           label: row.label,
-          component: result.component,
+          component,
           aliases: row.aliases,
           order: row.sort_order,
         });

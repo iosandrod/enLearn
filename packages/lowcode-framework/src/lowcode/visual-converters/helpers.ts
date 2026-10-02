@@ -153,6 +153,10 @@ function normalizeArrayTableColumns(value: unknown) {
       ...readJsonObject(column.propsJson, {}),
     };
 
+    const children = Array.isArray(column.children)
+      ? normalizeArrayTableColumns(column.children)
+      : [];
+
     return {
       field,
       title,
@@ -166,6 +170,7 @@ function normalizeArrayTableColumns(value: unknown) {
       ...(optionsCode ? { optionsCode } : {}),
       ...(options?.length ? { options } : {}),
       ...(Object.keys(props).length ? { props } : {}),
+      ...(children.length ? { children } : {}),
     };
   });
 }
@@ -317,6 +322,12 @@ export function normalizeColumn(row: Record<string, unknown>): LowCodeGridColumn
   const cellRender = readColumnJsonObject(row.cellRender);
   const editRender = readColumnJsonObject(row.editRender);
   const params = readColumnJsonObject(row.params);
+  const children = Array.isArray(row.children)
+    ? row.children
+        .filter(isPlainRecord)
+        .map((child) => normalizeColumn(child))
+        .filter((child): child is LowCodeGridColumn => Boolean(child))
+    : [];
 
   return {
     ...(field ? { field } : {}),
@@ -341,6 +352,7 @@ export function normalizeColumn(row: Record<string, unknown>): LowCodeGridColumn
     ...(Object.keys(cellRender).length ? { cellRender } : {}),
     ...(Object.keys(editRender).length ? { editRender } : {}),
     ...(Object.keys(params).length ? { params } : {}),
+    ...(children.length ? { children } : {}),
   };
 }
 

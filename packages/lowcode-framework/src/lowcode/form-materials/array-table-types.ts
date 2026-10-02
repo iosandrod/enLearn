@@ -12,7 +12,7 @@ export type ArrayTableToolbarButton = VxeButtonProps & {
 
 export type ArrayTableToolbarClickParams = {
   name?: string | number;
-  option?: VxeButtonProps & Record<string, unknown>;
+  option?: ArrayTableToolbarButton;
 };
 
 export type ArrayTableToolbarExecutionContext = {

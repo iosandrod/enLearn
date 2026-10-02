@@ -200,6 +200,7 @@ export type LowCodeGridColumn = {
   editRender?: Record<string, unknown>;
   params?: Record<string, unknown>;
   slots?: { default?: string; edit?: string };
+  children?: LowCodeGridColumn[];
   [key: string]: unknown;
 };
 

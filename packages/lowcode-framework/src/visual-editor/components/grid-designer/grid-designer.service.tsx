@@ -60,6 +60,7 @@ export type GridDesignerColumn = {
   cellRender?: Record<string, unknown>;
   editRender?: Record<string, unknown>;
   params?: Record<string, unknown>;
+  children?: GridDesignerColumn[];
   [key: string]: unknown;
 };
 
@@ -579,6 +580,10 @@ function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
       ? { ...sourceEditRender, name: editType }
       : {};
 
+  const children = Array.isArray(row.children)
+    ? row.children.map((child, childIndex) => normalizeColumn(child, childIndex))
+    : [];
+
   return {
     ...fallback,
     __id: readString(row.__id, fallback.__id),
@@ -608,6 +613,7 @@ function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
     cellRender: isPlainRecord(row.cellRender) ? cloneDeep(row.cellRender) : {},
     editRender,
     params: isPlainRecord(row.params) ? cloneDeep(row.params) : {},
+    ...(children.length ? { children } : {}),
   };
 }
 
@@ -1339,6 +1345,10 @@ function normalizeColumnForResult(column: GridDesignerColumn, index: number): Gr
     throw new Error(formatter.message);
   }
 
+  const children = Array.isArray(column.children)
+    ? column.children.map((child, childIndex) => normalizeColumnForResult(child, childIndex))
+    : [];
+
   return compactObject({
     field,
     title,
@@ -1361,6 +1371,7 @@ function normalizeColumnForResult(column: GridDesignerColumn, index: number): Gr
     cellRender: normalizeObjectConfig(column.cellRender),
     editRender: normalizeObjectConfig(column.editRender),
     params: normalizeObjectConfig(column.params),
+    children,
   }) as GridDesignerColumn;
 }
 
@@ -2378,9 +2389,25 @@ const ServiceComponent = defineComponent({
             disabled: ({ row }: { row?: GridDesignerColumn }) => !readString(row?.field),
           },
         ],
+        // Column groups are represented by nested rows. The array-table material
+        // renders these rows as a tree and emits them as `children`.
+        treeConfig: {
+          childrenField: 'children',
+          expandAll: true,
+        },
+        rowDraggable: true,
+        rowDragConfig: {
+          trigger: 'cell',
+          showIcon: true,
+          animation: true,
+          showDragTip: true,
+          showGuidesStatus: true,
+        },
+        childAddable: true,
+        addChildText: '新增子列',
         actionWidth: Math.max(
           Number(fieldProps.actionWidth) || 0,
-          108,
+          180,
         ),
         onRowAction: ({
           action,
@@ -2395,7 +2422,11 @@ const ServiceComponent = defineComponent({
           const rowIndex = rows.indexOf(row);
           Object.assign(row, normalizeColumn(row, rowIndex >= 0 ? rowIndex : 0));
           selectColumn(row);
-          void openColumnFieldEditor(row, rows);
+          if (rowIndex >= 0) {
+            void openColumnFieldEditor(row, rows);
+          } else {
+            openColumnAdvancedDialog(row, () => syncColumnsFromRows(state.columns));
+          }
         },
         onRowMove: ({ rows }: { rows: unknown }) => {
           syncColumnsFromRows(rows);

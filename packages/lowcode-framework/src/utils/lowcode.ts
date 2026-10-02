@@ -139,16 +139,23 @@ export function normalizeLowCodeGridColumns(
           return rest;
         })();
 
+    const withChildren = Array.isArray(normalizedColumn.children)
+      ? {
+          ...normalizedColumn,
+          children: normalizeLowCodeGridColumns(normalizedColumn.children, timeZone),
+        }
+      : normalizedColumn;
+
     if (
       !normalizedColumn.formatter ||
       typeof normalizedColumn.formatter === 'function' ||
       typeof normalizedColumn.formatter === 'string'
     ) {
-      return normalizedColumn;
+      return withChildren;
     }
 
     return {
-      ...normalizedColumn,
+      ...withChildren,
       formatter: ({ cellValue }: { cellValue: unknown }) =>
         formatLowCodeGridValue(cellValue, normalizedColumn.formatter, timeZone)
     };

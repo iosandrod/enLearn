@@ -163,9 +163,15 @@ type LowCodeGridEventPayload = {
 
 const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
 const hasCustomRowActions = computed(() => customRowActions.value.length > 0);
+function flattenGridColumns(columns: LowCodeGridColumn[]): LowCodeGridColumn[] {
+  return columns.flatMap((column) => [
+    column,
+    ...(Array.isArray(column.children) ? flattenGridColumns(column.children) : []),
+  ]);
+}
 const gridFieldOptionsCodes = computed(() => [
   ...new Set(
-    (props.schema.grid.columns ?? [])
+    flattenGridColumns(props.schema.grid.columns ?? [])
       .map((column) => {
         const params = isRecord(column.params) ? column.params : {};
         const metadata = isRecord(params.lowcodeField) ? params.lowcodeField : {};
@@ -284,6 +290,9 @@ const gridConfig = computed(() => {
 
 function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
   const updated = { ...column };
+  if (Array.isArray(updated.children)) {
+    updated.children = updated.children.map(hydrateRuntimeGridColumn);
+  }
   const params = isRecord(updated.params) ? updated.params : {};
   const metadata = isRecord(params.lowcodeField) ? params.lowcodeField : {};
   const component = typeof metadata.component === 'string'

@@ -1,5 +1,6 @@
 import type {
   LowCodeGridDetailConfig,
+  LowCodeGridColumn,
   LowCodeGridRowAction,
   LowCodePageBlock,
   LowCodePageDataSource,
@@ -21,6 +22,17 @@ import {
 
 function normalizeGridOptions(value: unknown) {
   return isPlainRecord(value) ? value : {};
+}
+
+function firstColumnField(columns: LowCodeGridColumn[]): string | undefined {
+  for (const column of columns) {
+    if (Array.isArray(column.children) && column.children.length) {
+      const nestedField = firstColumnField(column.children);
+      if (nestedField) return nestedField;
+    }
+    if (column.field) return column.field;
+  }
+  return undefined;
 }
 
 const vxeGridOptionKeys = [
@@ -294,7 +306,7 @@ const converter: VisualToLowCodeConverter = {
     const { events, eventNames } = normalizeGridEvents(props.gridEvents);
     const rowKeyField = readString(
       rowConfig.keyField,
-      columns.find((column) => Boolean(column.field))?.field ?? 'id',
+      firstColumnField(columns) ?? 'id',
     );
 
     const dataSource: LowCodePageDataSource = {

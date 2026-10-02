@@ -165,6 +165,7 @@ export type LowCodeGridColumn = {
         default?: string;
         edit?: string;
     };
+    children?: LowCodeGridColumn[];
     [key: string]: unknown;
 };
 export type LowCodeRuntimeEvent = {
