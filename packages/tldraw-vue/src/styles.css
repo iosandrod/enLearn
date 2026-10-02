@@ -1944,6 +1944,7 @@ button {
 	border-right: calc(1px * var(--inverse-zoom)) solid #111827;
 	border-bottom: calc(1px * var(--inverse-zoom)) solid #111827;
 	border-left: calc(1px * var(--inverse-zoom)) solid #111827;
+	border-top: calc(1px * var(--inverse-zoom)) solid #111827;
 	background: #ffffff;
 	color: #a7adb7;
 	font-family:
@@ -2009,7 +2010,12 @@ button {
 }
 
 .vue-material-section-shape--tableBody {
-	display: block;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	overflow: hidden;
 }
 
 .vue-material-section-label {
@@ -2025,8 +2031,11 @@ button {
 }
 
 .vue-material-table-columns {
-	display: grid;
-	height: 36px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	flex: 0 0 auto;
+	width: 100%;
 	min-height: 24px;
 	border-bottom: calc(1px * var(--inverse-zoom)) solid #111827;
 	background: #ffffff;
@@ -2034,38 +2043,83 @@ button {
 	font-size: 15px;
 	font-weight: 700;
 	line-height: 1;
-	pointer-events: none;
+	overflow: hidden;
 }
 
-.vue-material-table-columns > div {
+.vue-material-table-header-row {
+	display: flex;
+	flex: 0 0 36px;
+	width: 100%;
+	min-width: 0;
+	height: 36px;
+	box-sizing: border-box;
+}
+
+.vue-material-table-header-cell {
+	position: relative;
+	box-sizing: border-box;
 	display: flex;
 	align-items: center;
-	justify-content: center;
 	min-width: 0;
-	padding: 0 6px;
+	padding: 0;
 	border-right: calc(1px * var(--inverse-zoom)) solid #111827;
+	border-bottom: calc(1px * var(--inverse-zoom)) solid #111827;
+	background: #ffffff;
 	overflow: hidden;
-	text-overflow: ellipsis;
+	text-align: center;
 	white-space: nowrap;
 }
 
-.vue-material-table-columns > div:last-child {
+.vue-material-table-header-cell > span {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0 calc(6px * var(--inverse-zoom));
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.vue-material-table-header-cell:last-child {
 	border-right: 0;
 }
 
+.vue-material-table-header-cell.is-header-continuation,
+.vue-material-table-header-cell.is-header-rowspan {
+	border-bottom-color: transparent;
+}
+
+.vue-material-table-header-cell.is-header-continuation {
+	border-right-color: transparent;
+	background: transparent;
+	pointer-events: none;
+}
+
+.vue-material-table-column-resize {
+	flex: 0 0 calc(8px * var(--inverse-zoom));
+	align-self: stretch;
+	box-sizing: border-box;
+	margin-left: calc(-1px * var(--inverse-zoom));
+	border-left: calc(1px * var(--inverse-zoom)) solid transparent;
+	cursor: col-resize;
+	touch-action: none;
+}
+
+.vue-material-table-column-resize:hover {
+	border-left-color: #2878d0;
+}
+
 .vue-material-table-rows {
-	position: absolute;
-	top: 36px;
-	right: 0;
-	bottom: 0;
-	left: 0;
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 0;
 	background: #ffffff;
 	overflow: hidden;
 	pointer-events: none;
 }
 
 .vue-material-table-row {
-	display: grid;
+	display: flex;
+	width: 100%;
+	box-sizing: border-box;
 	min-height: 28px;
 	border-bottom: calc(1px * var(--inverse-zoom)) solid #111827;
 	color: #111827;
@@ -2074,6 +2128,7 @@ button {
 }
 
 .vue-material-table-row > div {
+	box-sizing: border-box;
 	display: flex;
 	align-items: center;
 	min-width: 0;
@@ -2089,11 +2144,10 @@ button {
 }
 
 .vue-material-table-fill {
-	position: absolute;
-	top: 36px;
-	right: 0;
-	bottom: 0;
-	left: 0;
+	box-sizing: border-box;
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;

@@ -33,13 +33,13 @@ export function getPrintDataSourceDetailTables(
 	}
 	return detail
 		.filter(isRecord)
-		.map((table, index) => normalizeDetailTable(table, index))
+		.map((table, index) => normalizeDetailTable(table as unknown as Record<string, unknown>, index))
 		.filter((table): table is PrintDataSourceDetailTable => table !== null)
 }
 
 export function getPrintDataSourceDetailFields(schema: PrintDataSourceFormSchema): PrintDetailField[] {
 	return getPrintDataSourceDetailTables(schema).flatMap((table) =>
-		table.columns.map((column) => ({
+		flattenDetailColumns(table.columns).map((column) => ({
 			field: column.field,
 			label: column.title,
 			component: 'vxe-input',
@@ -135,11 +135,14 @@ export function getPrintDataSourceDetailRows(
 ) {//
 	const row = getInlineSourceRow(source)
 	if (!row) return []
+	const detailTables = source && source.type === 'inline'
+		? source.detailTables as PrintDataSourceDetailTable[] | undefined
+		: undefined
 	const detailField = field || (
 		source && source.type === 'inline' && typeof source.detailField === 'string'
 			? source.detailField
-			: source && source.type === 'inline' && source.detailTables?.[0]?.field
-				? source.detailTables[0].field
+			: detailTables?.[0]?.field
+				? detailTables[0].field
 				: 'detail'
 	)
 	const alternateDetailField =
@@ -155,18 +158,20 @@ export function getPrintDataSourceDetailColumns(
 	field?: string,
 ): PrintDataSourceDetailColumn[] {
 	if (source && source.type === 'inline' && field && Array.isArray(source.detailTables)) {
-		const table = source.detailTables.find((item) => item.field === field)
-		if (table?.columns?.length) return table.columns.map((column) => ({ ...column }))
+		const detailTables = source.detailTables as PrintDataSourceDetailTable[]
+		const table = detailTables.find((item) => item.field === field)
+		if (table?.columns?.length) {
+			return table.columns
+				.map((column, index) => normalizeDetailColumn(column, index))
+				.filter((column): column is PrintDataSourceDetailColumn => column !== null)
+		}
 	}
 	if (source && source.type === 'inline' && Array.isArray(source.detailColumns)) {
-		const columns = source.detailColumns
+		const detailColumns = source.detailColumns as PrintDataSourceDetailColumn[]
+		const columns = detailColumns
 			.filter(isRecord)
-			.map((column) => ({
-				field: readString(column.field),
-				title: readString(column.title, readString(column.field)),
-				width: readPositiveNumber(column.width, 100),
-			}))
-			.filter((column) => column.field)
+			.map((column, index) => normalizeDetailColumn(column, index))
+			.filter((column): column is PrintDataSourceDetailColumn => column !== null)
 		if (columns.length) return columns
 	}
 
@@ -196,12 +201,8 @@ function normalizeDetailTable(
 ): PrintDataSourceDetailTable | null {
 	const field = readString(value.key, readString(value.field, `detail_${index + 1}`))
 	const columns = Array.isArray(value.columns)
-		? value.columns.filter(isRecord).map((column) => ({
-			...column,
-			field: readString(column.field),
-			title: readString(column.title, readString(column.field)),
-			width: readPositiveNumber(column.width, 100),
-		})).filter((column) => column.field)
+		? value.columns.filter(isRecord).map((column, columnIndex) => normalizeDetailColumn(column, columnIndex))
+			.filter((column) => column !== null)
 		: []
 	if (!columns.length) return null
 	return {
@@ -212,6 +213,39 @@ function normalizeDetailTable(
 		...(isRecord(value.gridOptions) ? { gridOptions: value.gridOptions } : {}),
 		...(Array.isArray(value.gridEvents) ? { gridEvents: value.gridEvents.filter(isRecord) } : {}),
 	}
+}
+
+function normalizeDetailColumn(
+	value: unknown,
+	index: number,
+): PrintDataSourceDetailColumn | null {
+	if (!isRecord(value)) return null
+	const children = Array.isArray(value.children)
+		? value.children
+			.filter(isRecord)
+			.map((child, childIndex) => normalizeDetailColumn(child, childIndex))
+			.filter((child): child is PrintDataSourceDetailColumn => child !== null)
+		: []
+	const field = readString(value.field)
+	if (!children.length && !field) return null
+	return {
+		...value,
+		field,
+		title: readString(value.title ?? value.label, field || `分组${index + 1}`),
+		width: readPositiveNumber(value.width, 100),
+		...(children.length ? { children } : {}),
+	}
+}
+
+function flattenDetailColumns(
+	columns: readonly PrintDataSourceDetailColumn[],
+	result: PrintDataSourceDetailColumn[] = [],
+) {
+	columns.forEach((column) => {
+		if (column.children?.length) flattenDetailColumns(column.children, result)
+		else if (column.field) result.push(column)
+	})
+	return result
 }
 
 function getInlineSourceRow(source: PrintDataSourceConfig | undefined) {

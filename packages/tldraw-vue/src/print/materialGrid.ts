@@ -111,7 +111,11 @@ function createMaterialGridMaterialPlan(
 	const options = getGridRenderOptions(gridConfig)
 	const columns = resolveGridColumns(gridConfig, tableBody.props.w)
 	const rows = resolveGridData(gridConfig)
-	const pageRows = paginateGridRows(rows, columns, tableBody.props.h, options)
+	const headerHeight = options.headerHeight * getPrintColumnDepth(columns)
+	const pageRows = paginateGridRows(rows, columns, tableBody.props.h, {
+		...options,
+		headerHeight,
+	})
 
 	return {
 		material,
@@ -207,7 +211,7 @@ function createPrintTableRow(
 	columns: readonly VueMaterialPrintTableColumn[],
 	options: GridRenderOptions
 ): VueMaterialPrintTableRow {
-	const cells = columns.map((column, columnIndex) =>
+	const cells = flattenPrintColumns(columns).map((column, columnIndex) =>
 		createPrintTableCell(row, rowIndex, column, columnIndex, options)
 	)
 	const maxLines = Math.max(1, ...cells.map((cell) => Math.max(1, cell.lines.length)))
@@ -219,6 +223,20 @@ function createPrintTableRow(
 			options.cellPaddingY * 2 + maxLines * options.lineHeight
 		),
 	}
+}
+
+function flattenPrintColumns(
+	columns: readonly VueMaterialPrintTableColumn[],
+	result: VueMaterialPrintTableColumn[] = [],
+) {
+	columns.forEach((column) => {
+		if (column.children?.length) {
+			flattenPrintColumns(column.children as VueMaterialPrintTableColumn[], result)
+		} else {
+			result.push(column)
+		}
+	})
+	return result
 }
 
 function createPrintTableCell(
@@ -355,7 +373,8 @@ function resolveGridColumns(
 	const visibleColumns = rawColumns.filter((column) => isVisibleColumn(column))
 	const fallbackColumns =
 		visibleColumns.length > 0 ? visibleColumns : [{ field: 'value', title: 'Value' }]
-	const rawWidths = fallbackColumns.map(getColumnWidth)
+	const leafColumns = flattenGridColumns(fallbackColumns)
+	const rawWidths = leafColumns.map(getColumnWidth)
 	const explicitWidthTotal = rawWidths.reduce<number>((total, width) => total + (width ?? 0), 0)
 	const missingWidthCount = rawWidths.filter((width) => width === null).length
 	const fallbackWidth = Math.max(
@@ -366,21 +385,66 @@ function resolveGridColumns(
 		explicitWidthTotal + (missingWidthCount > 0 ? missingWidthCount * fallbackWidth : 0)
 	let widthCursor = 0
 
-	return fallbackColumns.map((column, index) => {
+	const leafWidths = leafColumns.map((column, index) => {
 		const rawWidth = rawWidths[index] ?? fallbackWidth
 		const width =
-			index === fallbackColumns.length - 1
+			index === leafColumns.length - 1
 				? Math.max(24, tableWidth - widthCursor)
 				: Math.max(24, (rawWidth / totalWidth) * tableWidth)
 		widthCursor += width
+		return width
+	})
+	let leafIndex = 0
+	return fallbackColumns.map((column) => normalizeGridColumn(column, leafWidths, () => leafIndex++))
+}
+
+function flattenGridColumns(
+	columns: readonly PrintMaterialGridColumn[],
+	result: PrintMaterialGridColumn[] = [],
+) {
+	columns.forEach((column) => {
+		const children = Array.isArray(column.children)
+			? column.children.filter(isRecord).filter(isVisibleColumn) as PrintMaterialGridColumn[]
+			: []
+		if (children.length) flattenGridColumns(children, result)
+		else if (isVisibleColumn(column)) result.push(column)
+	})
+	return result
+}
+
+function normalizeGridColumn(
+	column: PrintMaterialGridColumn,
+	leafWidths: readonly number[],
+	nextLeafIndex: () => number,
+): VueMaterialPrintTableColumn {
+	const children = Array.isArray(column.children)
+		? column.children
+			.filter(isRecord)
+			.filter(isVisibleColumn)
+			.map((child) => normalizeGridColumn(child as PrintMaterialGridColumn, leafWidths, nextLeafIndex))
+		: []
+	if (children.length) {
 		return {
 			field: getColumnField(column),
 			label: getColumnLabel(column),
-			width,
-			type: column.type,
-			formatter: isRecord(column) ? column.formatter : undefined,
+			width: children.reduce((sum, child) => sum + child.width, 0),
+			children,
 		}
-	})
+	}
+	return {
+		field: getColumnField(column),
+		label: getColumnLabel(column),
+		width: leafWidths[nextLeafIndex()] ?? 24,
+		type: column.type,
+		formatter: isRecord(column) ? column.formatter : undefined,
+	}
+}
+
+function getPrintColumnDepth(columns: readonly VueMaterialPrintTableColumn[]): number {
+	if (!columns.length) return 1
+	return Math.max(1, ...columns.map((column) =>
+		column.children?.length ? 1 + getPrintColumnDepth(column.children as VueMaterialPrintTableColumn[]) : 1
+	))
 }
 
 function getGridRenderOptions(config: PrintMaterialGridConfig): GridRenderOptions {

@@ -223,7 +223,7 @@ async function handleDesignForm() {
 	designFormMessage.value = '正在打开表单设计器…'
 	try {
 		const saved = await new Promise<boolean>((resolve, reject) => {
-			void $$formDesigner({
+			let obj={
 				title: `设计表单 - ${panelTitle.value}`,
 				mode: 'edit',
 				fields: createFormDesignerFieldsFromSchema(originalSchema),
@@ -246,7 +246,8 @@ async function handleDesignForm() {
 						reject(error)
 					}
 				},
-			})
+			}
+			void $$formDesigner(obj as any)//
 		})
 		designFormMessage.value = saved ? '表单配置已保存。' : '已取消表单设计。'
 	} catch (error) {
@@ -412,7 +413,8 @@ function propertyFormCode(type: string) {
 function createSchema(title: string, fields: LowCodeField[]): LowCodeFormSchema {
 	return {
 		title,
-		fields: [...baseFields, ...baseStyleFields, ...fields],
+		// fields: [...baseFields, ...baseStyleFields, ...fields],
+		fields: [ ...fields],//
 		actions: [],
 	}
 }
@@ -627,7 +629,8 @@ const baseFields = [
 // Every custom node inherits these properties from baseProps. Keep their
 // panel fields in one place so local and database-backed schemas stay aligned.
 const baseStyleFields = baseProps.formFields.filter(
-	(field) => field.field !== 'w' && field.field !== 'h'
+	// (field) => field.field !== 'w' && field.field !== 'h'
+	(field) => false
 )
 
 const sizeFields = [

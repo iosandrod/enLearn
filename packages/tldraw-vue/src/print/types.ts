@@ -6,6 +6,7 @@ export interface PrintDataSourceDetailColumn {
 	field: string
 	title: string
 	width?: number
+	children?: any[]
 	[key: string]: unknown
 }
 
@@ -126,6 +127,7 @@ export interface PrintMaterialGridColumn {
 	visible?: boolean
 	type?: string
 	formatter?: unknown
+	children?: any[]
 }
 
 export interface PrintPageConfig {

@@ -5,4 +5,8 @@ export type VueMaterialProps = BaseProps & { name: string; dataSourceField: stri
 export const vueMaterialPropertyRegistry = extendShapeProperties(baseProps, {
 	name: T.string,
 	dataSourceField: T.string.optional(),
-})
+	bodyRowHeight: T.number.optional(),
+	headerRowHeight: T.number.optional(),
+	footerRowHeight: T.number.optional(),//
+	showFooterAmount: T.boolean.optional(),//
+})//

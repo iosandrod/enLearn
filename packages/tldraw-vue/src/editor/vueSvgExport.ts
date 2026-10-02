@@ -64,6 +64,7 @@ export interface VueMaterialPrintTableColumn {
 	width: number
 	type?: string
 	formatter?: unknown
+	children?: any[]
 }
 
 export interface VueMaterialPrintTableCell {
@@ -264,7 +265,7 @@ export async function createVueImageSvg(
 		createElement('rect', {
 			width: shape.props.w,
 			height: shape.props.h,
-			fill: '#ffffff',
+			fill: 'none',
 			...getOptionalBorderSvgProps(shape),
 		}),
 		createElement('image', {
@@ -592,6 +593,9 @@ function createVueMaterialPrintTableSvg(
 	const renderedHeight = Math.min(height, Math.max(0, override.renderedHeight))
 	const headerHeight = Math.min(renderedHeight, Math.max(0, override.headerHeight))
 	const columnWidths = getVueMaterialPrintColumnWidths(override.columns, width)
+	const leafColumns = flattenVueMaterialPrintColumns(override.columns)
+	const headerDepth = getVueMaterialPrintColumnDepth(override.columns)
+	const headerRowHeight = headerHeight / Math.max(1, headerDepth)
 	const defs = createElement(
 		'defs',
 		null,
@@ -613,18 +617,27 @@ function createVueMaterialPrintTableSvg(
 		createVueTableGridLine(0, headerHeight, width, headerHeight),
 	]
 
-	let x = 0
-	for (const [columnIndex, column] of override.columns.entries()) {
-		const columnWidth = columnWidths[columnIndex] ?? 0
-		if (columnIndex > 0) {
-			children.push(createVueTableGridLine(x, 0, x, renderedHeight))
-		}
+	const headerCells = createVueMaterialPrintHeaderCells(override.columns)
+	for (const cell of headerCells) {
+		const x = columnWidths.slice(0, cell.start).reduce((sum, value) => sum + value, 0)
+		const cellWidth = columnWidths.slice(cell.start, cell.end).reduce((sum, value) => sum + value, 0)
+		const y = (cell.depth - 1) * headerRowHeight
+		const cellHeight = cell.rowSpan * headerRowHeight
+		children.push(createElement('rect', {
+			x,
+			y,
+			width: cellWidth,
+			height: cellHeight,
+			fill: 'none',
+			stroke: '#111827',
+			strokeWidth: 1,
+		}))
 		children.push(
 			createElement(
 				'text',
 				{
 					x: x + override.paddingX,
-					y: headerHeight / 2,
+					y: y + cellHeight / 2,
 					fill: '#111827',
 					fontFamily: 'Inter, Arial, sans-serif',
 					fontSize: override.fontSize,
@@ -632,9 +645,15 @@ function createVueMaterialPrintTableSvg(
 					dominantBaseline: 'middle',
 					pointerEvents: 'none',
 				},
-				fitVueTableCellText(column.label, columnWidth, override.fontSize, override.paddingX)
+				fitVueTableCellText(cell.label, cellWidth, override.fontSize, override.paddingX)
 			)
 		)
+	}
+
+	let x = 0
+	for (const [columnIndex] of leafColumns.entries()) {
+		const columnWidth = columnWidths[columnIndex] ?? 0
+		if (columnIndex > 0) children.push(createVueTableGridLine(x, headerHeight, x, renderedHeight))
 		x += columnWidth
 	}
 
@@ -730,15 +749,72 @@ function getVueMaterialPrintColumnWidths(
 	columns: readonly VueMaterialPrintTableColumn[],
 	width: number
 ) {
-	if (!columns.length) return [width]
+	const leafColumns = flattenVueMaterialPrintColumns(columns)
+	if (!leafColumns.length) return [width]
 
-	const total = columns.reduce((sum, column) => sum + Math.max(24, column.width), 0)
-	if (total <= 0) return columns.map(() => width / columns.length)
+	const total = leafColumns.reduce((sum, column) => sum + Math.max(24, column.width), 0)
+	if (total <= 0) return leafColumns.map(() => width / leafColumns.length)
 
-	const widths = columns.map((column) => (Math.max(24, column.width) / total) * width)
+	const widths = leafColumns.map((column) => (Math.max(24, column.width) / total) * width)
 	const diff = width - widths.reduce((sum, columnWidth) => sum + columnWidth, 0)
 	widths[widths.length - 1] += diff
 	return widths
+}
+
+function flattenVueMaterialPrintColumns(
+	columns: readonly VueMaterialPrintTableColumn[],
+	result: VueMaterialPrintTableColumn[] = [],
+) {
+	columns.forEach((column) => {
+		if (column.children?.length) {
+			flattenVueMaterialPrintColumns(column.children as VueMaterialPrintTableColumn[], result)
+		} else {
+			result.push(column)
+		}
+	})
+	return result
+}
+
+function getVueMaterialPrintColumnDepth(columns: readonly VueMaterialPrintTableColumn[]): number {
+	if (!columns.length) return 1
+	return Math.max(1, ...columns.map((column) =>
+		column.children?.length
+			? 1 + getVueMaterialPrintColumnDepth(column.children as VueMaterialPrintTableColumn[])
+			: 1
+	))
+}
+
+function createVueMaterialPrintHeaderCells(columns: readonly VueMaterialPrintTableColumn[]) {
+	const maxDepth = getVueMaterialPrintColumnDepth(columns)
+	const cells: Array<{
+		label: string
+		start: number
+		end: number
+		depth: number
+		rowSpan: number
+	}> = []
+	let leafIndex = 0
+
+	function visit(items: readonly VueMaterialPrintTableColumn[], depth: number) {
+		items.forEach((column) => {
+			const children = column.children?.length
+				? column.children as VueMaterialPrintTableColumn[]
+				: []
+			const start = leafIndex
+			if (children.length) visit(children, depth + 1)
+			else leafIndex += 1
+			cells.push({
+				label: column.label,
+				start,
+				end: leafIndex,
+				depth,
+				rowSpan: children.length ? 1 : maxDepth - depth + 1,
+			})
+		})
+	}
+
+	visit(columns, 1)
+	return cells
 }
 
 function getVueThemeColor(
