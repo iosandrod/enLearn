@@ -28,6 +28,10 @@ import type {
 import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
 import {
+	findTableMerge,
+	normalizeTableMergeCells,
+} from '../components/shapes/tableStructure'
+import {
 	clampVueTableRowHeight,
 	getVueTableRowLayouts,
 } from './extensions/table/tableRowHeight'
@@ -375,6 +379,15 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 		? shape.props.columns
 		: [{ field: 'value', title: 'Value', width }]
 	const columnWidths = getVueTableColumnWidths(columns, width)
+	const columnOffsets = columnWidths.reduce<number[]>((offsets, columnWidth) => {
+		offsets.push((offsets[offsets.length - 1] ?? 0) + columnWidth)
+		return offsets
+	}, [0])
+	const mergeCells = normalizeTableMergeCells(
+		shape.props.mergeCells,
+		shape.props.rows.length,
+		columns.length
+	)
 	const clipId = `vue-table-clip-${sanitizeSvgId(shape.id)}`
 	const children: SvgExportChild[] = [
 		createElement(
@@ -399,11 +412,12 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 	]
 
 	const gridChildren: SvgExportChild[] = []
-	const rowLayouts = getVueTableRowLayouts(
+	const allRowLayouts = getVueTableRowLayouts(
 		shape.props.rows,
 		defaultRowHeight,
 		shape.props.rowHeights
-	).filter(layout => layout.y < height)
+	)
+	const rowLayouts = allRowLayouts.filter(layout => layout.y < height)
 	let rowY = 0
 	for (const layout of rowLayouts) {
 		rowY = layout.bottom
@@ -421,11 +435,34 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 		gridChildren.push(createVueTableGridLine(x, 0, x, height))
 	}
 
+	for (const merge of mergeCells) {
+		const firstRow = rowLayouts[merge.row]
+		const lastRow = allRowLayouts[merge.row + merge.rowspan - 1]
+		if (!firstRow || !lastRow || firstRow.y >= height) continue
+		const left = columnOffsets[merge.col] ?? 0
+		const right = columnOffsets[merge.col + merge.colspan] ?? left
+		gridChildren.push(createElement('rect', {
+			x: left,
+			y: firstRow.y,
+			width: Math.max(0, right - left),
+			height: Math.max(0, lastRow.bottom - firstRow.y),
+			fill: '#ffffff',
+			stroke: VUE_MATERIAL_TABLE_GRID_COLOR,
+			strokeWidth: 1,
+			vectorEffect: 'non-scaling-stroke',
+		}))
+	}
+
 	for (const layout of rowLayouts) {
 		const row = shape.props.rows[layout.index]
-		let cellX = 0
 		for (const [columnIndex, column] of columns.entries()) {
-			const cellWidth = columnWidths[columnIndex] ?? 0
+			const merge = findTableMerge(mergeCells, layout.index, columnIndex)
+			if (merge && (merge.row !== layout.index || merge.col !== columnIndex)) continue
+			const cellX = columnOffsets[columnIndex] ?? 0
+			const cellRight = columnOffsets[columnIndex + (merge?.colspan ?? 1)] ?? cellX
+			const cellWidth = cellRight - cellX
+			const lastRow = merge ? allRowLayouts[merge.row + merge.rowspan - 1] : layout
+			const cellBottom = lastRow?.bottom ?? layout.bottom
 			const text = fitVueTableCellText(row?.[column.field] ?? '', cellWidth, 12, 8)
 			if (text) {
 				gridChildren.push(
@@ -433,7 +470,7 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 						'text',
 						{
 							x: cellX + 8,
-							y: layout.y + layout.height / 2,
+							y: layout.y + (cellBottom - layout.y) / 2,
 							fill: '#111827',
 							fontFamily: 'Inter, Arial, sans-serif',
 							fontSize: 12,
@@ -444,7 +481,6 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 					)
 				)
 			}
-			cellX += cellWidth
 		}
 	}
 

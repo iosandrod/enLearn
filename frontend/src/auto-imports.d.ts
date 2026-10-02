@@ -13,6 +13,7 @@ declare global {
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
   const createError: typeof import('@/src/spa-compat').createError
+  const createSvgTemplateSnapshot: typeof import('../composables/usePrintDesignerExport').createSvgTemplateSnapshot
   const createSystemSettingsContext: typeof import('../composables/useSystemSettings').createSystemSettingsContext
   const customRef: typeof import('vue').customRef
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
@@ -89,6 +90,8 @@ declare global {
   const useModel: typeof import('vue').useModel
   const useNotificationApi: typeof import('../composables/useNotificationApi').useNotificationApi
   const usePostsApi: typeof import('../composables/usePostsApi').usePostsApi
+  const usePrintApi: typeof import('../composables/usePrintApi').usePrintApi
+  const usePrintDesignerExport: typeof import('../composables/usePrintDesignerExport').usePrintDesignerExport
   const useResourceApi: typeof import('../composables/useResourceApi').useResourceApi
   const useRoute: typeof import('vue-router').useRoute
   const useRouteCache: typeof import('../composables/useRouteCache').useRouteCache
@@ -124,6 +127,9 @@ declare global {
   export type { NotificationMessage, NotificationUnreadCount, NotificationPreference, NotificationDelivery } from '../composables/useNotificationApi'
   import('../composables/useNotificationApi')
   // @ts-ignore
+  export type { PrintFormat, PrintJobStatus, PrintTemplateSnapshot, PrintOutputOptions, CreatePrintInput, PrintArtifact, PrintJob, PrintPreviewResult, PrintExportAccepted } from '../composables/usePrintApi'
+  import('../composables/usePrintApi')
+  // @ts-ignore
   export type { RouteCacheInvalidation } from '../composables/useRouteCache'
   import('../composables/useRouteCache')
   // @ts-ignore
@@ -143,6 +149,7 @@ declare module 'vue' {
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createError: UnwrapRef<typeof import('@/src/spa-compat')['createError']>
+    readonly createSvgTemplateSnapshot: UnwrapRef<typeof import('../composables/usePrintDesignerExport')['createSvgTemplateSnapshot']>
     readonly createSystemSettingsContext: UnwrapRef<typeof import('../composables/useSystemSettings')['createSystemSettingsContext']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
@@ -219,6 +226,8 @@ declare module 'vue' {
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useNotificationApi: UnwrapRef<typeof import('../composables/useNotificationApi')['useNotificationApi']>
     readonly usePostsApi: UnwrapRef<typeof import('../composables/usePostsApi')['usePostsApi']>
+    readonly usePrintApi: UnwrapRef<typeof import('../composables/usePrintApi')['usePrintApi']>
+    readonly usePrintDesignerExport: UnwrapRef<typeof import('../composables/usePrintDesignerExport')['usePrintDesignerExport']>
     readonly useResourceApi: UnwrapRef<typeof import('../composables/useResourceApi')['useResourceApi']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouteCache: UnwrapRef<typeof import('../composables/useRouteCache')['useRouteCache']>

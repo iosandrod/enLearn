@@ -93,6 +93,7 @@ import {
   PRINT_TEMPLATE_LIST_PAGE_CODE,
   prefetchPrintDesignerLowCodeResources as prefetchPrintDesignerPages,
 } from '@/utils/printDesignerLowCode';
+import { usePrintDesignerExport } from '@/composables/usePrintDesignerExport';
 
 type TldrawVueExpose = {
   getEditor(): Editor | null;
@@ -155,6 +156,8 @@ type TemplatePublicMetadata = Record<string, unknown> & {
   pageSizeMm?: { w: number; h: number };
   pageBounds?: { x: number; y: number; w: number; h: number };
   pageCount?: number;
+  renderSnapshot?: { html: string; css?: string };
+  renderSnapshotVersion?: number;
 };
 
 const props = withDefaults(defineProps<{
@@ -171,6 +174,7 @@ const PRINT_TEMPLATE_EDIT_FORM_ID = 'print-templates-edit-form';
 const route = useRoute();
 const router = useRouter();
 const serviceApi = useServiceApi();
+const printDesignerExport = usePrintDesignerExport();
 const { ready: authReady } = useAuthState();
 const designerRef = ref<TldrawVueExpose | null>(null);
 const editorReady = ref(false);
@@ -178,6 +182,7 @@ const templates = ref<PrintTemplateRecord[]>([]);
 const selectedTemplateId = ref('');
 const loadingTemplates = ref(false);
 const savingTemplate = ref(false);
+const printing = ref(false);
 const templateDirty = ref(false);
 const message = ref('');
 const messageType = ref<'info' | 'success' | 'error'>('info');
@@ -200,13 +205,19 @@ const designerPlugins: VueEditorPlugin[] = [
     commands: [
       {
         id: 'print.preview',
-        label: 'Print preview',
-        run: () => true
+        label: '服务端打印预览',
+        run: ({ editor, getWorkspaceTemplateConfig }) => runServerPreview(
+          editor,
+          getWorkspaceTemplateConfig() ?? {}
+        )
       },
       {
         id: 'print.print',
-        label: 'Print',
-        run: () => true
+        label: '导出 PDF',
+        run: ({ editor, getWorkspaceTemplateConfig }) => runServerExport(
+          editor,
+          getWorkspaceTemplateConfig() ?? {}
+        )
       }
     ]
   })
@@ -230,6 +241,85 @@ const messageIcon = computed(() => {
   if (messageType.value === 'error') return 'ri-error-warning-line';
   return 'ri-information-line';
 });
+
+async function runServerPreview(editor: Editor, workspace: VueTemplateWorkspaceConfig) {
+  if (printing.value) return false;
+  const previewWindow = import.meta.client ? window.open('', '_blank') : null;
+  printing.value = true;
+  showMessage('正在生成服务端预览…');
+  try {
+    const input = await printDesignerExport.createInput(
+      editor,
+      workspace,
+      getCurrentPrintIdentity('png'),
+      'png'
+    );
+    const artifact = await printDesignerExport.preview(input);
+    if (!artifact) throw new Error('预览任务未生成图片');
+    openArtifact(artifact.downloadUrl, previewWindow);
+    showMessage('服务端预览已生成', 'success');
+    return true;
+  } catch (error) {
+    previewWindow?.close();
+    showMessage(getErrorMessage(error, '打印预览生成失败'), 'error');
+    return true;
+  } finally {
+    printing.value = false;
+  }
+}
+
+async function runServerExport(editor: Editor, workspace: VueTemplateWorkspaceConfig) {
+  if (printing.value) return false;
+  printing.value = true;
+  showMessage('打印任务已提交，正在生成 PDF…');
+  try {
+    const input = await printDesignerExport.createInput(
+      editor,
+      workspace,
+      getCurrentPrintIdentity('pdf'),
+      'pdf'
+    );
+    if (selectedTemplate.value && !templateDirty.value) delete input.templateSnapshot;
+    const artifact = await printDesignerExport.exportFile(input, (job) => {
+      showMessage(`正在生成 PDF：${job.progress.percent}%`);
+    });
+    downloadArtifact(artifact.downloadUrl, `${input.output.filename || 'print-output'}.pdf`);
+    showMessage('PDF 已生成，下载已开始', 'success');
+    return true;
+  } catch (error) {
+    showMessage(getErrorMessage(error, 'PDF 导出失败'), 'error');
+    return true;
+  } finally {
+    printing.value = false;
+  }
+}
+
+function getCurrentPrintIdentity(extension: 'png' | 'pdf') {
+  const template = selectedTemplate.value;
+  return {
+    ...(template ? { templateId: template.id, version: template.version } : {}),
+    filename: `${currentTemplateName.value}.${extension}`
+  };
+}
+
+function openArtifact(url: string, targetWindow: Window | null) {
+  if (targetWindow) {
+    targetWindow.opener = null;
+    targetWindow.location.replace(url);
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function downloadArtifact(url: string, filename: string) {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = 'noopener';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+}
 
 watch(
   [currentTemplateName, currentTemplateStatus, templateDirty],
@@ -467,7 +557,10 @@ async function openTemplateSaveDialog(mode: TemplateSaveMode) {
   try {
     await refreshTemplates({ quiet: true });
     const editPage = await getPrintTemplateEditPage();
-    const initialValues = createSaveDialogValues(mode, snapshot);
+    const editor = getEditor();
+    if (!editor) return;
+    const renderSnapshot = await printDesignerExport.createTemplateSnapshot(editor, snapshot.workspace);
+    const initialValues = createSaveDialogValues(mode, snapshot, renderSnapshot);
     const result = await confirmLowCodePage({
       page: createTemplateSaveDialogPage(editPage),
       includeData: false,
@@ -533,7 +626,11 @@ async function getPrintTemplateEditPage() {
   return editPage;
 }
 
-function createSaveDialogValues(mode: TemplateSaveMode, snapshot: TemplateSnapshot) {
+function createSaveDialogValues(
+  mode: TemplateSaveMode,
+  snapshot: TemplateSnapshot,
+  renderSnapshot: { html: string; css?: string }
+) {
   const template = mode === 'save' ? selectedTemplate.value : null;
   const name = mode === 'saveAs'
     ? createAvailableTemplateName(selectedTemplate.value?.name ?? '打印模板')
@@ -548,12 +645,16 @@ function createSaveDialogValues(mode: TemplateSaveMode, snapshot: TemplateSnapsh
     // the active page and workspace config together so a form save cannot
     // accidentally persist only the representative page.
     content,
-    metadata: createTemplateMetadata(
-      template?.metadata,
-      content.workspace ?? {},
-      name,
-      snapshot.pages.length
-    )
+    metadata: {
+      ...createTemplateMetadata(
+        template?.metadata,
+        content.workspace ?? {},
+        name,
+        snapshot.pages.length
+      ),
+      renderSnapshot,
+      renderSnapshotVersion: 1
+    }
   };
 }
 

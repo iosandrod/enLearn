@@ -20,12 +20,12 @@ const proFeaturePlugin = defineVueEditorPlugin({
 		{
 			id: 'print.preview',
 			label: '打印预览',
-			run: () => true,
+			run: () => false,
 		},
 		{
 			id: 'print.print',
 			label: '打印',
-			run: () => true,
+			run: () => false,
 		},
 	],
 })

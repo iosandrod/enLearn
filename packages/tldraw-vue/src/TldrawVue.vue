@@ -88,8 +88,9 @@ const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
-	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'style' | 'background' | 'animation'
+	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'animation'
 >('tools')
+const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
 const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
@@ -107,6 +108,7 @@ const designerTabs = [
 	{ id: 'layers', label: '图层', icon: '▱' },
 	{ id: 'dataSource', label: '数据源', icon: '▤' },
 	{ id: 'properties', label: '属性', icon: '⚙' },
+	{ id: 'columnProperties', label: '列属性', icon: '▥' },
 	{ id: 'style', label: '样式', icon: '◐' },
 	{ id: 'background', label: '背景', icon: '▧' },
 	{ id: 'animation', label: '动画', icon: '▶' },
@@ -114,6 +116,7 @@ const designerTabs = [
 const workspaceRevision = ref(0)
 let pluginHost: VueEditorPluginHost | null = null
 let stopEditorChangeListener: (() => void) | null = null
+let stopEditorSelectionListener: (() => void) | null = null
 
 const pluginRegistry = computed(() => createVueEditorPluginRegistry(props.plugins ?? []))
 const editorExtensions = computed(() => [
@@ -131,9 +134,14 @@ function mountEditor(el: HTMLDivElement) {
 		extensions: editorExtensions.value,
 	})
 	editor.value = nextEditor
+	syncDesignerTabToSelection(nextEditor)
 	stopEditorChangeListener = nextEditor.store.listen(
 		() => emit('content-change'),
 		{ source: 'user', scope: 'document' }
+	)
+	stopEditorSelectionListener = nextEditor.store.listen(
+		() => syncDesignerTabToSelection(nextEditor),
+		{ source: 'all', scope: 'session' }
 	)
 	pluginHost = new VueEditorPluginHost(pluginRegistry.value, {
 		editor: nextEditor,
@@ -143,6 +151,26 @@ function mountEditor(el: HTMLDivElement) {
 	})
 	pluginHost.setup()
 	emit('ready', nextEditor)
+}
+
+function syncDesignerTabToSelection(currentEditor: Editor) {
+	const selectedIds = currentEditor.getSelectedShapeIds()
+	const shape = selectedIds.length === 1 ? currentEditor.getShape(selectedIds[0]) : null
+	const isMaterialSelection = Boolean(
+		shape?.type === 'vue-material' ||
+		(shape?.type === 'vue-material-section' && shape.props.zone === 'tableBody')
+	)
+	showMaterialColumnPanel.value = isMaterialSelection
+	if (isMaterialSelection && activeDesignerTab.value !== 'columnProperties') {
+		activeDesignerTab.value = 'properties'
+	} else if (!isMaterialSelection && activeDesignerTab.value === 'columnProperties') {
+		activeDesignerTab.value = 'properties'
+	}
+}
+
+function handleMaterialColumnSelect() {
+	showMaterialColumnPanel.value = true
+	activeDesignerTab.value = 'columnProperties'
 }
 
 function selectTool(tool: CanvasTool, geoShape?: VueGeoShape) {
@@ -373,15 +401,19 @@ onMounted(() => {
 		mountEditor(designerStage.value)
 	}
 	window.addEventListener('keydown', onKeyDown)
+	window.addEventListener('enlearn:material-column-select', handleMaterialColumnSelect)
 	window.addEventListener('enlearn:print-designer-mode-change', handleExternalDesignerModeChange)
 	notifyDesignerModeState(designerMode.value)
 })
 
 onBeforeUnmount(() => {
 	window.removeEventListener('keydown', onKeyDown)
+	window.removeEventListener('enlearn:material-column-select', handleMaterialColumnSelect)
 	window.removeEventListener('enlearn:print-designer-mode-change', handleExternalDesignerModeChange)
 	stopEditorChangeListener?.()
 	stopEditorChangeListener = null
+	stopEditorSelectionListener?.()
+	stopEditorSelectionListener = null
 	pluginHost?.dispose()
 	pluginHost = null
 	editor.value?.dispose()
@@ -411,7 +443,8 @@ onBeforeUnmount(() => {
 			<div style="width:350px;" class="designer-side-panel" aria-label="设计器工具面板">
 				<nav class="designer-side-tabs" aria-label="设计器功能分类">
 					<button v-for="tab in designerTabs"
-						v-show="tab.id !== 'animation' || designerMode === 'presentation'" :key="tab.id" type="button"
+						v-show="(tab.id !== 'animation' || designerMode === 'presentation')
+							&& (tab.id !== 'columnProperties' || showMaterialColumnPanel)" :key="tab.id" type="button"
 						class="designer-side-tab" :class="{ 'is-active': activeDesignerTab === tab.id }"
 						:aria-selected="activeDesignerTab === tab.id" @click="activeDesignerTab = tab.id">
 						<span class="designer-side-tab__icon" aria-hidden="true">{{ tab.icon }}</span>
@@ -430,6 +463,7 @@ onBeforeUnmount(() => {
 								@tool-drag-start="startToolbarDrag" />
 							<VueTopLeftMenu v-if="editor" ref="topMenuRef" :editor="editor"
 								:can-run-command="canRunCommand"
+								:run-command="runCommand"
 								:get-workspace-template-config="getWorkspaceTemplateConfig"
 								:load-templates="props.loadTemplates"
 								:apply-workspace-template-config="applyWorkspaceTemplateConfig"
@@ -457,6 +491,13 @@ onBeforeUnmount(() => {
 					<div v-show="activeDesignerTab === 'properties'"
 						class="designer-tool-view designer-tool-view--properties">
 						<LowCodeFormPanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
+							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
+							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
+					</div>
+					<div v-show="activeDesignerTab === 'columnProperties'"
+						class="designer-tool-view designer-tool-view--properties">
+						<LowCodeFormPanel v-if="editor && showMaterialColumnPanel" :editor="editor"
+							:workspace-revision="workspaceRevision" :column-only="true"
 							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
 							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
 					</div>

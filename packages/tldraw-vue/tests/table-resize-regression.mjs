@@ -1,8 +1,5 @@
 import assert from 'node:assert/strict'
-import {
-	cloneTableMergeCells,
-	getZoomAdjustedResizeValue,
-} from '../src/components/shapes/tableResize.ts'
+import { getZoomAdjustedResizeValue } from '../src/components/shapes/tableResize.ts'
 import {
 	getVueTableRowHeight,
 	getVueTableRowId,
@@ -27,19 +24,6 @@ assert.equal(
 	'the resize guide and committed width must use the same zoom-adjusted delta'
 )
 
-const sourceMerges = [
-	{ row: 0, col: 1, rowspan: 2, colspan: 3, extra: 'ignored' },
-	{ row: 4, col: 0, rowspan: 1, colspan: 2 },
-]
-const mergeSnapshot = cloneTableMergeCells(sourceMerges)
-assert.deepEqual(mergeSnapshot, [
-	{ row: 0, col: 1, rowspan: 2, colspan: 3 },
-	{ row: 4, col: 0, rowspan: 1, colspan: 2 },
-])
-sourceMerges[0].rowspan = 9
-assert.equal(mergeSnapshot[0].rowspan, 2, 'resize merge snapshots must not alias VXE state')
-assert.deepEqual(cloneTableMergeCells([{ row: -1, col: 0, rowspan: 1, colspan: 1 }]), [])
-
 const rows = [{ _rowId: 'first', value: 'A' }, { _rowId: 'second', value: 'B' }]
 const rowHeights = { first: 48 }
 assert.equal(getVueTableRowHeight(rows[0], 0, 32, rowHeights), 48)
@@ -54,4 +38,4 @@ assert.deepEqual(getVueTableRowLayouts(rows, 32, rowHeights), [
 	{ index: 1, rowId: 'second', y: 48, height: 32, bottom: 80 },
 ])
 
-console.log('Verified zoom-aware table resizing, independent row heights, and merge snapshots.')
+console.log('Verified zoom-aware table resizing and independent row heights.')

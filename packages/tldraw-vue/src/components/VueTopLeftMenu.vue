@@ -44,6 +44,7 @@ const props = defineProps<{
 	editor: Editor
 	applyWorkspaceTemplateConfig?: (config: VueTemplateWorkspaceConfig) => void
 	canRunCommand?: (commandId: string) => boolean
+	runCommand?: (commandId: string, event?: Event) => Promise<boolean>
 	embedded?: boolean
 	getWorkspaceTemplateConfig?: () => VueTemplateWorkspaceConfig
 	loadTemplates?: VueTemplateLoadHandler
@@ -326,6 +327,7 @@ function runGridAction(actionId: TopMenuGridActionId) {
 async function previewPrint() {
 	emit('before-action')
 	closeMenus()
+	if (canPreviewPrint.value && props.runCommand && await props.runCommand('print.preview')) return
 	updatePrintPreviewModalSize()
 	printPreviewOpen.value = true
 	printPreviewLoading.value = true
@@ -346,6 +348,7 @@ async function previewPrint() {
 async function printCurrentPage() {
 	emit('before-action')
 	closeMenus()
+	if (canPrint.value && props.runCommand && await props.runCommand('print.print')) return
 
 	try {
 		const manager = new PrintManager(props.editor)

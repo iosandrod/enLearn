@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "test:components": "node --experimental-strip-types tests/component-geometry-regression.mjs && node --experimental-strip-types tests/table-cell-area-geometry-regression.mjs && node --experimental-strip-types tests/table-resize-regression.mjs && node --experimental-strip-types tests/table-context-menu-regression.mjs && node --experimental-strip-types tests/barcode-regression.mjs && node --experimental-strip-types tests/layers-panel-regression.mjs && node --experimental-strip-types tests/material-data-source-fields-regression.mjs",
+    "test:components": "node --experimental-strip-types tests/component-geometry-regression.mjs && node --experimental-strip-types tests/table-resize-regression.mjs && node --experimental-strip-types tests/table-context-menu-regression.mjs && node --experimental-strip-types tests/table-structure-regression.mjs && node --experimental-strip-types tests/barcode-regression.mjs && node --experimental-strip-types tests/layers-panel-regression.mjs && node --experimental-strip-types tests/material-data-source-fields-regression.mjs && node tests/material-column-properties-regression.mjs",
     "typecheck": "vue-tsc --noEmit",
     "build": "pnpm typecheck && vite build && pnpm build:types",
     "build:demo": "pnpm typecheck && vite build --mode demo",
@@ -55,7 +55,6 @@
     "reveal.js": "^6.0.2",
     "vxe-pc-ui": "^4.16.22",
     "vxe-table": "^4.20.7",
-    "vxe-table-plugin-extend-cell-area": "0.1.0",
     "xlsx": "^0.18.5"
   },
   "peerDependencies": {

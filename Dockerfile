@@ -37,6 +37,14 @@ FROM base AS api-runtime
 ENV NODE_ENV=production
 ENV API_HOST=0.0.0.0
 ENV API_PORT=3002
+ENV PRINT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+RUN apk add --no-cache \
+  chromium \
+  font-noto-cjk \
+  font-noto-emoji \
+  freetype \
+  harfbuzz \
+  nss
 WORKDIR /app
 COPY --from=api-build /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=api-build /app/pnpm-lock.yaml ./

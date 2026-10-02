@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Custom table smoke test</title>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script type="module">
+			import { createApp, reactive } from 'vue'
+			import VueTableShapeNode from '../src/components/shapes/VueTableShapeNode.vue'
+			import '../src/styles.css'
+
+			const shape = reactive({
+				id: 'shape:table-smoke',
+				type: 'vue-table',
+				opacity: 1,
+				props: {
+					w: 480,
+					h: 260,
+					columns: [
+						{ field: 'a', title: 'A', width: 160 },
+						{ field: 'b', title: 'B', width: 160 },
+						{ field: 'c', title: 'C', width: 160 },
+					],
+					rows: Array.from({ length: 6 }, (_, index) => ({
+						_rowId: `row-${index + 1}`,
+						a: `Row ${index + 1} A`,
+						b: `Row ${index + 1} B`,
+						c: `Row ${index + 1} C`,
+					})),
+					rowHeight: 32,
+					rowHeights: {},
+					mergeCells: [],
+					showBorder: true,
+				},
+			})
+			const editor = {
+				updateShape(next) {
+					Object.assign(shape.props, next.props)
+				},
+			}
+
+			createApp(VueTableShapeNode, {
+				shape,
+				editor,
+				selected: true,
+				zoom: 1,
+				pageTransform: '',
+			}).mount('#app')
+		</script>
+	</body>
+</html>

@@ -20,6 +20,7 @@ export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.property.vue-frame',
   'print-designer.property.vue-table',
   'print-designer.property.vue-material',
+  'print-designer.property.vue-material-column',
   'print-designer.property.vue-material-section',
   'print-designer.property.vue-resume',
   'print-designer.property.vue-resume-section',

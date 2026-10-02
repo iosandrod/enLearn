@@ -40,6 +40,7 @@ export type VueTableShape = TLBaseShape<
 		rows: VueTableRow[]
 		rowHeight: number
 		rowHeights?: VueTableRowHeightMap
+		mergeCells?: Array<{ row: number; col: number; rowspan: number; colspan: number }>
 		showBorder?: boolean
 	}
 >
@@ -116,6 +117,7 @@ export function createDefaultVueTableProps(): VueTableShape['props'] {
 		rows: createDefaultVueTableRows(),
 		rowHeight: vueTableDefaultRowHeight,
 		rowHeights: {},
+		mergeCells: [],
 		showBorder: true,
 	}
 }

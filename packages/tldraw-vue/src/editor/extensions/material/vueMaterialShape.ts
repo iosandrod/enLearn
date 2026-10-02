@@ -19,7 +19,11 @@ import {
 import { baseProps, type BaseProps } from '../../shapeProps/base'
 import { vueMaterialPropertyRegistry } from '../../shapeProps/vueMaterial'
 import { vueMaterialSectionPropertyRegistry } from '../../shapeProps/vueMaterialSection'
-import { vueMaterialDefaultProps, vueMaterialDefaultSize } from '../../defaults'
+import {
+	vueMaterialDefaultProps,
+	vueMaterialDefaultSize,
+	vueMaterialRowDefaults,
+} from '../../defaults'
 
 export type VueMaterialSectionZone =
 	| 'pageHeader'
@@ -124,6 +128,9 @@ export type VueMaterialShape = TLBaseShape<
 	BaseProps & {
 		name: string
 		dataSourceField: string
+		headerRowHeight?: number
+		bodyRowHeight?: number
+		footerRowHeight?: number
 	}
 >
 
@@ -153,6 +160,7 @@ export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 			w: vueMaterialDefaultSize.w,
 			h: getVueMaterialDefaultHeight(),
 			...vueMaterialDefaultProps,
+			...vueMaterialRowDefaults,
 		}
 	}
 

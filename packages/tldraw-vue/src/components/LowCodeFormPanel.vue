@@ -19,13 +19,14 @@ import {
 } from '@/editor/shapeProps/options'
 import { baseProps } from '@/editor/shapeProps/base'
 import { vueBoxPropertyRegistry } from '@/editor/shapeProps/vueBox'
+import { vueMaterialPropertyRegistry } from '@/editor/shapeProps/vueMaterial'
 import type {
 	LowCodeField,
 	LowCodeFormSchema,
 	LowCodeOption,
 } from '@enlearn/lowcode-framework/types/lowcode'
 import { isShapeId, type Editor, type TLShape, type TLShapePartial } from '@tldraw/editor'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
 	getVueMaterialSectionHeightModel,
 	getVueMaterialVisibilityModel,
@@ -64,9 +65,11 @@ const props = withDefaults(
 		workspaceRevision?: number
 		getWorkspaceTemplateConfig?: () => VueTemplateWorkspaceConfig | undefined
 		applyWorkspaceTemplateConfig?: (config: VueTemplateWorkspaceConfig) => void
+		columnOnly?: boolean
 	}>(),
 	{
 		workspaceRevision: 0,
+		columnOnly: false,
 	}
 )
 
@@ -77,6 +80,9 @@ const formDefinitions = ref<Record<string, LowCodeFormSchema>>({})
 const formDefinitionsLoading = ref(true)
 const formDefinitionError = ref('')
 const formDefinitionIds = ref<Record<string, string>>({})
+const materialColumnFormCode = propertyFormCode('vue-material-column')
+const selectedMaterialColumn = ref<{ materialShapeId: TLShape['id']; field: string } | null>(null)
+const columnFormModel = ref<ShapeFormModel>({})
 const imageSourceError = ref('')
 const designingForm = ref(false)
 const designFormMessage = ref('')
@@ -150,16 +156,73 @@ const activeSchema = computed(() => {
 		),
 	}
 })
+const materialColumnFallbackSchema: LowCodeFormSchema = {
+	title: '物料表格列属性',
+	columns: 1,
+	fields: [
+		{ field: 'field', label: '字段名', component: 'vxe-input', props: { disabled: true } },
+		{ field: 'title', label: '列标题', component: 'vxe-input' },
+		{ field: 'width', label: '列宽', component: 'lc-number-input', props: { min: 36, step: 1 } },
+		{ field: 'visible', label: '显示列', component: 'vxe-switch', defaultValue: true },
+		{ field: 'align', label: '内容对齐', component: 'vxe-select', options: [
+			{ label: '默认', value: '' }, { label: '居左', value: 'left' },
+			{ label: '居中', value: 'center' }, { label: '居右', value: 'right' },
+		] },
+		{ field: 'headerAlign', label: '表头对齐', component: 'vxe-select', options: [
+			{ label: '默认', value: '' }, { label: '居左', value: 'left' },
+			{ label: '居中', value: 'center' }, { label: '居右', value: 'right' },
+		] },
+		{ field: 'component', label: '单元格组件', component: 'vxe-input' },
+		{ field: 'props', label: '组件属性', component: 'lc-json-editor', props: { jsonValueMode: 'string', jsonRootType: 'object' } },
+		{ field: 'formatter', label: '格式化配置', component: 'lc-json-editor', props: { jsonValueMode: 'string' } },
+	],
+	actions: [],
+}
+const materialColumnSchema = computed(() =>
+	formDefinitions.value[materialColumnFormCode] ?? materialColumnFallbackSchema,
+)
+const selectedMaterialShape = computed(() => {
+	const shape = selectedShape.value
+	if (shape?.type === 'vue-material') return shape
+	if (shape?.type !== 'vue-material-section' || shape.props.zone !== 'tableBody') return null
+	const parent = props.editor.getShape(shape.parentId)
+	return parent?.type === 'vue-material' ? parent : null
+})
+const showMaterialColumnTab = computed(() => {
+	const shape = selectedMaterialShape.value
+	return Boolean(
+		shape?.type === 'vue-material'
+	)
+})
+const selectedMaterialColumnValue = computed(() => {
+	const shape = selectedMaterialShape.value
+	const selection = selectedMaterialColumn.value
+	const source = editorPrintDataSource.value
+	if (!shape || !selection || selection.materialShapeId !== shape.id) return null
+	if (!source || source.type !== 'inline') return null
+	const field = String(shape.props.dataSourceField ?? '').trim()
+	const table = Array.isArray(source.detailTables)
+		? source.detailTables.find((item) => item?.field === field)
+		: undefined
+	const columns = table?.columns ?? source.detailColumns ?? []
+	return findDetailColumn(columns, selection.field)
+})
 const imagePropertySchema = computed(() =>
 	formDefinitions.value[propertyFormCode('vue-image')] ?? null
 )
 const panelTitle = computed(() => {
+	if (props.columnOnly) return '列属性'
 	if (isCanvasFormActive.value) return workspaceFormDescriptor.title
 	if (isMultiShapeFormActive.value) return `${activeDescriptor.value?.title ?? '节点'} · 批量属性`
 	if (selectedShapeIds.value.length > 1) return '多选属性'
 	return activeDescriptor.value?.title ?? '未知节点'
 })
 const panelSubtitle = computed(() => {
+	if (props.columnOnly) {
+		return selectedMaterialColumn.value?.field
+			? `物料表格列 · ${selectedMaterialColumn.value.field}`
+			: '请在物料表格中选择列'
+	}
 	if (isCanvasFormActive.value) {
 		return selectedShapeIds.value.length > 1
 			? `当前画布 · 已选择 ${selectedShapeIds.value.length} 个节点`
@@ -283,6 +346,54 @@ function handleModelUpdate(value: ShapeFormModel) {
 	descriptor.apply(props.editor, shape, value)
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
+	}
+}
+
+function handleColumnModelUpdate(value: ShapeFormModel) {
+	if (!showMaterialColumnTab.value || props.editor.getIsReadonly()) return
+	columnFormModel.value = value
+	const shape = selectedShape.value
+	const selection = selectedMaterialColumn.value
+	const source = editorPrintDataSource.value
+	if (!shape || !selection || source?.type !== 'inline') return
+	const field = String(shape.props.dataSourceField ?? '').trim()
+	if (!field || selection.materialShapeId !== shape.id) return
+	const nextColumn = {
+		...(selectedMaterialColumnValue.value ?? {}),
+		...(isRecord(cloneSerializableValue(value)) ? cloneSerializableValue(value) as Record<string, unknown> : {}),
+	} as Record<string, unknown>
+	for (const key of ['props', 'formatter']) {
+		const rawValue = nextColumn[key]
+		if (typeof rawValue !== 'string' || !rawValue.trim()) {
+			if (key === 'props') nextColumn[key] = {}
+			else delete nextColumn[key]
+			continue
+		}
+		if (!/^[\[{]/.test(rawValue.trim())) continue
+		try {
+			nextColumn[key] = JSON.parse(rawValue)
+		} catch {
+			return
+		}
+	}
+	const replaceColumns = (columns: readonly any[]): any[] => columns.map((column) => {
+		if (Array.isArray(column?.children) && column.children.length) {
+			return { ...column, children: replaceColumns(column.children) }
+		}
+		return column?.field === selection.field ? { ...column, ...nextColumn, field: selection.field } : column
+	})
+	const detailTables = Array.isArray(source.detailTables) ? source.detailTables : []
+	const nextTables = detailTables.map((table) =>
+		table.field === field ? { ...table, columns: replaceColumns(table.columns) } : table,
+	)
+	const hasTables = detailTables.length > 0
+	const nextDetailColumns = hasTables
+		? source.detailColumns
+		: replaceColumns(Array.isArray(source.detailColumns) ? source.detailColumns : [])
+	editorPrintDataSource.value = {
+		...source,
+		...(hasTables ? { detailTables: nextTables } : {}),
+		...(nextDetailColumns ? { detailColumns: nextDetailColumns } : {}),
 	}
 }
 
@@ -812,6 +923,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		]),
 		toModel(shape) {
 			return {
+				...getMaterialFormValues(shape),
 				...getCommonModel(shape),
 				...getFlatPropsModel(shape),
 				...getVueMaterialVisibilityModel(shape as VueMaterialShape),
@@ -837,6 +949,12 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			for (const key of ['showPageHeader', 'showTableHeader', 'showTableFooter', 'showPageFooter']) {
 				if (key in model) metaPartial[key] = Boolean(model[key])
 			}
+			const materialFormValues = { ...getMaterialFormValues(shape) }
+			for (const key of Object.keys(model)) {
+				const value = cloneSerializableValue(model[key])
+				materialFormValues[key] = value
+			}
+			metaPartial.__materialFormValues = materialFormValues
 			if (Object.keys(metaPartial).length) {
 				shapePartial.meta = {
 					...currentMeta,
@@ -845,8 +963,10 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 				} as TLShapePartial['meta']
 			}
 			const propsPartial: Record<string, unknown> = {}
-			if ('name' in model) propsPartial.name = String(model.name ?? currentProps.name ?? '')
-			if ('dataSourceField' in model) propsPartial.dataSourceField = String(model.dataSourceField ?? currentProps.dataSourceField ?? '')
+			for (const key of Object.keys(model)) {
+				if (key === 'w' || key === 'h' || !vueMaterialPropertyRegistry.has(key)) continue
+				propsPartial[key] = vueMaterialPropertyRegistry.normalize(key, model[key], currentProps[key])
+			}
 			if (Object.keys(propsPartial).length) shapePartial.props = propsPartial
 
 			const layoutModel: Record<string, number> = {}
@@ -995,17 +1115,25 @@ async function loadPropertyFormDefinitions() {
 	formDefinitionError.value = ''
 
 	try {
+		// Keep the original property panel request unchanged. The column-only
+		// instance is the only consumer that needs the additional form definition.
+		const propertyFormCodes = props.columnOnly
+			? [...requiredPropertyFormCodes, materialColumnFormCode]
+			: requiredPropertyFormCodes
 		const serviceApi = host.getServiceApi()
 		const rows = await serviceApi.invoke<PropertyFormDefinitionRow[]>('lowcode', 'listItems', {
 			resource: 'lowcode_form_definitions',
-			filters: { code: requiredPropertyFormCodes, enabled: true },
-			limit: requiredPropertyFormCodes.length,
+			filters: { code: propertyFormCodes, enabled: true },
+			limit: propertyFormCodes.length,
 		})
 		const loaded: Record<string, LowCodeFormSchema> = {}
 		const ids: Record<string, string> = {}
 
 		for (const row of Array.isArray(rows) ? rows : []) {
-			if (typeof row.code !== 'string' || !isLowCodeFormSchema(row.schema)) continue
+			// The low-code list cache keeps the requested code order and uses
+			// `undefined` for definitions that are not in the database yet. Keep
+			// the column-only panel on its local fallback schema in that case.
+			if (!isRecord(row) || typeof row.code !== 'string' || !isLowCodeFormSchema(row.schema)) continue
 			loaded[row.code] = structuredClone(row.schema)
 			if (typeof row.id === 'string' && row.id.trim()) ids[row.code] = row.id.trim()
 		}
@@ -1096,7 +1224,20 @@ function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
 
 onMounted(() => {
 	void loadPropertyFormDefinitions()
+	window.addEventListener('enlearn:material-column-select', onMaterialColumnSelect)
 })
+
+onBeforeUnmount(() => {
+	window.removeEventListener('enlearn:material-column-select', onMaterialColumnSelect)
+})
+
+function onMaterialColumnSelect(event: Event) {
+	const detail = (event as CustomEvent<{ materialShapeId?: unknown; field?: unknown }>).detail
+	const shape = props.editor.getShape(detail?.materialShapeId as TLShape['id'])
+	const field = typeof detail?.field === 'string' ? detail.field.trim() : ''
+	if (shape?.type !== 'vue-material' || !field) return
+	selectedMaterialColumn.value = { materialShapeId: shape.id, field }
+}
 
 watch(
 	[
@@ -1119,6 +1260,34 @@ watch(
 	},
 	{ immediate: true }
 )
+
+watch(
+	[selectedShape, selectedMaterialColumn, editorPrintDataSource, () => props.workspaceRevision],
+	() => {
+		const column = selectedMaterialColumnValue.value
+		columnFormModel.value = column ? createMaterialColumnFormModel(column) : {}
+	},
+	{ immediate: true },
+)
+
+function createMaterialColumnFormModel(column: Record<string, unknown>): ShapeFormModel {
+	return {
+		...structuredClone(column),
+		props: typeof column.props === 'string'
+			? column.props
+			: JSON.stringify(isRecord(column.props) ? column.props : {}, null, 2),
+		formatter: column.formatter == null || column.formatter === ''
+			? ''
+			: typeof column.formatter === 'string'
+				? column.formatter
+				: JSON.stringify(column.formatter, null, 2),
+	}
+}
+
+watch(selectedShape, (shape) => {
+	if (selectedMaterialShape.value) return
+	selectedMaterialColumn.value = null
+})
 
 watch(
 	formModel,
@@ -1465,6 +1634,34 @@ function getFlatPropsModel(shape: TLShape): ShapeFormModel {
 	return model
 }
 
+function getMaterialFormValues(shape: TLShape): ShapeFormModel {
+	if (shape.type !== 'vue-material') return {}
+	const meta = isRecord(shape.meta) ? shape.meta : {}
+	return isRecord(meta.__materialFormValues) ? meta.__materialFormValues : {}
+}
+
+function findDetailColumn(columns: readonly any[], field: string): Record<string, unknown> | null {
+	for (const column of columns) {
+		if (!isRecord(column)) continue
+		if (column.field === field && !Array.isArray(column.children)) return column
+		if (Array.isArray(column.children)) {
+			const nested = findDetailColumn(column.children, field)
+			if (nested) return nested
+		}
+	}
+	return null
+}
+
+function cloneSerializableValue(value: unknown): unknown {
+	if (value === undefined) return null
+	try {
+		const serialized = JSON.stringify(value)
+		return serialized === undefined ? null : JSON.parse(serialized)
+	} catch {
+		return null
+	}
+}
+
 function getCommonPartial(shape: TLShape, model: ShapeFormModel): TLShapePartial {
 	const partial: TLShapePartial = {
 		id: shape.id,
@@ -1701,17 +1898,31 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 			<i :class="designingForm ? 'ri-loader-4-line print-spin' : 'ri-checkbox-circle-line'" aria-hidden="true" />
 			<span>{{ designFormMessage }}</span>
 		</div>
-
 		<div v-if="formDefinitionsLoading" class="lowcode-form-panel__state" role="status">
 			正在加载属性表单...
 		</div>
-		<div v-else-if="formDefinitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
+		<div v-else-if="props.columnOnly && formDefinitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
 			<p>{{ formDefinitionError }}</p>
 			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
 		</div>
-		<div v-else-if="emptyMessage" class="lowcode-form-panel__empty">{{ emptyMessage }}</div>
+		<div v-else-if="!props.columnOnly && formDefinitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
+			<p>{{ formDefinitionError }}</p>
+			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
+		</div>
+		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema && !selectedMaterialColumnValue" class="lowcode-form-panel__empty">
+			请点击物料表格中的列标题查看列属性
+		</div>
+		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema" class="lowcode-form-panel__column-form">
+			<LowCodeForm
+				:key="`${formKey}:column-only:${selectedMaterialColumn?.field ?? ''}`"
+				:model-value="columnFormModel"
+				:schema="materialColumnSchema"
+				@update:model-value="handleColumnModelUpdate"
+			/>
+		</div>
+		<div v-else-if="!props.columnOnly && emptyMessage" class="lowcode-form-panel__empty">{{ emptyMessage }}</div>
 		<LowCodeForm
-			v-else-if="activeSchema"
+			v-else-if="!props.columnOnly && activeSchema"
 			:key="formKey"
 			:model-value="formModel"
 			:schema="activeSchema"

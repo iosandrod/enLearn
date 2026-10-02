@@ -14,6 +14,7 @@ import { PostsService } from '../posts-service/posts.service';
 import { PlanningService } from '../planning-service/planning.service';
 import { UserService } from '../user-service/user.service';
 import { isDomainServiceName, type DomainServiceName } from '../common/service-bus';
+import { PrintService } from '../print-service/print.service';
 
 @Injectable()
 export class DomainServiceRouter {
@@ -43,7 +44,9 @@ export class DomainServiceRouter {
     @Inject(PlanningService)
     private readonly planningService: PlanningService,
     @Inject(MesService)
-    private readonly mesService: MesService
+    private readonly mesService: MesService,
+    @Inject(PrintService)
+    private readonly printService: PrintService
   ) {
     this.executors = {
       account: accountService,
@@ -57,7 +60,8 @@ export class DomainServiceRouter {
       files: filesService,
       chat: chatService,
       planning: planningService,
-      mes: mesService
+      mes: mesService,
+      print: printService
     };
   }
 

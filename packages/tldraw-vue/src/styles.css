@@ -1,6 +1,5 @@
 @import 'vxe-pc-ui/lib/style.css';
 @import 'vxe-table/lib/style.css';
-@import 'vxe-table-plugin-extend-cell-area/style.css';
 
 :root {
 	font-family:
@@ -1633,6 +1632,36 @@ button {
 	width: 60px;
 }
 
+.workspace-page-preset {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.workspace-page-preset__label {
+	color: #8a97a8;
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.workspace-page-preset__select {
+	width: 116px;
+	height: 24px;
+	padding: 0 20px 0 6px;
+	border: 1px solid #cfd6e2;
+	border-radius: 4px;
+	background: #ffffff;
+	color: #172033;
+	cursor: pointer;
+	font-size: 12px;
+	outline: none;
+}
+
+.workspace-page-preset__select:focus {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 2px rgb(37 99 235 / 0.14);
+}
+
 .workspace-size-field input {
 	width: 100%;
 	height: 24px;
@@ -1655,6 +1684,26 @@ button {
 .workspace-size-unit {
 	color: #8a97a8;
 	font-size: 12px;
+}
+
+@media (max-width: 680px) {
+	.workspace-toolbar {
+		right: 6px;
+		gap: 4px;
+		max-width: calc(100% - 12px);
+	}
+
+	.workspace-page-preset__label {
+		display: none;
+	}
+
+	.workspace-page-preset__select {
+		width: 100px;
+	}
+
+	.workspace-size-field {
+		width: 48px;
+	}
 }
 
 .workspace-toolbar-divider {
@@ -2082,6 +2131,15 @@ button {
 	border-right: 0;
 }
 
+.vue-material-table-header-cell.is-column-selected {
+	background: #eaf3ff;
+	box-shadow: inset 0 0 0 calc(2px * var(--inverse-zoom)) #2878d0;
+}
+
+.vue-material-table-header-cell > span {
+	cursor: pointer;
+}
+
 .vue-material-table-header-cell.is-header-continuation,
 .vue-material-table-header-cell.is-header-rowspan {
 	border-bottom-color: transparent;
@@ -2105,6 +2163,17 @@ button {
 
 .vue-material-table-column-resize:hover {
 	border-left-color: #2878d0;
+}
+
+.vue-material-table-column-resize.is-right {
+	margin-right: calc(-1px * var(--inverse-zoom));
+	margin-left: 0;
+	border-right: calc(1px * var(--inverse-zoom)) solid transparent;
+	border-left: 0;
+}
+
+.vue-material-table-column-resize.is-right:hover {
+	border-right-color: #2878d0;
 }
 
 .vue-material-table-rows {
@@ -2218,47 +2287,63 @@ button {
 }
 
 .vue-table-shape__table {
-	width: 100%;
-	height: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
 	font-family:
 		Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-.vue-table-shape .vxe-table--render-default {
 	color: #111827;
 	font-size: 13px;
-	line-height: var(--vue-table-row-height);
+	line-height: 1.25;
+	user-select: none;
+}
+
+.vue-table-shape__viewport {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
 	background: #ffffff;
 }
 
-.vue-table-shape .vxe-table--body-wrapper,
-.vue-table-shape .vxe-table--main-wrapper,
-.vue-table-shape .vxe-table--body,
-.vue-table-shape .vxe-table--body-inner-wrapper {
-	background: #ffffff;
-}
-
-.vue-table-shape .vxe-cell {
+.vue-table-shape__table tr {
 	height: var(--vue-table-row-height);
+}
+
+.vue-table-shape__table td {
+	box-sizing: border-box;
 	padding: 0 8px;
-	line-height: var(--vue-table-row-height);
+	border: 1px solid #d8dde6;
+	background: #ffffff;
+	vertical-align: middle;
+	cursor: cell;
+	overflow: hidden;
+}
+
+.vue-table-shape__table td > span {
+	display: block;
+	overflow: hidden;
+	text-overflow: clip;
 	white-space: nowrap;
 }
 
-.vue-table-shape .vxe-body--column {
-	background: #ffffff;
-}
-
-.vue-table-shape .vxe-table--cell-main-area,
-.vue-table-shape .vxe-table--cell-active-area,
-.vue-table-shape .vxe-table--cell-multi-area {
-	border-color: #2563eb !important;
+.vue-table-shape__selection {
+	position: absolute;
+	z-index: 4;
+	box-sizing: border-box;
+	border: calc(2px * var(--inverse-zoom)) solid #2563eb;
 	background: rgb(37 99 235 / 0.08);
+	pointer-events: none;
 }
 
-.vue-table-shape .vxe-table--cell-main-area-btn {
-	border-color: #2563eb !important;
+.vue-table-shape__selection::after {
+	position: absolute;
+	right: calc(-3px * var(--inverse-zoom));
+	bottom: calc(-3px * var(--inverse-zoom));
+	width: calc(5px * var(--inverse-zoom));
+	height: calc(5px * var(--inverse-zoom));
+	border: calc(1px * var(--inverse-zoom)) solid #ffffff;
 	background: #2563eb;
+	content: "";
 }
 
 .vue-table-shape__resize-layer {
@@ -2363,6 +2448,55 @@ button {
 .vue-table-shape__resize-guide--row .vue-table-shape__resize-value {
 	top: calc(6px * var(--inverse-zoom));
 	left: calc(6px * var(--inverse-zoom));
+}
+
+.vue-table-context-menu {
+	position: fixed;
+	z-index: 2147483647;
+	display: flex;
+	flex-direction: column;
+	width: 150px;
+	padding: 5px;
+	border: 1px solid #d7dce5;
+	border-radius: 6px;
+	background: #ffffff;
+	box-shadow: 0 10px 30px rgb(15 23 42 / 18%);
+	color: #1f2937;
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.vue-table-context-menu button {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	height: 30px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	font-size: 12px;
+	text-align: left;
+}
+
+.vue-table-context-menu button:hover:not(:disabled),
+.vue-table-context-menu button:focus-visible {
+	background: #edf4ff;
+	color: #1d4ed8;
+	outline: none;
+}
+
+.vue-table-context-menu button:disabled {
+	color: #a2aab7;
+	cursor: not-allowed;
+}
+
+.vue-table-context-menu__separator {
+	height: 1px;
+	margin: 4px 3px;
+	background: #e5e7eb;
 }
 
 .vue-text-shape {
@@ -3908,6 +4042,49 @@ button {
 	flex: 0 0 auto;
 	margin-top: 1px;
 	font-size: 13px;
+}
+
+.lowcode-form-panel__tabs {
+	display: flex;
+	gap: 0;
+	border-bottom: 1px solid #dfe5ec;
+	background: #f8fafc;
+}
+
+.lowcode-form-panel__tabs button {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 36px;
+	padding: 0 10px;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: transparent;
+	color: #64748b;
+	cursor: pointer;
+	font: inherit;
+	font-size: 12px;
+	font-weight: 650;
+}
+
+.lowcode-form-panel__tabs button:hover,
+.lowcode-form-panel__tabs button.is-active {
+	background: #ffffff;
+	color: #1d4ed8;
+}
+
+.lowcode-form-panel__tabs button.is-active {
+	border-bottom-color: #2563eb;
+}
+
+.lowcode-form-panel__tabs button:focus-visible {
+	outline: 2px solid #60a5fa;
+	outline-offset: -2px;
+}
+
+.lowcode-form-panel__column-form {
+	min-height: 0;
+	flex: 1 1 auto;
+	display: flex;
 }
 
 .lowcode-form-panel__state,

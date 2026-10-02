@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TLShapePartial } from '@tldraw/editor'
-import { computed, onBeforeUnmount } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
 	getPrintDataSourceDetailColumns,
 	getPrintDataSourceDetailRows,
@@ -11,6 +11,7 @@ import {
 	isVueMaterialShape,
 	type VueMaterialSectionShape,
 } from '@/editor/extensions/material/vueMaterialShape'
+import { vueMaterialRowDefaults } from '@/editor/defaults'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
@@ -18,6 +19,7 @@ import type { VueShapeNodeProps } from './types'
 const props = defineProps<VueShapeNodeProps<VueMaterialSectionShape>>()
 
 const isTableBody = computed(() => props.shape.props.zone === 'tableBody')
+const selectedColumnField = ref('')
 const printDataSource = getEditorPrintDataSource(props.editor)
 const materialShape = useEditorValue(
 	`material parent shape:${props.shape.id}`,
@@ -51,7 +53,15 @@ const previewColumns = computed(() =>
 const previewLeafColumns = computed(() => flattenDetailColumns(previewColumns.value))
 const previewHeaderCells = computed(() => createPreviewHeaderCells(previewColumns.value))
 const previewHeaderDepth = computed(() => getColumnDepth(previewColumns.value))
-const previewHeaderHeight = computed(() => Math.max(1, previewHeaderDepth.value) * 36)
+const previewHeaderRowHeight = computed(() => getPositiveRowHeight(
+	isVueMaterialShape(materialShape.value) ? materialShape.value.props.headerRowHeight : undefined,
+	vueMaterialRowDefaults.headerRowHeight,
+))
+const previewBodyRowHeight = computed(() => getPositiveRowHeight(
+	isVueMaterialShape(materialShape.value) ? materialShape.value.props.bodyRowHeight : undefined,
+	vueMaterialRowDefaults.bodyRowHeight,
+))
+const previewHeaderHeight = computed(() => Math.max(1, previewHeaderDepth.value) * previewHeaderRowHeight.value)
 const previewTableWidth = computed(() => Math.max(1, props.shape.props.w - 2 / (props.zoom || 1)))
 const previewLeafWidths = computed(() => normalizeColumnWidths(
 	previewLeafColumns.value,
@@ -65,6 +75,7 @@ const previewHeaderRows = computed(() => createPreviewHeaderRows(
 	previewHeaderCells.value,
 	previewLeafLayouts.value,
 	previewHeaderDepth.value,
+	previewHeaderRowHeight.value,
 ))
 const previewRows = computed(() =>
 	hasConfiguredDataSource.value
@@ -73,7 +84,7 @@ const previewRows = computed(() =>
 )
 const visiblePreviewRows = computed(() => {
 	const availableHeight = Math.max(0, props.shape.props.h - previewHeaderHeight.value)
-	const maxRows = Math.max(1, Math.floor(availableHeight / 28))
+	const maxRows = Math.max(1, Math.floor(availableHeight / previewBodyRowHeight.value))
 	return previewRows.value.slice(0, maxRows)
 })
 const canResizeBottom = computed(() => {
@@ -97,6 +108,15 @@ let columnResizeState: {
 	originClientX: number
 	pointerId: number
 } | null = null
+
+function handleMaterialColumnSelection(event: Event) {
+	const detail = (event as CustomEvent<{ materialShapeId?: unknown; field?: unknown }>).detail
+	if (detail?.materialShapeId !== materialShape.value?.id) return
+	selectedColumnField.value = typeof detail.field === 'string' ? detail.field : ''
+}
+
+onMounted(() => window.addEventListener('enlearn:material-column-select', handleMaterialColumnSelection))
+onBeforeUnmount(() => window.removeEventListener('enlearn:material-column-select', handleMaterialColumnSelection))
 
 const MIN_COLUMN_WIDTH = 36
 
@@ -317,6 +337,21 @@ function formatPreviewValue(row: Record<string, unknown>, field: string) {
 	return String(value)
 }
 
+function getPositiveRowHeight(value: unknown, fallback: number) {
+	return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback
+}
+
+function selectMaterialColumn(event: MouseEvent, field: string | undefined) {
+	event.stopPropagation()
+	if (!field) return
+	const parent = materialShape.value
+	if (!isVueMaterialShape(parent)) return
+	props.editor.select(parent.id)
+	window.dispatchEvent(new CustomEvent('enlearn:material-column-select', {
+		detail: { materialShapeId: parent.id, field },
+	}))
+}
+
 function flattenDetailColumns(columns: readonly { field: string; children?: readonly any[] }[]) {
 	const result: { field: string; title: string; width?: number }[] = []
 	columns.forEach((column) => {
@@ -340,6 +375,7 @@ function createPreviewHeaderCells(
 	const cells: Array<{
 		key: string
 		title: string
+		field?: string
 		start: number
 		span: number
 		row: number
@@ -354,6 +390,7 @@ function createPreviewHeaderCells(
 			cells.push({
 				key: `${path}-${index}`,
 				title: column.title || column.field,
+				field: children.length ? undefined : column.field,
 				start,
 				span: leafCount,
 				row: depth,
@@ -373,21 +410,26 @@ function countLeafColumns(columns: readonly { children?: readonly any[] }[]): nu
 }
 
 function createPreviewHeaderRows(
-	cells: readonly { key: string; title: string; start: number; span: number; row: number; rowSpan: number }[],
-	leafColumns: readonly { width: number }[],
+	cells: readonly { key: string; title: string; field?: string; start: number; span: number; row: number; rowSpan: number }[],
+	leafColumns: readonly { field: string; width: number }[],
 	depth: number,
+	rowHeight: number,
 ) {
+	const usedResizeBoundaries = new Set<number>()
 	return Array.from({ length: depth }, (_, rowIndex) => {
 		const row = rowIndex + 1
 		const result: Array<{
 			key: string
 			title: string
+			field?: string
 			width: number
 			height: number
 			leafIndex?: number
 			spacer?: boolean
 			continuation?: boolean
 			spansRows?: boolean
+			resizeIndex?: number
+			resizeSide?: 'left' | 'right'
 		}> = []
 		let cursor = 1
 		while (cursor <= leafColumns.length) {
@@ -396,15 +438,32 @@ function createPreviewHeaderRows(
 			)
 			if (cell) {
 				const continuation = cell.row < row
+				const isLeaf = cell.span === 1
+				const hasResizeBoundary = cell.start + cell.span < leafColumns.length + 1
+				let resizeIndex: number | undefined
+				let resizeSide: 'left' | 'right' | undefined
+				if (!continuation && hasResizeBoundary) {
+					const boundaryIndex = isLeaf && cursor > 1 ? cursor - 2 : cursor + cell.span - 2
+					if (!usedResizeBoundaries.has(boundaryIndex)) {
+						resizeIndex = boundaryIndex
+						resizeSide = isLeaf && cursor > 1 ? 'left' : 'right'
+						usedResizeBoundaries.add(boundaryIndex)
+					}
+				}
 				result.push({
 					key: `${cell.key}-${row}`,
 					title: cell.row === row ? cell.title : '',
+					field: cell.row === row && cell.span === 1
+						? cell.field ?? leafColumns[cursor - 1]?.field
+						: undefined,
 					width: leafColumns.slice(cursor - 1, cursor - 1 + cell.span)
 						.reduce((total, column) => total + column.width, 0),
-					height: cell.row === row ? cell.rowSpan * 36 : 36,
+					height: cell.row === row ? cell.rowSpan * rowHeight : rowHeight,
 					leafIndex: cell.span === 1 && cell.row === row ? cursor - 1 : undefined,
 					continuation,
 					spansRows: cell.rowSpan > 1,
+					resizeIndex,
+					resizeSide,
 				})
 				cursor += cell.span
 				continue
@@ -413,7 +472,7 @@ function createPreviewHeaderRows(
 				key: `spacer-${row}-${cursor}`,
 				title: '',
 				width: leafColumns[cursor - 1].width,
-				height: 36,
+				height: rowHeight,
 				spacer: true,
 			})
 			cursor += 1
@@ -451,24 +510,34 @@ function createPreviewHeaderRows(
 					v-for="(row, rowIndex) in previewHeaderRows"
 					:key="`header-row-${rowIndex}`"
 					class="vue-material-table-header-row"
+					:style="{ flex: `0 0 ${previewHeaderRowHeight}px`, height: `${previewHeaderRowHeight}px` }"
 				>
 					<div
 						v-for="cell in row"
 						:key="cell.key"
 						class="vue-material-table-header-cell"
 						:class="{
-							'has-column-resize': cell.leafIndex !== undefined && cell.leafIndex > 0,
+							'has-column-resize': cell.resizeIndex !== undefined,
 							'is-header-continuation': cell.continuation,
 							'is-header-rowspan': cell.spansRows,
+							'is-column-selected': cell.field === selectedColumnField,
 						}"
 						:style="{ flex: `0 0 ${cell.width}px`, height: `${cell.height}px` }"
 					>
 						<div
-							v-if="cell.leafIndex !== undefined && cell.leafIndex > 0"
+							v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'left'"
 							class="vue-material-table-column-resize"
-							@pointerdown="onColumnResizePointerDown($event, cell.leafIndex - 1)"
+							@pointerdown="onColumnResizePointerDown($event, cell.resizeIndex)"
 						/>
-						<span>{{ cell.title }}</span>
+						<span
+							@pointerdown="selectMaterialColumn($event, cell.field)"
+							@click="selectMaterialColumn($event, cell.field)"
+						>{{ cell.title }}</span>
+						<div
+							v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'right'"
+							class="vue-material-table-column-resize is-right"
+							@pointerdown="onColumnResizePointerDown($event, cell.resizeIndex)"
+						/>
 					</div>
 				</div>
 			</div>
@@ -480,6 +549,7 @@ function createPreviewHeaderRows(
 					v-for="(row, rowIndex) in visiblePreviewRows"
 					:key="String(row._rowId ?? rowIndex)"
 					class="vue-material-table-row"
+					:style="{ minHeight: `${previewBodyRowHeight}px` }"
 				>
 					<div
 						v-for="column in previewLeafLayouts"

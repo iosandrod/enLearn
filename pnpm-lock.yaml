@@ -62,6 +62,9 @@ importers:
       pg:
         specifier: ^8.22.0
         version: 8.22.0
+      playwright-core:
+        specifier: 1.57.0
+        version: 1.57.0
       quickjs-emscripten-core:
         specifier: 0.32.0
         version: 0.32.0
@@ -926,9 +929,6 @@ importers:
       vxe-table:
         specifier: ^4.20.7
         version: 4.20.9
-      vxe-table-plugin-extend-cell-area:
-        specifier: 0.1.0
-        version: 0.1.0(vue@3.5.40(typescript@5.9.3))(vxe-table@4.20.9)
       xlsx:
         specifier: ^0.18.5
         version: 0.18.5
@@ -3527,7 +3527,7 @@ packages:
     resolution: {integrity: sha512-nxRdk+54m1RJjGT2yDH7NjxAM5KECxA39kdTZezEIj1ixykyefssB9BrgxKy2jIseYxJMtd6lPZvQ3SZXuvn2g==}
 
   '@svar-ui/lib-vue@1.1.0':
-    resolution: {integrity: sha512-fv+2jpCGKWSUlB8cVuipHV6IgngxvA8bjnqMOd9klJAQ+JaV+mOl0oV6UoR7MrLBJ03WD3g7uK+jR5c85+ByCw==, tarball: https://registry.npmjs.org/@svar-ui/lib-vue/-/lib-vue-1.1.0.tgz}
+    resolution: {integrity: sha512-fv+2jpCGKWSUlB8cVuipHV6IgngxvA8bjnqMOd9klJAQ+JaV+mOl0oV6UoR7MrLBJ03WD3g7uK+jR5c85+ByCw==}
     peerDependencies:
       vue: ^3.5.29
 

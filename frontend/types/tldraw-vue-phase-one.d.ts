@@ -2,9 +2,16 @@ declare module 'tldraw-vue-phase-one' {
   import type { DefineComponent } from 'vue';
 
   export type TLContent = Record<string, unknown>;
+  export type PrintDataRow = Record<string, unknown>;
+  export type PrintDataSourceConfig = Record<string, unknown> & { type: string };
+
+  export class Box {
+    constructor(x?: number, y?: number, w?: number, h?: number);
+  }
 
   export type Editor = {
     getCurrentPageShapeIdsSorted(): unknown[];
+    getSvgString(shapeIds: unknown[], options?: Record<string, unknown>): Promise<{ svg: string; width?: number; height?: number } | undefined>;
     getCurrentPageId(): string;
     getCurrentPage(): { id: string; name: string };
     getPages(): Array<{ id: string; name: string }>;
@@ -63,6 +70,8 @@ declare module 'tldraw-vue-phase-one' {
   };
 
   export function defineVueEditorPlugin(plugin: VueEditorPlugin): VueEditorPlugin;
+  export function resolvePrintDataSource(dataSource?: PrintDataSourceConfig): Promise<PrintDataRow[] | undefined>;
+  export function resolvePrintPreviewRows(dataSource: PrintDataSourceConfig | undefined, rows: readonly PrintDataRow[] | undefined): PrintDataRow[] | undefined;
 
   export const TldrawVue: DefineComponent;
   export default TldrawVue;

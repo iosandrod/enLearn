@@ -99,7 +99,6 @@ export default defineConfig(({ mode }) => ({
 			'react/jsx-runtime',
 			'vxe-pc-ui',
 			'vxe-table',
-			'vxe-table-plugin-extend-cell-area',
 		],
 		exclude: [
 			'@enlearn/lowcode-framework',
