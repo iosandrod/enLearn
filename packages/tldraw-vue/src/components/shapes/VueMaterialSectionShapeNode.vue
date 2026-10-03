@@ -13,6 +13,12 @@ import {
 } from '@/editor/extensions/material/vueMaterialShape'
 import { vueMaterialRowDefaults } from '@/editor/defaults'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
+import {
+	areMaterialColumnsSiblings,
+	getMaterialColumns,
+	moveMaterialColumn,
+	updateMaterialColumns,
+} from '@/editor/materialColumnOperations'
 import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
 
@@ -20,6 +26,9 @@ const props = defineProps<VueShapeNodeProps<VueMaterialSectionShape>>()
 
 const isTableBody = computed(() => props.shape.props.zone === 'tableBody')
 const selectedColumnField = ref('')
+const draggingColumnField = ref('')
+const dropTargetField = ref('')
+const dropPosition = ref<'before' | 'after'>('before')
 const printDataSource = getEditorPrintDataSource(props.editor)
 const materialShape = useEditorValue(
 	`material parent shape:${props.shape.id}`,
@@ -81,7 +90,7 @@ const previewRows = computed(() =>
 	hasConfiguredDataSource.value
 		? getPrintDataSourceDetailRows(printDataSource.value, dataSourceField.value)
 		: []
-)
+)//计算类型
 const visiblePreviewRows = computed(() => {
 	const availableHeight = Math.max(0, props.shape.props.h - previewHeaderHeight.value)
 	const maxRows = Math.max(1, Math.floor(availableHeight / previewBodyRowHeight.value))
@@ -107,6 +116,13 @@ let columnResizeState: {
 	widths: number[]
 	originClientX: number
 	pointerId: number
+} | null = null
+let columnDragState: {
+	field: string
+	originClientX: number
+	originClientY: number
+	pointerId: number
+	didMove: boolean
 } | null = null
 
 function handleMaterialColumnSelection(event: Event) {
@@ -168,6 +184,103 @@ function onColumnResizePointerDown(event: PointerEvent, index: number) {
 	window.addEventListener('pointermove', onColumnResizePointerMove, true)
 	window.addEventListener('pointerup', onColumnResizePointerUp, true)
 	window.addEventListener('pointercancel', onColumnResizePointerUp, true)
+}
+
+function onColumnDragPointerDown(event: PointerEvent, field: string | undefined) {
+	if (event.button !== 0 || !field || props.editor.getIsReadonly()) return
+	event.preventDefault()
+	event.stopPropagation()
+	selectMaterialColumn(event, field)
+	columnDragState = {
+		field,
+		originClientX: event.clientX,
+		originClientY: event.clientY,
+		pointerId: event.pointerId,
+		didMove: false,
+	}
+	draggingColumnField.value = field
+	if (event.currentTarget instanceof Element) {
+		try {
+			event.currentTarget.setPointerCapture(event.pointerId)
+		} catch {
+			// Window listeners below keep the drag alive if capture is unavailable.
+		}
+	}
+	document.body.style.userSelect = 'none'
+	window.addEventListener('pointermove', onColumnDragPointerMove, true)
+	window.addEventListener('pointerup', onColumnDragPointerUp, true)
+	window.addEventListener('pointercancel', onColumnDragPointerCancel, true)
+}
+
+function onColumnDragPointerMove(event: PointerEvent) {
+	const state = columnDragState
+	if (!state || event.pointerId !== state.pointerId) return
+	event.preventDefault()
+	event.stopPropagation()
+	if (!state.didMove && Math.hypot(
+		event.clientX - state.originClientX,
+		event.clientY - state.originClientY,
+	) < 4) return
+	state.didMove = true
+	document.body.style.cursor = 'grabbing'
+	const target = document.elementFromPoint(event.clientX, event.clientY)
+		?.closest<HTMLElement>('[data-material-column-field]')
+	const targetField = target?.dataset.materialColumnField ?? ''
+	const targetShapeId = target?.dataset.materialShapeId ?? ''
+	const parent = materialShape.value
+	if (
+		!target ||
+		!targetField ||
+		targetField === state.field ||
+		targetShapeId !== parent?.id ||
+		!areMaterialColumnsSiblings(previewColumns.value, state.field, targetField)
+	) {
+		dropTargetField.value = ''
+		return
+	}
+	const bounds = target.getBoundingClientRect()
+	dropTargetField.value = targetField
+	dropPosition.value = event.clientX < bounds.left + bounds.width / 2 ? 'before' : 'after'
+}
+
+function onColumnDragPointerUp(event: PointerEvent) {
+	const state = columnDragState
+	if (!state || event.pointerId !== state.pointerId) return
+	event.preventDefault()
+	event.stopPropagation()
+	if (state.didMove && dropTargetField.value) {
+		const source = printDataSource.value
+		const field = dataSourceField.value
+		if (source?.type === 'inline' && field) {
+			const moved = moveMaterialColumn(
+				getMaterialColumns(source, field),
+				state.field,
+				dropTargetField.value,
+				dropPosition.value,
+			)
+			if (moved) {
+				props.editor.markHistoryStoppingPoint('reorder material column')
+				printDataSource.value = updateMaterialColumns(source, field, () => moved)
+			}
+		}
+	}
+	clearColumnDrag()
+}
+
+function onColumnDragPointerCancel(event: PointerEvent) {
+	if (!columnDragState || event.pointerId !== columnDragState.pointerId) return
+	clearColumnDrag()
+}
+
+function clearColumnDrag() {
+	columnDragState = null
+	draggingColumnField.value = ''
+	dropTargetField.value = ''
+	document.body.style.cursor = ''
+	document.body.style.userSelect = ''
+	window.removeEventListener('pointermove', onColumnDragPointerMove, true)
+	window.removeEventListener('pointerup', onColumnDragPointerUp, true)
+	window.removeEventListener('pointercancel', onColumnDragPointerCancel, true)
 }
 
 function onColumnResizePointerMove(event: PointerEvent) {
@@ -322,6 +435,7 @@ onBeforeUnmount(() => {
 	window.removeEventListener('pointerup', onWindowPointerUp, true)
 	window.removeEventListener('pointercancel', onWindowPointerUp, true)
 	if (columnResizeState) onColumnResizePointerUp({ pointerId: columnResizeState.pointerId } as PointerEvent)
+	clearColumnDrag()
 })
 
 function formatPreviewValue(row: Record<string, unknown>, field: string) {
@@ -341,7 +455,7 @@ function getPositiveRowHeight(value: unknown, fallback: number) {
 	return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback
 }
 
-function selectMaterialColumn(event: MouseEvent, field: string | undefined) {
+function selectMaterialColumn(event: MouseEvent | PointerEvent, field: string | undefined) {
 	event.stopPropagation()
 	if (!field) return
 	const parent = materialShape.value
@@ -390,7 +504,7 @@ function createPreviewHeaderCells(
 			cells.push({
 				key: `${path}-${index}`,
 				title: column.title || column.field,
-				field: children.length ? undefined : column.field,
+				field: column.field,
 				start,
 				span: leafCount,
 				row: depth,
@@ -453,9 +567,7 @@ function createPreviewHeaderRows(
 				result.push({
 					key: `${cell.key}-${row}`,
 					title: cell.row === row ? cell.title : '',
-					field: cell.row === row && cell.span === 1
-						? cell.field ?? leafColumns[cursor - 1]?.field
-						: undefined,
+					field: cell.row === row ? cell.field : undefined,
 					width: leafColumns.slice(cursor - 1, cursor - 1 + cell.span)
 						.reduce((total, column) => total + column.width, 0),
 					height: cell.row === row ? cell.rowSpan * rowHeight : rowHeight,
@@ -521,7 +633,12 @@ function createPreviewHeaderRows(
 							'is-header-continuation': cell.continuation,
 							'is-header-rowspan': cell.spansRows,
 							'is-column-selected': cell.field === selectedColumnField,
+							'is-column-dragging': cell.field === draggingColumnField,
+							'is-drop-before': cell.field === dropTargetField && dropPosition === 'before',
+							'is-drop-after': cell.field === dropTargetField && dropPosition === 'after',
 						}"
+						:data-material-column-field="cell.field || undefined"
+						:data-material-shape-id="cell.field ? materialShape?.id : undefined"
 						:style="{ flex: `0 0 ${cell.width}px`, height: `${cell.height}px` }"
 					>
 						<div
@@ -533,6 +650,16 @@ function createPreviewHeaderRows(
 							@pointerdown="selectMaterialColumn($event, cell.field)"
 							@click="selectMaterialColumn($event, cell.field)"
 						>{{ cell.title }}</span>
+						<button
+							v-if="cell.field"
+							type="button"
+							class="vue-material-table-column-drag"
+							:aria-label="`拖动${cell.title || cell.field}列排序`"
+							:title="`拖动${cell.title || cell.field}列排序`"
+							@pointerdown="onColumnDragPointerDown($event, cell.field)"
+						>
+							<i class="ri-drag-move-2-line" aria-hidden="true" />
+						</button>
 						<div
 							v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'right'"
 							class="vue-material-table-column-resize is-right"

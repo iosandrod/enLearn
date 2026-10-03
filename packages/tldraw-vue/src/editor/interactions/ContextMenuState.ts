@@ -31,6 +31,7 @@ type BuiltInContextMenuActionId =
 	| 'send-to-back'
 	| 'group'
 	| 'ungroup'
+	| 'edit-expression'
 	| 'expand'
 	| 'toggle-lock'
 	| 'select-all'
@@ -317,6 +318,11 @@ export class ContextMenuState {
 
 		items.push(
 			this.buildDataSourceMenuItem(info.dataSource),
+			{
+				id: 'edit-expression',
+				label: '编辑表达式',
+				disabled: isReadonly || info.selectionShapeIds.length !== 1,
+			},
 			{
 				id: 'group',
 				label: '组合',

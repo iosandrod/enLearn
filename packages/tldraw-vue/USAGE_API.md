@@ -1600,6 +1600,8 @@ function resolveObjectExpressions<T>(
 ```ts
 interface PrintExpressionContext {
   row: PrintDataRow
+  data?: readonly PrintDataRow[]
+  dataSource?: PrintDataSourceConfig
   index: number
   pageNo: number
   total: number
@@ -1609,6 +1611,8 @@ interface PrintExpressionContext {
 | 字段 | 说明 |
 | --- | --- |
 | `row` | 当前数据行。 |
+| `data` | 当前打印任务解析后的全部数据行。 |
+| `dataSource` | 当前打印任务的数据源配置。 |
 | `index` | 从 `0` 开始的页索引。 |
 | `pageNo` | 从 `1` 开始的页码。 |
 | `total` | 总页数。 |
@@ -1619,6 +1623,15 @@ interface PrintExpressionContext {
 interface PrintExpressionConfig {
   missingValue?: ExpressionMissingValue
   resolvers?: Record<string, (context: PrintExpressionContext) => unknown>
+  namedExpressions?: readonly PrintNamedExpression[]
+}
+
+interface PrintNamedExpression {
+  id?: string
+  name: string
+  code?: string
+  expressionSource: string
+  enabled?: boolean
 }
 ```
 
@@ -1668,6 +1681,43 @@ const expression = {
   },
 }
 ```
+
+#### 按名称引用保存的表达式
+
+打印设计器初始化时会分页加载 `print_expressions` 中的所有记录。预览和打印会等待加载完成；加载失败会显示错误，并在下一次操作时重试。编辑弹框共享该列表，保存后立即更新缓存。表达式可设置唯一编码，例如 `current_page`。
+
+例如保存名称为 `订单合计` 的表达式：
+
+```ts
+(context) => (context.row.items || []).reduce(
+  (sum, item) => sum + Number(item.amount || 0), 0
+)
+```
+
+节点文本填写 `{{订单合计 | fixed:2}}` 即可使用，也可填写表达式编码，例如 `第{{current_page}}页`。双花括号内的文字就是查找键，不会读取节点绑定属性。解析优先读取当前数据行的同名字段或完整路径，字段值为 `undefined` 时才按表达式名称或编码（区分大小写）查找已启用的表达式。`0`、`false`、空字符串和 `null` 都保留数据源优先级。同名表达式优先使用最近更新的记录；没有匹配或函数返回 `undefined` 时，沿用 `missingValue` 设置。
+
+函数接收完整 `PrintExpressionContext`：`row` 为当前行，`data` 为本次打印的数据源记录，`dataSource` 为数据源配置，另有 `index`、`pageNo` 和 `total`。函数只支持同步返回，执行错误会包含表达式名称。
+
+通过 API 使用时，可将 `ensurePrintExpressionsLoaded(serviceApi)` 返回的记录传入 `createPrintExpressionConfig(records)`，作为打印任务的 `expression` 配置。
+
+#### 节点 JavaScript 表达式
+
+设计器中选中单个节点后，可以通过右键菜单的“编辑表达式”维护表达式库。表达式记录包含名称、编码、描述、用途、关联模板、关联模板类型和源码，通过 `admin.print_expressions` 资源写入 `print_expressions` 表。节点通过文本里的 `{{名称或编码}}` 引用表达式，不保存或执行隐藏的节点表达式属性。打印预览以完整 `PrintExpressionContext` 作为唯一参数同步执行匹配到的函数：
+
+```ts
+(context) => `${context.row.customerName} / 第 ${context.pageNo} 页`
+```
+
+文本、数字和布尔返回值会写入带 `text` 属性的节点；对象返回值会合并到节点已有属性；`undefined` 保留节点原值。对象不能包含该节点不存在的属性。
+
+```ts
+(context) => ({
+  text: Number(context.row.amount || 0).toFixed(2),
+  showBorder: context.pageNo === 1,
+})
+```
+
+节点表达式仅支持同步函数，不接受 `async` 函数或 Promise。表达式使用 `Function` 构造器执行，应只允许可信模板作者编辑，并确保部署环境的 CSP 允许动态 JavaScript 求值。
 
 ### 12.9 物料表格打印
 

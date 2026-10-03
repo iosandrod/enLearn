@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "test:components": "node --experimental-strip-types tests/component-geometry-regression.mjs && node --experimental-strip-types tests/table-resize-regression.mjs && node --experimental-strip-types tests/table-context-menu-regression.mjs && node --experimental-strip-types tests/table-structure-regression.mjs && node --experimental-strip-types tests/barcode-regression.mjs && node --experimental-strip-types tests/layers-panel-regression.mjs && node --experimental-strip-types tests/material-data-source-fields-regression.mjs && node tests/material-column-properties-regression.mjs",
+    "test:components": "node --experimental-strip-types tests/component-geometry-regression.mjs && node --experimental-strip-types tests/table-resize-regression.mjs && node --experimental-strip-types tests/table-context-menu-regression.mjs && node --experimental-strip-types tests/table-structure-regression.mjs && node --experimental-strip-types tests/barcode-regression.mjs && node --experimental-strip-types tests/layers-panel-regression.mjs && node --experimental-strip-types tests/material-data-source-fields-regression.mjs && node --experimental-strip-types tests/print-node-expression-regression.mjs && node tests/material-column-properties-regression.mjs",
     "typecheck": "vue-tsc --noEmit",
     "build": "pnpm typecheck && vite build && pnpm build:types",
     "build:demo": "pnpm typecheck && vite build --mode demo",

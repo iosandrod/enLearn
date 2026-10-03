@@ -1,0 +1,1 @@
+select *from print_templates

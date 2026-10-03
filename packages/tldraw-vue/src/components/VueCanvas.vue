@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { Editor } from '@tldraw/editor'
+import { isShapeId, type Editor, type TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import VueContextMenu from './VueContextMenu.vue'
+import VueExpressionEditorDialog from './VueExpressionEditorDialog.vue'
 import VueRulerOverlay from './VueRulerOverlay.vue'
 import VueWorkspaceToolbar from './VueWorkspaceToolbar.vue'
 import { getSnapIndicatorSegments } from '@/editor/interactions/snapIndicatorSegments'
@@ -17,6 +18,7 @@ import {
 import type { VueArrowTerminal } from '@/editor/interactions/DraggingArrowHandleState'
 import type { CanvasTool, ResizeHandle, VueGeoShape } from '@/editor/interactions/types'
 import { VueEditorController } from '@/editor/interactions/VueEditorController'
+import { getMaterialColumnGuides } from '@/editor/interactions/materialColumnGuides'
 import { VueAssetManager } from '@/editor/interactions/VueAssetManager'
 import { getVueArrowPageTerminalPoint } from '@/editor/interactions/vueLineGeometry'
 import { getVueArrowTargetState } from '@/editor/interactions/vueArrowTargetState'
@@ -46,6 +48,7 @@ const emit = defineEmits<{
 
 const containerRef = ref<HTMLDivElement | null>(null)
 const contextMenu = shallowRef<ContextMenuSnapshot | null>(null)
+const expressionShapeId = ref<TLShapeId | null>(null)
 const viewportSize = ref<WorkspaceViewportSize>({ w: 0, h: 0 })
 const workspaceBounds = new WorkspaceBoundsManager()
 const RULER_SIZE = 28
@@ -243,7 +246,10 @@ const controller = new VueEditorController({
 	getCamera: () => camera.value,
 	getContainer: () => containerRef.value,
 	getCurrentPageShapes: () => shapes.value,
-	getGuides: () => guides.value,
+	getGuides: () => [
+		...guides.value,
+		...getMaterialColumnGuides(props.editor),
+	],
 	handleShortcut: props.handleShortcut,
 	onContextMenuChange: (snapshot) => {
 		contextMenu.value = snapshot
@@ -276,11 +282,37 @@ function updateViewportSize() {
 
 function onCanvasPointerDown(event: PointerEvent) {
 	if (event.button === 2) return
+	if ((event as PointerEvent & { __enlearnMaterialColumn?: boolean }).__enlearnMaterialColumn) return
+	// Material table headers own their selection and drag interactions. Let the
+	// header handlers finish without handing the same pointer down to the canvas
+	// controller, which would clear the column selection immediately afterward.
+	if (
+		event.button === 0 &&
+		event.target instanceof Element &&
+		event.target.closest('[data-material-column-field]')
+	) {
+		return
+	}
 	selectedGuideId.value = null
 	controller.pointerDown(event)
 }
 
 function onCanvasPointerDownCapture(event: PointerEvent) {
+	if ((event as PointerEvent & { __enlearnMaterialColumn?: boolean }).__enlearnMaterialColumn) return
+	if (event.button === 0 && event.target instanceof Element) {
+		const column = event.target.closest<HTMLElement>('[data-material-column-field]')
+		const field = column?.dataset.materialColumnField?.trim() ?? ''
+		const materialShapeId = column?.dataset.materialShapeId ?? ''
+		if (field && isShapeId(materialShapeId)) {
+			const shape = props.editor.getShape(materialShapeId)
+			if (shape?.type === 'vue-material') {
+				props.editor.select(shape.id)
+				window.dispatchEvent(new CustomEvent('enlearn:material-column-select', {
+					detail: { materialShapeId: shape.id, field },
+				}))
+			}
+		}
+	}
 	if (event.button !== 2) return
 	selectedGuideId.value = null
 	controller.pointerDown(event)
@@ -467,6 +499,12 @@ function deleteGuide(guideId: string | null = selectedGuideId.value) {
 }
 
 function onContextMenuAction(actionId: ContextMenuActionId) {
+	if (actionId === 'edit-expression') {
+		const shapeId = contextMenu.value?.selection.shapeIds[0]
+		controller.closeContextMenu()
+		if (shapeId && props.editor.getShape(shapeId)) expressionShapeId.value = shapeId
+		return
+	}
 	void controller.runContextMenuAction(actionId)
 }
 
@@ -1024,6 +1062,13 @@ onBeforeUnmount(() => {
 			@action="onContextMenuAction"
 			@close="closeContextMenu"
 			@contextmenu="onCanvasContextMenu"
+		/>
+
+		<VueExpressionEditorDialog
+			v-if="expressionShapeId"
+			:editor="editor"
+			:shape-id="expressionShapeId"
+			@close="expressionShapeId = null"
 		/>
 	</div>
 </template>

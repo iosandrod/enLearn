@@ -33,9 +33,7 @@ class TextNodePreviewStrategy extends ShapePreviewStrategy {
 	protected resolveProps(shape: TLShape, context: PrintExpressionContext, config?: PrintExpressionConfig) {
 		const props = shape.props as Record<string, unknown>
 		if (typeof props.text !== 'string') return null
-		 let obj1= { ...props, text: resolveTemplateString(props.text, context, config) }
-		//  debugger//
-		 return obj1
+		return { ...props, text: resolveTemplateString(props.text, context, config) }
 	}
 }
 

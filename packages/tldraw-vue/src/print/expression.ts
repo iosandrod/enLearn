@@ -1,4 +1,5 @@
-import type { PrintExpressionConfig, PrintExpressionContext } from './types'
+import { evaluateNamedPrintExpression } from './expressions.ts'
+import type { PrintExpressionConfig, PrintExpressionContext, PrintNamedExpression } from './types'
 
 const EXPRESSION_PATTERN = /{{\s*([^{}]+?)\s*}}/g
 
@@ -58,31 +59,35 @@ function resolvePathExpression(
 	context: PrintExpressionContext,
 	config: PrintExpressionConfig
 ) {
+	const rowValue = getPathValue(context.row, expression)
+	if (rowValue !== undefined) return rowValue
+
+	const namedExpression = findNamedExpression(expression, config.namedExpressions)
+	if (namedExpression) {
+		return evaluateNamedPrintExpression(namedExpression, context)
+	}
+
+	// Keep the older programmatic API as a final fallback. Template literals and
+	// saved expressions always win, so a visible {{key}} is never redirected by
+	// hidden node metadata or a built-in alias.
 	const resolver = config.resolvers?.[expression]
 	if (resolver) return resolver(context)
-
 	if (expression === 'index') return context.index
 	if (expression === 'pageNo') return context.pageNo
 	if (expression === 'total') return context.total
 	if (expression === 'row') return context.row
-
-	return resolveCurrentRowPath(expression, context.row)
+	return undefined
 }
 
-/**
- * Detail-table expressions retain their table key in the template (for example,
- * `detail.item_code`), while the renderer passes the matching detail record as
- * `context.row`. Resolve the complete path first so genuinely nested row data
- * keeps precedence, then retry after removing the table key.
- */
-function resolveCurrentRowPath(expression: string, row: PrintExpressionContext['row']) {
-	const directValue = getPathValue(row, expression)
-	if (directValue !== undefined) return directValue
-
-	const separatorIndex = expression.indexOf('.')
-	if (separatorIndex <= 0) return directValue
-
-	return getPathValue(row, expression.slice(separatorIndex + 1))
+function findNamedExpression(
+	name: string,
+	expressions: readonly PrintNamedExpression[] | undefined,
+) {
+	if (!expressions?.length) return undefined
+	const literal = name.trim()
+	return expressions.find((item) =>
+		item.enabled !== false && (item.name.trim() === literal || item.code?.trim() === literal)
+	)
 }
 
 function applyFilter(value: unknown, filterExpression: string) {
@@ -108,6 +113,7 @@ function getPathValue(source: unknown, path: string) {
 	for (const key of normalizedPath.split('.')) {
 		if (!key) continue
 		if (current == null || typeof current !== 'object') return undefined
+		if (!Object.prototype.hasOwnProperty.call(current, key)) return undefined
 		current = (current as Record<string, unknown>)[key]
 	}
 

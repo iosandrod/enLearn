@@ -2,6 +2,7 @@
 import type { Editor, TLContent, TLPageId, TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { VxeUI } from 'vxe-pc-ui'
+import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import {
 	TopMenuController,
 	type TopMenuGridActionId,
@@ -29,6 +30,9 @@ import {
 } from '@/editor/templateStore'
 import {
 	PrintManager,
+	createPrintExpressionConfig,
+	ensurePrintExpressionsLoaded,
+	getLoadedPrintExpressions,
 	type PrintJobConfig,
 	type PrintMaterialGridCollection,
 	type PrintMaterialGridColumn,
@@ -37,6 +41,7 @@ import {
 } from '@/print'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
+import { vueMaterialRowDefaults } from '@/editor/defaults'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import type { PrintDataSourceConfig } from '@/print/types'
 
@@ -81,6 +86,7 @@ let printPreviewResizeObserver: ResizeObserver | null = null
 
 const controller = new TopMenuController(props.editor)
 const editorPrintDataSource = getEditorPrintDataSource(props.editor)
+const host = useLowCodeHost()
 
 const PRINT_SAMPLE_ROWS = [] as any
 
@@ -336,6 +342,7 @@ async function previewPrint() {
 	printPreviewPageIndex.value = 0
 
 	try {
+		await ensurePrintExpressionsLoaded(host.getServiceApi())
 		const manager = new PrintManager(props.editor)
 		printPreviewPages.value = await manager.renderPages(createPrintJobConfig())
 	} catch (error) {
@@ -351,6 +358,7 @@ async function printCurrentPage() {
 	if (canPrint.value && props.runCommand && await props.runCommand('print.print')) return
 
 	try {
+		await ensurePrintExpressionsLoaded(host.getServiceApi())
 		const manager = new PrintManager(props.editor)
 		await manager.print(createPrintJobConfig())
 	} catch (error) {
@@ -360,6 +368,7 @@ async function printCurrentPage() {
 
 async function printPreviewPagesNow() {
 	try {
+		await ensurePrintExpressionsLoaded(host.getServiceApi())
 		const manager = new PrintManager(props.editor)
 		await manager.print(createPrintJobConfig())
 	} catch (error) {
@@ -427,6 +436,7 @@ function createPrintJobConfig(): PrintJobConfig {
 		},
 		data: materialGrids ? [PRINT_SAMPLE_ROWS[0]] : PRINT_SAMPLE_ROWS,
 		dataSource: editorPrintDataSource.value,
+		expression: createPrintExpressionConfig(getLoadedPrintExpressions(host.getServiceApi())),
 		page: {
 			widthMm: printPage.pageSizeMm.w,
 			heightMm: printPage.pageSizeMm.h,
@@ -489,16 +499,22 @@ function createMaterialGridConfigs(
 		const configuredColumns = isBound ? getPrintDataSourceDetailColumns(dataSource, dataSourceField) : []
 		const columns = isBound && configuredColumns.length ? configuredColumns : (isBound ? [] : PRINT_MATERIAL_SAMPLE_COLUMNS)
 		const data = isBound ? inlineDetail : []
+		const headerRowHeight = shape.props.headerRowHeight ?? vueMaterialRowDefaults.headerRowHeight
+		const bodyRowHeight = shape.props.bodyRowHeight ?? vueMaterialRowDefaults.bodyRowHeight
 		materialGrids[shape.id] = {
 			data,
 			columns,
-			headerHeight: 24,
-			minRowHeight: 16,
-			fontSize: 9,
-			lineHeight: 10,
-			cellPaddingX: 4,
-			cellPaddingY: 3,
-			emptyText: isBound ? '暂无物料' : '未设置数据源',
+			headerHeight: Number.isFinite(headerRowHeight) && headerRowHeight > 0
+				? headerRowHeight
+				: vueMaterialRowDefaults.headerRowHeight,
+			minRowHeight: Number.isFinite(bodyRowHeight) && bodyRowHeight > 0
+				? bodyRowHeight
+				: vueMaterialRowDefaults.bodyRowHeight,
+			fontSize: 12,
+			lineHeight: 14,
+			cellPaddingX: 6,
+			cellPaddingY: 5,
+			emptyText: isBound ? '暂无明细数据' : '未设置数据源',
 		}
 	}
 
@@ -765,6 +781,7 @@ defineExpose({
 })
 
 onMounted(() => {
+	void Promise.resolve().then(() => ensurePrintExpressionsLoaded(host.getServiceApi(), { refresh: true })).catch(() => undefined)
 	window.addEventListener('pointerdown', onDocumentPointerDown)
 	window.addEventListener('keydown', onDocumentKeyDown)
 	updatePrintPreviewModalSize()

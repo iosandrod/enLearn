@@ -295,6 +295,10 @@ export class ResizingState extends VueInteractionState {
 						guideSnap,
 						shapeIndicators,
 						shapeNudge: shapeSnap.nudge,
+						// A material column is an intentional layout boundary. It must
+						// remain visible even when a stationary edge also matches a
+						// native shape snap with a zero offset.
+						preferGuideSnap: ({ indicator }) => indicator.id.startsWith('guide-snap:material-column:'),
 					})
 				: { guideIndicators: [], nudge: shapeSnap.nudge }
 

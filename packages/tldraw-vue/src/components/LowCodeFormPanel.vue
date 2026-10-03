@@ -37,6 +37,14 @@ import {
 } from '@/editor/extensions/material/vueMaterialShape'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
+	addMaterialChildColumn,
+	addMaterialColumn,
+	findMaterialColumn,
+	getMaterialColumns,
+	removeMaterialColumn,
+	updateMaterialColumns,
+} from '@/editor/materialColumnOperations'
+import {
 	getMaterialDataSourceFieldOptions,
 	getMaterialDataSourceFieldOptionsKey,
 } from '@/editor/materialDataSourceFields'
@@ -201,12 +209,14 @@ const selectedMaterialColumnValue = computed(() => {
 	if (!shape || !selection || selection.materialShapeId !== shape.id) return null
 	if (!source || source.type !== 'inline') return null
 	const field = String(shape.props.dataSourceField ?? '').trim()
-	const table = Array.isArray(source.detailTables)
-		? source.detailTables.find((item) => item?.field === field)
-		: undefined
-	const columns = table?.columns ?? source.detailColumns ?? []
-	return findDetailColumn(columns, selection.field)
+	return findMaterialColumn(getMaterialColumns(source, field), selection.field)
 })
+const canManageMaterialColumns = computed(() =>
+	showMaterialColumnTab.value && !props.editor.getIsReadonly()
+)
+const canManageSelectedMaterialColumn = computed(() =>
+	canManageMaterialColumns.value && Boolean(selectedMaterialColumnValue.value)
+)
 const imagePropertySchema = computed(() =>
 	formDefinitions.value[propertyFormCode('vue-image')] ?? null
 )
@@ -352,7 +362,7 @@ function handleModelUpdate(value: ShapeFormModel) {
 function handleColumnModelUpdate(value: ShapeFormModel) {
 	if (!showMaterialColumnTab.value || props.editor.getIsReadonly()) return
 	columnFormModel.value = value
-	const shape = selectedShape.value
+	const shape = selectedMaterialShape.value
 	const selection = selectedMaterialColumn.value
 	const source = editorPrintDataSource.value
 	if (!shape || !selection || source?.type !== 'inline') return
@@ -377,24 +387,66 @@ function handleColumnModelUpdate(value: ShapeFormModel) {
 		}
 	}
 	const replaceColumns = (columns: readonly any[]): any[] => columns.map((column) => {
+		if (column?.field === selection.field) {
+			return { ...column, ...nextColumn, field: selection.field }
+		}
 		if (Array.isArray(column?.children) && column.children.length) {
 			return { ...column, children: replaceColumns(column.children) }
 		}
-		return column?.field === selection.field ? { ...column, ...nextColumn, field: selection.field } : column
+		return column
 	})
-	const detailTables = Array.isArray(source.detailTables) ? source.detailTables : []
-	const nextTables = detailTables.map((table) =>
-		table.field === field ? { ...table, columns: replaceColumns(table.columns) } : table,
+	editorPrintDataSource.value = updateMaterialColumns(source, field, replaceColumns)
+}
+
+function addColumn() {
+	updateSelectedMaterialColumns((columns) =>
+		addMaterialColumn(columns, selectedMaterialColumn.value?.field)
 	)
-	const hasTables = detailTables.length > 0
-	const nextDetailColumns = hasTables
-		? source.detailColumns
-		: replaceColumns(Array.isArray(source.detailColumns) ? source.detailColumns : [])
-	editorPrintDataSource.value = {
-		...source,
-		...(hasTables ? { detailTables: nextTables } : {}),
-		...(nextDetailColumns ? { detailColumns: nextDetailColumns } : {}),
-	}
+}
+
+function addChildColumn() {
+	const selectedField = selectedMaterialColumn.value?.field
+	if (!selectedField) return
+	updateSelectedMaterialColumns((columns) => addMaterialChildColumn(columns, selectedField))
+}
+
+function deleteColumn() {
+	const selectedField = selectedMaterialColumn.value?.field
+	if (!selectedField) return
+	const shape = selectedMaterialShape.value
+	const source = editorPrintDataSource.value
+	if (!shape || source?.type !== 'inline') return
+	const detailField = String(shape.props.dataSourceField ?? '').trim()
+	if (!detailField) return
+	const result = removeMaterialColumn(getMaterialColumns(source, detailField), selectedField)
+	if (!result) return
+	editorPrintDataSource.value = updateMaterialColumns(source, detailField, () => result.columns)
+	selectedMaterialColumn.value = result.nextField
+		? { materialShapeId: shape.id, field: result.nextField }
+		: null
+	if (result.nextField) dispatchMaterialColumnSelection(shape.id, result.nextField)
+}
+
+function updateSelectedMaterialColumns(
+	update: (columns: readonly any[]) => { columns: any[]; field: string } | null,
+) {
+	if (!canManageMaterialColumns.value) return
+	const shape = selectedMaterialShape.value
+	const source = editorPrintDataSource.value
+	if (!shape || source?.type !== 'inline') return
+	const detailField = String(shape.props.dataSourceField ?? '').trim()
+	if (!detailField) return
+	const result = update(getMaterialColumns(source, detailField))
+	if (!result) return
+	editorPrintDataSource.value = updateMaterialColumns(source, detailField, () => result.columns)
+	selectedMaterialColumn.value = { materialShapeId: shape.id, field: result.field }
+	dispatchMaterialColumnSelection(shape.id, result.field)
+}
+
+function dispatchMaterialColumnSelection(materialShapeId: TLShape['id'], field: string) {
+	window.dispatchEvent(new CustomEvent('enlearn:material-column-select', {
+		detail: { materialShapeId, field },
+	}))
 }
 
 function usesUploadedImageSource(schema: LowCodeFormSchema | null) {
@@ -1640,18 +1692,6 @@ function getMaterialFormValues(shape: TLShape): ShapeFormModel {
 	return isRecord(meta.__materialFormValues) ? meta.__materialFormValues : {}
 }
 
-function findDetailColumn(columns: readonly any[], field: string): Record<string, unknown> | null {
-	for (const column of columns) {
-		if (!isRecord(column)) continue
-		if (column.field === field && !Array.isArray(column.children)) return column
-		if (Array.isArray(column.children)) {
-			const nested = findDetailColumn(column.children, field)
-			if (nested) return nested
-		}
-	}
-	return null
-}
-
 function cloneSerializableValue(value: unknown): unknown {
 	if (value === undefined) return null
 	try {
@@ -1894,6 +1934,20 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 				</button>
 			</div>
 		</header>
+		<div v-if="props.columnOnly && showMaterialColumnTab" class="lowcode-form-panel__column-actions" aria-label="物料列操作">
+			<button type="button" :disabled="!canManageMaterialColumns" title="在当前列后添加同级列" @click="addColumn">
+				<i class="ri-add-line" aria-hidden="true" />
+				<span>添加列</span>
+			</button>
+			<button type="button" :disabled="!canManageSelectedMaterialColumn" title="删除当前列" @click="deleteColumn">
+				<i class="ri-delete-bin-line" aria-hidden="true" />
+				<span>删除列</span>
+			</button>
+			<button type="button" :disabled="!canManageSelectedMaterialColumn" title="给当前列添加子列" @click="addChildColumn">
+				<i class="ri-node-tree" aria-hidden="true" />
+				<span>添加子列</span>
+			</button>
+		</div>
 		<div v-if="designFormMessage" class="lowcode-form-panel__action-message" role="status">
 			<i :class="designingForm ? 'ri-loader-4-line print-spin' : 'ri-checkbox-circle-line'" aria-hidden="true" />
 			<span>{{ designFormMessage }}</span>

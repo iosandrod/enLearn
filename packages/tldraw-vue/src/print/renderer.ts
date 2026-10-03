@@ -78,6 +78,8 @@ export class PrintRenderer {
 		const shapeIds = this.getTemplateShapeIds(config)
 		const context = {
 			row,
+			data: config.data ?? [],
+			dataSource: config.dataSource,
 			index,
 			pageNo: index + 1,
 			total,

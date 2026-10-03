@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Editor } from '@tldraw/editor'
+import type { Editor, TLShape } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import VueBottomToolbar from './components/VueBottomToolbar.vue'
 import VueCanvas from './components/VueCanvas.vue'
@@ -171,6 +171,28 @@ function syncDesignerTabToSelection(currentEditor: Editor) {
 function handleMaterialColumnSelect() {
 	showMaterialColumnPanel.value = true
 	activeDesignerTab.value = 'columnProperties'
+}
+
+function handleDesignerPointerDownCapture(event: PointerEvent) {
+	if (event.button !== 0 || !(event.target instanceof Element)) return
+	const targetColumn = event.target.closest<HTMLElement>('[data-material-column-field]')
+	const candidates = [...document.querySelectorAll<HTMLElement>('[data-material-column-field]')]
+	const column = targetColumn ?? candidates
+		.find((candidate) => {
+			const bounds = candidate.getBoundingClientRect()
+			return event.clientX >= bounds.left && event.clientX <= bounds.right &&
+				event.clientY >= bounds.top && event.clientY <= bounds.bottom
+		})
+	const field = column?.dataset.materialColumnField?.trim() ?? ''
+	const materialShapeId = column?.dataset.materialShapeId ?? ''
+	if (!field || !materialShapeId || !editor.value) return
+	const shape = editor.value.getShape(materialShapeId as TLShape['id'])
+	if (shape?.type !== 'vue-material') return
+	;(event as PointerEvent & { __enlearnMaterialColumn?: boolean }).__enlearnMaterialColumn = true
+	handleMaterialColumnSelect()
+	window.dispatchEvent(new CustomEvent('enlearn:material-column-select', {
+		detail: { materialShapeId: shape.id, field },
+	}))
 }
 
 function selectTool(tool: CanvasTool, geoShape?: VueGeoShape) {
@@ -424,7 +446,7 @@ onBeforeUnmount(() => {
 	<main class="app-shell" :class="{
 		'has-mode-toolbar': props.showModeControls,
 		'is-presentation-preview': presentationPreviewOpen,
-	}">
+	}" @pointerdown.capture="handleDesignerPointerDownCapture">
 		<header v-if="props.showModeControls" class="designer-mode-toolbar">
 			<div class="designer-mode-switch" role="tablist" aria-label="设计模式">
 				<button type="button" :class="{ 'is-active': designerMode === 'print' }"
@@ -496,7 +518,7 @@ onBeforeUnmount(() => {
 					</div>
 					<div v-show="activeDesignerTab === 'columnProperties'"
 						class="designer-tool-view designer-tool-view--properties">
-						<LowCodeFormPanel v-if="editor && showMaterialColumnPanel" :editor="editor"
+						<LowCodeFormPanel v-if="editor" :editor="editor"
 							:workspace-revision="workspaceRevision" :column-only="true"
 							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
 							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />

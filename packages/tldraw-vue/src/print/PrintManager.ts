@@ -85,7 +85,7 @@ export class PrintManager {
 					jobs,
 					async (job, { index, total, signal, isCancelled }) => {
 						throwIfPrintCancelled(isCancelled(), signal)
-						const page = await this.renderer.renderPage(config, job.row, index, total, {
+						const page = await this.renderer.renderPage(resolvedConfig, job.row, index, total, {
 							materialGridPlan: job.materialGridPlan,
 							materialGridPageIndex: job.materialGridPageIndex,
 							resumePlan: job.resumePlan,
@@ -128,7 +128,7 @@ export class PrintManager {
 					jobs,
 					async (job, { index, total, signal, isCancelled }) => {
 						throwIfPrintCancelled(isCancelled(), signal)
-						const page = await this.renderer.renderPage(config, job.row, index, total, {
+						const page = await this.renderer.renderPage(resolvedConfig, job.row, index, total, {
 							materialGridPlan: job.materialGridPlan,
 							materialGridPageIndex: job.materialGridPageIndex,
 							resumePlan: job.resumePlan,

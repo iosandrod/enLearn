@@ -153,14 +153,25 @@ export type ExpressionMissingValue =
 
 export interface PrintExpressionContext {
 	row: PrintDataRow
+	data?: readonly PrintDataRow[]
+	dataSource?: PrintDataSourceConfig
 	index: number
 	pageNo: number
 	total: number
 }
 
+export interface PrintNamedExpression {
+	id?: string
+	name: string
+	code?: string
+	expressionSource: string
+	enabled?: boolean
+}
+
 export interface PrintExpressionConfig {
 	missingValue?: ExpressionMissingValue
 	resolvers?: Record<string, (context: PrintExpressionContext) => unknown>
+	namedExpressions?: readonly PrintNamedExpression[]
 }
 
 export interface BrowserPrinterConfig {

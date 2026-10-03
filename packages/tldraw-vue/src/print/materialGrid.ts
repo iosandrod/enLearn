@@ -122,7 +122,15 @@ function createMaterialGridMaterialPlan(
 		tableBody,
 		tableFooter,
 		pages: pageRows.map((rowsForPage) =>
-			createMaterialGridPage(material, tableBody, tableFooter, columns, rowsForPage, options)
+			createMaterialGridPage(
+				material,
+				tableBody,
+				tableFooter,
+				columns,
+				rowsForPage,
+				options,
+				headerHeight,
+			)
 		),
 	}
 }
@@ -133,14 +141,17 @@ function createMaterialGridPage(
 	tableFooter: VueMaterialSectionShape | null,
 	columns: VueMaterialPrintTableColumn[],
 	rows: VueMaterialPrintTableRow[],
-	options: GridRenderOptions
+	options: GridRenderOptions,
+	headerHeight: number,
 ): MaterialGridPage {
 	const contentHeight = rows.reduce((total, row) => total + row.height, 0)
-	const renderedHeight = Math.min(
+	// Keep the full table-body height so the preview has the same blank area and
+	// footer position as the canvas when the current page has fewer rows.
+	const renderedHeight = Math.max(0, tableBody.props.h)
+	const unusedHeight = Math.max(0, tableBody.props.h - Math.min(
 		tableBody.props.h,
-		Math.max(options.headerHeight + contentHeight, options.headerHeight)
-	)
-	const unusedHeight = Math.max(0, tableBody.props.h - renderedHeight)
+		Math.max(headerHeight + contentHeight, headerHeight)
+	))
 	const updates: TLShapePartial[] = []
 
 	if (tableFooter && unusedHeight > 0) {
@@ -156,7 +167,7 @@ function createMaterialGridPage(
 		tableOverride: {
 			columns,
 			rows,
-			headerHeight: options.headerHeight,
+			headerHeight,
 			fontSize: options.fontSize,
 			lineHeight: options.lineHeight,
 			paddingX: options.cellPaddingX,

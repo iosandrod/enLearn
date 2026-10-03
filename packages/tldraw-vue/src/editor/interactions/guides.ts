@@ -46,6 +46,8 @@ export interface GuideSnapIndicator {
 	indicator: PointsSnapIndicator
 }
 
+export type GuideSnapPreference = (snap: GuideSnapIndicator) => boolean
+
 type ResizeHandleForGuides = SelectionCorner | SelectionEdge
 
 const GUIDE_ID_PRECISION = 1000
@@ -261,18 +263,28 @@ export function resolveGuideSnap({
 	guideSnap,
 	shapeIndicators,
 	shapeNudge,
+	preferGuideSnap,
 }: {
 	guideSnap: GuideSnapResult
 	shapeIndicators: readonly SnapIndicator[]
 	shapeNudge: Vec
+	preferGuideSnap?: GuideSnapPreference
 }) {
 	const activeShapeAxes = getSnapIndicatorAxes(shapeIndicators)
 	const nudge = shapeNudge.clone()
 	const guideAxes = new Set<GuideAxis>()
+	const preferredGuideAxes = new Set(
+		preferGuideSnap
+			? guideSnap.indicators
+					.filter((snap) => preferGuideSnap(snap))
+					.map(({ axis }) => axis)
+			: []
+	)
 
 	if (
 		guideSnap.hasX &&
-		(!activeShapeAxes.has('x') || Math.abs(guideSnap.nudge.x) <= Math.abs(shapeNudge.x))
+		(preferredGuideAxes.has('x') ||
+			(!activeShapeAxes.has('x') || Math.abs(guideSnap.nudge.x) <= Math.abs(shapeNudge.x)))
 	) {
 		nudge.x = guideSnap.nudge.x
 		guideAxes.add('x')
@@ -280,7 +292,8 @@ export function resolveGuideSnap({
 
 	if (
 		guideSnap.hasY &&
-		(!activeShapeAxes.has('y') || Math.abs(guideSnap.nudge.y) <= Math.abs(shapeNudge.y))
+		(preferredGuideAxes.has('y') ||
+			(!activeShapeAxes.has('y') || Math.abs(guideSnap.nudge.y) <= Math.abs(shapeNudge.y)))
 	) {
 		nudge.y = guideSnap.nudge.y
 		guideAxes.add('y')

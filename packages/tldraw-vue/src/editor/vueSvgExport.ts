@@ -40,6 +40,7 @@ import type { VueResumeSectionShape, VueResumeShape } from './extensions/resume/
 const VUE_VISIBLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_GRID_COLOR = '#d1d5db'
+const VUE_MATERIAL_PRINT_GRID_COLOR = '#111827'
 const VUE_RESUME_BORDER_COLOR = '#cbd5e1'
 const VUE_RESUME_ACCENT_COLOR = '#0f766e'
 
@@ -627,8 +628,11 @@ function createVueMaterialPrintTableSvg(
 ): SvgExportNode {
 	const clipId = `vue-material-table-clip-${sanitizeSvgId(shapeId)}`
 	const renderedHeight = Math.min(height, Math.max(0, override.renderedHeight))
-	const headerHeight = Math.min(renderedHeight, Math.max(0, override.headerHeight))
-	const columnWidths = getVueMaterialPrintColumnWidths(override.columns, width)
+	const borderSize = Math.min(1, width / 2, renderedHeight / 2)
+	const contentWidth = Math.max(0, width - borderSize * 2)
+	const contentHeight = Math.max(0, renderedHeight - borderSize * 2)
+	const headerHeight = Math.min(contentHeight, Math.max(0, override.headerHeight))
+	const columnWidths = getVueMaterialPrintColumnWidths(override.columns, contentWidth)
 	const leafColumns = flattenVueMaterialPrintColumns(override.columns)
 	const headerDepth = getVueMaterialPrintColumnDepth(override.columns)
 	const headerRowHeight = headerHeight / Math.max(1, headerDepth)
@@ -639,18 +643,18 @@ function createVueMaterialPrintTableSvg(
 			'clipPath',
 			{ id: clipId },
 			createElement('rect', {
-				width,
-				height: renderedHeight,
+				width: contentWidth,
+				height: contentHeight,
 			})
 		)
 	)
 	const children: SvgExportChild[] = [
 		createElement('rect', {
-			width,
-			height: renderedHeight,
+			width: contentWidth,
+			height: contentHeight,
 			fill: '#ffffff',
 		}),
-		createVueTableGridLine(0, headerHeight, width, headerHeight),
+		createVueTableGridLine(0, headerHeight, contentWidth, headerHeight),
 	]
 
 	const headerCells = createVueMaterialPrintHeaderCells(override.columns)
@@ -664,24 +668,25 @@ function createVueMaterialPrintTableSvg(
 			y,
 			width: cellWidth,
 			height: cellHeight,
-			fill: 'none',
-			stroke: '#111827',
+			fill: '#ffffff',
+			stroke: VUE_MATERIAL_PRINT_GRID_COLOR,
 			strokeWidth: 1,
 		}))
 		children.push(
 			createElement(
 				'text',
 				{
-					x: x + override.paddingX,
+					x: x + cellWidth / 2,
 					y: y + cellHeight / 2,
 					fill: '#111827',
 					fontFamily: 'Inter, Arial, sans-serif',
-					fontSize: override.fontSize,
+					fontSize: Math.max(12, override.fontSize),
 					fontWeight: 700,
+					textAnchor: 'middle',
 					dominantBaseline: 'middle',
 					pointerEvents: 'none',
 				},
-				fitVueTableCellText(cell.label, cellWidth, override.fontSize, override.paddingX)
+				fitVueTableCellText(cell.label, cellWidth, Math.max(12, override.fontSize), override.paddingX)
 			)
 		)
 	}
@@ -689,14 +694,14 @@ function createVueMaterialPrintTableSvg(
 	let x = 0
 	for (const [columnIndex] of leafColumns.entries()) {
 		const columnWidth = columnWidths[columnIndex] ?? 0
-		if (columnIndex > 0) children.push(createVueTableGridLine(x, headerHeight, x, renderedHeight))
+		if (columnIndex > 0) children.push(createVueTableGridLine(x, headerHeight, x, contentHeight))
 		x += columnWidth
 	}
 
 	let rowY = headerHeight
 	for (const row of override.rows) {
 		const rowHeight = Math.max(1, row.height)
-		children.push(createVueTableGridLine(0, rowY + rowHeight, width, rowY + rowHeight))
+		children.push(createVueTableGridLine(0, rowY + rowHeight, contentWidth, rowY + rowHeight))
 
 		let cellX = 0
 		for (const [cellIndex, cell] of row.cells.entries()) {
@@ -736,26 +741,6 @@ function createVueMaterialPrintTableSvg(
 		rowY += rowHeight
 	}
 
-	if (override.rows.length === 0) {
-		children.push(
-			createElement(
-				'text',
-				{
-					x: width / 2,
-					y: headerHeight + Math.max(0, renderedHeight - headerHeight) / 2,
-					fill: '#9aa4b2',
-					fontFamily: 'Inter, Arial, sans-serif',
-					fontSize: override.fontSize,
-					fontWeight: 600,
-					textAnchor: 'middle',
-					dominantBaseline: 'middle',
-					pointerEvents: 'none',
-				},
-				override.emptyText
-			)
-		)
-	}
-
 	return createElement(
 		'g',
 		null,
@@ -764,6 +749,7 @@ function createVueMaterialPrintTableSvg(
 			'g',
 			{
 				clipPath: `url(#${clipId})`,
+				transform: `translate(${borderSize} ${borderSize})`,
 			},
 			children
 		),
@@ -788,10 +774,10 @@ function getVueMaterialPrintColumnWidths(
 	const leafColumns = flattenVueMaterialPrintColumns(columns)
 	if (!leafColumns.length) return [width]
 
-	const total = leafColumns.reduce((sum, column) => sum + Math.max(24, column.width), 0)
+	const total = leafColumns.reduce((sum, column) => sum + Math.max(36, column.width), 0)
 	if (total <= 0) return leafColumns.map(() => width / leafColumns.length)
 
-	const widths = leafColumns.map((column) => (Math.max(24, column.width) / total) * width)
+	const widths = leafColumns.map((column) => (Math.max(36, column.width) / total) * width)
 	const diff = width - widths.reduce((sum, columnWidth) => sum + columnWidth, 0)
 	widths[widths.length - 1] += diff
 	return widths
@@ -979,7 +965,7 @@ function createVueTableGridLine(x1: number, y1: number, x2: number, y2: number) 
 		y1,
 		x2,
 		y2,
-		stroke: VUE_MATERIAL_TABLE_GRID_COLOR,
+		stroke: VUE_MATERIAL_PRINT_GRID_COLOR,
 		strokeWidth: 1,
 		strokeDasharray: 'none',
 		vectorEffect: 'non-scaling-stroke',

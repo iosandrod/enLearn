@@ -9,6 +9,24 @@ export {
 	resolvePrintPreviewRows,
 } from './dataSource'
 export { resolveObjectExpressions, resolveTemplateString } from './expression'
+export {
+	createPrintExpressionConfig,
+	ensurePrintExpressionsLoaded,
+	evaluateNamedPrintExpression,
+	getLoadedPrintExpressions,
+	upsertLoadedPrintExpression,
+} from './expressions'
+export type { PrintExpressionRecord, PrintExpressionServiceApi } from './expressions'
+export {
+	applyPrintNodeExpressionResult,
+	compilePrintNodeExpressionSource,
+	evaluatePrintNodeExpression,
+	evaluatePrintNodeExpressionSource,
+	getPrintNodeExpression,
+	getPrintNodeExpressionId,
+	PRINT_NODE_EXPRESSION_ID_META_KEY,
+	PRINT_NODE_EXPRESSION_META_KEY,
+} from './nodeExpression'
 export { PrintManager } from './PrintManager'
 export { PrintCancelledError, PrintQueue } from './queue'
 export { PrintRenderer } from './renderer'
@@ -26,6 +44,7 @@ export type {
 	PrintExportConfig,
 	PrintExpressionConfig,
 	PrintExpressionContext,
+	PrintNamedExpression,
 	PrintImageInput,
 	PrintJobCallbacks,
 	PrintJobConfig,
