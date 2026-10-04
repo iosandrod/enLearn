@@ -21,6 +21,8 @@ const context = {
     items: [{ amount: 5 }, { amount: 7 }],
   },
   data: [],
+  currentTable: { orderitem: { data: [{ materialCode: 'MAT-001' }, { materialCode: 'MAT-002' }], columns: [{ field: 'materialCode' }], rowCount: 2 } },
+  currentTables: { orderitem: { data: [{ materialCode: 'MAT-001' }, { materialCode: 'MAT-002' }], columns: [{ field: 'materialCode' }], rowCount: 2 } },
   index: 0,
   pageNo: 1,
   total: 3,
@@ -29,6 +31,15 @@ const context = {
 assert.equal(
   evaluatePrintNodeExpressionSource('(context) => `${context.row.customerName} / ${context.pageNo}`', context),
   'Acme / 1',
+)
+assert.equal(
+  resolveTemplateString('{{tableMaterials}}', context, {
+    namedExpressions: [{
+      name: 'tableMaterials',
+      expressionSource: '(context) => context.currentTables.orderitem.data.map((row) => row.materialCode).join(",")',
+    }],
+  }),
+  'MAT-001,MAT-002',
 )
 assert.deepEqual(
   evaluatePrintNodeExpressionSource('(context) => ({ text: Number(context.row.amount).toFixed(2) })', context),
@@ -238,10 +249,6 @@ const shapePreviewSource = await readFile(
   new URL('../src/print/shapePreviewStrategies.ts', import.meta.url),
   'utf8',
 )
-const textShapeSource = await readFile(
-  new URL('../src/components/shapes/VueTextShapeNode.vue', import.meta.url),
-  'utf8',
-)
 assert.match(migration, /create table if not exists public\.print_expressions/)
 assert.match(migration, /expression_source text not null/)
 const tableDefinition = migration.match(/create table if not exists public\.print_expressions \(([\s\S]*?)\n\);/)?.[1] ?? ''
@@ -260,17 +267,13 @@ assert.match(dialogSource, /code: expressionCode\.value\.trim\(\) \|\| null/)
 assert.match(dialogSource, /template_id: templateId\.value \|\| null/)
 assert.match(dialogSource, /template_type: templateType\.value \|\| null/)
 assert.doesNotMatch(dialogSource, /PRINT_NODE_EXPRESSION_ID_META_KEY/)
-assert.match(topMenuSource, /ensurePrintExpressionsLoaded\(host\.getServiceApi\(\)\)/)
 assert.match(topMenuSource, /ensurePrintExpressionsLoaded\(host\.getServiceApi\(\), \{ refresh: true \}\)/)
-assert.match(topMenuSource, /createPrintExpressionConfig\(getLoadedPrintExpressions\(host\.getServiceApi\(\)\)\)/)
+assert.match(topMenuSource, /createPrintJobConfig\(createPrintExpressionConfig\(expressions\)\)/)
+assert.doesNotMatch(topMenuSource, /getLoadedPrintExpressions/)
 assert.match(expressionRegistrySource, /resource: 'print_expressions'/)
 assert.match(expressionRegistrySource, /expressionSource/)
 assert.match(expressionRegistrySource, /code: readString\(row\.code\)/)
 assert.doesNotMatch(shapePreviewSource, /getPrintNodeExpression|evaluatePrintNodeExpression/)
-assert.match(textShapeSource, /resolveTemplateString\(/)
-assert.match(textShapeSource, /\{\{ displayText \}\}/)
-assert.match(textShapeSource, /pageNo: 1/)
-assert.match(textShapeSource, /subscribeLoadedPrintExpressions/)
 assert.match(dialogSource, /expression-dialog__library/)
 assert.match(dialogSource, /<vxe-modal/)
 assert.match(dialogSource, /class-name="expression-editor-modal"/)
@@ -278,4 +281,10 @@ assert.match(dialogSource, /<template #footer>/)
 assert.doesNotMatch(dialogSource, /expression-dialog-layer/)
 assert.match(dialogSource, /filteredExpressions/)
 assert.match(dialogSource, /expression-dialog__preview/)
-assert.match(dialogSource, /live
+assert.match(dialogSource, /livePreview/)
+assert.match(dialogSource, /resolveTemplateString\(templateText, sampleContext\.value/)
+assert.match(dialogSource, /renderedText \?\? getPreviewTitle\(result\)/)
+assert.match(dialogSource, /保存表达式/)
+assert.doesNotMatch(dialogSource, /function unbindExpression\(\)/)
+
+console.log('Print node expression regression checks passed.')

@@ -134,6 +134,7 @@ function syncTextShape(rawText: string) {
 		props: nextProps,
 	})
 }
+
 </script>
 
 <template>

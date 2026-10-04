@@ -34,6 +34,7 @@ export interface MaterialGridMaterialPlan {
 export interface MaterialGridPage {
 	tableOverride: VueMaterialPrintTableOverride
 	updates: TLShapePartial[]
+	data: readonly PrintDataRow[]
 }
 
 const DEFAULT_HEADER_HEIGHT = 34
@@ -51,25 +52,20 @@ export function createMaterialGridPrintPlan(
 ): MaterialGridPrintPlan | null {
 	const materialShapes = getTemplateMaterialShapes(editor, shapeIds)
 	if (!materialShapes.length) return null
-	if (materialShapes.length > 1) {
-		throw new Error('同一页面只能包含一个物料表格节点。')
-	}
-
 	const gridConfigs = resolveMaterialGridConfigs(config, materialShapes)
-	const material = materialShapes[0]
-	const gridConfig = gridConfigs.get(material.id)
-	if (!gridConfig) {
-		throw new Error('检测到物料表格节点，请传入 vxe-grid 实例或 data/columns 表格数据。')
-	}
-
-	const materialPlan = createMaterialGridMaterialPlan(editor, material, gridConfig)
-	if (!materialPlan) {
-		throw new Error('物料表格节点缺少可打印的表体区域。')
-	}
+	const materialPlans = materialShapes.map((material) => {
+		const gridConfig = gridConfigs.get(material.id)
+		if (!gridConfig) {
+			throw new Error('检测到物料表格节点，请传入 vxe-grid 实例或 data/columns 表格数据。')
+		}
+		const plan = createMaterialGridMaterialPlan(editor, material, gridConfig)
+		if (!plan) throw new Error('物料表格节点缺少可打印的表体区域。')
+		return plan
+	})
 
 	return {
-		pageCount: materialPlan.pages.length,
-		materials: [materialPlan],
+		pageCount: Math.max(...materialPlans.map((plan) => plan.pages.length), 1),
+		materials: materialPlans,
 	}
 }
 
@@ -128,6 +124,7 @@ function createMaterialGridMaterialPlan(
 				tableFooter,
 				columns,
 				rowsForPage,
+				rows,
 				options,
 				headerHeight,
 			)
@@ -141,6 +138,7 @@ function createMaterialGridPage(
 	tableFooter: VueMaterialSectionShape | null,
 	columns: VueMaterialPrintTableColumn[],
 	rows: VueMaterialPrintTableRow[],
+	data: readonly PrintDataRow[],
 	options: GridRenderOptions,
 	headerHeight: number,
 ): MaterialGridPage {
@@ -176,6 +174,7 @@ function createMaterialGridPage(
 			emptyText: options.emptyText,
 		},
 		updates,
+		data: rows.map((row) => data[Number(row.key.slice(4))]).filter(Boolean),
 	}
 }
 

@@ -72,14 +72,19 @@ const tabs: { id: ReferenceTab; label: string }[] = [
 ]
 
 const sampleRow = computed<PrintDataRow>(() => getSampleRow(dataSource.value))
+const sampleCurrentTables = computed(() => getSampleCurrentTables(dataSource.value, sampleRow.value))
 const sampleContext = computed<PrintExpressionContext>(() => ({
 	row: sampleRow.value,
 	data: getSourceRows(dataSource.value),
+	currentTable: sampleCurrentTables.value,
+	currentTables: sampleCurrentTables.value,
 	dataSource: dataSource.value,
 	index: 0,
 	pageNo: 1,
 	total: Math.max(1, getSourceRows(dataSource.value).length),
 }))
+const samplePageNo = computed(() => sampleContext.value?.pageNo ?? 1)
+const sampleTotal = computed(() => sampleContext.value?.total ?? 1)
 const dataSourcePreview = computed(() => formatDataSourcePreview(sampleContext.value))
 const fieldReferences = computed(() => createFieldReferences(dataSource.value, sampleRow.value))
 const filteredExpressions = computed(() => {
@@ -171,6 +176,7 @@ async function loadExpressionDetails() {
 }
 
 async function save() {
+	debugger//
 	if (saving.value) return
 	const currentShape = props.editor.getShape(props.shapeId)
 	if (!currentShape) {
@@ -190,7 +196,16 @@ async function save() {
 		testFailed.value = true
 		testMessage.value = '请输入函数表达式。'
 		return
-	}
+	}//
+	//@ts-ignore
+	props.editor.updateShape({
+		id: props.shapeId,
+		type: currentShape.type,
+		props: {
+			...currentShape.props||{},
+			text:'{{'+(expressionName.value.trim() || name)+'}}',//
+		},
+	})
 	try {
 		compilePrintNodeExpressionSource(expression)
 	} catch (error) {
@@ -386,6 +401,23 @@ function getSampleRow(sourceConfig: PrintDataSourceConfig | undefined): PrintDat
 	return getSourceRows(sourceConfig)[0] ?? {}
 }
 
+function getSampleCurrentTables(sourceConfig: PrintDataSourceConfig | undefined, row: PrintDataRow) {
+	if (!sourceConfig || sourceConfig.type !== 'inline') return {}
+	return Object.fromEntries((sourceConfig.detailTables ?? []).flatMap((table) => {
+		const field = table.field.trim()
+		if (!field) return []
+		const data = Array.isArray(row[field]) ? row[field].filter(isRecord) : []
+		return [[field, {
+			data,
+			columns: table.columns.map((column) => ({
+				field: column.field,
+				title: column.title || column.field,
+			})),
+			rowCount: data.length,
+		}]]
+	}))
+}
+
 function getSourceRows(sourceConfig: PrintDataSourceConfig | undefined): PrintDataRow[] {
 	if (!sourceConfig) return []
 	if (sourceConfig.type === 'inline') {
@@ -415,6 +447,11 @@ function createFieldReferences(sourceConfig: PrintDataSourceConfig | undefined, 
 	add('当前页码（从 1 开始）', 'context.pageNo', 1)
 	add('打印总页数', 'context.total', 1)
 	add('全部打印数据', 'context.data', getSourceRows(sourceConfig))
+	add('当前页物料表格', 'context.currentTable', sampleContext.value.currentTable)
+	for (const [field, table] of Object.entries(sampleContext.value.currentTable)) {
+		add(`${field} 当前页明细数据`, `context.currentTable.${field}.data`, table.data)
+		add(`${field} 当前页表格列定义`, `context.currentTable.${field}.columns`, table.columns)
+	}
 	for (const [key, value] of Object.entries(row)) add(key, `context.row.${key}`, value)
 
 	if (sourceConfig?.type === 'inline') {
@@ -627,7 +664,7 @@ function getErrorMessage(error: unknown) {
 					</section>
 
 					<section class="expression-dialog__preview" :class="`is-${livePreview.state}`" aria-live="polite">
-						<header><div><span class="expression-dialog__preview-dot" />实时预览</div><small>第 1 页 · {{ sampleContext.total }} 条数据</small></header>
+						<header><div><span class="expression-dialog__preview-dot" />实时预览</div><small>第 {{ samplePageNo }} 页 · {{ sampleTotal }} 条数据</small></header>
 						<div class="expression-dialog__preview-output">
 							<strong>{{ livePreview.title }}</strong>
 							<pre>{{ livePreview.detail }}</pre>

@@ -33,7 +33,7 @@
       @row-dragend="handleRowDragend"
       @checkbox-change="commitRows"
       @checkbox-all="commitRows"
-      :height="tableHeight"
+      :height="'auto'"
       auto-resize
     >
       <vxe-column v-if="showSeq" type="seq" width="42" />

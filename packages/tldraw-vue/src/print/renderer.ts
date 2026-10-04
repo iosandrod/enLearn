@@ -79,6 +79,8 @@ export class PrintRenderer {
 		const context = {
 			row,
 			data: config.data ?? [],
+			currentTable: getCurrentTablesData(options.materialGridPlan, options.materialGridPageIndex ?? index),
+			currentTables: getCurrentTablesData(options.materialGridPlan, options.materialGridPageIndex ?? index),
 			dataSource: config.dataSource,
 			index,
 			pageNo: index + 1,
@@ -175,6 +177,20 @@ export class PrintRenderer {
 			ignoreShapeLock: true,
 		})
 	}
+}
+
+function getCurrentTablesData(plan: MaterialGridPrintPlan | undefined, pageIndex: number) {
+	if (!plan) return {}
+	return Object.fromEntries(plan.materials.flatMap((material) => {
+		const page = material.pages[Math.min(pageIndex, material.pages.length - 1)] ?? material.pages[0]
+		const key = String(material.material.props.dataSourceField ?? '').trim()
+		if (!key) return []
+		return [[key, {
+			data: page?.data ?? [],
+			columns: page?.tableOverride.columns ?? [],
+			rowCount: page?.data.length ?? 0,
+		}]]
+	}))
 }
 
 function createRestoreUpdates(editor: Editor, updates: readonly TLShapePartial[]) {

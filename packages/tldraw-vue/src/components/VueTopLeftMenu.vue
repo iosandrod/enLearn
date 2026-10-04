@@ -32,7 +32,7 @@ import {
 	PrintManager,
 	createPrintExpressionConfig,
 	ensurePrintExpressionsLoaded,
-	getLoadedPrintExpressions,
+	type PrintExpressionConfig,
 	type PrintJobConfig,
 	type PrintMaterialGridCollection,
 	type PrintMaterialGridColumn,
@@ -342,9 +342,11 @@ async function previewPrint() {
 	printPreviewPageIndex.value = 0
 
 	try {
-		await ensurePrintExpressionsLoaded(host.getServiceApi())
+		const expressions = await ensurePrintExpressionsLoaded(host.getServiceApi(), { refresh: true })
 		const manager = new PrintManager(props.editor)
-		printPreviewPages.value = await manager.renderPages(createPrintJobConfig())
+		printPreviewPages.value = await manager.renderPages(
+			createPrintJobConfig(createPrintExpressionConfig(expressions))
+		)
 	} catch (error) {
 		printPreviewError.value = getTemplateErrorMessage(error, '打印预览失败')
 	} finally {
@@ -358,9 +360,9 @@ async function printCurrentPage() {
 	if (canPrint.value && props.runCommand && await props.runCommand('print.print')) return
 
 	try {
-		await ensurePrintExpressionsLoaded(host.getServiceApi())
+		const expressions = await ensurePrintExpressionsLoaded(host.getServiceApi(), { refresh: true })
 		const manager = new PrintManager(props.editor)
-		await manager.print(createPrintJobConfig())
+		await manager.print(createPrintJobConfig(createPrintExpressionConfig(expressions)))
 	} catch (error) {
 		await showModalAlert(getTemplateErrorMessage(error, '打印失败'), '打印失败')
 	}
@@ -368,9 +370,9 @@ async function printCurrentPage() {
 
 async function printPreviewPagesNow() {
 	try {
-		await ensurePrintExpressionsLoaded(host.getServiceApi())
+		const expressions = await ensurePrintExpressionsLoaded(host.getServiceApi(), { refresh: true })
 		const manager = new PrintManager(props.editor)
-		await manager.print(createPrintJobConfig())
+		await manager.print(createPrintJobConfig(createPrintExpressionConfig(expressions)))
 	} catch (error) {
 		printPreviewError.value = getTemplateErrorMessage(error, '打印失败')
 	}
@@ -422,7 +424,7 @@ function goToNextPrintPreviewPage() {
 	)
 }
 
-function createPrintJobConfig(): PrintJobConfig {
+function createPrintJobConfig(expression?: PrintExpressionConfig): PrintJobConfig {
 	const shapeIds = props.editor.getCurrentPageShapeIdsSorted()
 	const materialGrids = createMaterialGridConfigs(shapeIds, editorPrintDataSource.value)
 	const printPage = getCurrentPrintPageConfig()
@@ -436,7 +438,7 @@ function createPrintJobConfig(): PrintJobConfig {
 		},
 		data: materialGrids ? [PRINT_SAMPLE_ROWS[0]] : PRINT_SAMPLE_ROWS,
 		dataSource: editorPrintDataSource.value,
-		expression: createPrintExpressionConfig(getLoadedPrintExpressions(host.getServiceApi())),
+		expression,
 		page: {
 			widthMm: printPage.pageSizeMm.w,
 			heightMm: printPage.pageSizeMm.h,

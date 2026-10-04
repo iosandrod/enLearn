@@ -9266,12 +9266,6 @@ packages:
   vxe-pc-ui@4.16.25:
     resolution: {integrity: sha512-Tf3gJEaXgmwtVxsgcsHCxXTpIENOvZEdJRL6AGnhjBKJrL8fwiv3Zwd5Zj9q0Czvux0nrCHgUSmftBGAwrYrQg==}
 
-  vxe-table-plugin-extend-cell-area@0.1.0:
-    resolution: {integrity: sha512-9zFofYQQcGlzR3y4kBN0WVyqK2bpiujuDnZuJOU/oPxRzMHyiIIN0aPh8Kc4Hom9lhsG5yehGyGiBiFN5bvPdA==}
-    peerDependencies:
-      vue: ^3.0.0
-      vxe-table: ^4.0.0
-
   vxe-table@4.20.9:
     resolution: {integrity: sha512-FY/wb8yjYwtRYfN3E978QWMdJkE2fLWuqzuGOgQmgJCckGjPcURHs1Twn6WBwzalVLmz24cKUiK8u3VvXrJ2ag==}
 
@@ -18758,11 +18752,6 @@ snapshots:
       '@vxe-ui/core': 4.4.19(vue@3.5.40(typescript@5.9.3))
     transitivePeerDependencies:
       - vue
-
-  vxe-table-plugin-extend-cell-area@0.1.0(vue@3.5.40(typescript@5.9.3))(vxe-table@4.20.9):
-    dependencies:
-      vue: 3.5.40(typescript@5.9.3)
-      vxe-table: 4.20.9
 
   vxe-table@4.20.9: {}
 

@@ -130,6 +130,14 @@ export interface PrintMaterialGridColumn {
 	children?: any[]
 }
 
+export interface PrintCurrentTable {
+	data: readonly PrintDataRow[]
+	columns: readonly PrintMaterialGridColumn[]
+	rowCount: number
+}
+
+export type PrintCurrentTables = Record<string, PrintCurrentTable>
+
 export interface PrintPageConfig {
 	widthMm: number
 	heightMm: number
@@ -154,6 +162,10 @@ export type ExpressionMissingValue =
 export interface PrintExpressionContext {
 	row: PrintDataRow
 	data?: readonly PrintDataRow[]
+	/** Current print page's material tables, keyed by their data-source field. */
+	currentTable: PrintCurrentTables
+	/** Plural alias for templates that contain more than one material table. */
+	currentTables: PrintCurrentTables
 	dataSource?: PrintDataSourceConfig
 	index: number
 	pageNo: number

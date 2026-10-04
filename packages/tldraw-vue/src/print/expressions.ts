@@ -23,7 +23,6 @@ type ExpressionRegistry = {
 	loadPromise?: Promise<readonly PrintExpressionRecord[]>
 	loaded: boolean
 	pendingSaves: Map<string, PrintExpressionRecord>
-	listeners: Set<() => void>
 }
 
 const registries = new WeakMap<PrintExpressionServiceApi, ExpressionRegistry>()
@@ -31,7 +30,7 @@ const registries = new WeakMap<PrintExpressionServiceApi, ExpressionRegistry>()
 function getRegistry(serviceApi: PrintExpressionServiceApi): ExpressionRegistry {
 	let registry = registries.get(serviceApi)
 	if (!registry) {
-		registry = { records: [], loaded: false, pendingSaves: new Map(), listeners: new Set() }
+		registry = { records: [], loaded: false, pendingSaves: new Map() }
 		registries.set(serviceApi, registry)
 	}
 	return registry
@@ -57,7 +56,6 @@ export async function ensurePrintExpressionsLoaded(
 			registry.records = [...registry.pendingSaves.values(), ...byId.values()]
 			registry.pendingSaves.clear()
 			registry.loaded = true
-			notifyRegistry(registry)
 			return registry.records
 		})
 		.finally(() => {
@@ -92,16 +90,6 @@ export function upsertLoadedPrintExpression(serviceApi: PrintExpressionServiceAp
 	const registry = getRegistry(serviceApi)
 	if (!registry.loaded) registry.pendingSaves.set(record.id, record)
 	registry.records = [record, ...registry.records.filter((item) => item.id !== record.id)]
-	notifyRegistry(registry)
-}
-
-export function subscribeLoadedPrintExpressions(
-	serviceApi: PrintExpressionServiceApi,
-	listener: () => void,
-) {
-	const registry = getRegistry(serviceApi)
-	registry.listeners.add(listener)
-	return () => registry.listeners.delete(listener)
 }
 
 export function createPrintExpressionConfig(
@@ -146,4 +134,14 @@ function mapPrintExpressionRecord(row: Record<string, unknown>): PrintExpression
 	}
 }
 
-func
+function readString(value: unknown) {
+	return typeof value === 'string' ? value.trim() : ''
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function getErrorMessage(error: unknown) {
+	return error instanceof Error ? error.message : String(error)
+}
