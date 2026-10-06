@@ -95,6 +95,20 @@ assert.doesNotMatch(
   /function canViewRoute|auth\.permissions\.value\.includes\(node\.permission_code\)/,
   'An already authorized backend route must not be hidden again by stale client permission state.'
 );
+const visualDesignerSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue', import.meta.url),
+  'utf8'
+);
+assert.match(
+  visualDesignerSource,
+  /values\.route_type === 'page'[\s\S]*parent\.permission_code \?\? 'admin\.routes\.manage'/,
+  'New page menu routes must receive an explicit permission code.'
+);
+assert.match(
+  visualDesignerSource,
+  /routeType === 'page' \? 'admin\.routes\.manage' : null/,
+  'Editing a page menu without a permission must restore a route-management permission.'
+);
 assert.match(
   migrationSource,
   /where route\.code = 'file-management'[\s\S]*advanced_root\.code = 'advanced-root'/,

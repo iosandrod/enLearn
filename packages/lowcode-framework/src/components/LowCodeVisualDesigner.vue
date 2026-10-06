@@ -569,16 +569,22 @@ function buildMenuSavePayload(
     metadata_json: string;
   }> = {},
 ) {
+  const routeType = overrides.route_type ?? item.route_type ?? (item.children?.length ? 'group' : 'page');
+  const permissionCode =
+    overrides.permission_code ??
+    item.permission_code ??
+    (routeType === 'page' ? 'admin.routes.manage' : null);
+
   return {
     ...(item.id ? { id: item.id } : {}),
     code: overrides.code ?? item.code,
     title: overrides.title ?? item.title,
     path: overrides.path ?? item.path,
     parent_id: overrides.parent_id ?? item.parent_id ?? null,
-    route_type: overrides.route_type ?? item.route_type ?? (item.children?.length ? 'group' : 'page'),
+    route_type: routeType,
     icon: overrides.icon ?? item.icon ?? null,
     page_code: overrides.page_code ?? item.page_code ?? null,
-    permission_code: overrides.permission_code ?? item.permission_code ?? null,
+    permission_code: permissionCode,
     visible: overrides.visible ?? item.visible !== false,
     keep_alive: overrides.keep_alive ?? item.keep_alive !== false,
     layout: overrides.layout ?? item.layout ?? 'dashboard',
@@ -962,7 +968,10 @@ async function handleAddChildMenu(parent: AdminRouteNode) {
         route_type: values.route_type,
         icon: null,
         page_code: values.route_type === 'page' ? (values.page_code.trim() || null) : null,
-        permission_code: null,
+        permission_code:
+          values.route_type === 'page'
+            ? parent.permission_code ?? 'admin.routes.manage'
+            : null,
         visible: true,
         keep_alive: true,
         layout: parent.layout ?? 'dashboard',

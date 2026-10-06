@@ -8,17 +8,12 @@
         <span class="brand-mark-text">M</span>
       </div>
       <div class="brand-copy">
-        <span class="brand-product">MANUFACTURING MES</span>
-        <span class="brand-title">工厂制造管理平台</span>
-        <span class="brand-description">连接计划、生产、质量与仓储现场</span>
       </div>
     </div>
 
     <div class="login-workspace">
       <div class="login-panel">
         <span class="login-eyebrow">欢迎回来</span>
-        <span class="login-title">登录 MES 工作台</span>
-        <span class="login-description">请输入登录信息并选择生产账套。</span>
 
         <MobileForm
           :block="loginFormBlock"

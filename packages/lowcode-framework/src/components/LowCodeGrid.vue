@@ -514,6 +514,54 @@ function readActionCode(payload: unknown) {
   return '';
 }
 
+async function copyTextToClipboard(text: string) {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Fall back to the synchronous DOM API when permissions or context
+      // restrictions prevent the async clipboard API from being used.
+    }
+  }
+
+  if (typeof document === 'undefined') throw new Error('Clipboard is unavailable');
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.top = '0';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    if (!document.execCommand('copy')) {
+      throw new Error('Clipboard is unavailable');
+    }
+  } finally {
+    textarea.remove();
+  }
+}
+
+async function copyCellValue(payload: Record<string, unknown>) {
+  const row = readRow(payload);
+  const column = readColumn(payload);
+  if (!row || !column) return;
+
+  const grid = vxeGridRef.value as (VxeGridInstance<Record<string, unknown>> & {
+    getCellLabel?: (row: Record<string, unknown>, column: Record<string, unknown>) => unknown;
+  }) | undefined;
+  const value = grid?.getCellLabel?.(row, column) ??
+    (typeof column.field === 'string' ? row[column.field] : '');
+  const text = value === null || value === undefined ? '' : String(value);
+  try {
+    await copyTextToClipboard(text);
+  } catch {
+    // Clipboard permissions are browser-controlled; keep the menu action harmless.
+  }
+}
+
 function handleToolbar(action: LowCodeGridAction) {
   if (props.readonly || props.executing || action.disabled) return;
   emit('toolbar', action.code);
@@ -575,8 +623,14 @@ function handleMenuClick(payload: unknown) {
     (props.readonly || props.executing) &&
     menuType === 'body' &&
     actionCode !== '' &&
-    actionCode !== 'exportData'
+    actionCode !== 'exportData' &&
+    actionCode !== 'copyCellValue'
   ) return;
+
+  if (menuType === 'body' && actionCode === 'copyCellValue') {
+    void copyCellValue(rawEvent);
+    return;
+  }
 
   if (actionCode === 'exportData') {
     const grid = vxeGridRef.value as (VxeGridInstance<Record<string, unknown>> & {

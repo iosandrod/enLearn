@@ -121,7 +121,7 @@ async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
       route_type: 'page',
       icon: 'ri-home-2-line',
       page_code: null,
-      permission_code: null,
+      permission_code: 'dashboard.view',
       sort_order: 10,
       metadata: { group: 'business' },
     },

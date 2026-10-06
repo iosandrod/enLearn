@@ -76,7 +76,7 @@ assert.match(
 );
 assert.doesNotMatch(
   gridSource,
-  /tableInfoDesign|openSearch|associateEntityField|copyCellValue|editCurrentRow|downloadCurrentRowAttachments|表格信息设计|打开搜索框|关联实体字段|编辑当前行|下载当前行附件/,
+  /tableInfoDesign|openSearch|associateEntityField|editCurrentRow|downloadCurrentRowAttachments|表格信息设计|打开搜索框|关联实体字段|编辑当前行|下载当前行附件/,
   'The generic LowCodeGrid must not own page business menu data.'
 );
 assert.doesNotMatch(
@@ -120,6 +120,16 @@ assert.match(
   gridSource,
   /menuType === 'body'[\s\S]*\? 'bodyMenuClick'/,
   'Body menu clicks must remain available to the low-code runtime for later implementation.'
+);
+assert.match(
+  gridSource,
+  /actionCode !== 'copyCellValue'[\s\S]*menuType === 'body' && actionCode === 'copyCellValue'[\s\S]*copyCellValue\(rawEvent\)/,
+  'The body copy menu action must copy the right-clicked cell value, including in readonly grids.'
+);
+assert.match(
+  gridSource,
+  /getCellLabel\?\.\(row, column\)/,
+  'Cell copy must use VXE display text so formatters are preserved.'
 );
 assert.match(
   gridSource,

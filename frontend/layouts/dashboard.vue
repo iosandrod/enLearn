@@ -20,7 +20,7 @@
       </button>
       <RouterLink class="admin-brand" to="/dashboard">
         <span class="admin-brand-mark">M</span>
-        <span class="admin-brand-name">工厂制造管理平台</span>
+        <span class="admin-brand-name">工作台</span>
       </RouterLink>
       <span class="admin-mobile-page-title" :title="activeTitle">{{ activeTitle }}</span>
 
