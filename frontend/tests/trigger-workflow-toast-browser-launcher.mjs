@@ -13,7 +13,7 @@ const playwrightPath = join(
 );
 const baseUrl = (process.env.TRIGGER_WORKFLOW_TEST_SERVER_URL || 'http://localhost:3000')
   .replace(/\/$/, '');
-const apiUrl = (process.env.TRIGGER_WORKFLOW_TEST_API_URL || 'http://127.0.0.1:3002')
+const apiUrl = (process.env.TRIGGER_WORKFLOW_TEST_API_URL || 'http://127.0.0.1:3300')
   .replace(/\/$/, '');
 const accountId = process.env.TRIGGER_WORKFLOW_TEST_ACCOUNT_ID ||
   '00000000-0000-4000-8000-000000000001';

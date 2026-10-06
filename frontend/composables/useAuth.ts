@@ -48,7 +48,7 @@ function normalizeLoginEmail(email: string) {
 
 function getApiBaseUrl() {
   if (import.meta.env.DEV) return '/api';
-  return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '');
+  return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:300/api').replace(/\/+$/, '');
 }
 
 function readSessionTokens(payload: AppAuthPayload) {

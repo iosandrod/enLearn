@@ -92,6 +92,7 @@ const activeDesignerTab = ref<
 >('tools')
 const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
+const dataSourceDrawerOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
 const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
 const workspaceBackground = ref<WorkspaceBackgroundConfig>({
@@ -229,6 +230,21 @@ function cancelToolbarDrag(event: PointerEvent) {
 	canvasRef.value?.cancelToolbarDrag(event)
 }
 
+function selectDesignerTab(tabId: typeof designerTabs[number]['id']) {
+	activeDesignerTab.value = tabId
+	if (tabId === 'dataSource') {
+		mobilePanelOpen.value = false
+		dataSourceDrawerOpen.value = true
+		return
+	}
+	dataSourceDrawerOpen.value = false
+}
+
+function closeDataSourceDrawer() {
+	dataSourceDrawerOpen.value = false
+	activeDesignerTab.value = 'tools'
+}
+
 function onKeyDown(event: KeyboardEvent) {
 	if (event.defaultPrevented) return
 
@@ -243,6 +259,7 @@ function onKeyDown(event: KeyboardEvent) {
 
 	if (event.key === 'Escape') {
 		mobilePanelOpen.value = false
+		if (dataSourceDrawerOpen.value) closeDataSourceDrawer()
 		topMenuRef.value?.closeMenus()
 		return
 	}
@@ -468,7 +485,7 @@ onBeforeUnmount(() => {
 						v-show="(tab.id !== 'animation' || designerMode === 'presentation')
 							&& (tab.id !== 'columnProperties' || showMaterialColumnPanel)" :key="tab.id" type="button"
 						class="designer-side-tab" :class="{ 'is-active': activeDesignerTab === tab.id }"
-						:aria-selected="activeDesignerTab === tab.id" @click="activeDesignerTab = tab.id">
+						:aria-selected="activeDesignerTab === tab.id" @click="selectDesignerTab(tab.id)">
 						<span class="designer-side-tab__icon" aria-hidden="true">{{ tab.icon }}</span>
 						<span>{{ tab.label }}</span>
 					</button>
@@ -504,12 +521,6 @@ onBeforeUnmount(() => {
 					<div v-show="activeDesignerTab === 'layers'" class="designer-tool-view designer-tool-view--layers">
 						<VueLayersPanel v-if="editor" :editor="editor" />
 					</div>
-					<div v-show="activeDesignerTab === 'dataSource'"
-						class="designer-tool-view designer-tool-view--data-source">
-						<VueDataSourcePanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
-							:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
-							:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
-					</div>
 					<div v-show="activeDesignerTab === 'properties'"
 						class="designer-tool-view designer-tool-view--properties">
 						<LowCodeFormPanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
@@ -535,6 +546,18 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 			</div>
+			<button v-if="dataSourceDrawerOpen" class="designer-data-source-backdrop" type="button"
+				aria-label="关闭数据源面板" @click="closeDataSourceDrawer" />
+			<aside class="designer-data-source-drawer" :class="{ 'is-open': dataSourceDrawerOpen }"
+				aria-label="数据源抽屉" :aria-hidden="!dataSourceDrawerOpen">
+				<button class="designer-data-source-drawer__close" type="button" aria-label="关闭数据源面板"
+					title="关闭数据源面板" @click="closeDataSourceDrawer">
+					<i class="ri-close-line" aria-hidden="true" />
+				</button>
+				<VueDataSourcePanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
+					:get-workspace-template-config="canvasRef?.getWorkspaceTemplateConfig"
+					:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
+			</aside>
 			<button class="designer-mobile-panel-toggle" type="button" :aria-expanded="mobilePanelOpen"
 				aria-label="打开设计器工具面板" @click="mobilePanelOpen = !mobilePanelOpen">
 				<span aria-hidden="true">{{ mobilePanelOpen ? '⌄' : '✦' }}</span>

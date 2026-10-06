@@ -20,7 +20,7 @@ Run the Redis-backed domain service in a separate terminal:
 pnpm domain-service:dev
 ```
 
-The API defaults to `http://localhost:3002/api/service`. Send all service calls
+The API defaults to `http://localhost:3300/api/service`. Send all service calls
 through this single endpoint:
 
 ```json

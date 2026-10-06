@@ -112,6 +112,7 @@ button {
 	position: relative;
 	display: grid;
 	grid-template-columns: 292px minmax(0, 1fr);
+	--designer-data-source-drawer-width: 50vw;
 	min-width: 0;
 	min-height: 0;
 }
@@ -711,6 +712,75 @@ button {
 	color: #172033;
 }
 
+.designer-data-source-backdrop {
+	position: absolute;
+	inset: 0;
+	z-index: 110;
+	padding: 0;
+	border: 0;
+	background: rgb(15 23 42 / 22%);
+	cursor: pointer;
+}
+
+.designer-data-source-drawer {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 120;
+	display: flex;
+	width: var(--designer-data-source-drawer-width);
+	max-width: 100%;
+	min-width: 0;
+	border-left: 1px solid #d9dee6;
+	background: #ffffff;
+	box-shadow: -14px 0 36px rgb(15 23 42 / 18%);
+	transform: translateX(100%);
+	transition: transform 180ms ease, visibility 0s linear 180ms;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.designer-data-source-drawer.is-open {
+	transform: translateX(0);
+	transition: transform 180ms ease;
+	visibility: visible;
+	pointer-events: auto;
+}
+
+.designer-data-source-drawer > .data-source-panel {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.designer-data-source-drawer .lowcode-form-panel__header {
+	padding-right: 56px;
+}
+
+.designer-data-source-drawer__close {
+	position: absolute;
+	top: 14px;
+	right: 12px;
+	z-index: 1;
+	display: inline-grid;
+	width: 30px;
+	height: 30px;
+	place-items: center;
+	padding: 0;
+	border: 1px solid #cbd5e1;
+	border-radius: 5px;
+	background: #ffffff;
+	color: #475569;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.designer-data-source-drawer__close:hover {
+	border-color: #2563eb;
+	background: #eff6ff;
+	color: #1d4ed8;
+}
+
 .designer-side-tabs {
 	display: flex;
 	flex-direction: column;
@@ -1306,6 +1376,7 @@ button {
 	.editor-host {
 		display: block;
 		grid-template-columns: minmax(0, 1fr);
+		--designer-data-source-drawer-width: 100vw;
 	}
 
 	.designer-stage {
@@ -1417,6 +1488,10 @@ button {
 		cursor: pointer;
 		font-size: 11px;
 		font-weight: 700;
+	}
+
+	.designer-data-source-drawer {
+		border-left: 0;
 	}
 
 	.designer-side-panel .designer-tool-view--tools .designer-tool-section,

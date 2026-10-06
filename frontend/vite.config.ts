@@ -91,10 +91,10 @@ export default defineConfig({
       env.VITE_API_BASE_URL ??
         env.NUXT_API_BASE_URL ??
         env.API_BASE_URL ??
-        `http://localhost:${env.API_PORT ?? '3002'}/api`,
+        `http://localhost:${env.API_PORT ?? '3300'}/api`,
     ),
     'import.meta.env.VITE_SOCKET_BASE_URL': JSON.stringify(
-      env.VITE_SOCKET_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3002'}`,
+      env.VITE_SOCKET_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3300'}`,
     ),
     // The repository-level .env.local is loaded above as parentEnv. Expose the
     // low-code runtime switch explicitly because Vite's automatic env loading
@@ -243,12 +243,12 @@ export default defineConfig({
     include: ['vue', 'vue-router'],
   },
   server: {
-    port: Number(env.VITE_PORT ?? 3000),
+    port: Number(env.s ?? 3301),
     host: env.VITE_HOST ?? '127.0.0.1',
     allowedHosts: ['frp-bag.com'],
     proxy: {
       '/api': {
-        target: env.VITE_API_BASE_URL ?? env.NUXT_API_BASE_URL ?? env.API_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3002'}/api`,
+        target: env.VITE_API_BASE_URL ?? env.NUXT_API_BASE_URL ?? env.API_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3300'}/api`,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

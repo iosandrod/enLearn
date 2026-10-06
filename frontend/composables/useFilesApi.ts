@@ -276,7 +276,7 @@ export function useFilesApi() {
 
   function uploadEndpoint() {
     if (import.meta.env.DEV) return '/api/files/upload';
-    return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '') + '/files/upload';
+    return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3300/api').replace(/\/+$/, '') + '/files/upload';
   }
 
   function uploadAuthHeaders() {

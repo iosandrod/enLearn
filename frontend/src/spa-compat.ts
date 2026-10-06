@@ -141,7 +141,7 @@ function isLowCodeWriteRequest(apiPath: string, method: RequestInit['method'] | 
 }
 
 function getApiBaseUrl() {
-  return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '');
+  return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3300/api').replace(/\/+$/, '');
 }
 
 function normalizeApiPath(url: string) {

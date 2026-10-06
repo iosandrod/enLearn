@@ -31,7 +31,7 @@ async function bootstrap() {
   );
 
   const env = getEnv();
-  const port = Number(env.API_PORT ?? env.PORT ?? 3002);
+  const port = Number(env.API_PORT ?? env.PORT ?? 3300);
   const host = String(env.API_HOST ?? '').trim();
   registerChatSocket(app);
   if (host) await app.listen(port, host);

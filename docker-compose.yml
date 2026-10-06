@@ -12,15 +12,17 @@ services:
     environment:
       NODE_ENV: production
       API_HOST: 0.0.0.0
-      API_PORT: 3002
+      API_PORT: 3300
       TRIGGER_DEV_WORKER_AUTOSTART: ${TRIGGER_DEV_WORKER_AUTOSTART:-0}
       FRONTEND_COMMAND_REDIS_ENABLED: ${FRONTEND_COMMAND_REDIS_ENABLED:-0}
       PLANNING_RUN_MODE: ${PLANNING_RUN_MODE:-inline}
       PLANNING_ENGINE_MODE: ${PLANNING_ENGINE_MODE:-cpp-typescript}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     expose:
       - "3002"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3300/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 5s
       start_period: 20s

@@ -38,6 +38,7 @@ ENV NODE_ENV=production
 ENV API_HOST=0.0.0.0
 ENV API_PORT=3002
 ENV PRINT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk add --no-cache \
   chromium \
   font-noto-cjk \
