@@ -3,6 +3,7 @@ import { isShapeId, type Editor, type TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import VueContextMenu from './VueContextMenu.vue'
 import VueExpressionEditorDialog from './VueExpressionEditorDialog.vue'
+import VueAlignmentToolbar from './VueAlignmentToolbar.vue'
 import VueRulerOverlay from './VueRulerOverlay.vue'
 import VueWorkspaceToolbar from './VueWorkspaceToolbar.vue'
 import { getSnapIndicatorSegments } from '@/editor/interactions/snapIndicatorSegments'
@@ -808,6 +809,8 @@ defineExpose({
 	getWorkspaceTemplateConfig,
 	isContextMenuOpen: () => controller.isContextMenuOpen(),
 	moveToolbarDrag,
+	openContextMenuForShape: (shapeId: TLShapeId, event: MouseEvent) =>
+		controller.openContextMenuForShape(shapeId, event),
 	startToolbarDrag,
 	workspaceFitCanvas:onWorkspaceFitCanvas,
 })
@@ -1035,6 +1038,8 @@ onBeforeUnmount(() => {
 			:ruler-size="RULER_SIZE"
 			@guide-create="onGuideCreate"
 		/>
+
+		<VueAlignmentToolbar :editor="editor" />
 
 		<div v-if="guideMarkers.length" class="guide-label-layer">
 			<span

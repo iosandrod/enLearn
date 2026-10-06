@@ -134,13 +134,47 @@ function syncTextShape(rawText: string) {
 		props: nextProps,
 	})
 }
-
+const _showBorder = computed(() => {
+	let showBorder = props.shape.props.showBorder
+	let borderLeft = props.shape.props.borderLeft
+	let borderRight = props.shape.props.borderRight
+	let borderTop = props.shape.props.borderTop
+	let borderBottom = props.shape.props.borderBottom//
+    if(Boolean(borderLeft) || Boolean(borderRight) || Boolean(borderTop) || Boolean(borderBottom)){
+		showBorder = true
+	}
+	return showBorder
+})
+const borderObj=computed(()=>{
+	let borderLeft = props.shape.props.borderLeft
+	let borderRight = props.shape.props.borderRight
+	let borderTop = props.shape.props.borderTop
+	let borderBottom = props.shape.props.borderBottom
+	let obj= {
+	} as any
+	if(Boolean(borderLeft)==false){
+		obj.borderLeft = 'none'
+	}
+	if(Boolean(borderRight)==false){
+		obj.borderRight = 'none'
+	}
+	if(Boolean(borderTop)==false){
+		obj.borderTop = 'none'
+	}
+	if(Boolean(borderBottom)==false){
+		obj.borderBottom = 'none'
+	}
+	if(!Boolean(borderLeft)&&!Boolean(borderRight)&&!Boolean(borderTop)&&!Boolean(borderBottom)){
+		obj={}//
+	}
+	return obj
+})
 </script>
 
 <template>
 	<div
 		class="vue-text-shape"
-		:class="{ 'is-selected': selected, 'has-visible-border': shape.props.showBorder }"
+		:class="{ 'is-selected': selected, 'has-visible-border': _showBorder }"
 		:data-shape-id="shape.id"
 		:style="{
 			width: `${shape.props.w}px`,
@@ -155,6 +189,7 @@ function syncTextShape(rawText: string) {
 			paddingRight: `${shape.props.paddingRight}px`,
 			paddingBottom: `${shape.props.paddingBottom}px`,
 			paddingLeft: `${shape.props.paddingLeft}px`,
+			...borderObj
 		}"
 	>
 		<div

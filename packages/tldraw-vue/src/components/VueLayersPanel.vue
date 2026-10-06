@@ -14,6 +14,10 @@ const props = defineProps<{
 	editor: Editor
 }>()
 
+const emit = defineEmits<{
+	contextmenu: [shapeId: TLShapeId, event: MouseEvent]
+}>()
+
 type LayerDropPosition = 'before' | 'inside' | 'after'
 
 interface LayerTreeNode {
@@ -398,6 +402,7 @@ function dropClass(node: VisibleLayerNode) {
 				@dragleave="onRowDragLeave($event, node.id)"
 				@drop="onRowDrop($event, node)"
 				@click="selectLayer(node.id, $event)"
+				@contextmenu.prevent.stop="emit('contextmenu', node.id, $event)"
 			>
 				<span
 					class="layers-row__drag-handle"

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import {
 	expandSelectionToTableMerges,
 	findTableMerge,
+	getTableMergeBoundaryGaps,
 	insertTableMergeAxis,
 	normalizeTableMergeCells,
 	normalizeTableSelection,
@@ -19,6 +20,17 @@ const merges = normalizeTableMergeCells([
 assert.deepEqual(merges, [{ row: 1, col: 1, rowspan: 2, colspan: 2 }])
 assert.equal(findTableMerge(merges, 2, 2), merges[0])
 assert.equal(findTableMerge(merges, 0, 0), undefined)
+assert.deepEqual(
+	getTableMergeBoundaryGaps(merges, 'row', 1, [0, 10, 20, 30, 40]),
+	[{ start: 10, end: 30 }],
+	'horizontal grid lines must leave merged cell interiors clear'
+)
+assert.deepEqual(
+	getTableMergeBoundaryGaps(merges, 'col', 1, [0, 15, 30, 45, 60]),
+	[{ start: 15, end: 45 }],
+	'vertical grid lines must leave merged cell interiors clear'
+)
+assert.deepEqual(getTableMergeBoundaryGaps(merges, 'row', 0, [0, 10, 20, 30, 40]), [])
 
 assert.deepEqual(
 	expandSelectionToTableMerges(normalizeTableSelection(2, 2, 2, 2), merges),
@@ -48,14 +60,28 @@ const controllerSource = await readFile(
 	new URL('../src/editor/interactions/VueEditorController.ts', import.meta.url),
 	'utf8'
 )
+const tableSvgSource = await readFile(
+	new URL('../src/editor/vueSvgExport.ts', import.meta.url),
+	'utf8'
+)
+const svgExportSource = await readFile(
+	new URL('../packages/editor/src/lib/exports/getSvgJsx.tsx', import.meta.url),
+	'utf8'
+)
 assert.doesNotMatch(componentSource, /vxe-table|VxeTable|VxeColumn|ExtendCellArea/)
 assert.match(componentSource, /<table class="vue-table-shape__table"/)
 assert.doesNotMatch(componentSource, /cell\.value/)
 assert.match(componentSource, /getVueTableCellShapePartial/)
+assert.match(componentSource, /onCellDoubleClick/)
+assert.match(componentSource, /setEditingShape\(id\)/)
 assert.match(componentSource, /VUE_TABLE_TOOLBAR_DRAG_EVENT/)
 assert.match(componentSource, /vue-table-shape__drop-preview/)
 assert.match(controllerSource, /isVueTableCellFrame/)
 assert.match(controllerSource, /editor\.deleteShapes\(\[existingChild\.id\]\)/)
+assert.match(tableSvgSource, /strokeWidth: 1\.5/)
+assert.match(tableSvgSource, /fill: 'none'/)
+assert.match(svgExportSource, /shape\.type === 'vue-table'/)
+assert.match(svgExportSource, /getShapeAndDescendantIds\(\[shape\.id\]\)/)
 for (const label of ['添加行', '添加列', '删除行', '删除列', '合并单元格', '拆分单元格']) {
 	assert.match(componentSource, new RegExp(label))
 }

@@ -169,6 +169,36 @@ export class VueEditorController {
 		this.options.onContextMenuChange(this.contextMenu)
 	}
 
+	openContextMenuForShape(shapeId: TLShapeId, event: MouseEvent) {
+		event.preventDefault()
+		event.stopPropagation()
+		if (this.suppressNextContextMenu) {
+			this.suppressNextContextMenu = false
+			return
+		}
+
+		const editor = this.options.editor
+		if (!editor.getShape(shapeId)) return
+		this.updateViewport()
+		if (this.activeTool !== 'select') {
+			this.setActiveTool('select')
+		}
+
+		const selectedShapeIds = editor.getSelectedShapeIds()
+		if (!selectedShapeIds.includes(shapeId)) {
+			editor.markHistoryStoppingPoint('selecting layer')
+			editor.select(shapeId)
+		}
+
+		const screenPoint = this.getScreenPoint(event)
+		this.contextMenu = this.contextMenuState.buildSnapshot(
+			editor,
+			screenPoint,
+			editor.screenToPage(screenPoint)
+		)
+		this.options.onContextMenuChange(this.contextMenu)
+	}
+
 	doubleClick(event: MouseEvent) {
 		const target = event.target as HTMLElement | null
 		if (target?.closest('input, textarea, select, [contenteditable="true"]')) return

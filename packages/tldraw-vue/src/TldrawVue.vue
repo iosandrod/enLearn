@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Editor, TLShape } from '@tldraw/editor'
+import type { Editor, TLShape, TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import VueBottomToolbar from './components/VueBottomToolbar.vue'
 import VueCanvas from './components/VueCanvas.vue'
@@ -76,6 +76,7 @@ const canvasRef = ref<{
 	getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig
 	isContextMenuOpen(): boolean
 	moveToolbarDrag(event: PointerEvent): void
+	openContextMenuForShape(shapeId: TLShapeId, event: MouseEvent): void
 	startToolbarDrag(tool: CanvasTool, geoShape: VueGeoShape | undefined, event: PointerEvent): void
 } | null>(null)
 const topMenuRef = ref<{
@@ -209,6 +210,10 @@ function selectTool(tool: CanvasTool, geoShape?: VueGeoShape) {
 function closeContextAndTopMenus() {
 	canvasRef.value?.closeContextMenu()
 	topMenuRef.value?.closeMenus()
+}
+
+function openLayerContextMenu(shapeId: TLShapeId, event: MouseEvent) {
+	canvasRef.value?.openContextMenuForShape(shapeId, event)
 }
 
 function startToolbarDrag(tool: CanvasTool, geoShape: VueGeoShape | undefined, event: PointerEvent) {
@@ -519,7 +524,7 @@ onBeforeUnmount(() => {
 							@tool-drag-move="moveToolbarDrag" @tool-drag-start="startToolbarDrag" />
 					</div>
 					<div v-show="activeDesignerTab === 'layers'" class="designer-tool-view designer-tool-view--layers">
-						<VueLayersPanel v-if="editor" :editor="editor" />
+						<VueLayersPanel v-if="editor" :editor="editor" @contextmenu="openLayerContextMenu" />
 					</div>
 					<div v-show="activeDesignerTab === 'properties'"
 						class="designer-tool-view designer-tool-view--properties">

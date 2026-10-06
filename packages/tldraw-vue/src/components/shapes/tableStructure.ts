@@ -5,6 +5,28 @@ export interface TableMergeCell {
 	colspan: number
 }
 
+export function getTableMergeBoundaryGaps(
+	merges: readonly TableMergeCell[],
+	axis: 'row' | 'col',
+	boundaryIndex: number,
+	offsets: readonly number[]
+) {
+	const gaps: Array<{ start: number; end: number }> = []
+	for (const merge of merges) {
+		const crossesBoundary = axis === 'row'
+			? merge.row <= boundaryIndex && boundaryIndex < merge.row + merge.rowspan - 1
+			: merge.col <= boundaryIndex && boundaryIndex < merge.col + merge.colspan - 1
+		if (!crossesBoundary) continue
+
+		const startIndex = axis === 'row' ? merge.col : merge.row
+		const endIndex = startIndex + (axis === 'row' ? merge.colspan : merge.rowspan)
+		const start = offsets[startIndex]
+		const end = offsets[endIndex]
+		if (start !== undefined && end !== undefined && end > start) gaps.push({ start, end })
+	}
+	return gaps
+}
+
 export interface TableSelection {
 	rowStart: number
 	rowEnd: number

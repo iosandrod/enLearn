@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { createShapeId, DefaultColorStyle, DefaultFontStyle, DefaultSizeStyle } from '@tldraw/editor'
+import type { VueTextShape } from '@/editor/vueDefaultShapes'
 import {
 	VUE_TABLE_ROW_ID_FIELD,
 	type VueTableColumn,
@@ -14,6 +16,7 @@ import {
 import {
 	getVueTableCellInfo,
 	getVueTableCellMeta,
+	getVueTableCellRect,
 	getVueTableCellShapePartial,
 	getVueTableCellAtPoint,
 	VUE_TABLE_TOOLBAR_DRAG_EVENT,
@@ -325,6 +328,43 @@ function onToolbarDragPreview(event: Event) {
 	toolbarDropPreview.value = getVueTableCellAtPoint(props.shape, detail.pagePoint)
 }
 
+function onCellDoubleClick(event: MouseEvent, row: number, col: number) {
+	event.preventDefault()
+	event.stopPropagation()
+	const cell = getVueTableCellRect(props.shape, { row, col })
+	if (!cell) return
+	const existingChild = tableCellShapes.value.find(shape => {
+		const info = getVueTableCellInfo(shape)
+		return info?.row === cell.row && info.col === cell.col
+	})
+	if (existingChild) return
+
+	const id = createShapeId()
+	props.editor.markHistoryStoppingPoint('creating table cell text')
+	props.editor.createShape<VueTextShape>({
+		id,
+		type: 'vue-text',
+		parentId: props.shape.id,
+		x: cell.x,
+		y: cell.y,
+		rotation: 0,
+		meta: getVueTableCellMeta(cell),
+		props: {
+			w: cell.w,
+			h: cell.h,
+			text: '',
+			color: props.editor.getStyleForNextShape(DefaultColorStyle),
+			font: props.editor.getStyleForNextShape(DefaultFontStyle),
+			size: props.editor.getStyleForNextShape(DefaultSizeStyle),
+			justifyContent: 'start',
+			alignItems: 'center',
+			autoSize: false,
+		},
+	})
+	props.editor.select(id)
+	props.editor.setEditingShape(id)
+}
+
 function createRow(): VueTableRow {
 	const row: VueTableRow = { [VUE_TABLE_ROW_ID_FIELD]: `row-${Date.now()}-${++rowSeed}` }
 	props.shape.props.columns.forEach(column => { row[column.field] = '' })
@@ -603,7 +643,8 @@ function stopWhenSelected(event: Event) { if (props.selected) event.stopPropagat
 							:data-row="cell.row" :data-col="cell.col" data-table-cell="true"
 							:rowspan="cell.rowspan" :colspan="cell.colspan"
 							@pointerdown="startCellSelection($event, cell.row, cell.col)"
-							@contextmenu="openContextMenu($event, cell.row, cell.col)" />
+							@contextmenu="openContextMenu($event, cell.row, cell.col)"
+							@dblclick="onCellDoubleClick($event, cell.row, cell.col)" />
 					</tr>
 				</tbody>
 			</table>

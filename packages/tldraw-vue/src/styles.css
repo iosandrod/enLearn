@@ -1682,6 +1682,67 @@ button {
 	transform-origin: center;
 }
 
+.alignment-toolbar {
+	position: absolute;
+	top: 34px;
+	left: 34px;
+	z-index: 34;
+	display: grid;
+	grid-template-columns: repeat(3, 30px);
+	grid-template-rows: repeat(2, 30px);
+	gap: 2px;
+	padding: 4px;
+	border: 1px solid #d9dee6;
+	border-radius: 6px;
+	background: #f9fafb;
+	box-shadow: 0 6px 16px rgb(15 23 42 / 0.1);
+	pointer-events: auto;
+}
+
+.alignment-toolbar__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: #475569;
+	cursor: pointer;
+	font-size: 17px;
+}
+
+.alignment-toolbar__button:hover:not(:disabled) {
+	background: #e8eef8;
+	color: #1d4ed8;
+}
+
+.alignment-toolbar__button:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: -1px;
+}
+
+.alignment-toolbar__button:disabled {
+	color: #b8c1ce;
+	cursor: not-allowed;
+	opacity: 0.72;
+}
+
+@media (max-width: 680px) {
+	.alignment-toolbar {
+		top: 34px;
+		left: 34px;
+		grid-template-columns: repeat(3, 28px);
+		grid-template-rows: repeat(2, 28px);
+	}
+
+	.alignment-toolbar__button {
+		width: 28px;
+		height: 28px;
+	}
+}
+
 .workspace-toolbar {
 	position: absolute;
 	top: 34px;

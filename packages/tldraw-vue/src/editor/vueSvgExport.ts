@@ -28,6 +28,7 @@ import type {
 import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
 import {
+	getTableMergeBoundaryGaps,
 	findTableMerge,
 	normalizeTableMergeCells,
 } from '../components/shapes/tableStructure'
@@ -373,7 +374,12 @@ export function createVueFrameSvg(shape: VueFrameShape): SvgExportNode {
 	)
 }
 
-export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
+export function createVueTableSvg(
+	shape: VueTableShape,
+	options: { background?: boolean; grid?: boolean } = {}
+): SvgExportNode {
+	const includeBackground = options.background ?? true
+	const includeGrid = options.grid ?? true
 	const width = Math.max(1, shape.props.w)
 	const height = Math.max(1, shape.props.h)
 	const defaultRowHeight = clampVueTableRowHeight(shape.props.rowHeight)
@@ -391,29 +397,35 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 		columns.length
 	)
 	const clipId = `vue-table-clip-${sanitizeSvgId(shape.id)}`
-	const children: SvgExportChild[] = [
-		createElement(
-			'defs',
-			null,
+	const children: SvgExportChild[] = []
+	if (includeGrid) {
+		children.push(
 			createElement(
-				'clipPath',
-				{ id: clipId },
-				createElement('rect', {
-					width,
-					height,
-				})
+				'defs',
+				null,
+				createElement(
+					'clipPath',
+					{ id: clipId },
+					createElement('rect', {
+						width,
+						height,
+					})
+				)
 			)
-		),
-		createElement('rect', {
-			width,
-			height,
-			fill: '#ffffff',
-			stroke: shape.props.showBorder ? '#111827' : 'none',
-			strokeWidth: shape.props.showBorder ? 1 : 0,
-		}),
-	]
+		)
+	}
+	if (includeBackground) {
+		children.push(
+			createElement('rect', {
+				width,
+				height,
+				fill: '#ffffff',
+			})
+		)
+	}
 
 	const gridChildren: SvgExportChild[] = []
+	if (!includeGrid) return createElement('g', null, children)
 	const allRowLayouts = getVueTableRowLayouts(
 		shape.props.rows,
 		defaultRowHeight,
@@ -425,17 +437,21 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 	for (const layout of rowLayouts) {
 		rowY = layout.bottom
 		if (layout.bottom < height) {
-			gridChildren.push(createVueTableGridLine(0, layout.bottom, width, layout.bottom))
+			const gaps = getTableMergeBoundaryGaps(mergeCells, 'row', layout.index, columnOffsets)
+			pushVueTableGridLineSegments(gridChildren, true, layout.bottom, width, gaps)
 		}
 	}
 	for (let y = rowY + defaultRowHeight; y < height; y += defaultRowHeight) {
-		gridChildren.push(createVueTableGridLine(0, y, width, y))
+		pushVueTableGridLineSegments(gridChildren, true, y, width, [])
 	}
 
+	const rowOffsets = allRowLayouts.map(layout => layout.y)
+	if (allRowLayouts.length) rowOffsets.push(allRowLayouts[allRowLayouts.length - 1].bottom)
 	let x = 0
-	for (const columnWidth of columnWidths.slice(0, -1)) {
+	for (const [columnIndex, columnWidth] of columnWidths.slice(0, -1).entries()) {
 		x += columnWidth
-		gridChildren.push(createVueTableGridLine(x, 0, x, height))
+		const gaps = getTableMergeBoundaryGaps(mergeCells, 'col', columnIndex, rowOffsets)
+		pushVueTableGridLineSegments(gridChildren, false, x, height, gaps)
 	}
 
 	for (const merge of mergeCells) {
@@ -449,9 +465,9 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 			y: firstRow.y,
 			width: Math.max(0, right - left),
 			height: Math.max(0, lastRow.bottom - firstRow.y),
-			fill: '#ffffff',
+			fill: 'none',
 			stroke: VUE_MATERIAL_TABLE_GRID_COLOR,
-			strokeWidth: 1,
+			strokeWidth: 1.5,
 			vectorEffect: 'non-scaling-stroke',
 		}))
 	}
@@ -465,6 +481,19 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 			gridChildren
 		)
 	)
+
+	if (shape.props.showBorder) {
+		children.push(
+			createElement('rect', {
+				width,
+				height,
+				fill: 'none',
+				stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
+				strokeWidth: 1.5,
+				vectorEffect: 'non-scaling-stroke',
+			})
+		)
+	}
 
 	return createElement('g', null, children)
 }
@@ -927,10 +956,35 @@ function createVueTableGridLine(x1: number, y1: number, x2: number, y2: number) 
 		x2,
 		y2,
 		stroke: VUE_MATERIAL_PRINT_GRID_COLOR,
-		strokeWidth: 1,
+		strokeWidth: 1.5,
 		strokeDasharray: 'none',
 		vectorEffect: 'non-scaling-stroke',
 	})
+}
+
+function pushVueTableGridLineSegments(
+	children: SvgExportChild[],
+	horizontal: boolean,
+	position: number,
+	length: number,
+	gaps: Array<{ start: number; end: number }>
+) {
+	let cursor = 0
+	for (const gap of gaps.sort((a, b) => a.start - b.start)) {
+		const gapStart = Math.max(0, Math.min(length, gap.start))
+		const gapEnd = Math.max(0, Math.min(length, gap.end))
+		if (gapStart > cursor) {
+			children.push(horizontal
+				? createVueTableGridLine(cursor, position, gapStart, position)
+				: createVueTableGridLine(position, cursor, position, gapStart))
+		}
+		cursor = Math.max(cursor, gapEnd)
+	}
+	if (cursor < length) {
+		children.push(horizontal
+			? createVueTableGridLine(cursor, position, length, position)
+			: createVueTableGridLine(position, cursor, position, length))
+	}
 }
 
 function wrapVueTextForSvg(text: string, width: number, fontSize: number) {

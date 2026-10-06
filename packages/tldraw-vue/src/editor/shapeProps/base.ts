@@ -67,6 +67,22 @@ const baseDefinitions = {
 		validator: T.number,
 		defaultValue: 14,
 		form: numberField('fontSize', '字体大小', { min: 1, step: 1 }),
+	},
+	borderLeft:{
+		validator:T.optional(T.boolean),
+		default:false
+	},
+	borderRight:{
+		validator:T.optional(T.boolean),
+		default:false
+	},
+	borderTop:{
+		validator:T.optional(T.boolean),
+		default:false
+	},
+	borderBottom:{
+		validator:T.optional(T.boolean),
+		default:false
 	}
 } as const
 
@@ -82,4 +98,8 @@ export type BaseProps = {
 	paddingTop: number
 	paddingBottom: number
 	fontSize: number
+	borderLeft?: boolean
+	borderRight?: boolean
+	borderTop?: boolean
+	borderBottom?: boolean
 }

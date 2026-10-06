@@ -58,7 +58,13 @@ import { TLParentId, TLShapeId } from '../records/TLShape'
  *
  * @public
  */
-export interface TLBaseShape<Type extends string, Props extends object> {
+export type baseObj={
+	borderLeft?: boolean
+	borderRight?: boolean
+	borderTop?: boolean
+	borderBottom?: boolean
+}&object
+export interface TLBaseShape<Type extends string, Props extends baseObj> {
 	// using real `extends BaseRecord<'shape', TLShapeId>` introduces a circularity in the types
 	// and for that reason those "base members" have to be declared manually here
 	readonly id: TLShapeId
@@ -78,6 +84,10 @@ export interface TLBaseShape<Type extends string, Props extends object> {
 	opacity: TLOpacityType
 	props: Props
 	meta: JsonObject
+	borderLeft?: boolean
+	borderRight?: boolean
+	borderTop?: boolean
+	borderBottom?: boolean
 }
 
 /**

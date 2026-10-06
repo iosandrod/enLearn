@@ -302,6 +302,20 @@ function SvgExport({
 
 					const elements = []
 					const util = editor.getShapeUtil(shape)
+					// Ordinary table borders must be rendered after all components placed
+					// inside its cells. Keep the table background in the normal background
+					// pass, while moving only its foreground SVG just past its descendants.
+					const descendantIds =
+						shape.type === 'vue-table' ? editor.getShapeAndDescendantIds([shape.id]) : null
+					const foregroundZIndex =
+						descendantIds
+							? Math.max(
+									index,
+									...renderingShapes
+										.filter(({ id }) => descendantIds.has(id))
+										.map(({ index: descendantIndex }) => descendantIndex)
+								  ) + 0.5
+							: index
 
 					if (util.toSvg || util.toBackgroundSvg) {
 						// If the shape has any sort of custom svg export, let's use that.
@@ -344,7 +358,7 @@ function SvgExport({
 						if (toSvgResult) {
 							const toSvgElement = svgExportNodeToReact(toSvgResult)
 							elements.push({
-								zIndex: index,
+								zIndex: foregroundZIndex,
 								element: (
 									<g
 										key={`fg_${shape.id}`}

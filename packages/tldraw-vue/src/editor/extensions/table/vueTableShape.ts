@@ -74,7 +74,11 @@ export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 	}
 
 	override toSvg(shape: VueTableShape) {
-		return createVueTableSvg(shape)
+		return createVueTableSvg(shape, { background: false })
+	}
+
+	override toBackgroundSvg(shape: VueTableShape) {
+		return createVueTableSvg(shape, { background: true, grid: false })
 	}
 
 	override onBeforeUpdate(_prev: VueTableShape, next: VueTableShape) {

@@ -9,8 +9,10 @@ const [layersPanel, designer] = await Promise.all([
 ])
 
 assert.match(designer, /id: 'layers', label: '图层'/)
-assert.match(designer, /<VueLayersPanel v-if="editor" :editor="editor"/)
+assert.match(designer, /<VueLayersPanel v-if="editor" :editor="editor" @contextmenu="openLayerContextMenu"/)
+assert.match(designer, /openContextMenuForShape\(shapeId: TLShapeId, event: MouseEvent\)/)
 assert.match(layersPanel, /getSortedChildIdsForParent\(parentId\)/)
+assert.match(layersPanel, /@contextmenu\.prevent\.stop="emit\('contextmenu', node\.id, \$event\)"/)
 assert.match(layersPanel, /class="layers-row__drag-handle"/)
 assert.match(layersPanel, /getIndexBetween\(below\?\.index, above\?\.index\)/)
 assert.match(layersPanel, /reparentShapes\(\[source\.id\], nextParentId, nextIndex\)/)
