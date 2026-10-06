@@ -7,6 +7,7 @@ const tldraw = readFileSync(new URL('../../packages/tldraw-vue/src/TldrawVue.vue
 const exportComposable = readFileSync(new URL('../composables/usePrintDesignerExport.ts', import.meta.url), 'utf8');
 
 assert.match(designer, /id: 'print\.preview'[\s\S]*?runServerPreview/);
+assert.match(designer, /hasLocalNodeExpressions\(editor\)/);
 assert.match(designer, /id: 'print\.print'[\s\S]*?runServerExport/);
 assert.match(designer, /printDesignerExport\.createInput/);
 assert.match(designer, /printDesignerExport\.exportFile/);

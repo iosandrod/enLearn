@@ -138,7 +138,8 @@ export type VueMaterialSectionShape = TLBaseShape<
 	'vue-material-section',
 	BaseProps & {
 		zone: VueMaterialSectionZone
-		label: string
+		label: string,
+		containerList?: boolean
 	}
 >
 

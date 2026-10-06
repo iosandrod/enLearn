@@ -1702,13 +1702,13 @@ const expression = {
 
 #### 节点 JavaScript 表达式
 
-设计器中选中单个节点后，可以通过右键菜单的“编辑表达式”维护表达式库。表达式记录包含名称、编码、描述、用途、关联模板、关联模板类型和源码，通过 `admin.print_expressions` 资源写入 `print_expressions` 表。节点通过文本里的 `{{名称或编码}}` 引用表达式，不保存或执行隐藏的节点表达式属性。打印预览以完整 `PrintExpressionContext` 作为唯一参数同步执行匹配到的函数：
+设计器中选中单个节点后，可以通过右键菜单的“编辑表达式”维护表达式库。表达式记录包含名称、编码、描述、用途、关联模板、关联模板类型和源码，通过 `admin.print_expressions` 资源写入 `print_expressions` 表。文本节点可以通过 `{{名称或编码}}` 引用表达式；几何节点会把函数源码保存到 `props.expression`，预览时直接执行。打印预览以完整 `PrintExpressionContext` 作为唯一参数同步执行匹配到的函数：
 
 ```ts
 (context) => `${context.row.customerName} / 第 ${context.pageNo} 页`
 ```
 
-文本、数字和布尔返回值会写入带 `text` 属性的节点；对象返回值会合并到节点已有属性；`undefined` 保留节点原值。对象不能包含该节点不存在的属性。
+文本、数字和布尔返回值会写入带 `text` 属性的节点；几何节点返回的字符串会作为 `geo` 图形值；对象返回值会合并到节点已有属性；`undefined` 保留节点原值。对象不能包含该节点不存在的属性。
 
 ```ts
 (context) => ({

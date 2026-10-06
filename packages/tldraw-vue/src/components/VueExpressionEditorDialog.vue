@@ -44,8 +44,9 @@ const emit = defineEmits<{
 const host = useLowCodeHost()
 const shape = props.editor.getShape(props.shapeId)
 const literalExpressionKey = getFirstLiteralExpressionKey(shape?.props)
+const nodeExpressionSource = getShapeExpression(shape?.props)
 const activeExpressionId = ref('')
-const source = ref('')
+const source = ref(nodeExpressionSource)
 const expressionName = ref(literalExpressionKey || '节点表达式')
 const expressionCode = ref('')
 const description = ref('')
@@ -164,7 +165,8 @@ async function loadExpressionDetails() {
 			updatedAt: record.updatedAt ?? '',
 		}))
 		const literalRecord = expressions.value.find((item) =>
-			item.name === literalExpressionKey || item.code === literalExpressionKey
+			item.name === literalExpressionKey || item.code === literalExpressionKey ||
+			(Boolean(nodeExpressionSource) && item.source === nodeExpressionSource)
 		)
 		if (literalRecord) selectExpression(literalRecord)
 	} catch (error) {
@@ -197,15 +199,6 @@ async function save() {
 		testMessage.value = '请输入函数表达式。'
 		return
 	}//
-	//@ts-ignore
-	props.editor.updateShape({
-		id: props.shapeId,
-		type: currentShape.type,
-		props: {
-			...currentShape.props||{},
-			text:'{{'+(expressionName.value.trim() || name)+'}}',//
-		},
-	})
 	try {
 		compilePrintNodeExpressionSource(expression)
 	} catch (error) {
@@ -213,6 +206,18 @@ async function save() {
 		testMessage.value = getErrorMessage(error)
 		return
 	}
+	//@ts-ignore
+	props.editor.updateShape({
+		id: props.shapeId,
+		type: currentShape.type,
+		props: {
+			...currentShape.props||{},
+			expression,
+			...(isGeometryShape(currentShape)
+				? {}
+				: { text: '{{' + (expressionName.value.trim() || name) + '}}' }),
+		},
+	})
 
 	saving.value = true
 	try {
@@ -358,6 +363,14 @@ function getFirstLiteralExpressionKey(props: unknown) {
 
 function getShapeText(props: unknown) {
 	return isRecord(props) && typeof props.text === 'string' ? props.text : ''
+}
+
+function getShapeExpression(props: unknown) {
+	return isRecord(props) && typeof props.expression === 'string' ? props.expression.trim() : ''
+}
+
+function isGeometryShape(shape: { props?: unknown }) {
+	return isRecord(shape.props) && typeof shape.props.geo === 'string'
 }
 
 function getTemplateName(id: string) {

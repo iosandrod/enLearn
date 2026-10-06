@@ -1,4 +1,5 @@
 import type { TLShape } from '@tldraw/editor'
+import { geoOptions } from '../editor/shapeProps/options.ts'
 import type { PrintExpressionContext } from './types'
 
 export const PRINT_NODE_EXPRESSION_META_KEY = 'printExpression'
@@ -6,11 +7,17 @@ export const PRINT_NODE_EXPRESSION_ID_META_KEY = 'printExpressionId'
 
 type NodeExpressionFunction = (context: Readonly<PrintExpressionContext>) => unknown
 
+const VUE_GEO_SHAPES = new Set(geoOptions.map(({ value }) => value))
+
 const expressionFunctionCache = new Map<string, NodeExpressionFunction>()
 
-export function getPrintNodeExpression(shape: Pick<TLShape, 'meta'>) {
-	const source = shape.meta?.[PRINT_NODE_EXPRESSION_META_KEY]
-	return typeof source === 'string' ? source : ''
+export function getPrintNodeExpression(shape: Pick<TLShape, 'meta'> & { props?: unknown }) {
+	const metadataSource = shape.meta?.[PRINT_NODE_EXPRESSION_META_KEY]
+	if (typeof metadataSource === 'string' && metadataSource.trim()) return metadataSource
+
+	const props = shape.props as Record<string, unknown> | undefined
+	const propertySource = props?.expression
+	return typeof propertySource === 'string' ? propertySource : ''
 }
 
 export function getPrintNodeExpressionId(shape: Pick<TLShape, 'meta'>) {
@@ -84,6 +91,14 @@ export function applyPrintNodeExpressionResult(
 			nextProps[key] = value
 		}
 		return nextProps
+	}
+
+	if ('geo' in props) {
+		const geo = formatNodeExpressionValue(result)
+		if (!VUE_GEO_SHAPES.has(geo)) {
+			throw new Error(`几何节点表达式返回了无效图形“${geo}”`)
+		}
+		return { ...props, geo }
 	}
 
 	if (!('text' in props)) {

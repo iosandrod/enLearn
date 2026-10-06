@@ -13,6 +13,7 @@ import {
   getLoadedPrintExpressions,
   upsertLoadedPrintExpression,
 } from '../src/print/expressions.ts'
+import { PrintShapePreviewResolver } from '../src/print/shapePreviewStrategies.ts'
 
 const context = {
   row: {
@@ -60,6 +61,14 @@ assert.deepEqual(
 assert.deepEqual(
   applyPrintNodeExpressionResult({ text: 'old', color: 'black' }, { text: undefined, color: 'red' }),
   { text: 'old', color: 'red' },
+)
+assert.deepEqual(
+  applyPrintNodeExpressionResult({ geo: 'rectangle', w: 100 }, 'ellipse'),
+  { geo: 'ellipse', w: 100 },
+)
+assert.throws(
+  () => applyPrintNodeExpressionResult({ geo: 'rectangle' }, 'not-a-geo'),
+  /无效图形/,
 )
 assert.throws(
   () => compilePrintNodeExpressionSource('context.row.customerName'),
@@ -118,6 +127,76 @@ assert.equal(resolveTemplateString('{{value}}', context, {
 assert.equal(resolveTemplateString('{{value | fixed:2}}', context, {
   namedExpressions: [{ name: 'value', expressionSource: '(context) => context.row.amount' }],
 }), '12.35')
+
+const previewResolver = new PrintShapePreviewResolver()
+const geometryExpressionShape = {
+  id: 'shape:geometry-expression',
+  type: 'vue-box',
+  meta: { printExpression: '(context) => context.row.geo' },
+  props: { geo: 'rectangle', w: 100, h: 40 },
+}
+assert.deepEqual(
+  previewResolver.resolve(geometryExpressionShape, { ...context, row: { geo: 'star' } }),
+  {
+    id: geometryExpressionShape.id,
+    type: geometryExpressionShape.type,
+    props: { geo: 'star', w: 100, h: 40 },
+  },
+)
+const geometryPropertyExpressionShape = {
+  id: 'shape:geometry-property-expression',
+  type: 'vue-box',
+  meta: {},
+  props: {
+    geo: 'rectangle',
+    expression: `(context) => {
+      const test = context.row.test
+      return test === 1 ? 'rectangle' : 'check-box'
+    }`,
+    w: 100,
+    h: 40,
+  },
+}
+assert.deepEqual(
+  previewResolver.resolve(geometryPropertyExpressionShape, { ...context, row: { test: 2 } }),
+  {
+    id: geometryPropertyExpressionShape.id,
+    type: geometryPropertyExpressionShape.type,
+    props: { ...geometryPropertyExpressionShape.props, geo: 'check-box' },
+  },
+)
+const geometryTemplateShape = {
+  id: 'shape:geometry-template',
+  type: 'vue-box',
+  meta: {},
+  props: { geo: 'rectangle', text: '{{shapeGeo}}', w: 100, h: 40 },
+}
+assert.deepEqual(
+  previewResolver.resolve(geometryTemplateShape, context, createPrintExpressionConfig([
+    { name: 'shapeGeo', expressionSource: '() => "diamond"' },
+  ])),
+  {
+    id: geometryTemplateShape.id,
+    type: geometryTemplateShape.type,
+    props: { geo: 'diamond', w: 100, h: 40 },
+  },
+)
+const geometryGeoTemplateShape = {
+  id: 'shape:geometry-geo-template',
+  type: 'vue-box',
+  meta: {},
+  props: { geo: '{{shapeGeo}}', w: 100, h: 40 },
+}
+assert.deepEqual(
+  previewResolver.resolve(geometryGeoTemplateShape, context, createPrintExpressionConfig([
+    { name: 'shapeGeo', expressionSource: '() => "ellipse"' },
+  ])),
+  {
+    id: geometryGeoTemplateShape.id,
+    type: geometryGeoTemplateShape.type,
+    props: { geo: 'ellipse', w: 100, h: 40 },
+  },
+)
 assert.equal(resolveTemplateString('{{summary}}', {
   ...context, data: [{ amount: 2 }, { amount: 4 }], dataSource: { type: 'inline', rows: [] },
 }, {
@@ -273,7 +352,7 @@ assert.doesNotMatch(topMenuSource, /getLoadedPrintExpressions/)
 assert.match(expressionRegistrySource, /resource: 'print_expressions'/)
 assert.match(expressionRegistrySource, /expressionSource/)
 assert.match(expressionRegistrySource, /code: readString\(row\.code\)/)
-assert.doesNotMatch(shapePreviewSource, /getPrintNodeExpression|evaluatePrintNodeExpression/)
+assert.match(shapePreviewSource, /getPrintNodeExpression|evaluatePrintNodeExpression/)
 assert.match(dialogSource, /expression-dialog__library/)
 assert.match(dialogSource, /<vxe-modal/)
 assert.match(dialogSource, /class-name="expression-editor-modal"/)

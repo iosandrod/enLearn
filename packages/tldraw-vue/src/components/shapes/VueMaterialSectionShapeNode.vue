@@ -105,11 +105,11 @@ const canResizeBottom = computed(() => {
 
 let resizeState:
 	| {
-			current: VueMaterialSectionShape
-			next: VueMaterialSectionShape
-			originClientY: number
-			pointerId: number
-	  }
+		current: VueMaterialSectionShape
+		next: VueMaterialSectionShape
+		originClientY: number
+		pointerId: number
+	}
 	| null = null
 let columnResizeState: {
 	index: number
@@ -592,43 +592,37 @@ function createPreviewHeaderRows(
 		return result
 	})
 }
-
+const isContainerList = computed(() => {//
+	let mProps:any=materialShape.value//
+	let _list = Boolean(mProps.props.containerList)
+	return _list//
+})
 </script>
 
 <template>
-	<div
-		class="vue-material-section-shape"
-		:class="[
-			`vue-material-section-shape--${shape.props.zone}`,
-			{ 'is-selected': selected, 'is-table-body': isTableBody, 'is-zero-height': shape.props.h <= 0 },
-		]"
-		:data-shape-id="shape.id"
-		:style="{
-			width: `${shape.props.w}px`,
-			height: `${shape.props.h}px`,
-			transform: pageTransform,
-			opacity: shape.opacity,
-			'--inverse-zoom': String(1 / zoom),
-		}"
-	>
+	<div class="vue-material-section-shape" :class="[
+		`vue-material-section-shape--${shape.props.zone}`,
+		{ 'is-selected': selected, 'is-table-body': isTableBody, 'is-zero-height': shape.props.h <= 0 },
+	]" :data-shape-id="shape.id" :style="{
+		width: `${shape.props.w}px`,
+		height: `${shape.props.h}px`,
+		transform: pageTransform,
+		opacity: shape.opacity,
+		'--inverse-zoom': String(1 / zoom),
+	}">
+
 		<template v-if="isTableBody">
-			<div
-				class="vue-material-table-columns"
-				:style="{
+			<template v-if="isContainerList">
+
+			</template>
+			<template v-else>
+				<div class="vue-material-table-columns" :style="{
 					height: `${previewHeaderHeight}px`,
-				}"
-			>
-				<div
-					v-for="(row, rowIndex) in previewHeaderRows"
-					:key="`header-row-${rowIndex}`"
-					class="vue-material-table-header-row"
-					:style="{ flex: `0 0 ${previewHeaderRowHeight}px`, height: `${previewHeaderRowHeight}px` }"
-				>
-					<div
-						v-for="cell in row"
-						:key="cell.key"
-						class="vue-material-table-header-cell"
-						:class="{
+				}">
+					<div v-for="(row, rowIndex) in previewHeaderRows" :key="`header-row-${rowIndex}`"
+						class="vue-material-table-header-row"
+						:style="{ flex: `0 0 ${previewHeaderRowHeight}px`, height: `${previewHeaderRowHeight}px` }">
+						<div v-for="cell in row" :key="cell.key" class="vue-material-table-header-cell" :class="{
 							'has-column-resize': cell.resizeIndex !== undefined,
 							'is-header-continuation': cell.continuation,
 							'is-header-rowspan': cell.spansRows,
@@ -636,69 +630,42 @@ function createPreviewHeaderRows(
 							'is-column-dragging': cell.field === draggingColumnField,
 							'is-drop-before': cell.field === dropTargetField && dropPosition === 'before',
 							'is-drop-after': cell.field === dropTargetField && dropPosition === 'after',
-						}"
-						:data-material-column-field="cell.field || undefined"
-						:data-material-shape-id="cell.field ? materialShape?.id : undefined"
-						:style="{ flex: `0 0 ${cell.width}px`, height: `${cell.height}px` }"
-					>
-						<div
-							v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'left'"
-							class="vue-material-table-column-resize"
-							@pointerdown="onColumnResizePointerDown($event, cell.resizeIndex)"
-						/>
-						<span
-							@pointerdown="selectMaterialColumn($event, cell.field)"
-							@click="selectMaterialColumn($event, cell.field)"
-						>{{ cell.title }}</span>
-						<button
-							v-if="cell.field"
-							type="button"
-							class="vue-material-table-column-drag"
-							:aria-label="`拖动${cell.title || cell.field}列排序`"
-							:title="`拖动${cell.title || cell.field}列排序`"
-							@pointerdown="onColumnDragPointerDown($event, cell.field)"
-						>
-							<i class="ri-drag-move-2-line" aria-hidden="true" />
-						</button>
-						<div
-							v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'right'"
-							class="vue-material-table-column-resize is-right"
-							@pointerdown="onColumnResizePointerDown($event, cell.resizeIndex)"
-						/>
+						}" :data-material-column-field="cell.field || undefined"
+							:data-material-shape-id="cell.field ? materialShape?.id : undefined"
+							:style="{ flex: `0 0 ${cell.width}px`, height: `${cell.height}px` }">
+							<div v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'left'"
+								class="vue-material-table-column-resize"
+								@pointerdown="onColumnResizePointerDown($event, cell.resizeIndex)" />
+							<span @pointerdown="selectMaterialColumn($event, cell.field)"
+								@click="selectMaterialColumn($event, cell.field)">{{ cell.title }}</span>
+							<button v-if="cell.field" type="button" class="vue-material-table-column-drag"
+								:aria-label="`拖动${cell.title || cell.field}列排序`"
+								:title="`拖动${cell.title || cell.field}列排序`"
+								@pointerdown="onColumnDragPointerDown($event, cell.field)">
+								<i class="ri-drag-move-2-line" aria-hidden="true" />
+							</button>
+							<div v-if="cell.resizeIndex !== undefined && cell.resizeSide === 'right'"
+								class="vue-material-table-column-resize is-right"
+								@pointerdown="onColumnResizePointerDown($event, cell.resizeIndex)" />
+						</div>
 					</div>
 				</div>
-			</div>
-			<div
-				v-if="visiblePreviewRows.length"
-				class="vue-material-table-rows"
-			>
-				<div
-					v-for="(row, rowIndex) in visiblePreviewRows"
-					:key="String(row._rowId ?? rowIndex)"
-					class="vue-material-table-row"
-					:style="{ minHeight: `${previewBodyRowHeight}px` }"
-				>
-					<div
-						v-for="column in previewLeafLayouts"
-						:key="column.field"
-						:style="{ width: `${column.width}px`, flex: `0 0 ${column.width}px` }"
-					>
-						{{ formatPreviewValue(row, column.field) }}
+				<div v-if="visiblePreviewRows.length" class="vue-material-table-rows">
+					<div v-for="(row, rowIndex) in visiblePreviewRows" :key="String(row._rowId ?? rowIndex)"
+						class="vue-material-table-row" :style="{ minHeight: `${previewBodyRowHeight}px` }">
+						<div v-for="column in previewLeafLayouts" :key="column.field"
+							:style="{ width: `${column.width}px`, flex: `0 0 ${column.width}px` }">
+							{{ formatPreviewValue(row, column.field) }}
+						</div>
 					</div>
 				</div>
-			</div>
-			<div v-else class="vue-material-table-fill">
-				<span>{{ hasConfiguredDataSource ? '暂无明细数据' : '未设置数据源' }}</span>
-			</div>
+				<div v-else class="vue-material-table-fill">
+					<span>{{ hasConfiguredDataSource ? '暂无明细数据' : '未设置数据源' }}</span>
+				</div>
+			</template>
 		</template>
 		<div v-else class="vue-material-section-label">{{ shape.props.label }}</div>
-		<button
-			v-if="canResizeBottom"
-			type="button"
-			class="vue-material-section-resize-handle"
-			aria-label="Resize section height"
-			title="Resize section height"
-			@pointerdown="onResizePointerDown"
-		/>
+		<button v-if="canResizeBottom" type="button" class="vue-material-section-resize-handle"
+			aria-label="Resize section height" title="Resize section height" @pointerdown="onResizePointerDown" />
 	</div>
 </template>

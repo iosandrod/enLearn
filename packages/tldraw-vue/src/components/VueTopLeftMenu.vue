@@ -436,7 +436,9 @@ function createPrintJobConfig(expression?: PrintExpressionConfig): PrintJobConfi
 			pxPerMm: printPage.pxPerMm,
 			materialGrids,
 		},
-		data: materialGrids ? [PRINT_SAMPLE_ROWS[0]] : PRINT_SAMPLE_ROWS,
+		data: materialGrids
+			? [PRINT_SAMPLE_ROWS[0] ?? {}]
+			: (PRINT_SAMPLE_ROWS.length ? PRINT_SAMPLE_ROWS : [{}]),
 		dataSource: editorPrintDataSource.value,
 		expression,
 		page: {

@@ -206,10 +206,9 @@ const designerPlugins: VueEditorPlugin[] = [
       {
         id: 'print.preview',
         label: '服务端打印预览',
-        run: ({ editor, getWorkspaceTemplateConfig }) => runServerPreview(
-          editor,
-          getWorkspaceTemplateConfig() ?? {}
-        )
+        run: ({ editor, getWorkspaceTemplateConfig }) => hasLocalNodeExpressions(editor)
+          ? false
+          : runServerPreview(editor, getWorkspaceTemplateConfig() ?? {})
       },
       {
         id: 'print.print',
@@ -222,6 +221,27 @@ const designerPlugins: VueEditorPlugin[] = [
     ]
   })
 ];
+
+function hasLocalNodeExpressions(editor: Editor) {
+  const shapeReader = editor as Editor & {
+    getShape: (shapeId: string) => { props?: unknown; meta?: unknown } | undefined;
+  };
+  for (const page of editor.getPages()) {
+    for (const shapeId of editor.getPageShapeIds(page.id)) {
+      const shape = shapeReader.getShape(shapeId);
+      if (!shape) continue;
+      const props = (shape.props ?? {}) as Record<string, unknown>;
+      const metadata = (shape.meta ?? {}) as Record<string, unknown>;
+      if (typeof props.expression === 'string' && props.expression.trim()) return true;
+      if (typeof metadata.printExpression === 'string' && metadata.printExpression.trim()) return true;
+      // Older geometry nodes reference a named expression through their text prop.
+      if (typeof props.geo === 'string' && typeof props.text === 'string' && /{{\s*[^{}]+\s*}}/.test(props.text)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 const selectedTemplate = computed(
   () => templates.value.find((template) => template.id === selectedTemplateId.value) ?? null

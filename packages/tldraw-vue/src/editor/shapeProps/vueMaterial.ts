@@ -7,6 +7,7 @@ export type VueMaterialProps = BaseProps & {
 	headerRowHeight?: number
 	bodyRowHeight?: number
 	footerRowHeight?: number
+	containerList?: boolean
 }
 export const vueMaterialPropertyRegistry = extendShapeProperties(baseProps, {
 	name: T.string,
@@ -15,4 +16,5 @@ export const vueMaterialPropertyRegistry = extendShapeProperties(baseProps, {
 	headerRowHeight: T.number.optional(),
 	footerRowHeight: T.number.optional(),//
 	showFooterAmount: T.boolean.optional(),//
+	containerList: T.boolean.optional(),//
 })//
