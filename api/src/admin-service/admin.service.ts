@@ -436,7 +436,6 @@ export class AdminService extends BaseService {
     if (this.isNavigationCompatibilityRequest(postData)) {
       return this.listNavigationRoutes(context);
     }
-
     return super.listItems(postData, context);
   }
 

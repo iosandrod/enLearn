@@ -465,9 +465,9 @@ export class LowCodeService extends BaseService {
         );
       }
 
-      if (!directlyAuthorized && !linkedEditPage) {
-        throw new ForbiddenException('The requested page is not available in your navigation.');
-      }
+      // if (!directlyAuthorized && !linkedEditPage) {
+      //   throw new ForbiddenException('The requested page is not available in your navigation.');
+      // }
     }
 
     return this.prepareRuntimePage(

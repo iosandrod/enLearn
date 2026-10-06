@@ -29,6 +29,7 @@ export interface VueTableColumn {
 	field: string
 	title: string
 	width: number
+	widthMode?: 'auto' | 'fixed'
 }
 
 export type VueTableRow = Record<string, string>
@@ -62,6 +63,14 @@ export class VueTableShapeUtil extends BaseBoxShapeUtil<VueTableShape> {
 
 	override component() {
 		return null
+	}
+
+	override canReceiveNewChildrenOfType(_shape: VueTableShape, _type: TLShape['type']) {
+		return true
+	}
+
+	override canRemoveChildrenOfType(_shape: VueTableShape, _type: TLShape['type']) {
+		return false
 	}
 
 	override toSvg(shape: VueTableShape) {
@@ -127,29 +136,13 @@ export function createDefaultVueTableColumns(): VueTableColumn[] {
 }
 
 export function createDefaultVueTableRows(): VueTableRow[] {
-	return vueTableDefaultRows.map(([item, status, date, amount], index) =>
-		createTableRow(index + 1, item, status, date, amount),
-	)
+	return vueTableDefaultRows.map((_, index) => ({
+		[VUE_TABLE_ROW_ID_FIELD]: `row-${index + 1}`,
+	}))
 }
 
 export function isVueTableShape(shape: TLShape | undefined): shape is VueTableShape {
 	return shape?.type === 'vue-table'
-}
-
-function createTableRow(
-	index: number,
-	item: string,
-	status: string,
-	date: string,
-	amount: string
-): VueTableRow {
-	return {
-		[VUE_TABLE_ROW_ID_FIELD]: `row-${index}`,
-		item,
-		status,
-		date,
-		amount,
-	}
 }
 
 function approximatelyEqual(a: number, b: number) {

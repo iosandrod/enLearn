@@ -1,5 +1,4 @@
 export const VUE_TABLE_MIN_ROW_HEIGHT = 22
-export const VUE_TABLE_MAX_ROW_HEIGHT = 72
 export const VUE_TABLE_ROW_ID_FIELD = '_rowId'
 
 export type VueTableRowHeightMap = Record<string, number>
@@ -17,7 +16,10 @@ export function getVueTableRowId(row: Record<string, string>, index: number) {
 }
 
 export function clampVueTableRowHeight(height: number) {
-	return Math.min(VUE_TABLE_MAX_ROW_HEIGHT, Math.max(VUE_TABLE_MIN_ROW_HEIGHT, height))
+	return Math.max(
+		VUE_TABLE_MIN_ROW_HEIGHT,
+		Number.isFinite(height) ? height : VUE_TABLE_MIN_ROW_HEIGHT,
+	)
 }
 
 export function getVueTableRowHeight(
@@ -53,11 +55,33 @@ export function normalizeVueTableRowHeights(
 export function getVueTableRowLayouts(
 	rows: Array<Record<string, string>>,
 	defaultHeight: number,
-	rowHeights?: VueTableRowHeightMap
+	rowHeights?: VueTableRowHeightMap,
+	availableHeight = Number.POSITIVE_INFINITY
 ) {
+	const heights = rows.map((row, index) => getVueTableRowHeight(row, index, defaultHeight, rowHeights))
+	const total = heights.reduce((sum, height) => sum + height, 0)
+	if (Number.isFinite(availableHeight) && total < availableHeight) {
+		const autoIndexes = rows.map((row, index) => {
+			const rowId = getVueTableRowId(row, index)
+			// A row-height entry is created by manual resize. Keep it fixed even
+			// when the user resized it back to the default or minimum height.
+			return rowHeights && Object.prototype.hasOwnProperty.call(rowHeights, rowId)
+				? -1 : index
+		}).filter(index => index >= 0)
+		const autoTotal = autoIndexes.reduce((sum, index) => sum + heights[index], 0)
+		const extra = availableHeight - total
+		let allocated = 0
+		autoIndexes.forEach((index, position) => {
+			const addition = position === autoIndexes.length - 1
+				? extra - allocated
+				: extra * (heights[index] / Math.max(1, autoTotal))
+			heights[index] += addition
+			allocated += addition
+		})
+	}
 	let y = 0
 	return rows.map((row, index): VueTableRowLayout => {
-		const height = getVueTableRowHeight(row, index, defaultHeight, rowHeights)
+		const height = heights[index]
 		const layout = {
 			index,
 			rowId: getVueTableRowId(row, index),

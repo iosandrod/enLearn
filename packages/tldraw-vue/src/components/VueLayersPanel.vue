@@ -8,6 +8,7 @@ import {
 } from '@tldraw/editor'
 import { computed, ref } from 'vue'
 import { useEditorValue } from '@/vue/useEditorValue'
+import { isVueTableCellShape, isVueTableFrameChild } from '@/editor/extensions/table/tableCell'
 
 const props = defineProps<{
 	editor: Editor
@@ -118,7 +119,8 @@ function createLayerTree(editor: Editor, parentId: TLParentId): LayerTreeNode[] 
 			name: getLayerName(shape),
 			icon: TYPE_ICONS[shape.type] ?? '◆',
 			isLocked: shape.isLocked,
-			canDrag: !shape.isLocked && shape.type !== 'vue-material-section',
+			canDrag: !shape.isLocked && shape.type !== 'vue-material-section' &&
+				!isVueTableCellShape(shape) && !isVueTableFrameChild(editor, shape),
 			canContainChildren: shape.type === 'vue-frame' || shape.type === 'group',
 			children: createLayerTree(editor, shape.id),
 		}))
@@ -254,7 +256,8 @@ function canDrop(sourceId: TLShapeId, targetId: TLShapeId, position: LayerDropPo
 	if (sourceId === targetId) return false
 	const source = props.editor.getShape(sourceId)
 	const target = props.editor.getShape(targetId)
-	if (!source || !target || source.isLocked || source.type === 'vue-material-section') return false
+	if (!source || !target || source.isLocked || source.type === 'vue-material-section' ||
+		isVueTableCellShape(source) || isVueTableFrameChild(props.editor, source)) return false
 	if (props.editor.getShapeAndDescendantIds([sourceId]).has(targetId)) return false
 
 	if (position === 'inside') {

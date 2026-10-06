@@ -18,6 +18,7 @@ import {
 } from '@tldraw/editor'
 import { resolveGuideSnap, snapResizeToGuides } from './guides'
 import { IdleState, VueInteractionState, type ResizeHandle, type VueEditorContext } from './types'
+import { isVueTableCellShape } from '../extensions/table/tableCell'
 
 const RESIZE_CURSORS: Record<ResizeHandle, TLCursorType> = {
 	top_left: 'nwse-resize',
@@ -55,6 +56,7 @@ export function getResizingSnapshot(
 	originPagePoint: VecLike
 ): ResizingSnapshot | null {
 	const selectedShapeIds = editor.getSelectedShapeIds()
+	if (editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return null
 	const selectionRotation = editor.getSelectionRotation()
 	const selectionBounds = editor.getSelectionRotatedPageBounds()
 	const initialSelectionPageBounds = editor.getSelectionPageBounds()

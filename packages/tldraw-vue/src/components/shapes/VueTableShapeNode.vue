@@ -7,6 +7,19 @@ import {
 	type VueTableShape,
 } from '@/editor/extensions/table/vueTableShape'
 import { getVueTableRowId, getVueTableRowLayouts } from '@/editor/extensions/table/tableRowHeight'
+import {
+	getVueTableColumnContentWidth,
+	getVueTableColumnWidths,
+} from '@/editor/extensions/table/tableSizing'
+import {
+	getVueTableCellInfo,
+	getVueTableCellMeta,
+	getVueTableCellShapePartial,
+	getVueTableCellAtPoint,
+	VUE_TABLE_TOOLBAR_DRAG_EVENT,
+	type VueTableToolbarDragDetail,
+} from '@/editor/extensions/table/tableCell'
+import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
 import {
 	expandSelectionToTableMerges,
@@ -22,6 +35,7 @@ import { getZoomAdjustedResizeValue } from './tableResize'
 
 const props = defineProps<VueShapeNodeProps<VueTableShape>>()
 const tableRoot = ref<HTMLElement | null>(null)
+const toolbarDropPreview = ref<ReturnType<typeof getVueTableCellAtPoint>>(null)
 const selectionStart = ref<{ row: number; col: number } | null>(null)
 const selectionEnd = ref<{ row: number; col: number } | null>(null)
 const contextMenu = ref<{ x: number; y: number } | null>(null)
@@ -36,19 +50,22 @@ interface TableCellView {
 	col: number
 	rowspan: number
 	colspan: number
-	value: string
 }
 
 const tableRows = computed(() => props.shape.props.rows.map((row, index) => normalizeTableRow(row, index)))
+const tableCellShapes = useEditorValue(`table cell shapes:${props.shape.id}`, () =>
+	props.editor.getSortedChildIdsForParent(props.shape.id)
+		.map(id => props.editor.getShape(id))
+		.filter((shape): shape is NonNullable<typeof shape> => Boolean(shape && getVueTableCellInfo(shape)))
+)
 const rowHeight = computed(() => props.shape.props.rowHeight)
-const tableWidth = computed(() => props.shape.props.columns.reduce(
-	(total, column) => total + column.width,
-	0
-))
+const tableColumnWidths = computed(() => getVueTableColumnWidths(props.shape.props.columns, props.shape.props.w))
+const tableWidth = computed(() => tableColumnWidths.value.reduce((total, width) => total + width, 0))
 const tableRowLayouts = computed(() => getVueTableRowLayouts(
 	props.shape.props.rows,
 	rowHeight.value,
-	props.shape.props.rowHeights
+	props.shape.props.rowHeights,
+	props.shape.props.h
 ))
 const tableMerges = computed(() => normalizeTableMergeCells(
 	props.shape.props.mergeCells,
@@ -74,7 +91,6 @@ const tableCells = computed(() => tableRows.value.map((row, rowIndex) => {
 			col: colIndex,
 			rowspan: merge?.rowspan ?? 1,
 			colspan: merge?.colspan ?? 1,
-			value: row[column.field] ?? '',
 		})
 	})
 	return cells
@@ -82,10 +98,10 @@ const tableCells = computed(() => tableRows.value.map((row, rowIndex) => {
 const selectionStyle = computed(() => {
 	const selection = activeSelection.value
 	if (!selection) return undefined
-	const left = props.shape.props.columns.slice(0, selection.colStart)
-		.reduce((sum, column) => sum + column.width, 0)
-	const width = props.shape.props.columns.slice(selection.colStart, selection.colEnd + 1)
-		.reduce((sum, column) => sum + column.width, 0)
+	const left = tableColumnWidths.value.slice(0, selection.colStart)
+		.reduce((sum, width) => sum + width, 0)
+	const width = tableColumnWidths.value.slice(selection.colStart, selection.colEnd + 1)
+		.reduce((sum, width) => sum + width, 0)
 	const top = tableRowLayouts.value[selection.rowStart]?.y ?? 0
 	const bottom = tableRowLayouts.value[selection.rowEnd]?.bottom ?? top
 	return { left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${bottom - top}px` }
@@ -93,7 +109,7 @@ const selectionStyle = computed(() => {
 const columnResizeHandles = computed(() => {
 	let position = 0
 	return props.shape.props.columns.map((column, index) => {
-		position += column.width
+		position += tableColumnWidths.value[index] ?? column.width
 		return { index, position }
 	}).filter(handle => handle.position > 0 && handle.position <= props.shape.props.w)
 })
@@ -113,6 +129,86 @@ const canMerge = computed(() => Boolean(activeSelection.value) &&
 const canSplit = computed(() => Boolean(activeSelection.value &&
 	tableMergesIntersecting(tableMerges.value, activeSelection.value).length))
 
+function syncTableCellShapes() {
+	const changes = tableCellShapes.value.map(shape => {
+		const info = getVueTableCellInfo(shape)
+		if (!info || info.tableId !== props.shape.id) return null
+		const partial = getVueTableCellShapePartial(shape, props.shape, info)
+		if (!partial) return null
+		const nextProps = partial.props as Record<string, unknown> | undefined
+		const currentProps = shape.props as Record<string, unknown>
+		const propsChanged = nextProps && Object.keys(nextProps).some(key =>
+			JSON.stringify(nextProps[key]) !== JSON.stringify(currentProps[key]),
+		)
+		if (
+			partial.x === shape.x && partial.y === shape.y && partial.rotation === shape.rotation &&
+			!propsChanged
+		) return null
+		return partial
+	}).filter((change): change is NonNullable<typeof change> => change !== null)
+	if (changes.length) props.editor.run(() => props.editor.updateShapes(changes), { history: 'ignore' })
+}
+
+function shiftTableCellShapes(axis: 'row' | 'col', start: number, delta: number) {
+	const changes = tableCellShapes.value.map(shape => {
+		const info = getVueTableCellInfo(shape)
+		if (!info || info.tableId !== props.shape.id) return null
+		const value = axis === 'row' ? info.row : info.col
+		if (value < start) return null
+		return {
+			id: shape.id,
+			type: shape.type,
+			meta: { ...(shape.meta as Record<string, unknown> | undefined), ...getVueTableCellMeta({
+				row: axis === 'row' ? value + delta : info.row,
+				col: axis === 'col' ? value + delta : info.col,
+			}) },
+		}
+	})
+		.filter((change): change is NonNullable<typeof change> => change !== null)
+	if (changes.length) props.editor.updateShapes(changes as never)
+}
+
+function removeTableCellShapes(axis: 'row' | 'col', start: number, count: number) {
+	const removedIds: string[] = []
+	const changes = tableCellShapes.value.map(shape => {
+		const info = getVueTableCellInfo(shape)
+		if (!info || info.tableId !== props.shape.id) return null
+		const value = axis === 'row' ? info.row : info.col
+		if (value >= start && value < start + count) {
+			removedIds.push(shape.id)
+			return null
+		}
+		if (value < start) return null
+		return {
+			id: shape.id,
+			type: shape.type,
+			meta: { ...(shape.meta as Record<string, unknown> | undefined), ...getVueTableCellMeta({
+				row: axis === 'row' ? value - count : info.row,
+				col: axis === 'col' ? value - count : info.col,
+			}) },
+		}
+	}).filter((change): change is NonNullable<typeof change> => change !== null)
+	props.editor.run(() => {
+		if (removedIds.length) props.editor.deleteShapes(removedIds as never)
+		if (changes.length) props.editor.updateShapes(changes as never)
+	})
+}
+
+watch(
+	[
+		() => props.shape.props.w,
+		() => props.shape.props.h,
+		() => props.shape.props.rowHeight,
+		() => props.shape.props.rows,
+		() => props.shape.props.columns,
+		() => props.shape.props.rowHeights,
+		() => props.shape.props.mergeCells,
+		tableCellShapes,
+	],
+	syncTableCellShapes,
+	{ deep: true, immediate: true },
+)
+
 watch(() => props.selected, selected => {
 	if (!selected) {
 		selectionStart.value = null
@@ -124,11 +220,13 @@ watch(() => props.selected, selected => {
 onMounted(() => {
 	document.addEventListener('pointerdown', onDocumentPointerDown, true)
 	document.addEventListener('keydown', onDocumentKeyDown, true)
+	window.addEventListener(VUE_TABLE_TOOLBAR_DRAG_EVENT, onToolbarDragPreview)
 	window.addEventListener('blur', closeContextMenu)
 })
 onBeforeUnmount(() => {
 	document.removeEventListener('pointerdown', onDocumentPointerDown, true)
 	document.removeEventListener('keydown', onDocumentKeyDown, true)
+	window.removeEventListener(VUE_TABLE_TOOLBAR_DRAG_EVENT, onToolbarDragPreview)
 	window.removeEventListener('blur', closeContextMenu)
 	activeResizeCleanup?.()
 	activeSelectionCleanup?.()
@@ -218,6 +316,14 @@ function onDocumentPointerDown(event: PointerEvent) {
 function onDocumentKeyDown(event: KeyboardEvent) {
 	if (contextMenu.value && event.key === 'Escape') { event.preventDefault(); closeContextMenu() }
 }
+function onToolbarDragPreview(event: Event) {
+	const detail = (event as CustomEvent<VueTableToolbarDragDetail>).detail
+	if (!detail || detail.phase !== 'move' || !detail.pagePoint) {
+		toolbarDropPreview.value = null
+		return
+	}
+	toolbarDropPreview.value = getVueTableCellAtPoint(props.shape, detail.pagePoint)
+}
 
 function createRow(): VueTableRow {
 	const row: VueTableRow = { [VUE_TABLE_ROW_ID_FIELD]: `row-${Date.now()}-${++rowSeed}` }
@@ -228,7 +334,13 @@ function createColumn(source?: VueTableColumn): VueTableColumn {
 	const usedFields = new Set(props.shape.props.columns.map(column => column.field))
 	let field: string
 	do { field = `area_col_${++columnSeed}` } while (usedFields.has(field))
-	return { field, title: `新增列 ${columnSeed}`, width: source?.width ?? 120 }
+	return {
+		field,
+		title: `新增列 ${columnSeed}`,
+		width: source?.width ?? 120,
+		// Newly inserted columns have not been manually resized themselves.
+		widthMode: 'auto',
+	}
 }
 
 function insertRows() {
@@ -237,7 +349,14 @@ function insertRows() {
 	const count = selectedRowCount.value
 	const rows = props.shape.props.rows.map(row => ({ ...row }))
 	rows.splice(selection.rowStart, 0, ...Array.from({ length: count }, createRow))
-	updateTableProps({ rows, mergeCells: insertTableMergeAxis(tableMerges.value, 'row', selection.rowStart, count) })
+	shiftTableCellShapes('row', selection.rowStart, count)
+	const rowHeights = getVueTableRowLayouts(rows, rowHeight.value, props.shape.props.rowHeights)
+	const contentHeight = rowHeights[rowHeights.length - 1]?.bottom ?? 0
+	updateTableProps({
+		rows,
+		h: Math.max(props.shape.props.h, contentHeight),
+		mergeCells: insertTableMergeAxis(tableMerges.value, 'row', selection.rowStart, count),
+	})
 	selectionStart.value = { row: selection.rowStart, col: selection.colStart }
 	selectionEnd.value = { row: selection.rowStart + count - 1, col: selection.colEnd }
 	closeContextMenu()
@@ -255,7 +374,14 @@ function insertColumns() {
 		inserted.forEach(column => { next[column.field] = '' })
 		return next
 	})
-	updateTableProps({ columns, rows, mergeCells: insertTableMergeAxis(tableMerges.value, 'col', selection.colStart, count) })
+	shiftTableCellShapes('col', selection.colStart, count)
+	const contentWidth = getVueTableColumnContentWidth(columns)
+	updateTableProps({
+		columns,
+		rows,
+		w: Math.max(props.shape.props.w, contentWidth),
+		mergeCells: insertTableMergeAxis(tableMerges.value, 'col', selection.colStart, count),
+	})
 	selectionStart.value = { row: selection.rowStart, col: selection.colStart }
 	selectionEnd.value = { row: selection.rowEnd, col: selection.colStart + count - 1 }
 	closeContextMenu()
@@ -269,6 +395,7 @@ function removeRows() {
 	const rows = props.shape.props.rows.filter((_, index) => index < selection.rowStart || index > selection.rowEnd)
 		.map(row => ({ ...row }))
 	const rowHeights = Object.fromEntries(Object.entries(props.shape.props.rowHeights ?? {}).filter(([id]) => !removedIds.has(id)))
+	removeTableCellShapes('row', selection.rowStart, count)
 	updateTableProps({ rows, rowHeights, mergeCells: removeTableMergeAxis(tableMerges.value, 'row', selection.rowStart, count) })
 	const nextRow = Math.min(selection.rowStart, rows.length - 1)
 	selectionStart.value = { row: nextRow, col: selection.colStart }
@@ -283,6 +410,7 @@ function removeColumns() {
 	const columns = props.shape.props.columns.filter((_, index) => index < selection.colStart || index > selection.colEnd)
 		.map(column => ({ ...column }))
 	const rows = props.shape.props.rows.map(row => Object.fromEntries(Object.entries(row).filter(([field]) => !removedFields.has(field))))
+	removeTableCellShapes('col', selection.colStart, count)
 	updateTableProps({ columns, rows, mergeCells: removeTableMergeAxis(tableMerges.value, 'col', selection.colStart, count) })
 	const nextCol = Math.min(selection.colStart, columns.length - 1)
 	selectionStart.value = { row: selection.rowStart, col: nextCol }
@@ -356,10 +484,17 @@ function onKeyDown(event: KeyboardEvent) {
 
 function startColumnResize(event: PointerEvent, handle: { index: number; position: number }) {
 	const column = props.shape.props.columns[handle.index]
-	if (column) startTableResize(event, 'column', handle.index, handle.position, column.width, 24)
+	if (column) startTableResize(
+		event,
+		'column',
+		handle.index,
+		handle.position,
+		tableColumnWidths.value[handle.index] ?? column.width,
+		24,
+	)
 }
 function startRowResize(event: PointerEvent, handle: { index: number; position: number; value: number }) {
-	startTableResize(event, 'row', handle.index, handle.position, handle.value, 22, 72)
+	startTableResize(event, 'row', handle.index, handle.position, handle.value, 22)
 }
 function startTableResize(
 	event: PointerEvent, axis: 'column' | 'row', index: number, startPosition: number,
@@ -408,13 +543,21 @@ function commitTableResize(axis: 'column' | 'row', index: number, value: number)
 	if (axis === 'column') {
 		const columns = props.shape.props.columns.map(column => ({ ...column }))
 		const column = columns[index]
-		if (!column || column.width === value) return
-		column.width = value; updateTableProps({ columns }); return
+		if (!column) return
+		if (column.width === value && column.widthMode === 'fixed') return
+		column.width = value
+		// Any completed resize is explicit, including resizing back to the
+		// minimum/default width, so this column must not absorb free space.
+		column.widthMode = 'fixed'
+		updateTableProps({ columns }); return
 	}
 	const row = props.shape.props.rows[index]
 	const layout = tableRowLayouts.value[index]
-	if (!row || !layout || layout.height === value) return
-	updateTableProps({ rowHeights: { ...(props.shape.props.rowHeights ?? {}), [getVueTableRowId(row, index)]: value } })
+	if (!row || !layout) return
+	const rowId = getVueTableRowId(row, index)
+	const rowHeights = props.shape.props.rowHeights ?? {}
+	if (rowHeights[rowId] === value) return
+	updateTableProps({ rowHeights: { ...rowHeights, [rowId]: value } })
 }
 function focusShape(event: Event) {
 	const root = event.currentTarget instanceof HTMLElement
@@ -451,7 +594,7 @@ function stopWhenSelected(event: Event) { if (props.selected) event.stopPropagat
 		<div ref="tableRoot" class="vue-table-shape__viewport">
 			<table class="vue-table-shape__table" :style="{ width: `${tableWidth}px` }">
 				<colgroup>
-					<col v-for="column in shape.props.columns" :key="column.field" :style="{ width: `${column.width}px` }" />
+					<col v-for="(column, columnIndex) in shape.props.columns" :key="column.field" :style="{ width: `${tableColumnWidths[columnIndex]}px` }" />
 				</colgroup>
 				<tbody>
 					<tr v-for="(cells, rowIndex) in tableCells" :key="tableRows[rowIndex]?.[VUE_TABLE_ROW_ID_FIELD] || rowIndex"
@@ -460,12 +603,14 @@ function stopWhenSelected(event: Event) { if (props.selected) event.stopPropagat
 							:data-row="cell.row" :data-col="cell.col" data-table-cell="true"
 							:rowspan="cell.rowspan" :colspan="cell.colspan"
 							@pointerdown="startCellSelection($event, cell.row, cell.col)"
-							@contextmenu="openContextMenu($event, cell.row, cell.col)">
-							<span>{{ cell.value }}</span>
-						</td>
+							@contextmenu="openContextMenu($event, cell.row, cell.col)" />
 					</tr>
 				</tbody>
 			</table>
+			<div v-if="toolbarDropPreview" class="vue-table-shape__drop-preview" :style="{
+				left: `${toolbarDropPreview.x}px`, top: `${toolbarDropPreview.y}px`,
+				width: `${toolbarDropPreview.w}px`, height: `${toolbarDropPreview.h}px`,
+			}" aria-hidden="true" />
 			<div v-if="selected && selectionStyle" class="vue-table-shape__selection" :style="selectionStyle" />
 		</div>
 		<div v-if="selected" class="vue-table-shape__resize-layer">

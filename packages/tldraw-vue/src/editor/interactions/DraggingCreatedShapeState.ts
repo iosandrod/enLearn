@@ -16,7 +16,7 @@ export class DraggingCreatedShapeState extends VueInteractionState {
 		context: VueEditorContext,
 		private readonly info: {
 			creatingMarkId: string
-			onComplete?(): void
+			onComplete?(event: PointerEvent): void
 			originPagePoint: Vec
 			pointerId: number
 			reparentOnComplete?: boolean
@@ -132,6 +132,6 @@ export class DraggingCreatedShapeState extends VueInteractionState {
 		}
 
 		this.transitionTo(new IdleState(this.context))
-		this.info.onComplete?.()
+		this.info.onComplete?.(event)
 	}
 }

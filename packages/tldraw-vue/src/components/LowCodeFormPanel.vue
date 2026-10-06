@@ -56,6 +56,7 @@ import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
 import type { PrintDataSourceConfig } from '@/print/types'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
+import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
 
 type ShapeFormModel = Record<string, unknown>
 
@@ -959,7 +960,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	]),
 	'vue-table': createPropsDescriptor('vue-table', '表格节点', [
 		...sizeFields,
-		numberField('rowHeight', 'Row height', { min: 22, max: 72, step: 1 }),
+		numberField('rowHeight', 'Row height', { min: 22, step: 1 }),
 		...borderVisibilityFields,
 	]),
 	'vue-material': {
@@ -1707,9 +1708,10 @@ function getCommonPartial(shape: TLShape, model: ShapeFormModel): TLShapePartial
 		id: shape.id,
 		type: shape.type,
 	} as TLShapePartial
-	if ('x' in model) partial.x = toFiniteNumber(model.x, shape.x)
-	if ('y' in model) partial.y = toFiniteNumber(model.y, shape.y)
-	if ('rotation' in model) {
+	const isTableCellShape = isVueTableCellShape(shape)
+	if (!isTableCellShape && 'x' in model) partial.x = toFiniteNumber(model.x, shape.x)
+	if (!isTableCellShape && 'y' in model) partial.y = toFiniteNumber(model.y, shape.y)
+	if (!isTableCellShape && 'rotation' in model) {
 		partial.rotation = degreesToRadians(toFiniteNumber(model.rotation, radiansToDegrees(shape.rotation)))
 	}
 	if ('opacity' in model) partial.opacity = clampNumber(model.opacity, 0, 100, shape.opacity * 100) / 100
@@ -1719,6 +1721,7 @@ function getCommonPartial(shape: TLShape, model: ShapeFormModel): TLShapePartial
 
 function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 	const currentProps = getProps(shape)
+	const isTableCellShape = isVueTableCellShape(shape)
 	const nextProps: Record<string, unknown> = {}
 
 	for (const field of activeSchema.value?.fields ?? []) {
@@ -1726,12 +1729,13 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 		if (!(key in model)) continue
 		if (key in commonModelKeys || key === 'shapeTypeLabel') continue
 		if (key === 'assetId' || key === 'pointsCount' || key === 'propsJson') continue
+		if (isTableCellShape && (key === 'startX' || key === 'startY' || key === 'endX' || key === 'endY')) continue
 		if (shape.type === 'vue-box' && vueBoxPropertyRegistry.has(key)) {
 			nextProps[key] = vueBoxPropertyRegistry.normalize(key, model[key], currentProps[key])
 			continue
 		}
 
-		if (key === 'w' || key === 'h') {
+		if ((key === 'w' || key === 'h') && !isVueTableCellShape(shape)) {
 			nextProps[key] = clampNumber(model[key], 1, 4096, toFiniteNumber(currentProps[key], 1))
 			continue
 		}

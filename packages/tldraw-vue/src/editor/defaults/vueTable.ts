@@ -1,10 +1,10 @@
 export const vueTableDefaultSize = { w: 480, h: 260 } as const
 export const vueTableDefaultRowHeight = 32
 export const vueTableDefaultColumns = [
-	{ field: 'item', title: 'Item', width: 150 },
-	{ field: 'status', title: 'Status', width: 110 },
-	{ field: 'date', title: 'Date', width: 120 },
-	{ field: 'amount', title: 'Amount', width: 100 },
+	{ field: 'item', title: 'Item', width: 150, widthMode: 'auto' as const },
+	{ field: 'status', title: 'Status', width: 110, widthMode: 'auto' as const },
+	{ field: 'date', title: 'Date', width: 120, widthMode: 'auto' as const },
+	{ field: 'amount', title: 'Amount', width: 100, widthMode: 'auto' as const },
 ] as const
 export const vueTableDefaultRows = [
 	['Order 1001', 'Pending', '07-28', '128.00'],

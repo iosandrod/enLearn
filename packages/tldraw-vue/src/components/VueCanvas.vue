@@ -32,6 +32,7 @@ import {
 import type { ContextMenuActionId, ContextMenuSnapshot } from '@/editor/interactions/ContextMenuState'
 import { useEditorValue } from '@/vue/useEditorValue'
 import VueShapeWrapper from './VueShapeWrapper.vue'
+import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
 
 const props = defineProps<{
 	editor: Editor
@@ -177,6 +178,7 @@ const selectedArrowHandles = computed(() => {
 	if (selectedShapeIds.value.length !== 1) return []
 	const shape = selectedShape.value
 	if (!shape || shape.type !== 'vue-arrow') return []
+	if (isVueTableCellShape(shape)) return []
 
 	return (['start', 'end'] as const).map((terminal) => {
 		const point = getVueArrowPageTerminalPoint(shape, terminal)
@@ -232,6 +234,7 @@ const selectionResizeHandles = computed(() => {
 
 	const shape = selectedShape.value
 	if (!shape) return resizeHandles
+	if (isVueTableCellShape(shape)) return []
 	if (props.editor.getShapeUtil(shape).hideResizeHandles(shape)) return []
 	if (shape.type === ('vue-material-section' as string)) {
 		return resizeHandles.filter(({ handle }) => handle === 'top' || handle === 'bottom')

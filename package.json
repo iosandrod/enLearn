@@ -22,7 +22,7 @@
     "api:build": "pnpm --dir api build",
     "api:start": "pnpm --dir api start",
     "backend:dev": "node --experimental-websocket ./scripts/run-api-tsx.mjs watch src/standalone.ts --with-trigger-worker",
-    "backend:dev-local": "node --experimental-websocket ./scripts/run-api-tsx.mjs --env-file .env.local_supabase watch src/standalone.ts --with-trigger-worker",
+    "backend:dev-local": "node --experimental-websocket ./scripts/run-api-tsx.mjs --env-file .env.local_supabase watch --inspect=9229 src/standalone.ts",
     "backend:start": "pnpm --dir api standalone:start",
     "mobile:dev": "pnpm --dir mobile-app web:dev",
     "mobile:typecheck": "pnpm --dir mobile-app typecheck",

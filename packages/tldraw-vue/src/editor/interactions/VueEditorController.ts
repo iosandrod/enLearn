@@ -26,6 +26,16 @@ import { PanningState } from './PanningState'
 import { ResizingState } from './ResizingState'
 import { PointingShapeState } from './TranslatingState'
 import type { VueShapeCreateDefinition, VueToolbarToolDefinition } from '../vueEditorExtensions'
+import {
+	getVueTableCellAtPoint,
+	getVueTableCellFrameAncestor,
+	getVueTableCellInfo,
+	isVueTableCellFrame,
+	getVueTableCellShapePartial,
+	isVueTableCellShape,
+	VUE_TABLE_TOOLBAR_DRAG_EVENT,
+} from '../extensions/table/tableCell'
+import type { VueTableShape } from '../extensions/table/vueTableShape'
 import type { WorkspaceGuide } from './guides'
 import type { WorkspaceBoundsManager, WorkspaceViewportSize } from './WorkspaceBoundsManager'
 import {
@@ -492,18 +502,29 @@ export class VueEditorController {
 				hitShapeForPointerUp: selectionInfo.hitShapeForPointerUp,
 				originPagePoint: pagePoint,
 				pointerId: event.pointerId,
+				isLockedToTableCell: isVueTableCellShape(hitShape),
 			})
 		)
 	}
 
 	pointerMove(event: PointerEvent) {
 		if (this.maybeStartRightButtonPan(event)) return
+		if (event.pointerId === this.activeToolbarDragPointerId) {
+			window.dispatchEvent(new CustomEvent(VUE_TABLE_TOOLBAR_DRAG_EVENT, {
+				detail: { phase: 'move', pagePoint: this.getPagePoint(event) },
+			}))
+		}
 		this.state.onPointerMove(event)
 	}
 
 	pointerUp(event: PointerEvent) {
 		if (this.rightButtonPanCandidate?.pointerId === event.pointerId) {
 			this.rightButtonPanCandidate = null
+		}
+		if (event.pointerId === this.activeToolbarDragPointerId) {
+			window.dispatchEvent(new CustomEvent(VUE_TABLE_TOOLBAR_DRAG_EVENT, {
+				detail: { phase: 'move', pagePoint: this.getPagePoint(event) },
+			}))
 		}
 		this.state.onPointerUp(event)
 		if (this.rightButtonPanPointerId === event.pointerId) {
@@ -568,8 +589,11 @@ export class VueEditorController {
 				pointerId: event.pointerId,
 				reparentOnComplete: false,
 				shapeId,
-				onComplete: () => {
-					const currentShape = editor.getShape(shapeId)
+				onComplete: (dropEvent) => {
+					const currentShape = this.placeCreatedShapeInTableCell(
+						editor.getShape(shapeId),
+						this.getPagePoint(dropEvent),
+					)
 					if (!currentShape) return
 					this.setActiveTool('select')
 					editor.select(shapeId)
@@ -586,6 +610,44 @@ export class VueEditorController {
 			})
 		)
 		this.startForwardingToolbarDragEvents(event.pointerId)
+	}
+
+	private placeCreatedShapeInTableCell(shape: TLShape | undefined, dropPagePoint?: VecLike) {
+		if (!shape) return undefined
+		const editor = this.options.editor
+		const containingFrame = getVueTableCellFrameAncestor(editor, shape)
+		if (containingFrame) return shape
+		const pagePoint = dropPagePoint ?? editor.getShapePageBounds(shape)?.center
+		if (!pagePoint) return shape
+		const table = [...this.options.getCurrentPageShapes()]
+			.reverse()
+			.find((candidate): candidate is VueTableShape => {
+				if (candidate.type !== 'vue-table' || candidate.id === shape.id) return false
+				const bounds = editor.getShapePageBounds(candidate)
+				return Boolean(bounds?.containsPoint(pagePoint))
+			})
+		if (!table) return shape
+
+		const cell = getVueTableCellAtPoint(table, pagePoint)
+		if (!cell) return shape
+
+		const existingChild = editor.getSortedChildIdsForParent(table.id)
+			.map(id => editor.getShape(id))
+			.find(candidate => {
+				const info = getVueTableCellInfo(candidate)
+				return info?.row === cell.row && info.col === cell.col
+			})
+		if (existingChild && isVueTableCellFrame(existingChild) && shape.type !== 'vue-frame') {
+			if (shape.parentId !== existingChild.id) editor.reparentShapes([shape.id], existingChild.id)
+			return editor.getShape(shape.id) ?? shape
+		}
+		if (existingChild && existingChild.id !== shape.id) editor.deleteShapes([existingChild.id])
+		if (shape.parentId !== table.id) editor.reparentShapes([shape.id], table.id)
+		const current = editor.getShape(shape.id)
+		if (!current) return shape
+		const partial = getVueTableCellShapePartial(current, table, cell)
+		if (partial) editor.updateShape(partial)
+		return editor.getShape(shape.id) ?? current
 	}
 
 	toolbarDragMove(event: PointerEvent) {
@@ -627,6 +689,7 @@ export class VueEditorController {
 
 		const arrow = this.options.editor.getShape(selectedShapeIds[0])
 		if (!arrow || arrow.type !== 'vue-arrow') return
+		if (isVueTableCellShape(arrow)) return
 
 		this.capturePointer(event)
 		this.updateViewport()
@@ -659,6 +722,7 @@ export class VueEditorController {
 				hitShapeForPointerUp: selectionInfo?.hitShapeForPointerUp,
 				originPagePoint: pagePoint,
 				pointerId: event.pointerId,
+				isLockedToTableCell: isVueTableCellShape(hitShape),
 			})
 		)
 	}
@@ -1179,6 +1243,7 @@ export class VueEditorController {
 		const editor = this.options.editor
 		const selectedShapeIds = editor.getSelectedShapeIds()
 		if (!selectedShapeIds.length || editor.getIsReadonly()) return
+		if (editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return
 
 		const delta = new Vec(0, 0)
 		if (editor.inputs.keys.has('ArrowLeft')) delta.x -= 1
@@ -1206,6 +1271,7 @@ export class VueEditorController {
 	private flipSelection(operation: 'horizontal' | 'vertical') {
 		const ids = this.options.editor.getSelectedShapeIds()
 		if (!ids.length) return
+		if (this.options.editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return
 		this.options.editor.flipShapes(ids, operation)
 	}
 
@@ -1214,12 +1280,14 @@ export class VueEditorController {
 	) {
 		const ids = this.options.editor.getSelectedShapeIds()
 		if (ids.length < 2) return
+		if (this.options.editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return
 		this.options.editor.alignShapes(ids, operation)
 	}
 
 	private distributeSelection(operation: 'horizontal' | 'vertical') {
 		const ids = this.options.editor.getSelectedShapeIds()
 		if (ids.length < 3) return
+		if (this.options.editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return
 		this.options.editor.distributeShapes(ids, operation)
 	}
 
@@ -1227,6 +1295,7 @@ export class VueEditorController {
 		const editor = this.options.editor
 		const selectedShapeIds = editor.getSelectedShapeIds()
 		if (!selectedShapeIds.length || editor.getIsReadonly()) return
+		if (editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return
 
 		editor.markHistoryStoppingPoint(direction === 'clockwise' ? 'rotate-cw' : 'rotate-ccw')
 		editor.run(() => {
@@ -1250,6 +1319,7 @@ export class VueEditorController {
 		const selectedShapeIds = editor.getSelectedShapeIds()
 		const scaleOrigin = editor.getSelectionPageBounds()?.center
 		if (!selectedShapeIds.length || editor.getIsReadonly() || !scaleOrigin) return
+		if (editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return
 
 		editor.markHistoryStoppingPoint('resize shapes')
 		editor.run(() => {
@@ -1414,6 +1484,9 @@ export class VueEditorController {
 
 	private stopForwardingToolbarDragEvents() {
 		if (this.activeToolbarDragPointerId === null) return
+		window.dispatchEvent(new CustomEvent(VUE_TABLE_TOOLBAR_DRAG_EVENT, {
+			detail: { phase: 'end' },
+		}))
 		this.activeToolbarDragPointerId = null
 		window.removeEventListener('pointermove', this.onToolbarDragPointerMove, true)
 		window.removeEventListener('pointerup', this.onToolbarDragPointerUp, true)

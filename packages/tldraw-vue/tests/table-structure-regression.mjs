@@ -44,8 +44,18 @@ const componentSource = await readFile(
 	new URL('../src/components/shapes/VueTableShapeNode.vue', import.meta.url),
 	'utf8'
 )
+const controllerSource = await readFile(
+	new URL('../src/editor/interactions/VueEditorController.ts', import.meta.url),
+	'utf8'
+)
 assert.doesNotMatch(componentSource, /vxe-table|VxeTable|VxeColumn|ExtendCellArea/)
 assert.match(componentSource, /<table class="vue-table-shape__table"/)
+assert.doesNotMatch(componentSource, /cell\.value/)
+assert.match(componentSource, /getVueTableCellShapePartial/)
+assert.match(componentSource, /VUE_TABLE_TOOLBAR_DRAG_EVENT/)
+assert.match(componentSource, /vue-table-shape__drop-preview/)
+assert.match(controllerSource, /isVueTableCellFrame/)
+assert.match(controllerSource, /editor\.deleteShapes\(\[existingChild\.id\]\)/)
 for (const label of ['添加行', '添加列', '删除行', '删除列', '合并单元格', '拆分单元格']) {
 	assert.match(componentSource, new RegExp(label))
 }

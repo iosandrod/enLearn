@@ -35,6 +35,7 @@ import {
 	clampVueTableRowHeight,
 	getVueTableRowLayouts,
 } from './extensions/table/tableRowHeight'
+import { getVueTableColumnWidths } from './extensions/table/tableSizing'
 import type { VueResumeSectionShape, VueResumeShape } from './extensions/resume/vueResumeShape'
 
 const VUE_VISIBLE_BORDER_COLOR = '#111827'
@@ -416,7 +417,8 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 	const allRowLayouts = getVueTableRowLayouts(
 		shape.props.rows,
 		defaultRowHeight,
-		shape.props.rowHeights
+		shape.props.rowHeights,
+		height
 	)
 	const rowLayouts = allRowLayouts.filter(layout => layout.y < height)
 	let rowY = 0
@@ -452,37 +454,6 @@ export function createVueTableSvg(shape: VueTableShape): SvgExportNode {
 			strokeWidth: 1,
 			vectorEffect: 'non-scaling-stroke',
 		}))
-	}
-
-	for (const layout of rowLayouts) {
-		const row = shape.props.rows[layout.index]
-		for (const [columnIndex, column] of columns.entries()) {
-			const merge = findTableMerge(mergeCells, layout.index, columnIndex)
-			if (merge && (merge.row !== layout.index || merge.col !== columnIndex)) continue
-			const cellX = columnOffsets[columnIndex] ?? 0
-			const cellRight = columnOffsets[columnIndex + (merge?.colspan ?? 1)] ?? cellX
-			const cellWidth = cellRight - cellX
-			const lastRow = merge ? allRowLayouts[merge.row + merge.rowspan - 1] : layout
-			const cellBottom = lastRow?.bottom ?? layout.bottom
-			const text = fitVueTableCellText(row?.[column.field] ?? '', cellWidth, 12, 8)
-			if (text) {
-				gridChildren.push(
-					createElement(
-						'text',
-						{
-							x: cellX + 8,
-							y: layout.y + (cellBottom - layout.y) / 2,
-							fill: '#111827',
-							fontFamily: 'Inter, Arial, sans-serif',
-							fontSize: 12,
-							dominantBaseline: 'middle',
-							pointerEvents: 'none',
-						},
-						text
-					)
-				)
-			}
-		}
 	}
 
 	children.push(
@@ -947,16 +918,6 @@ function getOptionalBorderSvgProps(shape: {
 				stroke: 'none',
 				strokeWidth: 0,
 			}
-}
-
-function getVueTableColumnWidths(columns: readonly VueTableColumn[], width: number) {
-	const rawTotal = columns.reduce((total, column) => total + Math.max(24, column.width), 0)
-	if (rawTotal <= 0) return columns.map(() => width / Math.max(1, columns.length))
-
-	const widths = columns.map((column) => (Math.max(24, column.width) / rawTotal) * width)
-	const diff = width - widths.reduce((total, columnWidth) => total + columnWidth, 0)
-	if (widths.length) widths[widths.length - 1] += diff
-	return widths
 }
 
 function createVueTableGridLine(x1: number, y1: number, x2: number, y2: number) {

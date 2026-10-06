@@ -8,7 +8,8 @@ import {
   clearAllUserAuthorizationCaches,
   createSupabaseClient,
   getCurrentUser,
-  requireAdmin
+  requireAdmin,
+  updateCurrentUser
 } from '../common/utils/supabase';
 
 type PostData = Record<string, unknown>;
@@ -164,7 +165,7 @@ export class UserService extends BaseService {
     const avatarUrl =
       typeof postData.avatarUrl === 'string' ? postData.avatarUrl.trim() : '';
 
-    const { error: authError } = await client.auth.updateUser({
+    const { error: authError } = await updateCurrentUser(context, {
       data: {
         full_name: fullName,
         avatar_url: avatarUrl || undefined
@@ -187,7 +188,7 @@ export class UserService extends BaseService {
     } catch (error) {
       // Auth metadata was already updated. Restore it when the profile projection
       // fails so callers do not observe a split update across the two systems.
-      await client.auth.updateUser({
+      await updateCurrentUser(context, {
         data: {
           full_name: user.user_metadata?.full_name,
           avatar_url: user.user_metadata?.avatar_url
@@ -204,10 +205,10 @@ export class UserService extends BaseService {
   }
 
   private async updateEmail(postData: PostData, context: ServiceContext) {
-    const { client } = await getCurrentUser(context);
+    await getCurrentUser(context);
     const email = readString(postData.email, 'email');
 
-    const { error } = await client.auth.updateUser({ email });
+    const { error } = await updateCurrentUser(context, { email });
 
     if (error) {
       throw new BadRequestException(error.message);
@@ -220,14 +221,14 @@ export class UserService extends BaseService {
   }
 
   private async updateSettings(postData: PostData, context: ServiceContext) {
-    const { client } = await getCurrentUser(context);
+    await getCurrentUser(context);
     const settings = postData.settings;
 
     if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) {
       throw new BadRequestException('settings must be an object.');
     }
 
-    const { data, error } = await client.auth.updateUser({
+    const { data, error } = await updateCurrentUser(context, {
       data: {
         dashboard_settings: settings as Record<string, unknown>
       }

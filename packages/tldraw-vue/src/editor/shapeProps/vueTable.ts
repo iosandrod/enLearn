@@ -2,10 +2,10 @@ import { T } from '@tldraw/validate'
 import { baseProps, type BaseProps } from './base'
 import { extendShapeProperties } from './registry'
 
-const columnValidator = T.object({ field: T.string, title: T.string, width: T.number })
+const columnValidator = T.object({ field: T.string, title: T.string, width: T.number, widthMode: T.literalEnum('auto', 'fixed').optional() })
 const rowValidator = T.dict(T.string, T.string)
 export type VueTableProps = BaseProps & {
-	columns: Array<{ field: string; title: string; width: number }>
+	columns: Array<{ field: string; title: string; width: number; widthMode?: 'auto' | 'fixed' }>
 	rows: Array<Record<string, string>>
 	rowHeight: number
 	rowHeights?: Record<string, number>

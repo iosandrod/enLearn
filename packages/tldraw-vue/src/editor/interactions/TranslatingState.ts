@@ -18,6 +18,7 @@ import {
 } from './guides'
 import { IdleState, VueInteractionState, type VueEditorContext } from './types'
 import type { WorkspaceBoundsManager } from './WorkspaceBoundsManager'
+import { isVueTableCellShape } from '../extensions/table/tableCell'
 
 type PageBounds = NonNullable<ReturnType<Editor['getShapePageBounds']>>
 
@@ -38,6 +39,7 @@ export interface TranslatingSnapshot {
 }
 
 export function getTranslatingSnapshot(editor: Editor): TranslatingSnapshot | null {
+	if (editor.getSelectedShapes().some(shape => isVueTableCellShape(shape))) return null
 	const movingShapes: TLShape[] = []
 	const pagePoints: Vec[] = []
 
@@ -352,6 +354,7 @@ export class PointingShapeState extends VueInteractionState {
 			didSelectOnEnter?: boolean
 			hitShape?: TLShape
 			hitShapeForPointerUp?: TLShape
+			isLockedToTableCell?: boolean
 			originPagePoint: Vec
 			pointerId: number
 		}
@@ -361,6 +364,7 @@ export class PointingShapeState extends VueInteractionState {
 
 	override onPointerMove(event: PointerEvent) {
 		if (event.pointerId !== this.info.pointerId) return
+		if (this.info.isLockedToTableCell) return
 
 		const currentPagePoint = this.context.getPagePoint(event)
 		if (Vec.Dist(currentPagePoint, this.info.originPagePoint) < 1 / this.context.getCamera().z) {

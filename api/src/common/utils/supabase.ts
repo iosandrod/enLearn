@@ -309,6 +309,68 @@ function resolveSupabaseConfig() {
   };
 }
 
+type AuthUserUpdateAttributes = {
+  email?: string;
+  data?: Record<string, unknown>;
+};
+
+type AuthUserUpdateResult = {
+  data: { user: User | null };
+  error: { message: string } | null;
+};
+
+/**
+ * Update the authenticated user with the JWT from the current request.
+ *
+ * A server-side Supabase client is created with persistSession disabled, so
+ * `client.auth.updateUser()` cannot find an in-memory session even when its
+ * global Authorization header is valid. Calling the Auth endpoint directly
+ * keeps the request JWT as the source of truth and preserves email-change
+ * confirmation semantics.
+ */
+export async function updateCurrentUser(
+  context: ServiceContext,
+  attributes: AuthUserUpdateAttributes
+): Promise<AuthUserUpdateResult> {
+  const { supabaseUrl, supabaseAnonKey } = resolveSupabaseConfig();
+  const authorization = context.authorization?.trim();
+  if (!authorization) {
+    return {
+      data: { user: null },
+      error: { message: 'Authentication required.' }
+    };
+  }
+
+  const response = await supabaseFetch(`${supabaseUrl}/auth/v1/user`, {
+    method: 'PUT',
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: authorization,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(attributes)
+  });
+  const payload = await response.json().catch(() => null) as unknown;
+
+  if (!response.ok) {
+    const message = isRecord(payload)
+      ? String(
+          payload.msg ??
+            payload.message ??
+            payload.error_description ??
+            payload.error ??
+            response.statusText
+        )
+      : response.statusText;
+    return { data: { user: null }, error: { message } };
+  }
+
+  return {
+    data: { user: isRecord(payload) ? payload as unknown as User : null },
+    error: null
+  };
+}
+
 export function createSupabaseClient(
   mode: ClientMode = 'public',
   context?: ServiceContext
