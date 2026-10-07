@@ -23,6 +23,7 @@ import type {
 	VueTemplateWorkspaceConfig,
 	WorkspaceBackgroundConfig,
 } from './editor/templateStore'
+import { normalizeWorkspaceBackgroundOpacity } from './editor/templateStore'
 import {
 	createVueEditorExtensionRegistry,
 	type VueEditorExtension,
@@ -103,6 +104,7 @@ const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 	imageUrl: '',
 	imageSize: 'cover',
 	imagePosition: 'center',
+	opacity: 100,
 })
 const presentationPreviewOpen = ref(false)
 const designerTabs = [
@@ -341,6 +343,7 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 			...config.background,
 			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
+			opacity: normalizeWorkspaceBackgroundOpacity(config.background.opacity),
 		}
 	}
 	canvasRef.value?.applyWorkspaceTemplateConfig(config)
@@ -353,6 +356,7 @@ function resetWorkspaceTemplateConfig() {
 		imageUrl: '',
 		imageSize: 'cover',
 		imagePosition: 'center',
+		opacity: 100,
 	}
 	const presentation = clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG)
 
@@ -379,6 +383,7 @@ function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
 			...config.background,
 			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
+			opacity: normalizeWorkspaceBackgroundOpacity(config.background.opacity),
 		}
 	}
 	emit('workspace-config-change', {
@@ -389,8 +394,9 @@ function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
 }
 
 function updateWorkspaceBackground(background: WorkspaceBackgroundConfig) {
-	workspaceBackground.value = { ...background }
-	canvasRef.value?.applyWorkspaceTemplateConfig({ background: { ...background } })
+	const normalized = { ...background, opacity: normalizeWorkspaceBackgroundOpacity(background.opacity) }
+	workspaceBackground.value = normalized
+	canvasRef.value?.applyWorkspaceTemplateConfig({ background: normalized })
 }
 let _size: any = null
 function setDesignerMode(mode: DesignerMode) {

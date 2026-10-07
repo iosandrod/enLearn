@@ -144,6 +144,13 @@ export interface PrintPageConfig {
 	dpi?: number
 	copies?: number
 	background?: boolean
+	backgroundStyle?: {
+		color?: string
+		imageUrl?: string
+		imageSize?: 'cover' | 'contain' | 'auto'
+		imagePosition?: string
+		opacity?: number
+	}
 	marginMm?: number
 }
 
@@ -244,6 +251,11 @@ export interface PrintPageRenderResult {
 	pageNo: number
 	index: number
 	row: PrintDataRow
+	/** Optional layers used by the local preview when a remote background cannot be composited. */
+	backgroundUrl?: string
+	contentUrl?: string
+	backgroundColor?: string
+	backgroundStyle?: PrintPageConfig['backgroundStyle']
 }
 
 export interface PrintProgress {

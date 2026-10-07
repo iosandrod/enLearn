@@ -3,7 +3,7 @@ import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import { onMounted, ref, watch } from 'vue'
-import type { WorkspaceBackgroundConfig } from '@/editor/templateStore'
+import { normalizeWorkspaceBackgroundOpacity, type WorkspaceBackgroundConfig } from '@/editor/templateStore'
 
 const BACKGROUND_FORM_CODE = 'print-designer.background'
 const IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif']
@@ -24,20 +24,24 @@ watch(
 	() => props.background,
 	(background) => {
 		const fileId = getBackgroundFileId(background)
+		//
 		model.value = {
+			...background,
 			color: background.color,
 			imageUrl: fileId || background.imageUrl || '',
 			imageSize: background.imageSize,
-			imagePosition: background.imagePosition,
-		}
+			imagePosition: background.imagePosition,//
+			opacity: normalizeWorkspaceBackgroundOpacity(background.opacity),
+		}//
 		if (fileId && fileId !== hydratedFileId) {
 			hydratedFileId = fileId
 			void hydrateBackgroundImage(fileId)
 		}
 	},
-	{ immediate: true, deep: true },
+	{ immediate: true,
+		// deep: true
+	 },
 )
-
 onMounted(() => { void loadSchema() })
 
 async function loadSchema() {
@@ -68,6 +72,7 @@ function handleModelUpdate(value: Record<string, unknown>) {
 	const nextModel = { ...model.value, ...value }
 	model.value = nextModel
 	const imageSize = nextModel.imageSize
+	const opacity = normalizeWorkspaceBackgroundOpacity(nextModel.opacity, props.background.opacity ?? 100)
 	const hasImageValue = Object.prototype.hasOwnProperty.call(value, 'imageUrl')
 	const imageValue = hasImageValue ? readImageValue(nextModel.imageUrl) : null
 	const imageFileId = imageValue && isFileObjectId(imageValue) ? imageValue : undefined
@@ -88,6 +93,7 @@ function handleModelUpdate(value: Record<string, unknown>) {
 		imageUrl,
 		imageSize: imageSize === 'cover' || imageSize === 'contain' || imageSize === 'auto' ? imageSize : props.background.imageSize,
 		imagePosition: typeof nextModel.imagePosition === 'string' ? nextModel.imagePosition : props.background.imagePosition,
+		opacity,
 	})
 
 	if (imageFileId && imageFileId !== hydratedFileId) {

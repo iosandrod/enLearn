@@ -59,6 +59,13 @@ export interface WorkspaceBackgroundConfig {
 	imageUrl?: string
 	imageSize: 'cover' | 'contain' | 'auto'
 	imagePosition: string
+	opacity?: number
+}
+
+export function normalizeWorkspaceBackgroundOpacity(value: unknown, fallback = 100) {
+	const numeric = typeof value === 'number' ? value : Number(value)
+	if (!Number.isFinite(numeric)) return fallback
+	return Math.min(100, Math.max(0, numeric))
 }
 
 export type VueTemplateLoadHandler = () =>
@@ -268,7 +275,8 @@ function isBackgroundConfig(value: unknown): value is WorkspaceBackgroundConfig 
 		(value.imageFileId === undefined || typeof value.imageFileId === 'string') &&
 		(value.imageUrl === undefined || typeof value.imageUrl === 'string') &&
 		(value.imageSize === 'cover' || value.imageSize === 'contain' || value.imageSize === 'auto') &&
-		typeof value.imagePosition === 'string'
+		typeof value.imagePosition === 'string' &&
+		(value.opacity === undefined || isFiniteNumber(value.opacity))
 	)
 }
 

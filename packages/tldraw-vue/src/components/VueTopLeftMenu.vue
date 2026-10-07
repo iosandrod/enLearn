@@ -22,6 +22,7 @@ import {
 	stripVueTemplateDocumentMetadata,
 	readLocalVueTemplates,
 	writeLocalVueTemplates,
+	normalizeWorkspaceBackgroundOpacity,
 	type VueTemplateLoadHandler,
 	type VueTemplateRecord,
 	type VueTemplateDocument,
@@ -446,6 +447,7 @@ function createPrintJobConfig(expression?: PrintExpressionConfig): PrintJobConfi
 			heightMm: printPage.pageSizeMm.h,
 			copies: 1,
 			background: true,
+			backgroundStyle: printPage.background,
 		},
 		export: {
 			format: 'png',
@@ -483,6 +485,7 @@ function getCurrentPrintPageConfig() {
 				h: pageSizeMm.h * pxPerMm,
 			},
 		pxPerMm,
+		background: workspace?.background,
 	}
 }
 
@@ -864,7 +867,7 @@ onBeforeUnmount(() => {
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印预览"
 				title="打印预览"
-				:disabled="!hasShapesOnPage || printPreviewLoading"
+				:disabled="printPreviewLoading"
 				@click="previewPrint"
 			>
 				<span class="top-menu-button-icon" aria-hidden="true">&#128065;</span>
@@ -875,7 +878,7 @@ onBeforeUnmount(() => {
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印"
 				title="打印"
-				:disabled="!hasShapesOnPage || printPreviewLoading"
+				:disabled="printPreviewLoading"
 				@click="printCurrentPage"
 			>
 				<span class="top-menu-button-icon" aria-hidden="true">&#128438;</span>
@@ -1120,9 +1123,33 @@ onBeforeUnmount(() => {
 						>
 							<div
 								class="print-preview-page-frame"
-								:style="{ aspectRatio: `${Math.max(1, page.width)} / ${Math.max(1, page.height)}` }"
+								:style="{
+									aspectRatio: `${Math.max(1, page.width)} / ${Math.max(1, page.height)}`,
+									backgroundColor: page.backgroundColor || '#ffffff',
+								}"
 							>
-								<img :src="page.dataUrl" :alt="`Page ${page.pageNo}`" />
+								<template v-if="page.backgroundUrl || page.contentUrl">
+									<img
+										v-if="page.backgroundUrl"
+										class="print-preview-page-background"
+										:src="page.backgroundUrl"
+										alt=""
+										:style="{
+											objectFit: page.backgroundStyle?.imageSize === 'contain'
+												? 'contain'
+												: page.backgroundStyle?.imageSize === 'auto' ? 'none' : 'cover',
+											objectPosition: page.backgroundStyle?.imagePosition || 'center',
+											opacity: normalizeWorkspaceBackgroundOpacity(page.backgroundStyle?.opacity) / 100,
+										}"
+									/>
+									<img
+										v-if="page.contentUrl"
+										class="print-preview-page-content"
+										:src="page.contentUrl"
+										:alt="`Page ${page.pageNo}`"
+									/>
+								</template>
+								<img v-else :src="page.dataUrl" :alt="`Page ${page.pageNo}`" />
 							</div>
 							<figcaption>Page {{ page.pageNo }}</figcaption>
 						</figure>

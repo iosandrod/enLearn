@@ -141,24 +141,26 @@ export async function createSvgTemplateSnapshot(
 }
 
 async function createPageBackground(background: VueTemplateWorkspaceConfig['background']) {
-  if (!background) return { style: '', imageUrl: '', imageSize: 'cover', imagePosition: 'center' };
+  if (!background) return { style: '', imageUrl: '', imageSize: 'cover', imagePosition: 'center', opacity: 1 };
   const color = sanitizeCssValue(background.color, '#ffffff');
   const imageUrl = await resolveBackgroundImageUrl(background.imageUrl);
   const imageSize = background.imageSize === 'contain' || background.imageSize === 'auto'
     ? background.imageSize
     : 'cover';
   const position = sanitizeCssValue(background.imagePosition, 'center');
+  const opacity = normalizeBackgroundOpacity(background.opacity);
   return {
     style: `background-color:${color};background-size:${imageSize};background-position:${position};`,
     imageUrl,
     imageSize,
     imagePosition: position,
+    opacity,
   };
 }
 
 function createPrintPageMarkup(pageNo: number, background: Awaited<ReturnType<typeof createPageBackground>>, svg: string) {
   const backgroundImage = background.imageUrl
-    ? `<img class="print-page-background" src="${escapeHtmlAttribute(background.imageUrl)}" alt="" style="object-fit:${background.imageSize === 'contain' ? 'contain' : background.imageSize === 'auto' ? 'none' : 'cover'};object-position:${escapeCssValue(background.imagePosition)};" />`
+    ? `<img class="print-page-background" src="${escapeHtmlAttribute(background.imageUrl)}" alt="" style="object-fit:${background.imageSize === 'contain' ? 'contain' : background.imageSize === 'auto' ? 'none' : 'cover'};object-position:${escapeCssValue(background.imagePosition)};opacity:${background.opacity};" />`
     : '';
   const style = background.style ? ` style="${escapeHtmlAttribute(background.style)}"` : '';
   return `<section class="print-page" data-print-page="${pageNo}"${style}>${backgroundImage}${svg}</section>`;
@@ -182,6 +184,12 @@ async function resolveBackgroundImageUrl(value: unknown) {
 function sanitizeCssValue(value: unknown, fallback: string) {
   const text = typeof value === 'string' ? value.trim() : '';
   return text && !/[;{}<>"']/.test(text) ? text : fallback;
+}
+
+function normalizeBackgroundOpacity(value: unknown) {
+  const numeric = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numeric)) return 1;
+  return Math.min(100, Math.max(0, numeric)) / 100;
 }
 
 function escapeCssValue(value: string) {

@@ -24,7 +24,11 @@ import { VueAssetManager } from '@/editor/interactions/VueAssetManager'
 import { getVueArrowPageTerminalPoint } from '@/editor/interactions/vueLineGeometry'
 import { getVueArrowTargetState } from '@/editor/interactions/vueArrowTargetState'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
-import type { VueTemplateWorkspaceConfig, WorkspaceBackgroundConfig } from '@/editor/templateStore'
+import {
+	normalizeWorkspaceBackgroundOpacity,
+	type VueTemplateWorkspaceConfig,
+	type WorkspaceBackgroundConfig,
+} from '@/editor/templateStore'
 import {
 	WorkspaceBoundsManager,
 	type WorkspacePageSizeMm,
@@ -63,6 +67,7 @@ const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 	imageUrl: '',
 	imageSize: 'cover',
 	imagePosition: 'center',
+	opacity: 100,
 })
 const guides = ref<WorkspaceGuide[]>([])
 const selectedGuideId = ref<string | null>(null)
@@ -111,12 +116,12 @@ const editingShapeId = useEditorValue('editing shape id', () => props.editor.get
 
 const workspacePageStyle = computed(() => ({
 	backgroundColor: workspaceBackground.value.color,
-	backgroundImage: workspaceBackground.value.imageUrl
+	'--workspace-background-image': workspaceBackground.value.imageUrl
 		? `url(${JSON.stringify(workspaceBackground.value.imageUrl)})`
 		: 'none',
-	backgroundSize: workspaceBackground.value.imageSize,
-	backgroundPosition: workspaceBackground.value.imagePosition,
-	backgroundRepeat: 'no-repeat',
+	'--workspace-background-size': workspaceBackground.value.imageSize,
+	'--workspace-background-position': workspaceBackground.value.imagePosition,
+	'--workspace-background-opacity': String(normalizeWorkspaceBackgroundOpacity(workspaceBackground.value.opacity) / 100),
 }))
 
 const selectedSet = computed(() => new Set(selectedShapeIds.value))
@@ -705,6 +710,7 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 			...cloneJson(config.background),
 			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
+			opacity: normalizeWorkspaceBackgroundOpacity(config.background.opacity),
 		}
 		workspaceRevision.value++
 	}
