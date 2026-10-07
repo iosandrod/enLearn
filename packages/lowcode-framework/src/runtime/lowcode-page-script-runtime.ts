@@ -441,40 +441,30 @@ export class LowCodePageScriptRuntime {
         return runtime.getGridController(block.id)?.validate() ??
           Promise.reject(new Error(`表格节点 "${block.id}" 当前未挂载，无法校验。`));
       case 'material.loadData':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'loadData', payload);
       case 'material.setData':
-        return executeLowCodeMaterialRuntimeAction(
-          block.id,
-          'setData',
-          payload.value ?? payload.data,
-          payload,
-        );
       case 'material.getData':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'getData');
       case 'material.getTemplateInfo':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'getTemplateInfo');
       case 'material.validate':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'validate');
       case 'material.resetData':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'resetData');
       case 'material.save':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'save', payload);
       case 'material.autoLayout':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'autoLayout');
       case 'material.compile':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'compile');
       case 'material.enable':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'enable');
       case 'material.run':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'run');
       case 'material.refresh':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'refresh');
       case 'material.loadTemplate':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'loadTemplate', readString(payload.kind));
       case 'material.preview':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'preview');
-      case 'material.print':
-        return executeLowCodeMaterialRuntimeAction(block.id, 'print');
+      case 'material.print': {
+        const method = command.slice('material.'.length) as Parameters<typeof executeLowCodeMaterialRuntimeAction>[1];
+        const args = Array.isArray(payload.data)
+          ? payload.data
+          : Object.prototype.hasOwnProperty.call(payload, 'data')
+            ? [payload.data]
+            : Object.keys(payload).length
+              ? [payload]
+              : [];
+        return executeLowCodeMaterialRuntimeAction(block.id, method, ...args);
+      }
       case 'overlay.open': {
         if (!isOverlayBlock(block)) throw new Error(`节点 "${block.id}" 不是弹框或抽屉。`);
         const result = await openLowCodeGlobalDialog(

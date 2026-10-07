@@ -612,6 +612,21 @@ export function createLowCodeBrowserScriptExecutor(): LowCodeScriptExecutor {
       return handleCapability({ id: ++capabilityId, name, args: requestArgs });
     };
     const context = toLowCodeScriptSerializable(request.context) as LowCodeScriptContextSnapshot;
+    const eventPayload = context.event?.payload && typeof context.event.payload === 'object'
+      ? context.event.payload as Record<string, unknown>
+      : undefined;
+    const nodeAction = eventPayload && typeof eventPayload.nodeAction === 'object'
+      ? eventPayload.nodeAction as Record<string, unknown>
+      : undefined;
+    const nodeActionOptions = nodeAction?.options && typeof nodeAction.options === 'object'
+      ? nodeAction.options
+      : {};
+    const withNodeActionOptions = (payload: unknown) => {
+      if (payload === undefined) return nodeActionOptions;
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return payload;
+      const record = payload as Record<string, unknown>;
+      return Object.keys(record).length ? record : nodeActionOptions;
+    };
     const scriptThis = Object.freeze({
       context,
       page: context.page,
@@ -653,7 +668,7 @@ export function createLowCodeBrowserScriptExecutor(): LowCodeScriptExecutor {
         error: (value: string) => call('message.error', value),
       }),
       $node: Object.freeze({
-        call: (command: string, payload = {}) => call('node.runtime', command, payload),
+        call: (command: string, payload?: unknown) => call('node.runtime', command, withNodeActionOptions(payload)),
       }),
       $dialog: Object.freeze({
         confirmLowCodePage: (config: unknown) => call('dialog.confirmLowCodePage', config),

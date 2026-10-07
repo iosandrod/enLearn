@@ -436,7 +436,7 @@ export function registerButtonScriptMonacoTypes() {
             })),
           })),
         },
-        dispose() {},
+        dispose() { },
       };
     },
   });

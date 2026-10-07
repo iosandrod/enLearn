@@ -203,8 +203,22 @@ function createScriptSource(request: LowCodeScriptExecutionRequest, contextJson:
     warning: (text) => call("message.warning", text),
     error: (text) => call("message.error", text),
   });
+  const eventPayload = snapshot.event && typeof snapshot.event.payload === "object"
+    ? snapshot.event.payload
+    : {};
+  const nodeAction = eventPayload.nodeAction && typeof eventPayload.nodeAction === "object"
+    ? eventPayload.nodeAction
+    : {};
+  const nodeActionOptions = nodeAction.options && typeof nodeAction.options === "object"
+    ? nodeAction.options
+    : {};
+  const withNodeActionOptions = (payload) => {
+    if (payload === undefined) return nodeActionOptions;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) return payload;
+    return Object.keys(payload).length ? payload : nodeActionOptions;
+  };
   const node = Object.freeze({
-    call: (command, payload = {}) => call("node.runtime", command, payload),
+    call: (command, payload) => call("node.runtime", command, withNodeActionOptions(payload)),
   });
   const scriptThis = Object.freeze({
     context: freeze(snapshot),

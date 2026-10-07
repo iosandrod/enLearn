@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
+import { inject, nextTick, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import { useLowCodeHost } from '../../../core/host';
 import { registerLowCodeMaterialRuntimeController } from '../../../runtime/material-controller-registry';
 const props = defineProps<{
@@ -68,7 +68,7 @@ function snapshot() {
   };
 }
 
-async function getTemplateInfo(getPreview=false) {
+async function getTemplateInfo(getPreview: unknown = false) {
   const instance = await waitForEditor();
   const currentPageId = instance.getCurrentPageId();
   const pages = [];
@@ -83,7 +83,7 @@ async function getTemplateInfo(getPreview=false) {
   let obj:any= {
     content: { pages: clone(pages), currentPageId, workspace: currentWorkspace },
     pages: clone(pages),
-    currentPageId,
+    currentPageId,//
     workspace: currentWorkspace,
     templateId: templateId.value,
     templateName: templateName.value,//
@@ -91,11 +91,173 @@ async function getTemplateInfo(getPreview=false) {
     templateVersion: templateVersion.value,
   };
   
-  if(getPreview){
-    let preview=null;
-    obj.preview=preview
+  const previewRequested = getPreview === true
+    || (Array.isArray(getPreview) && getPreview[0] === true)
+    || Boolean(
+      getPreview
+      && typeof getPreview === 'object'
+      && (getPreview as Record<string, unknown>).getPreview === true,
+    );
+
+  if (previewRequested) {
+    // debugger//
+    const originalPageId = instance.getCurrentPageId();
+    obj.preview = null;
+    try {
+      // Read shape ids after switching pages. This avoids relying on a page
+      // snapshot whose shape index may not be up to date after template load.
+      const editorPages = instance.getPages();
+      const orderedPages = [
+        editorPages.find((page) => page.id === originalPageId),
+        ...editorPages.filter((page) => page.id !== originalPageId),
+      ].filter((page): page is NonNullable<typeof page> => Boolean(page));
+      let previewPage;
+      let previewShapeIds: ReturnType<typeof instance.getCurrentPageShapeIdsSorted> = [];
+      for (const page of orderedPages) {
+        if (instance.getCurrentPageId() !== page.id) {
+          instance.setCurrentPage(page.id);
+          await nextTick();
+        }
+        const shapeIds = instance.getCurrentPageShapeIdsSorted();
+        const pageShapeIds = shapeIds.length
+          ? shapeIds
+          : [...instance.getPageShapeIds(page.id)].sort();
+        if (pageShapeIds.length) {
+          previewPage = page;
+          previewShapeIds = pageShapeIds;
+          break;
+        }
+      }
+      // if (previewPage) {
+      if (1==1) {//
+        // Always create a page-sized preview. Empty pages still need a
+        // thumbnail so their configured background is preserved.
+        obj.preview = await createTemplatePreviewDataUrl(
+          instance,
+          previewPage ? previewShapeIds : [],
+          currentWorkspace,
+        );
+      }
+    } finally {
+      if (
+        instance.getPage(originalPageId)
+        && instance.getCurrentPageId() !== originalPageId
+      ) {
+        instance.setCurrentPage(originalPageId);
+      }
+    }
   }
-  return obj;
+  return obj;//
+}
+
+async function createTemplatePreviewDataUrl(
+  instance: any,
+  shapeIds: unknown[],
+  workspaceConfig: Record<string, any>,
+) {
+  const bounds = getPreviewBounds(workspaceConfig);
+  const background = workspaceConfig?.background && typeof workspaceConfig.background === 'object'
+    ? workspaceConfig.background
+    : {};
+  const backgroundColor = sanitizePreviewColor(background.color, '#ffffff');
+  const backgroundOpacity = normalizePreviewOpacity(background.opacity);
+  const backgroundImage = await resolvePreviewImageUrl(background.imageUrl);
+  let shapeSvg;
+  if (shapeIds.length) {
+    try {
+      shapeSvg = await instance.getSvgString(shapeIds, { background: false, padding: 0 });
+    } catch (error) {
+      console.warn('[label-designer] shape preview export failed, keeping background preview', error);
+    }
+  }
+  const shapeImage = shapeSvg?.svg
+    ? `<image href="${escapePreviewAttribute(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(shapeSvg.svg)}`)}" x="0" y="0" width="${bounds.w}" height="${bounds.h}" preserveAspectRatio="xMidYMid meet" />`
+    : '';
+  const backgroundImageElement = backgroundImage
+    ? `<image href="${escapePreviewAttribute(backgroundImage)}" x="0" y="0" width="${bounds.w}" height="${bounds.h}" preserveAspectRatio="${getPreviewAspectRatio(background.imageSize, background.imagePosition)}" opacity="${backgroundOpacity}" />`
+    : '';
+  const svg = [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${bounds.w}" height="${bounds.h}" viewBox="0 0 ${bounds.w} ${bounds.h}">`,
+    `<rect width="${bounds.w}" height="${bounds.h}" fill="${escapePreviewAttribute(backgroundColor)}" />`,
+    backgroundImageElement,
+    shapeImage,
+    '</svg>',
+  ].join('');
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function getPreviewBounds(workspaceConfig: Record<string, any>) {
+  const pageBounds = workspaceConfig?.pageBounds;
+  if (isPreviewSize(pageBounds)) {
+    return { w: Math.max(1, pageBounds.w), h: Math.max(1, pageBounds.h) };
+  }
+  const pageSizeMm = workspaceConfig?.pageSizeMm;
+  const pxPerMm = Number.isFinite(workspaceConfig?.pxPerMm) && workspaceConfig.pxPerMm > 0
+    ? workspaceConfig.pxPerMm
+    : 96 / 25.4;
+  return {
+    w: Math.max(1, (isPreviewSize(pageSizeMm) ? pageSizeMm.w : 210) * pxPerMm),
+    h: Math.max(1, (isPreviewSize(pageSizeMm) ? pageSizeMm.h : 297) * pxPerMm),
+  };
+}
+
+function isPreviewSize(value: unknown): value is { w: number; h: number } {
+  return Boolean(
+    value
+    && typeof value === 'object'
+    && Number.isFinite((value as { w?: unknown }).w)
+    && Number.isFinite((value as { h?: unknown }).h)
+    && (value as { w: number }).w > 0
+    && (value as { h: number }).h > 0,
+  );
+}
+
+function sanitizePreviewColor(value: unknown, fallback: string) {
+  const color = typeof value === 'string' ? value.trim() : '';
+  return color && !/[<>"';{}]/.test(color) ? color : fallback;
+}
+
+function normalizePreviewOpacity(value: unknown) {
+  const opacity = Number(value);
+  return Number.isFinite(opacity) ? Math.min(100, Math.max(0, opacity)) / 100 : 1;
+}
+
+function getPreviewAspectRatio(size: unknown, position: unknown) {
+  if (size === 'auto') return 'none';
+  const value = typeof position === 'string' ? position.toLowerCase() : '';
+  const x = value.includes('left') ? 'xMin' : value.includes('right') ? 'xMax' : 'xMid';
+  const y = value.includes('top') ? 'YMin' : value.includes('bottom') ? 'YMax' : 'YMid';
+  return `${x}${y} ${size === 'contain' ? 'meet' : 'slice'}`;
+}
+
+async function resolvePreviewImageUrl(value: unknown) {
+  const url = typeof value === 'string' ? value.trim() : '';
+  if (!url || url.startsWith('data:') || typeof fetch !== 'function') return url;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return url;
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (typeof btoa !== 'function') return url;
+    let binary = '';
+    for (let index = 0; index < bytes.length; index += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    }
+    return `data:${response.headers.get('content-type') || 'application/octet-stream'};base64,${btoa(binary)}`;
+  } catch {
+    return url;
+  }
+}
+
+function escapePreviewAttribute(value: string) {
+  return value.replace(/[&<>"']/g, (character) => {
+    switch (character) {
+      case '&': return '&amp;';
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '"': return '&quot;';
+      default: return '&#39;';
+    }
+  });
 }
 
 async function waitForEditor() {
