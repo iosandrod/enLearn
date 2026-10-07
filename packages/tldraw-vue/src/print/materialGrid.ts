@@ -1,6 +1,7 @@
 import type { Editor, TLShapeId, TLShapePartial } from '@tldraw/editor'
 import {
 	getVueMaterialSections,
+	getVueMaterialContainerFrame,
 	isVueMaterialShape,
 	type VueMaterialSectionShape,
 	type VueMaterialShape,
@@ -44,6 +45,8 @@ const DEFAULT_LINE_HEIGHT = 16
 const DEFAULT_CELL_PADDING_X = 8
 const DEFAULT_CELL_PADDING_Y = 6
 const PRINT_EMPTY_TEXT = '\u6682\u65e0\u6570\u636e'
+const DEFAULT_LIST_ITEM_MIN_WIDTH = 180
+const DEFAULT_LIST_ITEM_GAP = 12
 
 export function createMaterialGridPrintPlan(
 	editor: Editor,
@@ -56,7 +59,9 @@ export function createMaterialGridPrintPlan(
 	const materialPlans = materialShapes.map((material) => {
 		const gridConfig = gridConfigs.get(material.id)
 		if (!gridConfig) {
-			throw new Error('检测到物料表格节点，请传入 vxe-grid 实例或 data/columns 表格数据。')
+			throw new Error(material.props.containerList
+				? '检测到物料列表节点，请传入 vxe-grid 实例或 data/columns 列表数据。'
+				: '检测到物料表格节点，请传入 vxe-grid 实例或 data/columns 表格数据。')
 		}
 		const plan = createMaterialGridMaterialPlan(editor, material, gridConfig)
 		if (!plan) throw new Error('物料表格节点缺少可打印的表体区域。')
@@ -107,11 +112,15 @@ function createMaterialGridMaterialPlan(
 	const options = getGridRenderOptions(gridConfig)
 	const columns = resolveGridColumns(gridConfig, tableBody.props.w)
 	const rows = resolveGridData(gridConfig)
-	const headerHeight = options.headerHeight * getPrintColumnDepth(columns)
-	const pageRows = paginateGridRows(rows, columns, tableBody.props.h, {
-		...options,
-		headerHeight,
-	})
+	const isContainerList = material.props.containerList === true
+	const headerHeight = isContainerList ? 0 : options.headerHeight * getPrintColumnDepth(columns)
+	const listFrame = isContainerList ? getVueMaterialContainerFrame(editor, tableBody.id) : undefined
+	const listLayout = isContainerList
+		? getListLayout(tableBody.props.w, listFrame?.props.w, listFrame?.props.h)
+		: null
+	const pageRows = isContainerList
+		? paginateListRows(rows, columns, tableBody.props.h, options, listLayout!)
+		: paginateGridRows(rows, columns, tableBody.props.h, { ...options, headerHeight })
 
 	return {
 		material,
@@ -127,6 +136,7 @@ function createMaterialGridMaterialPlan(
 				rows,
 				options,
 				headerHeight,
+				listLayout,
 			)
 		),
 	}
@@ -141,6 +151,7 @@ function createMaterialGridPage(
 	data: readonly PrintDataRow[],
 	options: GridRenderOptions,
 	headerHeight: number,
+	listLayout: ListLayout | null,
 ): MaterialGridPage {
 	const contentHeight = rows.reduce((total, row) => total + row.height, 0)
 	// Keep the full table-body height so the preview has the same blank area and
@@ -172,10 +183,73 @@ function createMaterialGridPage(
 			paddingY: options.cellPaddingY,
 			renderedHeight,
 			emptyText: options.emptyText,
+			layout: listLayout ? 'container-list' : 'table',
+			listColumnCount: listLayout?.columnCount,
+			listItemGap: listLayout?.gap,
+			listItemWidth: listLayout?.itemWidth,
 		},
 		updates,
 		data: rows.map((row) => data[Number(row.key.slice(4))]).filter(Boolean),
 	}
+}
+
+interface ListLayout {
+	columnCount: number
+	itemWidth: number
+	itemHeight: number
+	gap: number
+}
+
+function getListLayout(width: number, frameWidth?: number, frameHeight?: number): ListLayout {
+	const safeWidth = Math.max(1, width)
+	const gap = DEFAULT_LIST_ITEM_GAP
+	const minimumItemWidth = Number.isFinite(frameWidth) && (frameWidth ?? 0) > 0
+		? frameWidth as number
+		: DEFAULT_LIST_ITEM_MIN_WIDTH
+	const columnCount = Math.max(1, Math.floor((safeWidth + gap) / (minimumItemWidth + gap)))
+	return {
+		columnCount,
+		itemWidth: Math.max(1, (safeWidth - gap * (columnCount - 1)) / columnCount),
+		itemHeight: Number.isFinite(frameHeight) && (frameHeight ?? 0) > 0 ? frameHeight as number : 96,
+		gap,
+	}
+}
+
+function paginateListRows(
+	data: readonly PrintDataRow[],
+	columns: readonly VueMaterialPrintTableColumn[],
+	tableBodyHeight: number,
+	options: GridRenderOptions,
+	layout: ListLayout,
+) {
+	const availableHeight = Math.max(layout.itemHeight, tableBodyHeight)
+	const measuredRows = data.map((row, rowIndex) => {
+		const item = createPrintTableRow(row, rowIndex, columns, options)
+		return {
+			...item,
+			height: Math.max(layout.itemHeight, item.height + options.lineHeight * 2),
+		}
+	})
+	if (!measuredRows.length) return [[]]
+
+	const pages: VueMaterialPrintTableRow[][] = []
+	let pageRows: VueMaterialPrintTableRow[] = []
+	let pageHeight = 0
+	for (let index = 0; index < measuredRows.length; index += layout.columnCount) {
+		const line = measuredRows.slice(index, index + layout.columnCount)
+		const lineHeight = Math.max(...line.map((row) => row.height))
+		const nextPageHeight = pageHeight + (pageRows.length ? layout.gap : 0) + lineHeight
+		if (pageRows.length && nextPageHeight > availableHeight) {
+			pages.push(pageRows)
+			pageRows = []
+			pageHeight = 0
+		}
+		pageRows.push(...line)
+		pageHeight += (pageRows.length > line.length ? layout.gap : 0) + lineHeight
+	}
+
+	if (pageRows.length) pages.push(pageRows)
+	return pages
 }
 
 function paginateGridRows(

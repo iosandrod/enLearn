@@ -62,6 +62,7 @@ type VueMaterialSectionSvgShape = {
 		h: number
 		zone: string
 		label: string
+		containerList?: boolean
 	}
 }
 
@@ -86,6 +87,7 @@ export interface VueMaterialPrintTableRow {
 }
 
 export interface VueMaterialPrintTableOverride {
+	layout?: 'table' | 'container-list'
 	columns: VueMaterialPrintTableColumn[]
 	rows: VueMaterialPrintTableRow[]
 	headerHeight: number
@@ -95,6 +97,9 @@ export interface VueMaterialPrintTableOverride {
 	paddingY: number
 	renderedHeight: number
 	emptyText: string
+	listColumnCount?: number
+	listItemGap?: number
+	listItemWidth?: number
 }
 
 let vueMaterialPrintTableOverrides = new Map<TLShapeId, VueMaterialPrintTableOverride>()
@@ -522,8 +527,24 @@ export function createVueMaterialSectionSvg(shape: VueMaterialSectionSvgShape): 
 	if (shape.props.zone !== 'tableBody') return createElement('g', null)
 
 	const override = vueMaterialPrintTableOverrides.get(shape.id)
+	if (shape.props.containerList && !override) {
+		return createVueMaterialPrintListSvg(shape.id, width, height, {
+			layout: 'container-list',
+			columns: [],
+			rows: [],
+			headerHeight: 0,
+			fontSize: 12,
+			lineHeight: 16,
+			paddingX: 8,
+			paddingY: 6,
+			renderedHeight: height,
+			emptyText: '将内容放入列表项 Frame',
+		})
+	}
 	return override
-		? createVueMaterialPrintTableSvg(shape.id, width, height, override)
+		? override.layout === 'container-list'
+			? createVueMaterialPrintListSvg(shape.id, width, height, override)
+			: createVueMaterialPrintTableSvg(shape.id, width, height, override)
 		: createVueMaterialPlaceholderTableSvg(shape.id, width, height)
 }
 
@@ -764,6 +785,126 @@ function createVueMaterialPrintTableSvg(
 			strokeDasharray: 'none',
 			vectorEffect: 'non-scaling-stroke',
 		})
+	)
+}
+
+function createVueMaterialPrintListSvg(
+	shapeId: TLShapeId,
+	width: number,
+	height: number,
+	override: VueMaterialPrintTableOverride,
+): SvgExportNode {
+	const renderedHeight = Math.min(height, Math.max(0, override.renderedHeight))
+	const borderSize = Math.min(1, width / 2, renderedHeight / 2)
+	const contentWidth = Math.max(0, width - borderSize * 2)
+	const contentHeight = Math.max(0, renderedHeight - borderSize * 2)
+	const gap = Math.max(0, override.listItemGap ?? 12)
+	const columnCount = Math.max(1, Math.floor(override.listColumnCount ?? 1))
+	const itemWidth = Math.max(
+		1,
+		override.listItemWidth ?? (contentWidth - gap * (columnCount - 1)) / columnCount,
+	)
+	const leafColumns = flattenVueMaterialPrintColumns(override.columns)
+	const clipId = `vue-material-list-clip-${sanitizeSvgId(shapeId)}`
+	const children: SvgExportChild[] = [
+		createElement('rect', {
+			width: contentWidth,
+			height: contentHeight,
+			fill: '#ffffff',
+		}),
+	]
+
+	if (!override.rows.length) {
+		children.push(
+			createElement('text', {
+				x: contentWidth / 2,
+				y: contentHeight / 2,
+				fill: '#9ca3af',
+				fontFamily: 'Inter, Arial, sans-serif',
+				fontSize: Math.max(12, override.fontSize),
+				textAnchor: 'middle',
+				dominantBaseline: 'middle',
+			},
+				override.emptyText,
+			)
+		)
+	} else {
+		let x = 0
+		let y = 0
+		let rowHeight = 0
+		for (const row of override.rows) {
+			const cardHeight = Math.max(72, row.height + override.paddingY * 2 + override.lineHeight)
+			if (x > 0 && x + itemWidth > contentWidth + 0.01) {
+				x = 0
+				y += rowHeight + gap
+				rowHeight = 0
+			}
+			if (y >= contentHeight) break
+			const cardWidth = Math.min(itemWidth, contentWidth - x)
+			children.push(
+				createElement('rect', {
+					x,
+					y,
+					width: cardWidth,
+					height: Math.min(cardHeight, contentHeight - y),
+					fill: '#ffffff',
+					stroke: '#cbd5e1',
+					strokeWidth: 1,
+					rx: 3,
+				})
+			)
+
+			let textY = y + override.paddingY + override.fontSize
+			for (const [cellIndex, cell] of row.cells.entries()) {
+				if (textY > contentHeight) break
+				const label = leafColumns[cellIndex]?.label ?? ''
+				const value = cell.lines[0] ?? cell.text
+				const text = label ? `${label}: ${value}` : value
+				children.push(
+					createElement('text', {
+						x: x + override.paddingX,
+						y: textY,
+						fill: '#111827',
+						fontFamily: 'Inter, Arial, sans-serif',
+						fontSize: override.fontSize,
+					},
+						fitVueTableCellText(text, Math.max(1, cardWidth - override.paddingX * 2), override.fontSize, override.paddingX),
+					)
+				)
+				textY += override.lineHeight
+			}
+			x += itemWidth + gap
+			rowHeight = Math.max(rowHeight, cardHeight)
+		}
+	}
+
+	const defs = createElement(
+		'defs',
+		null,
+		createElement(
+			'clipPath',
+			{ id: clipId },
+			createElement('rect', { width: contentWidth, height: contentHeight }),
+		),
+	)
+	return createElement(
+		'g',
+		null,
+		defs,
+		createElement(
+			'g',
+			{ clipPath: `url(#${clipId})`, transform: `translate(${borderSize} ${borderSize})` },
+			children,
+		),
+		createElement('rect', {
+			x: 0.5,
+			y: 0.5,
+			width: Math.max(0, width - 1),
+			height: Math.max(0, renderedHeight - 1),
+			fill: 'none',
+			stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
+			strokeWidth: 1,
+		}),
 	)
 }
 

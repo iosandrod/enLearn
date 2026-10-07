@@ -20,10 +20,12 @@ import { baseProps, type BaseProps } from '../../shapeProps/base'
 import { vueMaterialPropertyRegistry } from '../../shapeProps/vueMaterial'
 import { vueMaterialSectionPropertyRegistry } from '../../shapeProps/vueMaterialSection'
 import {
+	vueFrameDefaultProps,
 	vueMaterialDefaultProps,
 	vueMaterialDefaultSize,
 	vueMaterialRowDefaults,
 } from '../../defaults'
+import type { VueFrameShape } from '../frame/vueFrameShape'
 
 export type VueMaterialSectionZone =
 	| 'pageHeader'
@@ -51,6 +53,8 @@ const FIXED_MATERIAL_SECTION_ZONES = new Set<VueMaterialSectionZone>([
 	'tableFooter',
 	'pageFooter',
 ])
+
+const MATERIAL_CONTAINER_FRAME_META_KEY = '__materialContainerListFrame'
 
 export interface VueMaterialSectionDefinition {
 	zone: VueMaterialSectionZone
@@ -131,6 +135,7 @@ export type VueMaterialShape = TLBaseShape<
 		headerRowHeight?: number
 		bodyRowHeight?: number
 		footerRowHeight?: number
+		containerList?: boolean
 	}
 >
 
@@ -278,7 +283,14 @@ export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSec
 	}
 
 	override toSvg(shape: VueMaterialSectionShape) {
-		return createVueMaterialSectionSvg(shape)
+		const parent = this.editor.getShape(shape.parentId)
+		return createVueMaterialSectionSvg({
+			...shape,
+			props: {
+				...shape.props,
+				containerList: isVueMaterialShape(parent) && parent.props.containerList === true,
+			},
+		})
 	}
 
 	override getGeometry(shape: VueMaterialSectionShape) {
@@ -331,7 +343,11 @@ export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSec
 
 	override canReceiveNewChildrenOfType(shape: VueMaterialSectionShape, type: TLShape['type']) {
 		if (shape.isLocked) return false
-		if (!canVueMaterialSectionReceiveChildren(shape)) return false
+		if (!canVueMaterialSectionReceiveChildren(shape, this.editor)) return false
+		if (type === 'vue-frame') {
+			const parent = getVueMaterialParent(this.editor, shape)
+			return shape.props.zone === 'tableBody' && parent?.props.containerList === true
+		}
 		return !isVueMaterialInternalShapeType(type)
 	}
 
@@ -597,7 +613,60 @@ export function normalizeVueMaterialSections(
 		if (changes.length > 0) {
 			editor.updateShapes(changes)
 		}
+		syncVueMaterialContainerFrame(editor, material)
 	})
+}
+
+export function getVueMaterialContainerFrame(
+	editor: Editor,
+	tableBodyId: TLShapeId,
+): VueFrameShape | undefined {
+	return editor
+		.getSortedChildIdsForParent(tableBodyId)
+		.map((id) => editor.getShape<VueFrameShape>(id))
+		.find((shape): shape is VueFrameShape => shape?.type === 'vue-frame')
+}
+
+function syncVueMaterialContainerFrame(editor: Editor, material: VueMaterialShape) {
+	const tableBody = getVueMaterialSections(editor, material.id)
+		.find((section) => section.props.zone === 'tableBody')
+	if (!tableBody) return
+
+	const frame = getVueMaterialContainerFrame(editor, tableBody.id)
+	const generatedFrame = frame?.meta?.[MATERIAL_CONTAINER_FRAME_META_KEY] === true
+	if (material.props.containerList !== true) {
+		if (generatedFrame && frame.opacity !== 0) {
+			editor.updateShape({ id: frame.id, type: 'vue-frame', opacity: 0 } as TLShapePartial)
+		}
+		return
+	}
+
+	if (frame) {
+		if (generatedFrame && frame.opacity === 0) {
+			editor.updateShape({ id: frame.id, type: 'vue-frame', opacity: 1 } as TLShapePartial)
+		}
+		return
+	}
+
+	const inset = 12
+	const frameWidth = Math.max(80, Math.min(vueFrameDefaultProps.w, tableBody.props.w - inset * 2))
+	const frameHeight = Math.max(72, Math.min(vueFrameDefaultProps.h, tableBody.props.h - inset * 2))
+	editor.createShapes<VueFrameShape>([{
+		id: createShapeId(),
+		type: 'vue-frame',
+		parentId: tableBody.id,
+		x: inset,
+		y: inset,
+		props: {
+			...baseProps.defaults,
+			...vueFrameDefaultProps,
+			w: frameWidth,
+			h: frameHeight,
+			name: '',
+			showBorder: true,
+		},
+		meta: { [MATERIAL_CONTAINER_FRAME_META_KEY]: true },
+	}])
 }
 
 export function reparentShapesIntoVueMaterialSections(editor: Editor, materialId: TLShapeId) {
@@ -677,7 +746,11 @@ export function getVueMaterialSectionHeightModel(editor: Editor, materialId: TLS
 	)
 }
 
-export function canVueMaterialSectionReceiveChildren(section: VueMaterialSectionShape) {
+export function canVueMaterialSectionReceiveChildren(section: VueMaterialSectionShape, editor?: Editor) {
+	if (section.props.zone === 'tableBody' && editor) {
+		const parent = editor.getShape(section.parentId)
+		return isVueMaterialShape(parent) && parent.props.containerList === true
+	}
 	return getVueMaterialSectionDefinition(section.props.zone).receivesChildren
 }
 
@@ -733,6 +806,18 @@ export function getVueMaterialHiddenShapeIds(
 		}
 	}
 
+	for (const shapeId of shapeAndDescendantIds) {
+		const material = editor.getShape<VueMaterialShape>(shapeId)
+		if (!isVueMaterialShape(material) || material.props.containerList !== true) continue
+		const tableBody = getVueMaterialSections(editor, material.id)
+			.find((section) => section.props.zone === 'tableBody')
+		const frame = tableBody ? getVueMaterialContainerFrame(editor, tableBody.id) : undefined
+		if (!frame) continue
+		for (const descendantId of editor.getShapeAndDescendantIds([frame.id])) {
+			hiddenShapeIds.add(descendantId)
+		}
+	}
+
 	return [...hiddenShapeIds]
 }
 
@@ -768,8 +853,11 @@ function getVueMaterialSectionForPageBounds(
 	childType: TLShape['type']
 ) {
 	for (const section of sections) {
-		if (!canVueMaterialSectionReceiveChildren(section)) continue
-		if (isVueMaterialInternalShapeType(childType)) continue
+		if (!canVueMaterialSectionReceiveChildren(section, editor)) continue
+		if (
+			isVueMaterialInternalShapeType(childType) &&
+			!(childType === 'vue-frame' && section.props.zone === 'tableBody')
+		) continue
 		const sectionBounds = editor.getShapePageBounds(section)
 		if (sectionBounds?.contains(pageBounds)) return section
 	}

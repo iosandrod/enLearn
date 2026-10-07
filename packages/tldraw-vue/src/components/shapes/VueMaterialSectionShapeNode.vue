@@ -9,6 +9,7 @@ import {
 	getVueMaterialSectionDefinition,
 	getVueMaterialSections,
 	isVueMaterialShape,
+	normalizeVueMaterialSections,
 	type VueMaterialSectionShape,
 } from '@/editor/extensions/material/vueMaterialShape'
 import { vueMaterialRowDefaults } from '@/editor/defaults'
@@ -131,7 +132,12 @@ function handleMaterialColumnSelection(event: Event) {
 	selectedColumnField.value = typeof detail.field === 'string' ? detail.field : ''
 }
 
-onMounted(() => window.addEventListener('enlearn:material-column-select', handleMaterialColumnSelection))
+onMounted(() => {
+	window.addEventListener('enlearn:material-column-select', handleMaterialColumnSelection)
+	if (!isTableBody.value || !isContainerList.value) return
+	const material = materialShape.value
+	if (isVueMaterialShape(material)) normalizeVueMaterialSections(props.editor, material.id)
+})
 onBeforeUnmount(() => window.removeEventListener('enlearn:material-column-select', handleMaterialColumnSelection))
 
 const MIN_COLUMN_WIDTH = 36
@@ -592,10 +598,9 @@ function createPreviewHeaderRows(
 		return result
 	})
 }
-const isContainerList = computed(() => {//
-	let mProps:any=materialShape.value//
-	let _list = Boolean(mProps.props.containerList)
-	return _list//
+const isContainerList = computed(() => {
+	const material = materialShape.value
+	return isVueMaterialShape(material) && material.props.containerList === true
 })
 </script>
 
@@ -613,7 +618,7 @@ const isContainerList = computed(() => {//
 
 		<template v-if="isTableBody">
 			<template v-if="isContainerList">
-
+				<!-- The real vue-frame is a child of this section and is rendered by the canvas. -->
 			</template>
 			<template v-else>
 				<div class="vue-material-table-columns" :style="{
