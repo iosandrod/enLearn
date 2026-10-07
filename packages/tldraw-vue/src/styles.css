@@ -2126,10 +2126,7 @@ button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-right: calc(1px * var(--inverse-zoom)) solid #111827;
-	border-bottom: calc(1px * var(--inverse-zoom)) solid #111827;
-	border-left: calc(1px * var(--inverse-zoom)) solid #111827;
-	border-top: calc(1px * var(--inverse-zoom)) solid #111827;
+	
 	background: #ffffff;
 	color: #a7adb7;
 	font-family:
@@ -2718,8 +2715,10 @@ button {
 .vue-image-shape.has-visible-border,
 .vue-qr-shape.has-visible-border,
 .vue-barcode-shape.has-visible-border,
+.vue-material-section-shape.has-visible-border,
 .vue-frame-shape.has-visible-border {
 	border-color: rgb(15 23 42 / 0.72);
+	border-width: 1px;
 }
 
 .vue-text-content {

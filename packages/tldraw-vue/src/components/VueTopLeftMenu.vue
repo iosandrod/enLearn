@@ -518,7 +518,7 @@ function createMaterialGridConfigs(
 			lineHeight: 14,
 			cellPaddingX: 6,
 			cellPaddingY: 5,
-			emptyText: isBound ? '暂无明细数据' : '未设置数据源',
+			emptyText: isBound ? '' : '',
 		}
 	}
 

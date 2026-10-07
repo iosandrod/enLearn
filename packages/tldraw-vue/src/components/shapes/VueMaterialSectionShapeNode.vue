@@ -602,18 +602,58 @@ const isContainerList = computed(() => {
 	const material = materialShape.value
 	return isVueMaterialShape(material) && material.props.containerList === true
 })
+const _showBorder = computed(() => {
+	const material:any = materialShape.value//
+	let showBorder = material.props.showBorder
+	let borderLeft = material.props.borderLeft
+	let borderRight = material.props.borderRight
+	let borderTop = material.props.borderTop
+	let borderBottom = material.props.borderBottom//
+	if(Boolean(borderLeft) || Boolean(borderRight) || Boolean(borderTop) || Boolean(borderBottom)){
+		showBorder = true
+	}
+	return showBorder
+})
+const borderObj=computed(()=>{
+	const material:any = materialShape.value
+	let borderLeft = material.props.borderLeft
+	let borderRight = material.props.borderRight
+	let borderTop = material.props.borderTop
+	let borderBottom = material.props.borderBottom//
+	let obj= {
+	} as any
+	if(Boolean(borderLeft)==false){
+		obj.borderLeft = 'none'
+	}
+	if(Boolean(borderRight)==false){
+		obj.borderRight = 'none'
+	}
+	if(Boolean(borderTop)==false){
+		obj.borderTop = 'none'
+	}
+	if(Boolean(borderBottom)==false){
+		obj.borderBottom = 'none'
+	}
+	if(!Boolean(borderLeft)&&!Boolean(borderRight)&&!Boolean(borderTop)&&!Boolean(borderBottom)){
+		obj={}//
+	}
+	return obj
+})
 </script>
 
 <template>
 	<div class="vue-material-section-shape" :class="[
+		_showBorder ? 'has-visible-border' : '',
 		`vue-material-section-shape--${shape.props.zone}`,
 		{ 'is-selected': selected, 'is-table-body': isTableBody, 'is-zero-height': shape.props.h <= 0 },
-	]" :data-shape-id="shape.id" :style="{
+	]"
+	 :data-shape-id="shape.id" :style="{
 		width: `${shape.props.w}px`,
 		height: `${shape.props.h}px`,
 		transform: pageTransform,
 		opacity: shape.opacity,
 		'--inverse-zoom': String(1 / zoom),
+		...borderObj
 	}">
 
 		<template v-if="isTableBody">
@@ -665,7 +705,7 @@ const isContainerList = computed(() => {
 					</div>
 				</div>
 				<div v-else class="vue-material-table-fill">
-					<span>{{ hasConfiguredDataSource ? '暂无明细数据' : '未设置数据源' }}</span>
+					<span>{{ hasConfiguredDataSource ? '' : '' }}</span>
 				</div>
 			</template>
 		</template>
