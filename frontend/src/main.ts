@@ -106,8 +106,9 @@ installPreloadErrorRecovery();
 await cleanupLegacyServiceWorkers();
 
 if (
-  import.meta.env.DEV &&
-  import.meta.env.VITE_LOWCODE_SCRIPT_RUNTIME === 'browser'
+  // import.meta.env.DEV &&
+  // import.meta.env.VITE_LOWCODE_SCRIPT_RUNTIME === 'browser'
+  1==1
 ) {
   registerLowCodeScriptExecutor(createLowCodeBrowserScriptExecutor());
   console.warn(

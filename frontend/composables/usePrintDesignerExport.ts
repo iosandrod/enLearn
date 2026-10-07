@@ -17,6 +17,14 @@ import type {
 const DEFAULT_PAGE_SIZE_MM = { w: 210, h: 297 };
 const DEFAULT_PX_PER_MM = 96 / 25.4;
 
+type TemplateBackground = {
+  color?: unknown;
+  imageUrl?: unknown;
+  imageSize?: unknown;
+  imagePosition?: unknown;
+  opacity?: unknown;
+};
+
 type TemplateIdentity = {
   templateId?: string;
   version?: number;
@@ -68,6 +76,36 @@ export function usePrintDesignerExport() {
     return createSvgTemplateSnapshot(editor, resolvePageSettings(workspace).bounds, workspace.background);
   }
 
+  async function createTemplatePreviewDataUrl(
+    editor: Editor,
+    workspace: VueTemplateWorkspaceConfig,
+  ) {
+    const pages = editor.getPages();
+    if (!pages.length) return '';
+
+    const originalPageId = editor.getCurrentPageId();
+    const page = pages.find((candidate) => editor.getPageShapeIds(candidate.id).size > 0) ?? pages[0];
+    const bounds = resolvePageSettings(workspace).bounds;
+    try {
+      if (editor.getCurrentPageId() !== page.id) editor.setCurrentPage(page.id);
+      const image = await (editor as Editor & {
+        toImageDataUrl: (ids: unknown[], options: Record<string, unknown>) => Promise<{ url: string }>;
+      }).toImageDataUrl(editor.getCurrentPageShapeIdsSorted(), {
+        format: 'png',
+        quality: 0.72,
+        pixelRatio: 1,
+        background: true,
+        padding: 0,
+        bounds: new Box(bounds.x, bounds.y, bounds.w, bounds.h),
+      });
+      return image.url;
+    } finally {
+      if (editor.getPage(originalPageId) && editor.getCurrentPageId() !== originalPageId) {
+        editor.setCurrentPage(originalPageId);
+      }
+    }
+  }
+
   async function preview(input: CreatePrintInput) {
     const result = await printApi.createPreview(input);
     if (result.mode === 'inline') return result.artifact ?? result.artifacts?.[0] ?? null;
@@ -85,7 +123,13 @@ export function usePrintDesignerExport() {
     return requireArtifact(job);
   }
 
-  return { createInput, createTemplateSnapshot, preview, exportFile };
+  return {
+    createInput,
+    createTemplateSnapshot,
+    createTemplatePreviewDataUrl,
+    preview,
+    exportFile,
+  };
 }
 
 export async function createSvgTemplateSnapshot(
@@ -141,14 +185,15 @@ export async function createSvgTemplateSnapshot(
 }
 
 async function createPageBackground(background: VueTemplateWorkspaceConfig['background']) {
-  if (!background) return { style: '', imageUrl: '', imageSize: 'cover', imagePosition: 'center', opacity: 1 };
-  const color = sanitizeCssValue(background.color, '#ffffff');
-  const imageUrl = await resolveBackgroundImageUrl(background.imageUrl);
-  const imageSize = background.imageSize === 'contain' || background.imageSize === 'auto'
-    ? background.imageSize
+  const config = background as TemplateBackground | undefined;
+  if (!config) return { style: '', imageUrl: '', imageSize: 'cover', imagePosition: 'center', opacity: 1 };
+  const color = sanitizeCssValue(config.color, '#ffffff');
+  const imageUrl = await resolveBackgroundImageUrl(config.imageUrl);
+  const imageSize = config.imageSize === 'contain' || config.imageSize === 'auto'
+    ? config.imageSize
     : 'cover';
-  const position = sanitizeCssValue(background.imagePosition, 'center');
-  const opacity = normalizeBackgroundOpacity(background.opacity);
+  const position = sanitizeCssValue(config.imagePosition, 'center');
+  const opacity = normalizeBackgroundOpacity(config.opacity);
   return {
     style: `background-color:${color};background-size:${imageSize};background-position:${position};`,
     imageUrl,

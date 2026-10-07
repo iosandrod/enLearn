@@ -68,7 +68,7 @@ function snapshot() {
   };
 }
 
-async function getTemplateInfo() {
+async function getTemplateInfo(getPreview=false) {
   const instance = await waitForEditor();
   const currentPageId = instance.getCurrentPageId();
   const pages = [];
@@ -80,16 +80,22 @@ async function getTemplateInfo() {
   }
   if (!pages.length) return null;
   const currentWorkspace = workspace();
-  return {
+  let obj:any= {
     content: { pages: clone(pages), currentPageId, workspace: currentWorkspace },
     pages: clone(pages),
     currentPageId,
     workspace: currentWorkspace,
     templateId: templateId.value,
-    templateName: templateName.value,
+    templateName: templateName.value,//
     templateStatus: templateStatus.value,
     templateVersion: templateVersion.value,
   };
+  
+  if(getPreview){
+    let preview=null;
+    obj.preview=preview
+  }
+  return obj;
 }
 
 async function waitForEditor() {
