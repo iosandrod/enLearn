@@ -1,4 +1,4 @@
-import { Box, type Editor, type TLShape, type TLShapeId, type TLShapePartial } from '@tldraw/editor'
+import { Box, createShapeId, type Editor, type TLShape, type TLShapeId, type TLShapePartial } from '@tldraw/editor'
 import {
 	clearVueMaterialPrintTableOverrides,
 	setVueMaterialPrintTableOverrides,
@@ -19,7 +19,7 @@ import {
 	type MaterialGridPrintPlan,
 } from './materialGrid'
 import { createResumePrintPlan, getResumeOverrides, type ResumePrintPlan } from './resume'
-import type { PrintJobConfig, PrintPageRenderResult } from './types'
+import type { PrintExpressionContext, PrintJobConfig, PrintPageRenderResult } from './types'
 
 export interface PrintRenderJob {
 	row: Record<string, unknown>
@@ -87,6 +87,10 @@ export class PrintRenderer {
 			total,
 		}
 		const updates: TLShapePartial[] = []
+		const temporaryListFrameShapes = options.materialGridPlan
+			? this.createContainerListFrameShapes(options.materialGridPlan, options.materialGridPageIndex ?? index, context, config)
+			: []
+		const temporaryListFrameIds = temporaryListFrameShapes.map((shape) => shape.id)
 
 		for (const shape of this.getShapesForExpressionPass(shapeIds)) {
 			const update = this.previewResolver.resolve(shape, context, config.expression)
@@ -116,13 +120,18 @@ export class PrintRenderer {
 			})
 		)
 
-		if (updates.length && this.editor.getIsReadonly()) {
+		if ((updates.length || temporaryListFrameShapes.length) && this.editor.getIsReadonly()) {
 			clearVueMaterialPrintTableOverrides()
 			clearVueResumePrintOverrides()
 			throw new Error('Cannot render print updates while the editor is readonly.')
 		}
 
 		const updateRestores = createRestoreUpdates(this.editor, updates)
+		if (temporaryListFrameShapes.length) {
+			this.editor.run(() => runWithVueMaterialPrintLayoutUpdates(() => {
+				this.editor.createShapes(temporaryListFrameShapes)
+			}), { history: 'ignore', ignoreShapeLock: true })
+		}
 		this.applyShapeUpdates(updates)
 		try {
 			const image = await this.editor.toImageDataUrl(shapeIds, {
@@ -145,8 +154,70 @@ export class PrintRenderer {
 		} finally {
 			clearVueMaterialPrintTableOverrides()
 			clearVueResumePrintOverrides()
+			if (temporaryListFrameIds.length) {
+				this.editor.run(() => runWithVueMaterialPrintLayoutUpdates(() => {
+					this.editor.deleteShapes(temporaryListFrameIds)
+				}), { history: 'ignore', ignoreShapeLock: true })
+			}
 			this.applyShapeUpdates(updateRestores)
 		}
+	}
+
+	private createContainerListFrameShapes(
+		plan: MaterialGridPrintPlan,
+		pageIndex: number,
+		context: PrintExpressionContext,
+		config: PrintJobConfig,
+	): TLShapePartial[] {
+		const partials: TLShapePartial[] = []
+
+		for (const materialPlan of plan.materials) {
+			const frame = materialPlan.listFrame
+			if (!frame) continue
+			const page = materialPlan.pages[Math.min(pageIndex, materialPlan.pages.length - 1)] ?? materialPlan.pages[0]
+			if (!page?.data.length) continue
+
+			const sourceIds = this.editor.getShapeAndDescendantIds([frame.id])
+			const sourceShapes = [...sourceIds]
+				.map((shapeId) => this.editor.getShape(shapeId))
+				.filter((shape): shape is TLShape => Boolean(shape))
+				.sort((left, right) => getShapeDepth(this.editor, left, frame.id) - getShapeDepth(this.editor, right, frame.id))
+			const itemWidth = page.tableOverride.listItemWidth ?? frame.props.w
+			const itemGap = page.tableOverride.listItemGap ?? 0
+			const columnCount = Math.max(1, page.tableOverride.listColumnCount ?? 1)
+
+			page.data.forEach((row, rowIndex) => {
+				const cloneIds = new Map<TLShapeId, TLShapeId>()
+				const itemX = (rowIndex % columnCount) * (itemWidth + itemGap)
+				const itemY = Math.floor(rowIndex / columnCount) * (frame.props.h + itemGap)
+				const rowContext: PrintExpressionContext = {
+					...context,
+					row,
+					index: rowIndex,
+				}
+
+				for (const source of sourceShapes) {
+					const cloneId = createShapeId()
+					cloneIds.set(source.id, cloneId)
+					const resolved = this.previewResolver.resolve(source, rowContext, config.expression)
+					const isFrame = source.id === frame.id
+					const partial = {
+						...source,
+						id: cloneId,
+						parentId: isFrame
+							? materialPlan.tableBody.id
+							: cloneIds.get(source.parentId as TLShapeId) ?? materialPlan.tableBody.id,
+						x: isFrame ? itemX : source.x,
+						y: isFrame ? itemY : source.y,
+						props: resolved?.props ?? source.props,
+						meta: { ...source.meta, __printContainerListClone: true },
+					} as TLShapePartial
+					partials.push(partial)
+				}
+			})
+		}
+
+		return partials
 	}
 
 	private getTemplateShapeIds(config: PrintJobConfig): TLShapeId[] {
@@ -177,6 +248,16 @@ export class PrintRenderer {
 			ignoreShapeLock: true,
 		})
 	}
+}
+
+function getShapeDepth(editor: Editor, shape: TLShape, rootId: TLShapeId) {
+	let depth = 0
+	let current: TLShape | undefined = shape
+	while (current && current.id !== rootId) {
+		depth += 1
+		current = editor.getShape(current.parentId as TLShapeId)
+	}
+	return depth
 }
 
 function getCurrentTablesData(plan: MaterialGridPrintPlan | undefined, pageIndex: number) {

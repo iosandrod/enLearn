@@ -68,6 +68,10 @@ const baseDefinitions = {
 		defaultValue: 14,
 		form: numberField('fontSize', '字体大小', { min: 1, step: 1 }),
 	},
+	showBorder: {
+		validator: T.optional(T.boolean),
+		default: false,
+	},//
 	borderLeft:{
 		validator:T.optional(T.boolean),
 		default:false
@@ -107,4 +111,5 @@ export type BaseProps = {
 	borderTop?: boolean
 	borderBottom?: boolean
 	expression?: string
+	showBorder?: boolean//
 }

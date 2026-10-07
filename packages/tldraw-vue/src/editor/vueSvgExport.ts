@@ -100,6 +100,7 @@ export interface VueMaterialPrintTableOverride {
 	listColumnCount?: number
 	listItemGap?: number
 	listItemWidth?: number
+	listUsesFrame?: boolean
 }
 
 let vueMaterialPrintTableOverrides = new Map<TLShapeId, VueMaterialPrintTableOverride>()
@@ -828,7 +829,7 @@ function createVueMaterialPrintListSvg(
 				override.emptyText,
 			)
 		)
-	} else {
+	} else if (!override.listUsesFrame) {
 		let x = 0
 		let y = 0
 		let rowHeight = 0

@@ -663,7 +663,7 @@ function syncVueMaterialContainerFrame(editor: Editor, material: VueMaterialShap
 			w: frameWidth,
 			h: frameHeight,
 			name: '',
-			showBorder: true,
+			showBorder: true,//
 		},
 		meta: { [MATERIAL_CONTAINER_FRAME_META_KEY]: true },
 	}])

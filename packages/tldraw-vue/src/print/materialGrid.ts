@@ -6,6 +6,7 @@ import {
 	type VueMaterialSectionShape,
 	type VueMaterialShape,
 } from '@/editor/extensions/material/vueMaterialShape'
+import type { VueFrameShape } from '@/editor/extensions/frame/vueFrameShape'
 import type {
 	VueMaterialPrintTableCell,
 	VueMaterialPrintTableColumn,
@@ -29,6 +30,7 @@ export interface MaterialGridMaterialPlan {
 	material: VueMaterialShape
 	tableBody: VueMaterialSectionShape
 	tableFooter: VueMaterialSectionShape | null
+	listFrame: VueFrameShape | null
 	pages: MaterialGridPage[]
 }
 
@@ -126,6 +128,7 @@ function createMaterialGridMaterialPlan(
 		material,
 		tableBody,
 		tableFooter,
+		listFrame: listFrame ?? null,
 		pages: pageRows.map((rowsForPage) =>
 			createMaterialGridPage(
 				material,
@@ -137,6 +140,7 @@ function createMaterialGridMaterialPlan(
 				options,
 				headerHeight,
 				listLayout,
+				Boolean(listLayout && listFrame),
 			)
 		),
 	}
@@ -152,6 +156,7 @@ function createMaterialGridPage(
 	options: GridRenderOptions,
 	headerHeight: number,
 	listLayout: ListLayout | null,
+	listUsesFrame: boolean,
 ): MaterialGridPage {
 	const contentHeight = rows.reduce((total, row) => total + row.height, 0)
 	// Keep the full table-body height so the preview has the same blank area and
@@ -187,6 +192,7 @@ function createMaterialGridPage(
 			listColumnCount: listLayout?.columnCount,
 			listItemGap: listLayout?.gap,
 			listItemWidth: listLayout?.itemWidth,
+			listUsesFrame,
 		},
 		updates,
 		data: rows.map((row) => data[Number(row.key.slice(4))]).filter(Boolean),
@@ -203,13 +209,16 @@ interface ListLayout {
 function getListLayout(width: number, frameWidth?: number, frameHeight?: number): ListLayout {
 	const safeWidth = Math.max(1, width)
 	const gap = DEFAULT_LIST_ITEM_GAP
-	const minimumItemWidth = Number.isFinite(frameWidth) && (frameWidth ?? 0) > 0
+	const hasFrameWidth = Number.isFinite(frameWidth) && (frameWidth ?? 0) > 0
+	const minimumItemWidth = hasFrameWidth
 		? frameWidth as number
 		: DEFAULT_LIST_ITEM_MIN_WIDTH
 	const columnCount = Math.max(1, Math.floor((safeWidth + gap) / (minimumItemWidth + gap)))
 	return {
 		columnCount,
-		itemWidth: Math.max(1, (safeWidth - gap * (columnCount - 1)) / columnCount),
+		itemWidth: hasFrameWidth
+			? minimumItemWidth
+			: Math.max(1, (safeWidth - gap * (columnCount - 1)) / columnCount),
 		itemHeight: Number.isFinite(frameHeight) && (frameHeight ?? 0) > 0 ? frameHeight as number : 96,
 		gap,
 	}
@@ -227,7 +236,7 @@ function paginateListRows(
 		const item = createPrintTableRow(row, rowIndex, columns, options)
 		return {
 			...item,
-			height: Math.max(layout.itemHeight, item.height + options.lineHeight * 2),
+			height: layout.itemHeight,
 		}
 	})
 	if (!measuredRows.length) return [[]]
