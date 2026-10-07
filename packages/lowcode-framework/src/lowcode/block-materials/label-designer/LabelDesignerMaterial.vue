@@ -231,7 +231,7 @@ async function loadData(options: Record<string, any> = {}) {
   return getTemplateInfo();//
 }
 setTimeout(() => {
-  loadData({ templateId: '4b2e664d-8d26-45f9-bfe3-199fa7997efd' }).catch((error) => {
+  loadData({ templateId: 'da875545-0e56-4fff-917f-26eb678a9395' }).catch((error) => {
   });
 },500)
 async function save(options: Record<string, any> = {}) {
@@ -269,16 +269,33 @@ async function save(options: Record<string, any> = {}) {
 
 async function resetData() {
   const instance = await waitForEditor();
-  const shapeIds = instance.getCurrentPageShapeIdsSorted();
+  const pages = instance.getPages();
+  const primaryPage = pages[0];
   suppressDirty = true;
   try {
     instance.store.mergeRemoteChanges(() => instance.run(() => {
-      if (shapeIds.length) instance.deleteShapes(shapeIds);
+      if (primaryPage && instance.getCurrentPageId() !== primaryPage.id) {
+        instance.setCurrentPage(primaryPage.id);
+      }
+      for (const page of pages) {
+        const shapeIds = [...instance.getPageShapeIds(page.id)];
+        if (shapeIds.length) instance.deleteShapes(shapeIds);
+      }
+      for (const page of pages.slice(1)) {
+        if (instance.getPage(page.id)) instance.deletePage(page.id);
+      }
+      if (primaryPage && instance.getPage(primaryPage.id)) {
+        instance.renamePage(primaryPage.id, '页面 1');
+      }
       instance.selectNone();
     }, { history: 'ignore', ignoreShapeLock: true }));
   } finally {
     suppressDirty = false;
   }
+  // A new template must start from a clean workspace as well as an empty
+  // page. This clears background image/color, page size, guides, presentation
+  // settings and other workspace-level properties retained by the editor.
+  designer.value?.resetWorkspaceTemplateConfig?.();
   templateId.value = '';
   templateName.value = '新建模板';
   templateVersion.value = 1;

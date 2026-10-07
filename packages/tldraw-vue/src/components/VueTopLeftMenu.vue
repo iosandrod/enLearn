@@ -348,7 +348,7 @@ async function previewPrint() {
 			createPrintJobConfig(createPrintExpressionConfig(expressions))
 		)
 	} catch (error) {
-		printPreviewError.value = getTemplateErrorMessage(error, '打印预览失败')
+		printPreviewError.value = getTemplateErrorMessage(error, '')
 	} finally {
 		printPreviewLoading.value = false
 	}

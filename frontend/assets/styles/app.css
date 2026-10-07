@@ -32,6 +32,8 @@ a {
 /* Keep every frontend context-menu implementation above dialogs, drawers
    and transferred popup panels. */
 .vxe-context-menu--wrapper,
+.vxe-table--context-menu-wrapper,
+.vxe-table--context-menu-clild-wrapper,
 .wx-menu[data-wx-menu="true"],
 .vue-canvas > .context-menu-layer {
   z-index: 2147483647 !important;

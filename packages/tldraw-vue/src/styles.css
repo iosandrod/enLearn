@@ -1122,6 +1122,9 @@ button {
 .designer-tool-view--tools {
 	display: flex;
 	flex-direction: column;
+	padding-top: 14px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 .designer-tool-section {
@@ -1750,6 +1753,52 @@ button {
 	color: #b8c1ce;
 	cursor: not-allowed;
 	opacity: 0.72;
+}
+
+.alignment-toolbar__border-icon {
+	position: relative;
+	display: block;
+	width: 16px;
+	height: 16px;
+	color: currentColor;
+	border: 1px solid currentColor;
+	border-radius: 1px;
+}
+
+.alignment-toolbar__border-icon::after {
+	content: '';
+	position: absolute;
+	background: currentColor;
+}
+
+.alignment-toolbar__border-icon--left::after,
+.alignment-toolbar__border-icon--right::after {
+	top: -1px;
+	bottom: -1px;
+	width: 2px;
+}
+
+.alignment-toolbar__border-icon--left::after {
+	left: -1px;
+}
+
+.alignment-toolbar__border-icon--right::after {
+	right: -1px;
+}
+
+.alignment-toolbar__border-icon--top::after,
+.alignment-toolbar__border-icon--bottom::after {
+	left: -1px;
+	right: -1px;
+	height: 2px;
+}
+
+.alignment-toolbar__border-icon--top::after {
+	top: -1px;
+}
+
+.alignment-toolbar__border-icon--bottom::after {
+	bottom: -1px;
 }
 
 @media (max-width: 680px) {

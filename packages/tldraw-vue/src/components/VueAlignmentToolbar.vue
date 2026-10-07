@@ -29,10 +29,10 @@ const actions = [
 ] as const
 
 const borderActions = [
-	{ id: 'borderLeft', label: '显示/隐藏左边框', icon: 'ri-border-left-line' },
-	{ id: 'borderRight', label: '显示/隐藏右边框', icon: 'ri-border-right-line' },
-	{ id: 'borderTop', label: '显示/隐藏上边框', icon: 'ri-border-top-line' },
-	{ id: 'borderBottom', label: '显示/隐藏下边框', icon: 'ri-border-bottom-line' },
+	{ id: 'borderLeft', label: '显示/隐藏左边框' },
+	{ id: 'borderRight', label: '显示/隐藏右边框' },
+	{ id: 'borderTop', label: '显示/隐藏上边框' },
+	{ id: 'borderBottom', label: '显示/隐藏下边框' },
 ] as const
 
 const selectedShapeIds = useEditorValue('alignment toolbar selected shape ids', () =>
@@ -154,7 +154,11 @@ function toggleBorder(operation: BorderOperation) {
 				:disabled="!canToggleBorder"
 				@click="toggleBorder(action.id)"
 			>
-				<i :class="action.icon" aria-hidden="true" />
+				<span
+					class="alignment-toolbar__border-icon"
+					:class="`alignment-toolbar__border-icon--${action.id.replace('border', '').toLowerCase()}`"
+					aria-hidden="true"
+				/>
 			</button>
 		</div>
 	</div>

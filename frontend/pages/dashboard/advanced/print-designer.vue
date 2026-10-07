@@ -100,6 +100,7 @@ type TldrawVueExpose = {
   getDesignerMode(): DesignerMode;
   getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig | undefined;
   applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig): void;
+  resetWorkspaceTemplateConfig(): void;
 };
 
 type PrintTemplateStatus = 'draft' | 'active' | 'archived';

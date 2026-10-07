@@ -38,6 +38,7 @@ import {
 	type DesignerMode,
 	type PresentationConfig,
 } from './presentation'
+import { DEFAULT_WORKSPACE_PAGE_SIZE_MM } from './editor/interactions/WorkspaceBoundsManager'
 
 const props = withDefaults(
 	defineProps<{
@@ -315,6 +316,9 @@ function getWorkspaceTemplateConfig() {
 	const config = canvasRef.value?.getWorkspaceTemplateConfig()
 	return {
 		...(config ?? {}),
+		// The background panel is owned by this component. Keep the exported
+		// workspace snapshot tied to that state even while the canvas is syncing.
+		background: cloneTemplateValue(workspaceBackground.value),
 		designerMode: designerMode.value,
 		presentation: clonePresentationConfig(presentationConfig.value),
 	}
@@ -340,6 +344,31 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 		}
 	}
 	canvasRef.value?.applyWorkspaceTemplateConfig(config)
+}
+
+function resetWorkspaceTemplateConfig() {
+	const background: WorkspaceBackgroundConfig = {
+		color: '#ffffff',
+		imageFileId: '',
+		imageUrl: '',
+		imageSize: 'cover',
+		imagePosition: 'center',
+	}
+	const presentation = clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG)
+
+	designerMode.value = 'print'
+	presentationConfig.value = presentation
+	workspaceBackground.value = background
+	notifyDesignerModeState('print')
+	canvasRef.value?.applyWorkspaceTemplateConfig({
+		designerMode: 'print',
+		pageSizeMm: { ...DEFAULT_WORKSPACE_PAGE_SIZE_MM },
+		guides: [],
+		background: { ...background },
+		presentation: clonePresentationConfig(presentation),
+	})
+	canvasRef.value?.workspaceFitCanvas()
+	handleWorkspaceConfigChange(getWorkspaceTemplateConfig() ?? {})
 }
 
 function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
@@ -428,6 +457,7 @@ defineExpose({
 	workspaceFitCanvas,
 	editor,
 	applyWorkspaceTemplateConfig,
+	resetWorkspaceTemplateConfig,
 	canRunCommand,
 	getEditor,
 	getTemplateInfo,

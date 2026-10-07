@@ -111,7 +111,7 @@ assert.match(
 );
 assert.match(
   appStylesSource,
-  /\.vxe-context-menu--wrapper,\s*\.wx-menu\[data-wx-menu="true"\],\s*\.vue-canvas > \.context-menu-layer\s*\{[\s\S]*?z-index:\s*2147483647\s*!important;/,
+  /\.vxe-context-menu--wrapper,\s*\.vxe-table--context-menu-wrapper,\s*\.vxe-table--context-menu-clild-wrapper,\s*\.wx-menu\[data-wx-menu="true"\],\s*\.vue-canvas > \.context-menu-layer\s*\{[\s\S]*?z-index:\s*2147483647\s*!important;/,
   'Every frontend context-menu implementation must stay above dialogs, drawers and transferred popup panels.'
 );
 assert.match(layoutSource, /name: '重新加载页面'/);

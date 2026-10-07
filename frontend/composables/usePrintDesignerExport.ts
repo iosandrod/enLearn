@@ -34,7 +34,7 @@ export function usePrintDesignerExport() {
   ): Promise<CreatePrintInput> {
     const page = resolvePageSettings(workspace);
     const [templateSnapshot, records] = await Promise.all([
-      createSvgTemplateSnapshot(editor, page.bounds),
+      createSvgTemplateSnapshot(editor, page.bounds, workspace.background),
       resolveRecords(workspace.printDataSource as PrintDataSourceConfig | undefined)
     ]);
 
@@ -65,7 +65,7 @@ export function usePrintDesignerExport() {
   }
 
   async function createTemplateSnapshot(editor: Editor, workspace: VueTemplateWorkspaceConfig) {
-    return createSvgTemplateSnapshot(editor, resolvePageSettings(workspace).bounds);
+    return createSvgTemplateSnapshot(editor, resolvePageSettings(workspace).bounds, workspace.background);
   }
 
   async function preview(input: CreatePrintInput) {
@@ -90,28 +90,33 @@ export function usePrintDesignerExport() {
 
 export async function createSvgTemplateSnapshot(
   editor: Editor,
-  bounds: { x: number; y: number; w: number; h: number }
+  bounds: { x: number; y: number; w: number; h: number },
+  background?: VueTemplateWorkspaceConfig['background']
 ) {
   const originalPageId = editor.getCurrentPageId();
   const pages: string[] = [];
+  const pageBackground = await createPageBackground(background);
 
   try {
     for (const page of editor.getPages()) {
       if (editor.getCurrentPageId() !== page.id) editor.setCurrentPage(page.id);
       const shapeIds = editor.getCurrentPageShapeIdsSorted();
-      if (!shapeIds.length) continue;
-      const result = await (editor as Editor & {
-        getSvgString: (ids: unknown[], options: Record<string, unknown>) => Promise<{ svg: string } | undefined>;
-      }).getSvgString(shapeIds, {
-        bounds: new Box(bounds.x, bounds.y, bounds.w, bounds.h),
-        background: true,
-        padding: 0,
-        darkMode: false,
-        preserveAspectRatio: 'xMidYMid meet'
-      });
-      if (result?.svg) {
-        pages.push(`<section class="print-page" data-print-page="${pages.length + 1}">${result.svg}</section>`);
+      let svg = '';
+      if (shapeIds.length) {
+        const result = await (editor as Editor & {
+          getSvgString: (ids: unknown[], options: Record<string, unknown>) => Promise<{ svg: string } | undefined>;
+        }).getSvgString(shapeIds, {
+          bounds: new Box(bounds.x, bounds.y, bounds.w, bounds.h),
+          // The section owns the workspace background so empty pages and pages
+          // containing shapes render the same configured color/image.
+          background: false,
+          padding: 0,
+          darkMode: false,
+          preserveAspectRatio: 'xMidYMid meet'
+        });
+        svg = result?.svg || '';
       }
+      pages.push(createPrintPageMarkup(pages.length + 1, pageBackground, svg));
     }
   } finally {
     if (editor.getPage(originalPageId) && editor.getCurrentPageId() !== originalPageId) {
@@ -119,16 +124,80 @@ export async function createSvgTemplateSnapshot(
     }
   }
 
-  if (!pages.length) throw new Error('当前模板没有可打印内容');
+  if (!pages.length) {
+    pages.push(createPrintPageMarkup(1, pageBackground, ''));
+  }
   return {
     html: pages.join(''),
     css: [
       'html, body { overflow: visible; background: #fff; }',
-      '.print-page { width: 100%; height: 100%; overflow: hidden; break-after: page; page-break-after: always; }',
+      `.print-page { width: ${Math.max(1, bounds.w)}px; height: ${Math.max(1, bounds.h)}px; overflow: hidden; break-after: page; page-break-after: always; }`,
       '.print-page:last-child { break-after: auto; page-break-after: auto; }',
-      '.print-page > svg { display: block; width: 100%; height: 100%; }'
+      '.print-page { position: relative; box-sizing: border-box; background-repeat: no-repeat; }',
+      '.print-page-background { position: absolute; z-index: 0; inset: 0; display: block; width: 100%; height: 100%; }',
+      '.print-page > svg { position: relative; z-index: 1; display: block; width: 100%; height: 100%; }'
     ].join('\n')
   };
+}
+
+async function createPageBackground(background: VueTemplateWorkspaceConfig['background']) {
+  if (!background) return { style: '', imageUrl: '', imageSize: 'cover', imagePosition: 'center' };
+  const color = sanitizeCssValue(background.color, '#ffffff');
+  const imageUrl = await resolveBackgroundImageUrl(background.imageUrl);
+  const imageSize = background.imageSize === 'contain' || background.imageSize === 'auto'
+    ? background.imageSize
+    : 'cover';
+  const position = sanitizeCssValue(background.imagePosition, 'center');
+  return {
+    style: `background-color:${color};background-size:${imageSize};background-position:${position};`,
+    imageUrl,
+    imageSize,
+    imagePosition: position,
+  };
+}
+
+function createPrintPageMarkup(pageNo: number, background: Awaited<ReturnType<typeof createPageBackground>>, svg: string) {
+  const backgroundImage = background.imageUrl
+    ? `<img class="print-page-background" src="${escapeHtmlAttribute(background.imageUrl)}" alt="" style="object-fit:${background.imageSize === 'contain' ? 'contain' : background.imageSize === 'auto' ? 'none' : 'cover'};object-position:${escapeCssValue(background.imagePosition)};" />`
+    : '';
+  const style = background.style ? ` style="${escapeHtmlAttribute(background.style)}"` : '';
+  return `<section class="print-page" data-print-page="${pageNo}"${style}>${backgroundImage}${svg}</section>`;
+}
+
+async function resolveBackgroundImageUrl(value: unknown) {
+  const url = typeof value === 'string' ? value.trim() : '';
+  if (!url || url.startsWith('data:')) return url;
+  if (typeof fetch !== 'function') return '';
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`背景图片加载失败（${response.status}）`);
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  let binary = '';
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  const mimeType = response.headers.get('content-type') || 'application/octet-stream';
+  return `data:${mimeType};base64,${btoa(binary)}`;
+}
+
+function sanitizeCssValue(value: unknown, fallback: string) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text && !/[;{}<>"']/.test(text) ? text : fallback;
+}
+
+function escapeCssValue(value: string) {
+  return value.replace(/[;{}<>"'\r\n]/g, '');
+}
+
+function escapeHtmlAttribute(value: string) {
+  return value.replace(/[&<>"']/g, (character) => {
+    switch (character) {
+      case '&': return '&amp;';
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '"': return '&quot;';
+      default: return '&#39;';
+    }
+  });
 }
 
 async function resolveRecords(dataSource: PrintDataSourceConfig | undefined): Promise<PrintDataRow[]> {

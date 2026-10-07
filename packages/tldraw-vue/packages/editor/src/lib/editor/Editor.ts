@@ -10329,7 +10329,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 			...opts,
 		} satisfies TLImageExportOptions
 		const result = await this.getSvgString(shapes, withDefaults)
-		if (!result) throw new Error('Could not create SVG')
+		if (!result) throw new Error('')//
 
 		switch (withDefaults.format) {
 			case 'svg': {
