@@ -193,6 +193,7 @@ function createMaterialGridPage(
 			listItemGap: listLayout?.gap,
 			listItemWidth: listLayout?.itemWidth,
 			listUsesFrame,
+			showBorder: _material.props.showBorder !== false,
 		},
 		updates,
 		data: rows.map((row) => data[Number(row.key.slice(4))]).filter(Boolean),

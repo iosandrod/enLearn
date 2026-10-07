@@ -12,6 +12,9 @@ type AlignmentOperation =
 	| 'center-vertical'
 	| 'bottom'
 
+type BorderOperation = 'borderLeft' | 'borderRight' | 'borderTop' | 'borderBottom'
+type EditorShape = NonNullable<ReturnType<Editor['getShape']>>
+
 const props = defineProps<{
 	editor: Editor
 }>()
@@ -25,8 +28,25 @@ const actions = [
 	{ id: 'bottom', label: '垂直布局下', icon: 'ri-align-item-bottom-line' },
 ] as const
 
+const borderActions = [
+	{ id: 'borderLeft', label: '显示/隐藏左边框', icon: 'ri-border-left-line' },
+	{ id: 'borderRight', label: '显示/隐藏右边框', icon: 'ri-border-right-line' },
+	{ id: 'borderTop', label: '显示/隐藏上边框', icon: 'ri-border-top-line' },
+	{ id: 'borderBottom', label: '显示/隐藏下边框', icon: 'ri-border-bottom-line' },
+] as const
+
 const selectedShapeIds = useEditorValue('alignment toolbar selected shape ids', () =>
-	props.editor.getSelectedShapeIds(),
+	props.editor.getSelectedShapes().map((shape) => {
+		const shapeProps = shape.props as Record<string, unknown>
+		return [
+			shape.id,
+			shape.type,
+			shapeProps.borderLeft,
+			shapeProps.borderRight,
+			shapeProps.borderTop,
+			shapeProps.borderBottom,
+		]
+	}),
 )
 
 const canAlign = computed(() => {
@@ -35,6 +55,12 @@ const canAlign = computed(() => {
 	if (ids.length >= 2) return true
 	if (ids.length !== 1) return false
 	return props.editor.getShape(ids[0])?.type === 'vue-text'
+})
+
+const canToggleBorder = computed(() => {
+	selectedShapeIds.value
+	return getUnlockedSelectedShapeIds(props.editor)
+		.some((id) => isBorderCapableShape(props.editor.getShape(id)))
 })
 
 function align(operation: AlignmentOperation) {
@@ -61,29 +87,75 @@ function align(operation: AlignmentOperation) {
 	props.editor.markHistoryStoppingPoint('align selected shapes')
 	props.editor.alignShapes(ids, operation)
 }
+
+function isBorderCapableShape(shape: EditorShape | undefined): shape is EditorShape {
+	return Boolean(shape?.type.startsWith('vue-'))
+}
+
+function isBorderActive(operation: BorderOperation) {
+	selectedShapeIds.value
+	const shapes = getUnlockedSelectedShapeIds(props.editor)
+		.map((id) => props.editor.getShape(id))
+		.filter(isBorderCapableShape)
+	return shapes.length > 0 && shapes.every((shape) => Boolean((shape.props as Record<string, unknown>)[operation]))
+}
+
+function toggleBorder(operation: BorderOperation) {
+	const shapes = getUnlockedSelectedShapeIds(props.editor)
+		.map((id) => props.editor.getShape(id))
+		.filter(isBorderCapableShape)
+	if (!shapes.length) return
+
+	const nextValue = !shapes.every((shape) => Boolean((shape.props as Record<string, unknown>)[operation]))
+	props.editor.markHistoryStoppingPoint(`toggle ${operation}`)
+	props.editor.updateShapes(shapes.map((shape) => ({
+		id: shape.id,
+		type: shape.type,
+		props: { [operation]: nextValue },
+	})) as never)
+}
 </script>
 
 <template>
 	<div
 		class="alignment-toolbar"
-		aria-label="节点对齐"
+		aria-label="节点属性工具栏"
 		@pointerdown.stop
 		@pointermove.stop
 		@pointerup.stop
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
-		<button
-			v-for="action in actions"
-			:key="action.id"
-			type="button"
-			class="alignment-toolbar__button"
-			:aria-label="action.label"
-			:title="action.label"
-			:disabled="!canAlign"
-			@click="align(action.id)"
-		>
-			<i :class="action.icon" aria-hidden="true" />
-		</button>
+		<div class="alignment-toolbar__group" aria-label="节点对齐">
+			<button
+				v-for="action in actions"
+				:key="action.id"
+				type="button"
+				class="alignment-toolbar__button"
+				:aria-label="action.label"
+				:title="action.label"
+				:disabled="!canAlign"
+				@click="align(action.id)"
+			>
+				<i :class="action.icon" aria-hidden="true" />
+			</button>
+		</div>
+		<span class="alignment-toolbar__divider" aria-hidden="true" />
+		<div class="alignment-toolbar__group alignment-toolbar__group--borders" aria-label="节点边框">
+			<button
+				v-for="action in borderActions"
+				:key="action.id"
+				type="button"
+				class="alignment-toolbar__button"
+				:class="{ 'is-active': isBorderActive(action.id) }"
+				:aria-label="action.label"
+				:title="action.label"
+				:aria-pressed="isBorderActive(action.id)"
+				:disabled="!canToggleBorder"
+				@click="toggleBorder(action.id)"
+			>
+				<i :class="action.icon" aria-hidden="true" />
+			</button>
+		</div>
 	</div>
 </template>

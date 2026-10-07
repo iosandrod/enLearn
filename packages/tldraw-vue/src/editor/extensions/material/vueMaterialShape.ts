@@ -289,6 +289,7 @@ export class VueMaterialSectionShapeUtil extends BaseBoxShapeUtil<VueMaterialSec
 			props: {
 				...shape.props,
 				containerList: isVueMaterialShape(parent) && parent.props.containerList === true,
+				showBorder: isVueMaterialShape(parent) ? parent.props.showBorder : undefined,
 			},
 		})
 	}

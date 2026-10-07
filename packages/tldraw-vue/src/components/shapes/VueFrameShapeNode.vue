@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { VueFrameShape } from '@/editor/extensions/frame/vueFrameShape'
 import type { VueShapeNodeProps } from './types'
-
+import { useVueShapeTheme,userShapeBorderStyle } from './useVueShapeTheme'
+//
 const props = defineProps<VueShapeNodeProps<VueFrameShape>>()
+const borderStyle=userShapeBorderStyle(props.shape )//
 </script>
 
 <template>
@@ -13,8 +15,10 @@ const props = defineProps<VueShapeNodeProps<VueFrameShape>>()
 		:style="{
 			width: `${shape.props.w}px`,
 			height: `${shape.props.h}px`,
+			borderRadius: `${shape.props.borderRadius}px`,
 			transform: pageTransform,
 			opacity: shape.opacity,
+			...borderStyle,
 			'--inverse-zoom': String(1 / zoom),
 		}"
 	>

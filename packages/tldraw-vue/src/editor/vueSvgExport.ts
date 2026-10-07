@@ -52,6 +52,8 @@ type VueMaterialSvgShape = {
 		w: number
 		h: number
 		name: string
+		showBorder?: boolean
+		containerList?: boolean
 	}
 }
 
@@ -63,6 +65,7 @@ type VueMaterialSectionSvgShape = {
 		zone: string
 		label: string
 		containerList?: boolean
+		showBorder?: boolean
 	}
 }
 
@@ -101,6 +104,7 @@ export interface VueMaterialPrintTableOverride {
 	listItemGap?: number
 	listItemWidth?: number
 	listUsesFrame?: boolean
+	showBorder?: boolean
 }
 
 let vueMaterialPrintTableOverrides = new Map<TLShapeId, VueMaterialPrintTableOverride>()
@@ -507,6 +511,7 @@ export function createVueTableSvg(
 export function createVueMaterialSvg(shape: VueMaterialSvgShape): SvgExportNode {
 	const width = Math.max(1, shape.props.w)
 	const height = Math.max(1, shape.props.h)
+	const hideContainerListBorder = shape.props.containerList === true && shape.props.showBorder === false
 
 	return createElement(
 		'g',
@@ -515,7 +520,7 @@ export function createVueMaterialSvg(shape: VueMaterialSvgShape): SvgExportNode 
 			width,
 			height,
 			fill: '#ffffff',
-			stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
+			stroke: hideContainerListBorder ? 'none' : VUE_MATERIAL_TABLE_BORDER_COLOR,
 			strokeWidth: 1.5,
 		})
 	)
@@ -540,6 +545,7 @@ export function createVueMaterialSectionSvg(shape: VueMaterialSectionSvgShape): 
 			paddingY: 6,
 			renderedHeight: height,
 			emptyText: '将内容放入列表项 Frame',
+			showBorder: shape.props.showBorder !== false,
 		})
 	}
 	return override
@@ -897,15 +903,17 @@ function createVueMaterialPrintListSvg(
 			{ clipPath: `url(#${clipId})`, transform: `translate(${borderSize} ${borderSize})` },
 			children,
 		),
-		createElement('rect', {
-			x: 0.5,
-			y: 0.5,
-			width: Math.max(0, width - 1),
-			height: Math.max(0, renderedHeight - 1),
-			fill: 'none',
-			stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
-			strokeWidth: 1,
-		}),
+		override.showBorder === false
+			? null
+			: createElement('rect', {
+				x: 0.5,
+				y: 0.5,
+				width: Math.max(0, width - 1),
+				height: Math.max(0, renderedHeight - 1),
+				fill: 'none',
+				stroke: VUE_MATERIAL_TABLE_BORDER_COLOR,
+				strokeWidth: 1,
+			}),
 	)
 }
 

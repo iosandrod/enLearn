@@ -1687,16 +1687,34 @@ button {
 	top: 34px;
 	left: 34px;
 	z-index: 34;
-	display: grid;
-	grid-template-columns: repeat(3, 30px);
-	grid-template-rows: repeat(2, 30px);
-	gap: 2px;
+	display: flex;
+	align-items: stretch;
+	gap: 6px;
 	padding: 4px;
 	border: 1px solid #d9dee6;
 	border-radius: 6px;
 	background: #f9fafb;
 	box-shadow: 0 6px 16px rgb(15 23 42 / 0.1);
 	pointer-events: auto;
+}
+
+.alignment-toolbar__group {
+	display: grid;
+	grid-template-columns: repeat(3, 30px);
+	grid-template-rows: repeat(2, 30px);
+	gap: 2px;
+}
+
+.alignment-toolbar__group--borders {
+	grid-template-columns: repeat(4, 30px);
+	grid-template-rows: 30px;
+}
+
+.alignment-toolbar__divider {
+	width: 1px;
+	min-height: 30px;
+	background: #d9dee6;
+	align-self: center;
 }
 
 .alignment-toolbar__button {
@@ -1718,6 +1736,11 @@ button {
 	color: #1d4ed8;
 }
 
+.alignment-toolbar__button.is-active {
+	background: #dce9fb;
+	color: #1d4ed8;
+}
+
 .alignment-toolbar__button:focus-visible {
 	outline: 2px solid #2563eb;
 	outline-offset: -1px;
@@ -1733,8 +1756,17 @@ button {
 	.alignment-toolbar {
 		top: 34px;
 		left: 34px;
+		gap: 4px;
+	}
+
+	.alignment-toolbar__group {
 		grid-template-columns: repeat(3, 28px);
 		grid-template-rows: repeat(2, 28px);
+	}
+
+	.alignment-toolbar__group--borders {
+		grid-template-columns: repeat(4, 28px);
+		grid-template-rows: 28px;
 	}
 
 	.alignment-toolbar__button {
@@ -2086,8 +2118,6 @@ button {
 
 .vue-frame-shape {
 	z-index: 1;
-	border: calc(1.5px * var(--inverse-zoom)) solid rgb(37 99 235 / 0.66);
-	border-radius: calc(3px * var(--inverse-zoom));
 	background: rgb(37 99 235 / 0.04);
 	box-shadow: 0 0 0 calc(1px * var(--inverse-zoom)) rgb(255 255 255 / 0.78) inset;
 	overflow: hidden;

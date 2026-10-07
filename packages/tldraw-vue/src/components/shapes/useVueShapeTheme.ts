@@ -8,6 +8,7 @@ import type {
 } from '@tldraw/tlschema'
 import { getDashArray, VUE_FONT_SIZE_SCALE, VUE_STROKE_SIZES } from '@/editor/vueStyleDefs'
 import { useEditorValue } from '@/vue/useEditorValue'
+import { computed } from 'vue'
 
 export function useVueShapeTheme(editor: Editor, scope: string) {
 	const theme = useEditorValue(`${scope} theme`, () => editor.getCurrentTheme())
@@ -71,4 +72,53 @@ export function useVueShapeTheme(editor: Editor, scope: string) {
 		getThemeColor,
 		theme,
 	}
+}
+export const userShapeBorderStyle = (props: any) => {
+	const borderObj = computed(() => {
+		const material: any = props
+		let borderLeft = material.props.borderLeft
+		let borderRight = material.props.borderRight
+		let borderTop = material.props.borderTop
+		let borderBottom = material.props.borderBottom//
+		let obj = {
+		} as any
+		if (Boolean(borderLeft) == false) {
+			obj.borderLeft = 'none'
+		}
+		if (Boolean(borderRight) == false) {
+			obj.borderRight = 'none'
+		}
+		if (Boolean(borderTop) == false) {
+			obj.borderTop = 'none'
+		}
+		if (Boolean(borderBottom) == false) {
+			obj.borderBottom = 'none'
+		}
+		const borderWidth = material.props.borderWidth
+		if(Boolean(borderWidth)){
+			obj.borderWidth = `${borderWidth}px`
+		}else{
+			obj.borderWidth = '1px'//
+		}
+		if (!Boolean(borderLeft) && !Boolean(borderRight) && !Boolean(borderTop) && !Boolean(borderBottom)) {
+			obj = {}//
+		}
+		return obj
+	})
+	// const _showBorder = computed(() => {
+	// 	const material: any = props//
+	// 	let showBorder = material.props.showBorder
+	// 	let borderLeft = material.props.borderLeft
+	// 	let borderRight = material.props.borderRight
+	// 	let borderTop = material.props.borderTop
+	// 	let borderBottom = material.props.borderBottom//
+	// 	if (Boolean(borderLeft) || Boolean(borderRight) || Boolean(borderTop) || Boolean(borderBottom)) {
+	// 		showBorder = true
+	// 	}
+	// 	return showBorder
+	// })
+	const style=computed(() => {
+		return borderObj.value
+	})
+	return style
 }

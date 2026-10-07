@@ -91,6 +91,10 @@ const baseDefinitions = {
 	expression: {
 		validator: T.optional(T.string),
 		default: '',
+	},
+	borderRadius: {
+		validator: T.optional(T.number),
+		default: 0,
 	}
 } as const
 
@@ -112,4 +116,5 @@ export type BaseProps = {
 	borderBottom?: boolean
 	expression?: string
 	showBorder?: boolean//
+	borderRadius?: number//
 }
