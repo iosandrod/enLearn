@@ -17,6 +17,7 @@ export type FileObject = {
   sizeBytes: number | null;
   checksum: string | null;
   ownerId: string;
+  userId: string | null;
   visibility: FileVisibility;
   status: FileStatus;
   locked: boolean;
@@ -120,6 +121,7 @@ type FileObjectRow = {
   size_bytes: number | null;
   checksum: string | null;
   owner_id: string;
+  user_id: string | null;
   visibility: FileVisibility;
   status: FileStatus;
   locked: boolean;
@@ -244,6 +246,7 @@ function normalizeFile(row: FileObjectRow): FileObject {
     sizeBytes: row.size_bytes,
     checksum: row.checksum,
     ownerId: row.owner_id,
+    userId: row.user_id,
     visibility: row.visibility,
     status: row.status,
     locked: row.locked === true,

@@ -62,6 +62,15 @@ class TextPayloadNodePreviewStrategy extends ShapePreviewStrategy {
 	}
 }
 
+class RichTextNodePreviewStrategy extends ShapePreviewStrategy {
+	supports(shape: TLShape) { return shape.type === 'vue-rich-text' }
+	protected resolveProps(shape: TLShape, context: PrintExpressionContext, config?: PrintExpressionConfig) {
+		const props = shape.props as Record<string, unknown>
+		if (typeof props.content !== 'string') return null
+		return { ...props, content: resolveTemplateString(props.content, context, config) }
+	}
+}
+
 class GeometryNodePreviewStrategy extends ShapePreviewStrategy {
 	supports(shape: TLShape) {
 		return shape.type === 'vue-box'
@@ -117,6 +126,7 @@ class GenericShapePreviewStrategy extends ShapePreviewStrategy {
 export class PrintShapePreviewResolver {
 	private readonly strategies: readonly ShapePreviewStrategy[] = [
 		new TextNodePreviewStrategy(),
+		new RichTextNodePreviewStrategy(),
 		new TextPayloadNodePreviewStrategy(),
 		new GeometryNodePreviewStrategy(),
 		new DedicatedLayoutPreviewStrategy(),

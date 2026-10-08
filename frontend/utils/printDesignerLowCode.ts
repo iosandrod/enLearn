@@ -11,6 +11,7 @@ export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.property.workspace',
   'print-designer.property.vue-box',
   'print-designer.property.vue-text',
+  'print-designer.property.vue-rich-text',
   'print-designer.property.vue-image',
   'print-designer.property.vue-line',
   'print-designer.property.vue-arrow',

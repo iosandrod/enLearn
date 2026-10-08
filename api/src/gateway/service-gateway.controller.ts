@@ -205,4 +205,32 @@ export class ServiceGatewayController {
       data
     };
   }
+
+  /** Dedicated backend data-source endpoint used by print runtimes and previews. */
+  @Post('print/data-source')
+  @HttpCode(200)
+  async printDataSource(
+    @Body() body: Record<string, unknown>,
+    @Headers('authorization') authorization?: string,
+    @Headers('x-request-id') requestId?: string,
+    @Headers('x-account-id') accountId?: string
+  ) {
+    const sourceCode = typeof body?.sourceCode === 'string' ? body.sourceCode.trim() : '';
+    if (!sourceCode) throw new BadRequestException('sourceCode is required.');
+    const context = (await requireActiveAccount(
+      { authorization, requestId, serviceName: 'print' },
+      accountId
+    )).context;
+    return {
+      success: true,
+      serviceName: 'print',
+      serviceMethod: 'resolveDataSource',
+      data: await this.router.invoke(
+        'print',
+        'resolveDataSource',
+        { sourceCode, params: isRecord(body?.params) ? body.params : {} },
+        context
+      )
+    };
+  }
 }

@@ -66,6 +66,7 @@ const STORAGE_ENTITY_DEFINITIONS = [
       { field_name: 'size_bytes', label: '文件大小', data_type: 'bigint', required: false, description: '文件字节数。' },
       { field_name: 'checksum', label: '校验和', data_type: 'text', required: false, description: '文件内容校验值。' },
       { field_name: 'owner_id', label: '拥有者', data_type: 'uuid', required: true, description: '文件所属用户。' },
+      { field_name: 'user_id', label: '上传用户', data_type: 'uuid', required: false, description: '创建并上传文件的用户。' },
       { field_name: 'visibility', label: '可见性', data_type: 'text', required: true, description: 'private/public。' },
       { field_name: 'status', label: '状态', data_type: 'text', required: true, description: '上传、可用、删除等生命周期状态。' },
       { field_name: 'locked', label: '锁定', data_type: 'boolean', required: true, description: '锁定后禁止删除。' },
@@ -139,11 +140,11 @@ const FILE_RESOURCE_CONFIGS: ResourceConfigMap = {
     create: {
       allowedFields: [
         'id', 'bucket', 'object_key', 'original_name', 'mime_type', 'size_bytes',
-        'file_url', 'checksum', 'owner_id', 'visibility', 'status', 'locked', 'metadata',
+        'file_url', 'checksum', 'owner_id', 'user_id', 'visibility', 'status', 'locked', 'metadata',
         'upload_expires_at'
       ],
       requiredFields: ['object_key', 'original_name'],
-      userFields: { owner: 'owner_id' }
+      userFields: { owner: 'owner_id', createdBy: 'user_id' }
     },
     update: {
       allowedFields: [
@@ -343,6 +344,7 @@ export class FilesService extends BaseService {
         mime_type: mimeType,
         size_bytes: sizeBytes,
         owner_id: user.id,
+        user_id: user.id,
         visibility,
         status: 'uploading',
         metadata,
@@ -412,6 +414,7 @@ export class FilesService extends BaseService {
         size_bytes: body.length,
         checksum,
         owner_id: user.id,
+        user_id: user.id,
         visibility,
         status: 'uploading',
         metadata

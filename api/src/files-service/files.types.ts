@@ -19,6 +19,7 @@ export type FileObjectRow = {
   size_bytes: number | null;
   checksum: string | null;
   owner_id: string;
+  user_id: string | null;
   visibility: FileVisibility;
   status: FileStatus;
   locked: boolean;

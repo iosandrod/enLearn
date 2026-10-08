@@ -2,7 +2,24 @@
   <section class="label-designer-material" :aria-busy="busy">
     <slot name="header"></slot>
     <div v-if="message" class="label-designer-material__message" role="status">{{ message }}</div>
-    <TldrawVue ref="designer" :show-template-controls="false" @ready="handleReady" @content-change="markDirty" />
+    <TldrawVue
+      ref="designer"
+      :show-template-controls="false"
+      :template-items="templateItems"
+      :active-template-id="templateId"
+      :template-search="templateSearch"
+      :template-status-filter="templateStatusFilter"
+      :template-loading="templateLoading"
+      :template-has-more="templateHasMore"
+      :template-total="templateTotal"
+      @ready="handleReady"
+      @content-change="markDirty"
+      @template-select="handleTemplateSelect"
+      @template-search-change="handleTemplateSearchChange"
+      @template-status-change="handleTemplateStatusChange"
+      @template-refresh="refreshTemplateItems"
+      @template-load-more="loadMoreTemplateItems"
+    />
   </section>
 </template>
 
@@ -28,6 +45,22 @@ const templateId = toRef(templateConfig, 'templateId');
 const templateVersion = toRef(templateConfig, 'templateVersion');
 const templateStatus = toRef(templateConfig, 'templateStatus');
 const templateDirty = toRef(templateConfig, 'templateDirty');
+const templateItems = ref<Array<{
+  id: string;
+  name: string;
+  preview?: string | null;
+  status?: string;
+  version?: number;
+}>>([]);
+const templateSearch = ref('');
+const templateStatusFilter = ref<'all' | 'active' | 'draft' | 'archived'>('all');
+const templateLoading = ref(false);
+const templateHasMore = ref(false);
+const templateTotal = ref(0);
+const templatePage = ref(1);
+const templatePageSize = 24;
+let templateRequestId = 0;
+let templateSearchTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressDirty = false;
 
 function emitTemplateInfo() {
@@ -393,11 +426,177 @@ async function loadData(options: Record<string, any> = {}) {
   const rows = await api.invoke<any[]>('admin', 'listItems', {
     tableName: 'print_templates', filters: { id: requestedId }, page: 1, pageSize: 1, limit: 1,
   });
-  const record = Array.isArray(rows) ? rows[0] : undefined;
+  const record = readTemplateRows(rows)[0];
   if (!record) throw new Error(`未找到打印模板：${requestedId}`);//
   await setData(record);
   return getTemplateInfo();//
 }
+
+async function refreshTemplateItems() {
+  return loadTemplatePage(false);
+}
+
+async function loadTemplatePage(append: boolean) {
+  const requestId = ++templateRequestId;
+  const page = append ? templatePage.value + 1 : 1;
+  templateLoading.value = true;
+  try {
+    const filters: Record<string, unknown> = {};
+    if (templateStatusFilter.value === 'all') filters.status = ['active', 'draft'];
+    else filters.status = templateStatusFilter.value;
+    const search = templateSearch.value.trim();
+    if (search) filters.name = { op: 'ilike', value: search };
+    const response = await host.getServiceApi().invoke<any>('admin', 'listItems', {
+      tableName: 'print_templates',
+      filters,
+      page,
+      pageSize: templatePageSize,
+      limit: templatePageSize,
+      responseMode: 'page',
+      withCount: true,
+      sorts: [{ field: 'updated_at', direction: 'desc' }],
+    });
+    if (requestId !== templateRequestId) return;
+    const list = readTemplateRows(response)
+      .filter((row) => templateStatusFilter.value === 'archived' || row.status !== 'archived')
+      .filter((row) => typeof row.id === 'string' && typeof row.name === 'string')
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        preview: normalizeTemplatePreview(row),
+        status: typeof row.status === 'string' ? row.status : undefined,
+        version: Number.isInteger(row.version) ? row.version : undefined,
+      }));
+    const existing = append ? templateItems.value : [];
+    const merged = [...existing, ...list];
+    templateItems.value = merged.filter((item, index, items) => (
+      items.findIndex((candidate) => candidate.id === item.id) === index
+    ));
+    templatePage.value = page;
+    const total = Number(response && typeof response === 'object' && !Array.isArray(response)
+      ? response.total
+      : NaN);
+    templateTotal.value = Number.isFinite(total) ? total : templateItems.value.length;
+    templateHasMore.value = Number.isFinite(total)
+      ? page * templatePageSize < total
+      : list.length >= templatePageSize;
+  } catch (error) {
+    if (requestId === templateRequestId) {
+      console.warn('[label-designer] failed to load template list', error);
+      if (!append) {
+        templateItems.value = [];
+        templateTotal.value = 0;
+      }
+      templateHasMore.value = false;
+    }
+  } finally {
+    if (requestId === templateRequestId) templateLoading.value = false;
+  }
+}
+
+function handleTemplateSearchChange(value: string) {
+  templateSearch.value = value;
+  if (templateSearchTimer) clearTimeout(templateSearchTimer);
+  templateSearchTimer = setTimeout(() => {
+    templateSearchTimer = undefined;
+    void refreshTemplateItems();
+  }, 250);
+}
+
+function handleTemplateStatusChange(value: string) {
+  if (templateSearchTimer) {
+    clearTimeout(templateSearchTimer);
+    templateSearchTimer = undefined;
+  }
+  templateStatusFilter.value = value === 'active' || value === 'draft' || value === 'archived'
+    ? value
+    : 'all';
+  void refreshTemplateItems();
+}
+
+function loadMoreTemplateItems() {
+  if (!templateLoading.value && templateHasMore.value) void loadTemplatePage(true);
+}
+
+async function handleTemplateSelect(selectedId: string) {
+  const id = String(selectedId || '').trim();
+  if (!id || id === String(templateId.value || '').trim()) return;
+  // if (templateDirty.value && typeof window !== 'undefined' && !window.confirm('加载模板会放弃当前未保存的修改，是否继续？')) {
+  //   return;
+  // }
+  busy.value = true;
+  try {
+    await loadData({ templateId: id });
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '模板加载失败';
+  } finally {
+    busy.value = false;
+  }
+}
+
+function readTemplateRows(value: unknown): Array<Record<string, any>> {
+  if (Array.isArray(value)) return value.filter((row): row is Record<string, any> => Boolean(row && typeof row === 'object'));
+  if (!value || typeof value !== 'object') return [];
+  const record = value as Record<string, any>;
+  if (Array.isArray(record.rows)) return readTemplateRows(record.rows);
+  if (Array.isArray(record.items)) return readTemplateRows(record.items);
+  if (Array.isArray(record.records)) return readTemplateRows(record.records);
+  if (record.data) return readTemplateRows(record.data);
+  return [];
+}
+
+/** Normalize preview values returned by different admin API/database versions. */
+function normalizeTemplatePreview(row: Record<string, any>): string | null {
+  const candidates = [
+    row.preview,
+    row.preview_data_url,
+    row.previewDataUrl,
+    row.preview_url,
+    row.previewUrl,
+    row.metadata,
+    row.metadata?.preview,
+    row.metadata?.preview_data_url,
+    row.metadata?.previewDataUrl,
+  ];
+  for (const candidate of candidates) {
+    const preview = normalizePreviewValue(candidate);
+    if (preview) return preview;
+  }
+  return null;
+}
+
+function normalizePreviewValue(value: unknown, depth = 0): string | null {
+  if (depth > 3 || value === null || value === undefined) return null;
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    for (const key of ['dataUrl', 'dataURL', 'url', 'src', 'preview', 'value', 'data']) {
+      const preview = normalizePreviewValue(record[key], depth + 1);
+      if (preview) return preview;
+    }
+    return null;
+  }
+  if (typeof value !== 'string') return null;
+  const text = value.trim();
+  if (!text) return null;
+  if (text.startsWith('{') || text.startsWith('[')) {
+    try {
+      return normalizePreviewValue(JSON.parse(text), depth + 1);
+    } catch {
+      return null;
+    }
+  }
+  if (/^<svg[\s>]/i.test(text)) {
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(text)}`;
+  }
+  if (/^data:image\//i.test(text) || /^(?:https?:|blob:|\/)/i.test(text)) return text;
+  // Older rows may contain only the base64 payload. PNG is the format used by
+  // the original thumbnail writer, so restore its missing data URL prefix.
+  if (/^[A-Za-z0-9+/]+={0,2}$/.test(text) && text.length > 64) {
+    return `data:image/png;base64,${text}`;
+  }
+  return null;
+}
+
 setTimeout(() => {
   loadData({ templateId: 'da875545-0e56-4fff-917f-26eb678a9395' }).catch((error) => {
   });
@@ -412,15 +611,23 @@ async function save(options: Record<string, any> = {}) {
     templateDirty.value = false;
     dirty.value = false;
     emitTemplateInfo();
+    void refreshTemplateItems();
     return result;
   }
   const info = options?.templateInfo && typeof options.templateInfo === 'object' ? options.templateInfo : await getTemplateInfo();
   if (!info?.content) throw new Error('模板内容尚未就绪，无法保存。');
+  const existingPreview = normalizePreviewValue(info.preview);
+  const templateInfo = existingPreview
+    ? { ...info, preview: existingPreview }
+    : await getTemplateInfo(true);
+  if (!templateInfo?.content) throw new Error('模板内容尚未就绪，无法保存。');
   const api = host.getServiceApi();
   const id = String(templateId.value || props.block.templateId || host.getRoute().query?.templateId || '').trim();
   const payload = {
     name: String(templateName.value || props.block.templateName || '标签打印模板'),
-    content: clone(info.content), workspace: clone(info.workspace || {}), status: 'active', version: templateVersion.value,
+    content: clone(templateInfo.content), workspace: clone(templateInfo.workspace || {}),
+    preview: normalizePreviewValue(templateInfo.preview),
+    status: 'active', version: templateVersion.value,
     metadata: { editor: 'tldraw-vue', source: 'lowcode-label-designer-static', schemaVersion: 1 },
   };
   const result = await api.invoke<any>('admin', 'saveItem', { resource: 'print_templates', ...(id ? { id } : {}), data: payload });
@@ -432,6 +639,7 @@ async function save(options: Record<string, any> = {}) {
   dirty.value = false;
   message.value = `模板“${templateName.value}”已保存`;
   emitTemplateInfo();
+  void refreshTemplateItems();
   return result;
 }
 
@@ -499,6 +707,7 @@ function handleReady() {
   readyPromiseResolve?.();
   readyPromiseResolve = undefined;
   emitTemplateInfo();
+  void refreshTemplateItems();
   void loadData({ templateId: props.block.templateId }).catch((error) => {
     message.value = error instanceof Error ? error.message : '模板加载失败';
   });
@@ -527,6 +736,10 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => unregisterRuntimeController());
+onBeforeUnmount(() => {
+  if (templateSearchTimer) clearTimeout(templateSearchTimer);
+  templateRequestId += 1;
+});
 </script>
 
 <style scoped>

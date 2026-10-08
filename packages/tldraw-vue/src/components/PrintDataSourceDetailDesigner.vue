@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { LowCodeHostServiceApi } from '@enlearn/lowcode-framework/core/host'
-import { $$gridDesigner, type GridDesignerEvent, type GridDesignerResult } from '@enlearn/lowcode-framework/designer'
 import { computed, ref, watch } from 'vue'
 import type { PrintDataSourceDetailTable } from '@/print/types'
+import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 
 type AddDetailTableModel = {
 	label: string
@@ -21,6 +21,7 @@ const emit = defineEmits<{
 const activeTableId = ref('')
 const addFormVisible = ref(false)
 const addFormError = ref('')
+const configurationError = ref('')
 const addFormModel = ref<AddDetailTableModel>({ label: '', field: '' })
 const tables = computed(() => props.modelValue ?? [])
 const activeTable = computed(() =>
@@ -80,33 +81,17 @@ function handleCancelAddTable() {
 	addFormError.value = ''
 }
 
-function handleConfigureTable() {
+async function handleConfigureTable() {
 	const table = activeTable.value
 	if (!table) return
-	void $$gridDesigner({
-		title: `配置子表 - ${table.label}`,
-		columns: table.columns.map((column) => ({ ...column })),
-		gridOptions: table.gridOptions,
-		gridEvents: table.gridEvents
-			? table.gridEvents.map((event) => ({ ...event })) as GridDesignerEvent[]
-			: undefined,
-		serviceApi: props.serviceApi,
-		onConfirm: (result: GridDesignerResult) => {
-			const nextTable: PrintDataSourceDetailTable = {
-				...table,
-				label: result.business.title || table.label,
-				columns: result.columns.map((column) => ({
-					...column,
-					field: readString(column.field),
-					title: readString(column.title, readString(column.field)),
-					width: Number.isFinite(Number(column.width)) ? Number(column.width) : undefined,
-				})).filter((column) => column.field),
-				gridOptions: result.gridOptions,
-				gridEvents: result.gridEvents,
-			}
-			emitTables(tables.value.map((item) => item.id === table.id ? nextTable : item))
-		},
-	})
+	configurationError.value = ''
+	try {
+		await openPrintDetailColumnsDialog(props.serviceApi, table, (columns) => {
+			emitTables(tables.value.map((item) => item.id === table.id ? { ...table, columns } : item))
+		})
+	} catch (error) {
+		configurationError.value = error instanceof Error ? error.message : '打印明细列配置打开失败。'
+	}
 }
 
 function handleDeleteTable() {
@@ -146,6 +131,7 @@ function readString(value: unknown, fallback = '') {
 				<span>添加子表</span>
 			</button>
 		</header>
+		<p v-if="configurationError" class="print-detail-designer__form-error" role="alert">{{ configurationError }}</p>
 		<form v-if="addFormVisible" class="print-detail-designer__add-form" @submit.prevent="handleConfirmAddTable">
 			<label>
 				<span>子表名称</span>

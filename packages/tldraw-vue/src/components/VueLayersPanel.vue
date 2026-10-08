@@ -45,6 +45,7 @@ interface LayerDropTarget {
 const TYPE_LABELS: Record<string, string> = {
 	'vue-box': '几何节点',
 	'vue-text': '文字节点',
+	'vue-rich-text': '富文本节点',
 	'vue-image': '图片节点',
 	'vue-line': '直线节点',
 	'vue-arrow': '箭头节点',
@@ -63,6 +64,7 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_ICONS: Record<string, string> = {
 	'vue-box': '□',
 	'vue-text': 'T',
+	'vue-rich-text': '富',
 	'vue-image': '▧',
 	'vue-line': '╱',
 	'vue-arrow': '→',

@@ -32,6 +32,14 @@ export interface VueTemplateRecord {
 	metadata?: VueTemplateMetadata
 }
 
+export interface VueTemplatePreviewItem {
+	id: string
+	name: string
+	preview?: string | null
+	status?: string
+	version?: number
+}
+
 export interface VueTemplateMetadata {
 	editor?: string
 	schemaVersion?: number

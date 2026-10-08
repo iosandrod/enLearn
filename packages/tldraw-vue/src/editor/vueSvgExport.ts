@@ -25,6 +25,7 @@ import type {
 	VueLineShape,
 	VueTextShape,
 } from './vueDefaultShapes'
+import type { VueRichTextShape } from './vueRichTextShape'
 import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
 import {
@@ -45,6 +46,16 @@ const VUE_MATERIAL_TABLE_GRID_COLOR = '#d1d5db'
 const VUE_MATERIAL_PRINT_GRID_COLOR = '#111827'
 const VUE_RESUME_BORDER_COLOR = '#cbd5e1'
 const VUE_RESUME_ACCENT_COLOR = '#0f766e'
+
+export function createVueRichTextSvg(shape: VueRichTextShape): SvgExportNode {
+	const width = Math.max(1, shape.props.w)
+	const height = Math.max(1, shape.props.h)
+	const text = String(shape.props.content ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '富文本'
+	return createElement('g', {}, [
+		createElement('rect', { x: 0, y: 0, width, height, fill: 'transparent', stroke: shape.props.showBorder ? VUE_VISIBLE_BORDER_COLOR : 'none' }),
+		createElement('text', { x: shape.props.paddingLeft ?? 0, y: Math.max(16, (shape.props.paddingTop ?? 0) + Number(shape.props.fontSize ?? 14)), fill: shape.props.color ?? '#111827', fontSize: Number(shape.props.fontSize ?? 14) }, text),
+	])
+}
 
 type VueMaterialSvgShape = {
 	id: TLShapeId

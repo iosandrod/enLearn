@@ -3,6 +3,7 @@ import type { ServiceContext, ServiceExecutor } from '../common/interfaces/servi
 import { getEnv } from '../common/utils/env';
 import { createSupabaseClient } from '../common/utils/supabase';
 import { PrintArtifactStorage } from './print-artifact.storage';
+import { PrintDataSourceRuntime } from './print-data-source.runtime';
 import { printBadRequest, printNotFound } from './print-errors';
 import { PrintJobRepository } from './print-job.repository';
 import { PrintRenderPool } from './print-render.pool';
@@ -84,11 +85,11 @@ function readOutput(value: unknown): PrintOutput {
   };
 }
 
-function readData(value: unknown): PrintDataInput {
-  if (!isRecord(value) || value.kind !== 'records' || !Array.isArray(value.records)) {
+function readInlineRecords(value: unknown): PrintDataInput {
+  if (!isRecord(value) || !Array.isArray(value.records)) {
     printBadRequest(
       'PRINT_INPUT_INVALID',
-      'This release supports data.kind="records" with a records array.'
+      'data.kind="records" with a records array is required after data source resolution.'
     );
   }
   if (!value.records.length) printBadRequest('PRINT_INPUT_INVALID', 'At least one record is required.');
@@ -120,9 +121,38 @@ function readData(value: unknown): PrintDataInput {
   };
 }
 
+async function readData(
+  value: unknown,
+  context: PrintContext,
+  dataSources: PrintDataSourceRuntime
+): Promise<PrintDataInput> {
+  if (!isRecord(value)) {
+    printBadRequest('PRINT_INPUT_INVALID', 'data is required.');
+  }
+  if (value.kind === 'registeredQuery') {
+    if (typeof value.sourceCode !== 'string' || !value.sourceCode.trim()) {
+      printBadRequest('PRINT_INPUT_INVALID', 'data.sourceCode is required for registeredQuery.');
+    }
+    const resolved = await dataSources.resolve(value.sourceCode, value.params, context);
+    return readInlineRecords({
+      kind: 'records',
+      records: resolved.records,
+      primaryKey: typeof value.primaryKey === 'string' ? value.primaryKey : undefined
+    });
+  }
+  if (value.kind !== 'records') {
+    printBadRequest(
+      'PRINT_INPUT_INVALID',
+      'data.kind must be records or registeredQuery.'
+    );
+  }
+  return readInlineRecords(value);
+}
+
 async function readInput(
   postData: Record<string, unknown>,
-  context: PrintContext
+  context: PrintContext,
+  dataSources: PrintDataSourceRuntime
 ): Promise<PrintJobInput> {
   const template = isRecord(postData.template)
     ? {
@@ -139,7 +169,7 @@ async function readInput(
   return {
     template: template as PrintTemplate,
     templateSnapshot: templateSnapshot as PrintTemplateSnapshot,
-    data: readData(postData.data),
+    data: await readData(postData.data, context, dataSources),
     output: readOutput(postData.output),
     options: {
       locale: typeof options.locale === 'string' ? options.locale : 'zh-CN',
@@ -212,7 +242,9 @@ export class PrintService implements ServiceExecutor {
     @Inject(PrintRenderPool)
     private readonly renderPool: PrintRenderPool,
     @Inject(PrintArtifactStorage)
-    private readonly artifactStorage: PrintArtifactStorage
+    private readonly artifactStorage: PrintArtifactStorage,
+    @Inject(PrintDataSourceRuntime)
+    private readonly dataSources: PrintDataSourceRuntime
   ) {}
 
   async execute(method: string, postData: Record<string, unknown>, serviceContext: ServiceContext) {
@@ -228,13 +260,25 @@ export class PrintService implements ServiceExecutor {
         return this.cancelJob(postData, context);
       case 'getArtifactDownload':
         return this.getArtifactDownload(postData, context);
+      case 'listDataSources':
+        return this.dataSources.list(context);
+      case 'listManagedDataSources':
+        return this.dataSources.listManaged(context);
+      case 'saveDataSource':
+        return this.dataSources.saveManaged(postData, context);
+      case 'deleteDataSource':
+        return this.dataSources.deleteManaged(postData, context);
+      case 'resolveDataSource':
+      case 'testDataSource':
+      case 'executeDataSource':
+        return this.resolveDataSource(postData, context);
       default:
         printBadRequest('PRINT_METHOD_NOT_SUPPORTED', 'Unsupported print method: ' + method);
     }
   }
 
   private async createPreview(postData: Record<string, unknown>, context: PrintContext) {
-    const input = await readInput(postData, context);
+    const input = await readInput(postData, context, this.dataSources);
     if (input.output.format === 'zip') {
       printBadRequest('PRINT_INPUT_INVALID', 'Preview output cannot use zip format.');
     }
@@ -297,7 +341,7 @@ export class PrintService implements ServiceExecutor {
   }
 
   private async createExportJob(postData: Record<string, unknown>, context: PrintContext) {
-    const input = await readInput(postData, context);
+    const input = await readInput(postData, context, this.dataSources);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60_000).toISOString();
     const job = await this.jobs.create('export', input, context, expiresAt);
     this.enqueue(job, context);
@@ -308,6 +352,16 @@ export class PrintService implements ServiceExecutor {
       pollAfterMs: 1000,
       statusMethod: 'getJob'
     };
+  }
+
+  private async resolveDataSource(postData: Record<string, unknown>, context: PrintContext) {
+    const sourceCode = typeof postData.sourceCode === 'string'
+      ? postData.sourceCode
+      : postData.code;
+    if (typeof sourceCode !== 'string' || !sourceCode.trim()) {
+      printBadRequest('PRINT_INPUT_INVALID', 'sourceCode is required.');
+    }
+    return this.dataSources.resolve(sourceCode, postData.params, context);
   }
 
   private async getJob(postData: Record<string, unknown>, context: PrintContext) {

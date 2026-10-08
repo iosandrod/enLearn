@@ -338,6 +338,15 @@ export class AdminService extends BaseService {
       }
       payload.account_id = accountId;
     }
+    if (!hasId && tableColumns.has('user_id')) {
+      const userId = await this.resolveCurrentUserId(context);
+      if (!userId) {
+        throw new ForbiddenException(
+          `Authenticated user is required to create records in ${tableName}.`
+        );
+      }
+      payload.user_id = userId;
+    }
     for (const field of typedColumns) {
       if (payload[field] === '') payload[field] = null;
     }

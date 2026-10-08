@@ -108,6 +108,7 @@ declare module '@tldraw/tlschema' {
 		'vue-line': VueLineShape['props']
 		'vue-arrow': VueArrowShape['props']
 		'vue-draw': VueDrawShape['props']
+		'vue-rich-text': import('./vueRichTextShape').VueRichTextShape['props']
 	}
 }
 

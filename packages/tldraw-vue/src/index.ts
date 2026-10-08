@@ -29,6 +29,7 @@ export type {
 	VueTemplateLoadHandler,
 	VueTemplateRecord,
 	VueTemplateMetadata,
+	VueTemplatePreviewItem,
 	VueTemplateSaveHandler,
 	VueTemplateWorkspaceConfig,
 } from './editor/templateStore'
@@ -44,6 +45,7 @@ export type {
 	VuePoint,
 	VueTextShape,
 } from './editor/vueDefaultShapes'
+export type { VueRichTextShape } from './editor/vueRichTextShape'
 export {
 	createVueEditorExtensionRegistry,
 	getToolbarPlacementGroup,

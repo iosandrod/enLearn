@@ -11,6 +11,7 @@ import VueDrawShapeNode from '@/components/shapes/VueDrawShapeNode.vue'
 import VueImageShapeNode from '@/components/shapes/VueImageShapeNode.vue'
 import VueLineShapeNode from '@/components/shapes/VueLineShapeNode.vue'
 import VueTextShapeNode from '@/components/shapes/VueTextShapeNode.vue'
+import VueRichTextShapeNode from '@/components/shapes/VueRichTextShapeNode.vue'
 import { VueArrowBindingUtil } from '../interactions/VueArrowBindingUtil'
 import type { VueGeoShape } from '../interactions/types'
 import type { VueEditorExtension, VueShapeCreateDefinition } from '../vueEditorExtensions'
@@ -39,6 +40,8 @@ import {
 	type VueTextShape,
 	VueTextShapeUtil,
 } from '../vueDefaultShapes'
+import { VueRichTextShapeUtil, type VueRichTextShape } from '../vueRichTextShape'
+import { vueRichTextDefaultProps } from '../shapeProps/vueRichText'
 
 const textCanvasCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-text',
@@ -72,6 +75,18 @@ const textToolbarCreate: VueShapeCreateDefinition = {
 		editor.markHistoryStoppingPoint('editing text')
 		editor.select(id)
 		editor.setEditingShape(id)
+	},
+}
+
+const richTextCreate: VueShapeCreateDefinition = {
+	shapeType: 'vue-rich-text',
+	defaultSize: { w: vueRichTextDefaultProps.w, h: vueRichTextDefaultProps.h },
+	createShape({ editor, id, rect }) {
+		editor.createShapes<VueRichTextShape>([{ id, type: 'vue-rich-text', x: rect.x, y: rect.y, props: { ...vueRichTextDefaultProps, w: rect.w, h: rect.h } }])
+	},
+	onComplete({ editor, id }) {
+		editor.select(id)
+		if (typeof window !== 'undefined') queueMicrotask(() => window.dispatchEvent(new CustomEvent('enlearn:open-rich-text-editor', { detail: { shapeId: id } })))
 	},
 }
 
@@ -277,6 +292,7 @@ export const coreExtension: VueEditorExtension = {
 		VueLineShapeUtil,
 		VueArrowShapeUtil,
 		VueDrawShapeUtil,
+		VueRichTextShapeUtil,
 	],
 	bindingUtils: [VueArrowBindingUtil],
 	shapeComponents: {
@@ -286,6 +302,7 @@ export const coreExtension: VueEditorExtension = {
 		'vue-image': VueImageShapeNode,
 		'vue-line': VueLineShapeNode,
 		'vue-text': VueTextShapeNode,
+		'vue-rich-text': VueRichTextShapeNode,
 	},
 	toolbarTools: [
 		{
@@ -356,6 +373,15 @@ export const coreExtension: VueEditorExtension = {
 			selection: { tool: 'text' },
 			canvasCreate: textCanvasCreate,
 			toolbarCreate: textToolbarCreate,
+		},
+		{
+			id: 'rich-text',
+			label: '富文本',
+			icon: 'rich-text',
+			placement: { area: 'more', group: 'insert' },
+			selection: { tool: 'rich-text' },
+			canvasCreate: richTextCreate,
+			toolbarCreate: richTextCreate,
 		},
 		{
 			id: 'note',

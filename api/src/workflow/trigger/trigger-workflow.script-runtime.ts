@@ -168,6 +168,9 @@ function createScriptSource(
       patch: (url, body, init = {}) => call("http.request", url, { ...init, method: "PATCH", body }),
       delete: (url, init = {}) => call("http.request", url, { ...init, method: "DELETE" })
     }),
+    dataSource: Object.freeze({
+      get: (sourceCode, params = {}) => call("dataSource.get", sourceCode, params)
+    }),
     supabase: Object.freeze(createSupabaseProxy()),
     baseService: Object.freeze({
       invoke: (serviceName, serviceMethod, postData = {}) =>

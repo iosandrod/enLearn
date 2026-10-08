@@ -5,11 +5,6 @@ import {
 	$$formDesigner,
 	createLowCodeFormSchemaFromDesignerResult,
 } from '@enlearn/lowcode-framework/visual-editor/components/form-designer/form-designer.service'
-import {
-	$$gridDesigner,
-	type GridDesignerEvent,
-	type GridDesignerResult,
-} from '@enlearn/lowcode-framework/designer'
 import { createFormDesignerFieldsFromSchema } from '@enlearn/lowcode-framework/lowcode/block-materials/runtime-form-designer'
 import type { FormDesignerResult } from '@enlearn/lowcode-framework/visual-editor/components/form-designer/form-designer.service'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
@@ -32,6 +27,8 @@ import type { PrintDataSourceConfig, PrintDataSourceDetailTable } from '@/print/
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
+import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
+import PrintScriptManager from './PrintRemoteDataSourceManager.vue'
 
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
 const DATA_SOURCE_DEFINITION_FORM_CODE = 'print-designer.datasource-definition'
@@ -261,9 +258,18 @@ async function handleAddDataSource() {
 	})
 }
 
-function handleManageDataSource() {
+function handleManagePrintScripts() {
 	notifyAction('manage')
-	setActionMessage('已触发数据源管理操作。')
+	void openGlobalDialog({
+		title: '打印脚本管理',
+		width: 1180,
+		height: 760,
+		showFooter: false,
+		className: 'print-remote-data-source-dialog',
+		body: () => h(PrintScriptManager, {
+			serviceApi: host.getServiceApi(),
+		}),
+	})
 }
 
 function handleDesignDataSource() {
@@ -430,35 +436,20 @@ async function handleConfigureDetailTable() {
 		setActionMessage('请先添加一个明细子表再进行配置。')
 		return
 	}
-	setActionMessage('正在打开子表 Grid 配置…')
-	void $$gridDesigner({
-		title: `配置子表 - ${table.label}`,
-		columns: table.columns.map((column) => ({ ...column })),
-		gridOptions: table.gridOptions,
-		gridEvents: table.gridEvents
-			? table.gridEvents.map((event) => ({ ...event })) as GridDesignerEvent[]
-			: undefined,
-		serviceApi: host.getServiceApi(),
-		onConfirm: async (result: GridDesignerResult) => {
-			const nextTable: PrintDataSourceDetailTable = {
-				...table,
-				label: result.business.title || table.label,
-				columns: result.columns.map((column) => ({
-					...column,
-					field: readString(column.field),
-					title: readString(column.title, readString(column.field)),
-					width: Number.isFinite(Number(column.width)) ? Number(column.width) : undefined,
-				})).filter((column) => column.field),
-				gridOptions: result.gridOptions,
-				gridEvents: result.gridEvents,
-			}
+	setActionMessage('正在打开打印明细列配置…')
+	try {
+		await openPrintDetailColumnsDialog(host.getServiceApi(), table, async (columns) => {
+			const nextTable: PrintDataSourceDetailTable = { ...table, columns }
 			await saveDetailTables(
 				definition,
 				detailTables.value.map((item) => item.id === table.id ? nextTable : item),
 				table.id,
 			)
-		},
-	})
+			setActionMessage('打印明细列配置已保存。')
+		})
+	} catch (error) {
+		setActionMessage(error instanceof Error ? error.message : '打印明细列配置打开失败。')
+	}
 }
 
 function handleAddDetailRow() {
@@ -1020,9 +1011,9 @@ watch(
 					<i class="ri-add-line" aria-hidden="true" />
 					<span>添加</span>
 				</button>
-				<button type="button" class="lowcode-form-panel__action" title="管理数据源" @click="handleManageDataSource">
-					<i class="ri-settings-3-line" aria-hidden="true" />
-					<span>管理</span>
+				<button type="button" class="lowcode-form-panel__action" title="管理打印脚本" @click="handleManagePrintScripts">
+					<i class="ri-file-code-line" aria-hidden="true" />
+					<span>脚本</span>
 				</button>
 				<button type="button" class="lowcode-form-panel__action" title="设计数据源" @click="handleDesignDataSource">
 					<i class="ri-layout-4-line" aria-hidden="true" />

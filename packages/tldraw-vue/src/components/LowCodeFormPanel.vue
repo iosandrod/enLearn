@@ -57,6 +57,7 @@ import type { PrintDataSourceConfig } from '@/print/types'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
+import VueRichTextEditorDialog from './VueRichTextEditorDialog.vue'
 
 type ShapeFormModel = Record<string, unknown>
 
@@ -95,6 +96,7 @@ const columnFormModel = ref<ShapeFormModel>({})
 const imageSourceError = ref('')
 const designingForm = ref(false)
 const designFormMessage = ref('')
+const richTextDialogOpen = ref(false)
 const host = useLowCodeHost()
 const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const imageSourceCache = new Map<string, { src: string }>()
@@ -358,6 +360,12 @@ function handleModelUpdate(value: ShapeFormModel) {
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
 	}
+}
+
+function saveRichText(content: string) {
+	const shape = selectedShape.value
+	if (!shape || shape.type !== 'vue-rich-text') return
+	props.editor.updateShape({ id: shape.id, type: shape.type, props: { content } } as TLShapePartial)
 }
 
 function handleColumnModelUpdate(value: ShapeFormModel) {
@@ -822,6 +830,13 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		selectField('font', '字体', fontOptions),
 		selectField('size', '字号', sizeOptions),
 		switchField('autoSize', '自动尺寸'),
+		...borderVisibilityFields,
+	]),
+	'vue-rich-text': createPropsDescriptor('vue-rich-text', '富文本节点', [
+		...sizeFields,
+		textareaField('content', '富文本内容'),
+		colorPickerField('color', '文字颜色'),
+		numberField('fontSize', '字号', { min: 8, max: 128, step: 1 }),
 		...borderVisibilityFields,
 	]),
 	'vue-image': createPropsDescriptor('vue-image', '图片节点', [
@@ -1766,6 +1781,10 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 			continue
 		}
 		if (key === 'color') {
+			if (shape.type === 'vue-rich-text') {
+				nextProps.color = String(model.color ?? currentProps.color ?? '#111827')
+				continue
+			}
 			nextProps.color = getOptionValue(model.color, colorOptions, currentProps.color ?? 'black')
 			continue
 		}
@@ -1813,7 +1832,7 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 			if (!fileId || fileId !== currentFileId) nextProps.src = ''
 			continue
 		}
-		if (key === 'text' || key === 'name' || key === 'src') {
+		if (key === 'text' || key === 'content' || key === 'name' || key === 'src') {
 			nextProps[key] = String(model[key] ?? '')
 			if (shape.type === 'vue-image' && key === 'src') {
 				nextProps.assetId = null
@@ -1845,6 +1864,7 @@ function getShapeTypeLabel(type: string) {
 		{
 			'vue-box': '几何节点',
 			'vue-text': '文字节点',
+			'vue-rich-text': '富文本节点',
 			'vue-image': '图片节点',
 			'vue-line': '直线节点',
 			'vue-arrow': '箭头节点',
@@ -1926,6 +1946,9 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 				<div class="lowcode-form-panel__subtitle">{{ panelSubtitle }}</div>
 			</div>
 			<div class="lowcode-form-panel__header-actions" aria-label="属性表单操作">
+				<button v-if="selectedShape?.type === 'vue-rich-text'" type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary" title="编辑富文本" @click="richTextDialogOpen = true">
+					<i class="ri-edit-line" aria-hidden="true" /><span>编辑富文本</span>
+				</button>
 				<button
 					type="button"
 					class="lowcode-form-panel__action lowcode-form-panel__action--primary"
@@ -1938,6 +1961,7 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 				</button>
 			</div>
 		</header>
+		<VueRichTextEditorDialog v-if="selectedShape?.type === 'vue-rich-text'" v-model="richTextDialogOpen" :content="String(selectedShape.props.content ?? '')" @save="saveRichText" />
 		<div v-if="props.columnOnly && showMaterialColumnTab" class="lowcode-form-panel__column-actions" aria-label="物料列操作">
 			<button type="button" :disabled="!canManageMaterialColumns" title="在当前列后添加同级列" @click="addColumn">
 				<i class="ri-add-line" aria-hidden="true" />

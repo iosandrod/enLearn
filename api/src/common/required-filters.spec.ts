@@ -30,6 +30,10 @@ class PagedResourceTestService extends BaseService {
   selectOptions: unknown;
   selectedRange: [number, number] | null = null;
 
+  protected override async inspectTableHasUserIdColumn() {
+    return false;
+  }
+
   protected override resources(): ResourceConfigMap {
     return {
       test_rows: {

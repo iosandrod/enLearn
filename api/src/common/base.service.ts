@@ -250,6 +250,11 @@ export abstract class BaseService implements ServiceExecutor {
   private resourceMetadata?: ResourceConfigMap;
   private resourceMetadataExpiresAt = 0;
   private resourceMetadataRequest?: Promise<ResourceConfigMap>;
+  private readonly userIdColumnCache = new Map<string, {
+    hasUserIdColumn: boolean;
+    expiresAt: number;
+  }>();
+  private readonly userIdColumnRequests = new Map<string, Promise<boolean>>();
 
   protected async readResourceMetadata(context: ServiceContext = {}): Promise<ResourceConfigMap> {
     const injectedResources = this.resources();
@@ -608,11 +613,10 @@ export abstract class BaseService implements ServiceExecutor {
     }
 
     const clientMode = this.readOptionalString(postData.clientMode ?? postData.client_mode);
-    const client = clientMode === 'admin'
-      ? createSupabaseClient('admin', context)
-      : context.serviceName === 'lowcode' && !context.authorization
-        ? createSupabaseClient('admin', context)
-        : (await getCurrentUser(context)).client;
+    const client = await this.createCrudClient({
+      tableName,
+      clientMode: clientMode === 'admin' ? 'admin' : 'user'
+    }, context);
     const select = this.readOptionalString(postData.select) || '*';
     const pageSize = this.readListItemsLimit(postData);
     const page = Math.min(Math.max(Math.trunc(this.readNumber(postData.page, 1)), 1), 100000);
@@ -621,6 +625,11 @@ export abstract class BaseService implements ServiceExecutor {
     const responseMode = this.readOptionalString(postData.responseMode ?? postData.response_mode);
     const selectOptions = withCount || responseMode === 'page' ? { count: 'exact' as const } : undefined;
     let query = this.fromTable(client, tableName).select(select, selectOptions);
+
+    if (await this.tableHasUserIdColumn(tableName, context)) {
+      const userId = await this.resolveCurrentUserId(context);
+      query = this.applyUserIdReadScope(query, userId);
+    }
 
     const accountField = this.accountFieldForTable(tableName);
     if (accountField) {
@@ -796,7 +805,11 @@ export abstract class BaseService implements ServiceExecutor {
     return (await getCurrentUser(context)).user;
   }
 
-  protected serializeDynamicResourceConfig(resourceName: string, resource: ResourceConfig) {
+  protected serializeDynamicResourceConfig(
+    resourceName: string,
+    resource: ResourceConfig,
+    hasUserIdColumn = false
+  ) {
     const hooks = Object.fromEntries(
       Object.entries(resource.databaseHooks ?? {}).map(([name, handlers]) => [
         name,
@@ -837,6 +850,7 @@ export abstract class BaseService implements ServiceExecutor {
         managedFields.add(config.userFields.deletedBy);
       }
       if (action === 'create' && resource.ownerField) managedFields.add(resource.ownerField);
+      if (action === 'create' && hasUserIdColumn) managedFields.add('user_id');
       if (action !== 'delete' && resource.accountField) managedFields.add(resource.accountField);
 
       const deleteConfig = action === 'delete' ? config as ResourceDeleteConfig : undefined;
@@ -1031,7 +1045,15 @@ export abstract class BaseService implements ServiceExecutor {
         .map((name) => {
           const config = resources[name];
           if (!config) throw new BadRequestException(`Unknown dynamic CRUD resource: ${name}.`);
-          return [name, this.serializeDynamicResourceConfig(name, config)];
+          return [
+            name,
+            this.serializeDynamicResourceConfig(
+              name,
+              config,
+              this.userIdColumnCache.get(this.userIdColumnCacheKey(config.tableName))
+                ?.hasUserIdColumn === true
+            )
+          ];
         })
     );
 
@@ -1177,14 +1199,24 @@ export abstract class BaseService implements ServiceExecutor {
       ctx.input.responseMode ?? ctx.input.response_mode
     );
     const paged = withCount || responseMode === 'page';
-    let query = ctx.client
-      .from(ctx.resource.tableName)
+    let query = this.fromTable(ctx.client, ctx.resource.tableName)
       .select(
         ctx.resource.select ?? '*',
         paged ? { count: 'exact' as const } : undefined
       );
 
-    if (ctx.resource.ownerField && ctx.user) {
+    const hasUserIdColumn = await this.tableHasUserIdColumn(ctx.resource.tableName, ctx.context);
+    if (hasUserIdColumn) {
+      query = this.applyUserIdReadScope(
+        query,
+        await this.resolveCurrentUserId(ctx.context, ctx.user)
+      );
+    }
+
+    if (
+      ctx.resource.ownerField && ctx.user &&
+      !(hasUserIdColumn && ctx.resource.ownerField === 'user_id')
+    ) {
       query = query.eq(ctx.resource.ownerField, ctx.user.id);
     }
 
@@ -1986,6 +2018,17 @@ export abstract class BaseService implements ServiceExecutor {
       );
     }
 
+    if (action === 'create' && await this.tableHasUserIdColumn(ctx.resource.tableName, ctx.context)) {
+      const userId = await this.resolveCurrentUserId(ctx.context, ctx.user);
+      if (!userId) {
+        throw new ForbiddenException(
+          `Authenticated user is required to create records in ${ctx.resource.tableName}.`
+        );
+      }
+      // Inserts always belong to the authenticated actor, regardless of input or defaults.
+      payload.user_id = userId;
+    }
+
     return payload;
   }
 
@@ -2037,6 +2080,76 @@ export abstract class BaseService implements ServiceExecutor {
 
     this.assertIdentifier(parts[0], 'tableName');
     return client.from(parts[0]);
+  }
+
+  protected async inspectTableHasUserIdColumn(
+    tableName: string,
+    context: ServiceContext
+  ) {
+    const client = createSupabaseClient('admin', context);
+    const { error } = await this.fromTable(client, tableName)
+      .select('user_id')
+      .limit(0);
+
+    if (!error) return true;
+    if (
+      error.code === '42703' ||
+      error.code === 'PGRST204' ||
+      /column.*user_id.*does not exist|could not find.*user_id.*column/i.test(error.message)
+    ) {
+      return false;
+    }
+
+    throw new BadRequestException(
+      `Could not inspect user scope for table ${tableName}: ${error.message}`
+    );
+  }
+
+  protected async tableHasUserIdColumn(
+    tableName: string,
+    context: ServiceContext
+  ) {
+    const cacheKey = this.userIdColumnCacheKey(tableName);
+    const cached = this.userIdColumnCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) return cached.hasUserIdColumn;
+
+    const pending = this.userIdColumnRequests.get(cacheKey);
+    if (pending) return pending;
+
+    const request = this.inspectTableHasUserIdColumn(tableName, context)
+      .then((hasUserIdColumn) => {
+        this.userIdColumnCache.set(cacheKey, {
+          hasUserIdColumn,
+          expiresAt: Date.now() + 30_000
+        });
+        return hasUserIdColumn;
+      })
+      .finally(() => {
+        this.userIdColumnRequests.delete(cacheKey);
+      });
+    this.userIdColumnRequests.set(cacheKey, request);
+    return request;
+  }
+
+  protected userIdColumnCacheKey(tableName: string) {
+    const parts = tableName.split('.').map((part) => part.trim());
+    return parts.length === 1 ? `public.${parts[0]}` : parts.join('.');
+  }
+
+  protected async resolveCurrentUserId(
+    context: ServiceContext,
+    user?: User
+  ) {
+    const trustedUserId = this.readOptionalString(user?.id ?? context.userId);
+    if (trustedUserId) return trustedUserId;
+    if (!context.authorization) return undefined;
+    return (await getCurrentUser(context)).user.id;
+  }
+
+  protected applyUserIdReadScope(query: any, userId?: string) {
+    return userId
+      ? query.or(`user_id.eq.${this.formatPostgrestFilterValue(userId)},user_id.is.null`)
+      : query.is('user_id', null);
   }
 
   protected applyListItemsFilters(query: any, filters: unknown) {

@@ -19,6 +19,7 @@ import { getDefaultVueEditorExtensions } from './editor/extensions/defaultExtens
 import type { CanvasTool, VueGeoShape } from './editor/interactions/types'
 import type {
 	VueTemplateLoadHandler,
+	VueTemplatePreviewItem,
 	VueTemplateSaveHandler,
 	VueTemplateWorkspaceConfig,
 	WorkspaceBackgroundConfig,
@@ -48,6 +49,13 @@ const props = withDefaults(
 		createDefaultShapes?: boolean
 		loadTemplates?: VueTemplateLoadHandler
 		saveTemplates?: VueTemplateSaveHandler
+		templateItems?: readonly VueTemplatePreviewItem[]
+		activeTemplateId?: string
+		templateSearch?: string
+		templateStatusFilter?: string
+		templateLoading?: boolean
+		templateHasMore?: boolean
+		templateTotal?: number
 		showTemplateControls?: boolean
 		mode?: DesignerMode
 		showModeControls?: boolean
@@ -65,6 +73,11 @@ const emit = defineEmits<{
 	'content-change': []
 	'workspace-config-change': [config: VueTemplateWorkspaceConfig]
 	'mode-change': [mode: DesignerMode]
+	'template-select': [templateId: string]
+	'template-search-change': [value: string]
+	'template-status-change': [value: string]
+	'template-refresh': []
+	'template-load-more': []
 }>()
 
 const editorHost = ref<HTMLDivElement | null>(null)
@@ -91,10 +104,11 @@ const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
-	'tools' | 'components' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'animation'
+	'tools' | 'templates' | 'components' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'animation'
 >('tools')
 const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
+const failedTemplatePreviewIds = ref<Set<string>>(new Set())
 const dataSourceDrawerOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
 const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
@@ -109,6 +123,7 @@ const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 const presentationPreviewOpen = ref(false)
 const designerTabs = [
 	{ id: 'tools', label: '工具', icon: '✦' },
+	{ id: 'templates', label: '模板', icon: '▣' },
 	{ id: 'components', label: '组件', icon: '◇' },
 	{ id: 'layers', label: '图层', icon: '▱' },
 	{ id: 'dataSource', label: '数据源', icon: '▤' },
@@ -118,6 +133,39 @@ const designerTabs = [
 	{ id: 'background', label: '背景', icon: '▧' },
 	{ id: 'animation', label: '动画', icon: '▶' },
 ] as const
+
+function selectTemplate(templateId: string) {
+	emit('template-select', templateId)
+	if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches) {
+		mobilePanelOpen.value = false
+	}
+}
+
+function handleTemplatePreviewError(templateId: string) {
+	const failed = new Set(failedTemplatePreviewIds.value)
+	failed.add(templateId)
+	failedTemplatePreviewIds.value = failed
+	if (import.meta.env?.DEV) {
+		console.warn('[tldraw-vue] template preview failed to load', templateId)
+	}
+}
+
+function handleTemplateSearchInput(event: Event) {
+	emit('template-search-change', (event.target as HTMLInputElement).value)
+}
+
+function handleTemplateStatusInput(event: Event) {
+	emit('template-status-change', (event.target as HTMLSelectElement).value)
+}
+
+function handleTemplatePanelScroll(event: Event) {
+	if (activeDesignerTab.value !== 'templates' || props.templateLoading || !props.templateHasMore) return
+	const target = event.currentTarget as HTMLElement | null
+	if (!target) return
+	if (target.scrollHeight - target.scrollTop - target.clientHeight < 160) {
+		emit('template-load-more')
+	}
+}
 const workspaceRevision = ref(0)
 let pluginHost: VueEditorPluginHost | null = null
 let stopEditorChangeListener: (() => void) | null = null
@@ -531,7 +579,52 @@ onBeforeUnmount(() => {
 						<span>{{ tab.label }}</span>
 					</button>
 				</nav>
-				<div class="designer-side-content">
+				<div class="designer-side-content" @scroll="handleTemplatePanelScroll">
+					<div v-show="activeDesignerTab === 'templates'" class="designer-tool-view designer-tool-view--templates">
+						<div class="designer-template-panel">
+							<div class="designer-template-panel__header">
+								<div class="designer-template-panel__title">
+									<h2>模板</h2>
+									<span>{{ props.templateTotal ?? props.templateItems?.length ?? 0 }}</span>
+								</div>
+								<button class="designer-template-panel__refresh" type="button"
+									:disabled="props.templateLoading" title="刷新模板" aria-label="刷新模板"
+									@click="emit('template-refresh')">↻</button>
+							</div>
+							<div class="designer-template-panel__filters">
+								<label class="designer-template-panel__search">
+									<input :value="props.templateSearch ?? ''" type="search" aria-label="搜索模板" placeholder="搜索模板"
+										@input="handleTemplateSearchInput" />
+								</label>
+								<select :value="props.templateStatusFilter ?? 'all'" aria-label="模板状态"
+									@change="handleTemplateStatusInput">
+									<option value="all">全部可用</option>
+									<option value="active">已发布</option>
+									<option value="draft">草稿</option>
+									<option value="archived">已归档</option>
+								</select>
+							</div>
+							<div v-if="props.templateItems?.length" class="designer-template-grid">
+								<button v-for="template in props.templateItems" :key="template.id" type="button"
+									class="designer-template-card"
+									:class="{ 'is-active': props.activeTemplateId === template.id }"
+									:title="`加载模板：${template.name}`"
+									@click="selectTemplate(template.id)">
+									<span class="designer-template-card__preview">
+										<img v-if="template.preview && !failedTemplatePreviewIds.has(template.id)"
+											:src="template.preview" :alt="template.name"
+											@error="handleTemplatePreviewError(template.id)" />
+										<span v-else class="designer-template-card__placeholder">无缩略图</span>
+									</span>
+									<span class="designer-template-card__name">{{ template.name }}</span>
+								</button>
+							</div>
+							<div v-if="props.templateLoading" class="designer-template-panel__state">正在加载模板...</div>
+							<button v-else-if="props.templateHasMore" class="designer-template-panel__load-more"
+								type="button" @click="emit('template-load-more')">加载更多</button>
+							<p v-else-if="!props.templateItems?.length" class="designer-template-panel__empty">暂无可用模板</p>
+						</div>
+					</div>
 					<div v-show="activeDesignerTab === 'tools'" class="designer-tool-view designer-tool-view--tools">
 						<section class="designer-tool-section" aria-label="绘制工具">
 							<h2 class="designer-tool-section__title">绘制工具</h2>

@@ -41,6 +41,8 @@
     "@tiptap/core": "^3.12.1",
     "@tiptap/pm": "^3.12.1",
     "@tiptap/react": "^3.12.1",
+    "@wangeditor-next/editor": "^6.5.0",
+    "@wangeditor-next/editor-for-vue": "^6.5.0",
     "bwip-js": "^4.11.4",
     "classnames": "^2.5.1",
     "eventemitter3": "^4.0.7",

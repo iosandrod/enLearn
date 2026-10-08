@@ -195,6 +195,7 @@ export function normalizeFile(row: FileObjectRow) {
     sizeBytes: row.size_bytes,
     checksum: row.checksum,
     ownerId: row.owner_id,
+    userId: row.user_id,
     visibility: row.visibility,
     status: row.status,
     locked: row.locked === true,
