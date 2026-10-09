@@ -82,7 +82,7 @@ assert.match(
   /submitOnConfirm[\s\S]*submitForms\(\{ reload: false \}\)/,
   'Confirm dialogs must resolve after saving instead of waiting for a page data reload.',
 );
-assert.match(runtime, /case 'material\.save':[\s\S]*executeLowCodeMaterialRuntimeAction\(block\.id, 'save', payload\)/);
+assert.match(runtime, /command\.startsWith\('material\.'\)[\s\S]*executeLowCodeMaterialRuntimeAction\(block\.id, method, \.\.\.args\)/);
 assert.match(editDialogMigration, /where page\.code = 'print-templates-edit'/);
 assert.match(editDialogMigration, /block\.value ->> 'kind' <> 'buttonGroup'/);
 assert.match(directDialogMigration, /when action\.value ->> 'code' = 'label-save'/);

@@ -1,0 +1,1 @@
+import{K as e,N as t,S as n,k as r}from"./vue.runtime.esm-bundler-C3HwMHSZ.js";import{t as i}from"./_plugin-vue_export-helper-BDNMzG2s.js";t();var a={class:`manufacturing-workbench`},o=i(r({__name:`index`,setup(t){return(t,r)=>(e(),n(`section`,a))}}),[[`__scopeId`,`data-v-6f64a731`]]);export{o as default};

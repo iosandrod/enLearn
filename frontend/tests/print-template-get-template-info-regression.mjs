@@ -12,7 +12,7 @@ assert.match(migration, /'labelDesigner'[\s\S]*'getTemplateInfo'/);
 assert.match(migration, /material\.getTemplateInfo/);
 assert.match(migration, /on conflict \(node_type, action_code\) do update/);
 assert.match(controller, /getTemplateInfo\?:/);
-assert.match(runtime, /case 'material\.getTemplateInfo':[\s\S]*executeLowCodeMaterialRuntimeAction\(block\.id, 'getTemplateInfo'\)/);
+assert.match(runtime, /command\.startsWith\('material\.'\)[\s\S]*executeLowCodeMaterialRuntimeAction\(block\.id, method, \.\.\.args\)/);
 assert.match(materialState, /getTemplateInfo: \(\) =>/);
 
 console.log('Print template getTemplateInfo node action regression test passed.');

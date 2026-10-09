@@ -1,4 +1,6 @@
 export type LowCodeMaterialRuntimeController = {
+  [method: string]: unknown;
+  copyData?: (options?: Record<string, unknown>) => unknown | Promise<unknown>;
   loadData?: (options?: Record<string, unknown>) => unknown | Promise<unknown>;
   setData?: (value: unknown, options?: Record<string, unknown>) => unknown | Promise<unknown>;
   getData?: () => unknown | Promise<unknown>;
@@ -36,13 +38,15 @@ export function getLowCodeMaterialRuntimeController(blockId: string) {
 
 export async function executeLowCodeMaterialRuntimeAction(
   blockId: string,
-  method: keyof LowCodeMaterialRuntimeController,
+  method: string,
   ...args: unknown[]
 ) {
   // console.log('executeLowCodeMaterialRuntimeAction', blockId, method, args);
   // debugger//
   const controller = getLowCodeMaterialRuntimeController(blockId);
-  const handler = controller?.[method];
+  const handler = controller && Object.prototype.hasOwnProperty.call(controller, method)
+    ? controller[method]
+    : undefined;
   if (typeof handler !== 'function') {
     throw new Error(`节点 "${blockId}" 未挂载动作 "${method}"。`);
   }

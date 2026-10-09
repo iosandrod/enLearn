@@ -9,6 +9,7 @@ import { createFormDesignerFieldsFromSchema } from '@enlearn/lowcode-framework/l
 import type { FormDesignerResult } from '@enlearn/lowcode-framework/visual-editor/components/form-designer/form-designer.service'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dialog'
+import { createPrintDetailToolbar, type PrintDetailActionRequest } from '@enlearn/lowcode-framework/runtime'
 import type { Editor } from '@tldraw/editor'
 import { computed, h, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import * as XLSX from 'xlsx'
@@ -50,6 +51,7 @@ type DetailImportRowsHandler = (
 
 type PrintDataSourceImportRequest = {
 	field?: unknown
+	formCode?: string
 	onImported?: DetailImportRowsHandler
 }
 
@@ -110,54 +112,28 @@ const detailFormSchema = computed<LowCodeFormSchema>(() => ({
 				})),
 				showSeq: true,
 				fillAvailableHeight: true,
-				toolbarButtons: [
-					{ code: 'add', label: '新增行', command: 'add', status: 'primary' },
-					{
-						code: 'fetch',
-						label: '获取数据',
-						status: 'primary',
-						prefixIcon: 'ri-download-cloud-2-line',
-						disabled: detailDataLoadingTableId.value === table.id,
-						execute: async () => {
+				toolbarButtons: createPrintDetailToolbar({
+					fetch: async () => {
 							activeDetailTableId.value = table.id
 							await handleFetchDetailData(table)
-						},
 					},
-					{
-						code: 'clear',
-						label: '清空',
-						status: 'warning',
-						execute: ({ rows }: { rows: Record<string, unknown>[] }) => {
+					clear: ({ rows }) => {
 							rows.splice(0, rows.length)
 							handleDetailFormUpdate({ ...detailFormModel.value, [table.field]: [] })
-						},
 					},
-					{
-						code: 'import',
-						label: '导入',
-						execute: () => {
+					import: () => {
 							activeDetailTableId.value = table.id
 							void handleImportData()
-						},
 					},
-					{
-						code: 'configure',
-						label: '表格配置',
-						execute: () => {
+					configure: () => {
 							activeDetailTableId.value = table.id
 							void handleConfigureDetailTable()
-						},
 					},
-					{
-						code: 'delete',
-						label: '删除子表',
-						status: 'danger',
-						execute: () => {
+					delete: () => {
 							activeDetailTableId.value = table.id
 							void handleDeleteDetailTable()
-						},
 					},
-				],
+				}, detailDataLoadingTableId.value === table.id),
 				...(table.gridOptions ?? {}),
 			},
 		})),
@@ -438,20 +414,28 @@ function createAddDetailTableSchema(): LowCodeFormSchema {
 	}
 }
 
-async function handleFetchDetailData(table: PrintDataSourceDetailTable) {//
+async function handleFetchDetailData(
+	table: PrintDataSourceDetailTable,
+	formValues = formModel.value,
+	reportFailure = false,
+) {
 	const sourceCode = readString(table.dataSourceScript)
 	if (!sourceCode) {
 		setActionMessage(`明细“${table.label}”尚未配置 dataSourceScript。`)
+		if (reportFailure) throw new Error(`明细“${table.label}”尚未配置数据源脚本。`)
 		return
 	}
-	if (detailDataLoadingTableId.value) return
+	if (detailDataLoadingTableId.value) {
+		if (reportFailure) throw new Error('正在获取明细数据，请稍后再试。')
+		return
+	}
 	detailDataLoadingTableId.value = table.id
 	setActionMessage(`正在获取“${table.label}”的数据…`)
 	try {
 		const result = await host.getServiceApi().invoke<unknown>('print', 'resolveDataSource', {
 			sourceCode,
 			params: {
-				...formModel.value,
+				...formValues,
 				detailField: table.field,
 			},
 		})
@@ -459,8 +443,10 @@ async function handleFetchDetailData(table: PrintDataSourceDetailTable) {//
 		updateDetailRows(table.field, rows)
 		activeDetailTableId.value = table.id
 		setActionMessage(`已获取 ${rows.length} 行“${table.label}”数据。`)
+		return rows
 	} catch (error) {
 		setActionMessage(error instanceof Error ? error.message : '明细数据获取失败。')
+		if (reportFailure) throw error
 	} finally {
 		detailDataLoadingTableId.value = ''
 	}
@@ -479,18 +465,19 @@ function normalizeFetchedDetailRows(value: unknown): Record<string, unknown>[] {
 	return rows
 }
 
-async function handleDeleteDetailTable() {
+async function handleDeleteDetailTable(reportFailure = false) {
 	notifyAction('design')
 	const definition = activeDefinition.value
 	const table = activeDetailTable.value
 	if (!definition || !table) return
-	await saveDetailTables(
+	const saved = await saveDetailTables(
 		definition,
 		detailTables.value.filter((item) => item.id !== table.id),
 	)
+	if (!saved && reportFailure) throw new Error(actionMessage.value || '子表配置保存失败。')
 }
 
-async function handleConfigureDetailTable() {
+async function handleConfigureDetailTable(reportFailure = false) {
 	notifyAction('design')
 	const definition = activeDefinition.value
 	const table = activeDetailTable.value
@@ -502,15 +489,17 @@ async function handleConfigureDetailTable() {
 	try {
 		await openPrintDetailColumnsDialog(host.getServiceApi(), table, async (config) => {
 			const nextTable: PrintDataSourceDetailTable = { ...table, ...config }//
-			await saveDetailTables(
+			const saved = await saveDetailTables(
 				definition,
 				detailTables.value.map((item) => item.id === table.id ? nextTable : item),
 				table.id,
 			)
+			if (!saved) throw new Error(actionMessage.value || '子表配置保存失败。')
 			setActionMessage('打印明细列配置已保存。')
 		})
 	} catch (error) {
 		setActionMessage(error instanceof Error ? error.message : '打印明细列配置打开失败。')
+		if (reportFailure) throw error
 	}
 }
 
@@ -667,12 +656,30 @@ async function importDetailFile(
 
 function handlePrintDataSourceImportRequest(event: Event) {
 	const request = (event as CustomEvent<PrintDataSourceImportRequest>).detail
+	if (request?.formCode && request.formCode !== activeDefinition.value?.code) return
 	const field = readString(request?.field)
 	const table = detailTables.value.find((item) => item.field === field)
 	if (!table) return
 	activeDetailTableId.value = table.id
 	activeSourceTab.value = 'detail'
 	void handleImportData(typeof request?.onImported === 'function' ? request.onImported : undefined)
+}
+
+function handlePrintDetailActionRequest(event: Event) {
+	const request = (event as CustomEvent<PrintDetailActionRequest>).detail
+	if (!request || request.run || request.formCode !== activeDefinition.value?.code) return
+	const table = detailTables.value.find((item) => item.field === request.field)
+	if (!table) return
+	activeDetailTableId.value = table.id
+	activeSourceTab.value = 'detail'
+	request.run = (async () => {
+		if (request.action === 'fetch') {
+			return handleFetchDetailData(table, request.formValues ?? formModel.value, true)
+		}
+		if (request.action === 'configure') await handleConfigureDetailTable(true)
+		else if (request.action === 'delete') await handleDeleteDetailTable(true)
+		return activeDefinition.value?.schema
+	})()
 }
 
 function convertImportedRows(matrix: unknown[][], table: PrintDataSourceDetailTable, config: DetailImportConfig) {
@@ -829,9 +836,10 @@ async function saveDetailTables(
 		console.error(error)//
 		// Keep the optimistic local state visible, but report the persistence error.
 		setActionMessage(error instanceof Error ? error.message : '子表配置保存失败。')
-		return
+		return false
 	}
 	setActionMessage('子表配置已保存。')
+	return true
 }
 
 function applyWorkspaceDetailTables(tables: PrintDataSourceDetailTable[]) {
@@ -1029,11 +1037,13 @@ function getWorkspaceDataSource() {
 
 onMounted(() => {
 	window.addEventListener('enlearn:print-data-source-import', handlePrintDataSourceImportRequest)
+	window.addEventListener('enlearn:print-detail-action', handlePrintDetailActionRequest)
 	void loadDefinitions()
 })
 
 onBeforeUnmount(() => {
 	window.removeEventListener('enlearn:print-data-source-import', handlePrintDataSourceImportRequest)
+	window.removeEventListener('enlearn:print-detail-action', handlePrintDetailActionRequest)
 	if (actionMessageTimer.value) clearTimeout(actionMessageTimer.value)
 })
 

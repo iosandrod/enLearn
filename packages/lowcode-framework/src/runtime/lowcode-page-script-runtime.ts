@@ -322,6 +322,18 @@ export class LowCodePageScriptRuntime {
     const sourceKey = 'sourceKey' in block
       ? readString(block.sourceKey, block.id)
       : block.id;
+    if (command.startsWith('material.')) {
+      const method = command.slice('material.'.length).trim();
+      if (!method) throw new Error(`未知节点运行时命令 "${command}"。`);
+      const args = Array.isArray(payload.data)
+        ? payload.data
+        : Object.prototype.hasOwnProperty.call(payload, 'data')
+          ? [payload.data]
+          : Object.keys(payload).length
+            ? [payload]
+            : [];
+      return executeLowCodeMaterialRuntimeAction(block.id, method, ...args);
+    }
     switch (command) {
       case 'runtime.resolve'://
         return resolveRuntimePostData(this.readScriptRecordArg([payload.value], 0));
@@ -440,31 +452,6 @@ export class LowCodePageScriptRuntime {
       case 'grid.validate':
         return runtime.getGridController(block.id)?.validate() ??
           Promise.reject(new Error(`表格节点 "${block.id}" 当前未挂载，无法校验。`));
-      case 'material.loadData':
-      case 'material.setData':
-      case 'material.getData':
-      case 'material.getTemplateInfo':
-      case 'material.validate':
-      case 'material.resetData':
-      case 'material.save':
-      case 'material.autoLayout':
-      case 'material.compile':
-      case 'material.enable':
-      case 'material.run':
-      case 'material.refresh':
-      case 'material.loadTemplate':
-      case 'material.preview':
-      case 'material.print': {
-        const method = command.slice('material.'.length) as Parameters<typeof executeLowCodeMaterialRuntimeAction>[1];
-        const args = Array.isArray(payload.data)
-          ? payload.data
-          : Object.prototype.hasOwnProperty.call(payload, 'data')
-            ? [payload.data]
-            : Object.keys(payload).length
-              ? [payload]
-              : [];
-        return executeLowCodeMaterialRuntimeAction(block.id, method, ...args);
-      }
       case 'overlay.open': {
         if (!isOverlayBlock(block)) throw new Error(`节点 "${block.id}" 不是弹框或抽屉。`);
         const result = await openLowCodeGlobalDialog(

@@ -5908,54 +5908,16 @@ button {
 }
 
 .print-remote-data-source-manager__meta {
-	display: grid;
-	grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.4fr) auto;
-	align-items: end;
-	gap: 10px;
+	flex: 0 0 auto;
+	min-width: 0;
 	padding: 10px 14px;
 	border-bottom: 1px solid #e1e7ef;
 	background: #f8fafc;
 }
 
-.print-remote-data-source-manager__meta label {
-	display: flex;
-	min-width: 0;
-	flex-direction: column;
-	gap: 4px;
-	color: #6f7e90;
-	font-size: 11px;
-}
-
-.print-remote-data-source-manager__meta input[type='text'] {
+.print-remote-data-source-manager__meta .lc-form {
 	width: 100%;
 	min-width: 0;
-	height: 30px;
-	padding: 0 8px;
-	border: 1px solid #cfd9e5;
-	border-radius: 4px;
-	outline: none;
-	background: #fff;
-	color: #26364a;
-	font: inherit;
-	font-size: 12px;
-}
-
-.print-remote-data-source-manager__meta input[type='text']:focus {
-	border-color: #6b9ed0;
-	box-shadow: 0 0 0 2px rgb(59 130 246 / 12%);
-}
-
-.print-remote-data-source-manager__meta-toggle {
-	align-items: center;
-	justify-content: center;
-	flex-direction: row !important;
-	min-height: 30px;
-	padding: 0 4px;
-	white-space: nowrap;
-}
-
-.print-remote-data-source-manager__meta-toggle input {
-	accent-color: #2f79b9;
 }
 
 .print-remote-data-source-manager__actions {
@@ -6233,15 +6195,6 @@ button {
 	.print-remote-data-source-manager__toolbar {
 		align-items: flex-start;
 		flex-direction: column;
-	}
-
-	.print-remote-data-source-manager__meta {
-		grid-template-columns: 1fr;
-		align-items: stretch;
-	}
-
-	.print-remote-data-source-manager__meta-toggle {
-		justify-content: flex-start;
 	}
 
 	.print-remote-data-source-manager__actions {

@@ -1,0 +1,1 @@
+import{K as e,N as t,S as n,k as r}from"./vue.runtime.esm-bundler-C3HwMHSZ.js";t();var i=[`innerHTML`],a=r({__name:`ContentRenderer`,props:{html:{}},setup(t){return(r,a)=>(e(),n(`div`,{class:`markdown`,innerHTML:t.html},null,8,i))}});export{a as t};

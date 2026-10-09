@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [migration, dialogSource, runtimeSource] = await Promise.all([
+const [migration, dialogSource, runtimeSource, toolbarSource] = await Promise.all([
   readFile(new URL('../../supabase/migrations/20260927120000_print_designer_data_import.sql', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/lowcode-framework/src/runtime/page-reference-dialog.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/lowcode-framework/src/runtime/lowcode-page-script-runtime.ts', import.meta.url), 'utf8'),
+  readFile(new URL('../../packages/lowcode-framework/src/runtime/print-detail-toolbar.ts', import.meta.url), 'utf8'),
 ]);
 
 assert.match(migration, /action\.value ->> 'code' = 'label-excel'/);
@@ -18,11 +19,11 @@ assert.match(dialogSource, /schema\.fields/);
 assert.match(dialogSource, /createImportFormSchema/);
 assert.match(dialogSource, /const detailLayout = normalizedDetailFields\.map/);
 assert.match(dialogSource, /layout: \[\.\.\.headerLayout, \.\.\.detailLayout\]/);
-assert.match(dialogSource, /label: '新增行'/);
-assert.match(dialogSource, /label: '导入'/);
+assert.match(toolbarSource, /label: '新增行'/);
+assert.match(toolbarSource, /label: '导入'/);
 assert.match(dialogSource, /enlearn:print-data-source-import/);
 assert.match(dialogSource, /onImported:/);
-assert.match(dialogSource, /label: '清空'/);
+assert.match(toolbarSource, /label: '清空'/);
 assert.match(dialogSource, /copyable: existingProps\.copyable !== false/);
 assert.match(dialogSource, /removable: existingProps\.removable !== false/);
 assert.match(runtimeSource, /'formCode'/);

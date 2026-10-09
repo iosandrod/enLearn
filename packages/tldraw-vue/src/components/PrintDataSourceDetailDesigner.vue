@@ -55,15 +55,15 @@ function handleConfirmAddTable() {
 	const field = readString(addFormModel.value.field)
 	const dataSourceScript = readString(addFormModel.value.dataSourceScript)
 	if (!label) {
-		addFormError.value = '请输入子表名称。'
+		addFormError.value = '请输入明细名称。'
 		return
 	}
 	if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(field)) {
-		addFormError.value = '子表字段只能以字母或下划线开头，并包含字母、数字或下划线。'
+		addFormError.value = '明细字段只能以字母或下划线开头，并包含字母、数字或下划线。'
 		return
 	}
 	if (tables.value.some((table) => table.field === field)) {
-		addFormError.value = `子表字段“${field}”已存在。`
+		addFormError.value = `明细字段“${field}”已存在。`
 		return
 	}
 
@@ -135,19 +135,18 @@ function readString(value: unknown, fallback = '') {
 	<section class="print-detail-designer" aria-label="明细数据源设计">
 		<header class="print-detail-designer__toolbar">
 			<div>
-				<strong>明细子表</strong>
 				<span>为打印数据源添加一个或多个明细表，并分别配置字段列。</span>
 			</div>
 			<button type="button" class="print-detail-designer__button print-detail-designer__button--primary"
 				@click="handleAddTable">
 				<i class="ri-add-line" aria-hidden="true" />
-				<span>添加子表</span>
+				<span>添加明细</span>
 			</button>
 		</header>
 		<p v-if="configurationError" class="print-detail-designer__form-error" role="alert">{{ configurationError }}</p>
 		<form v-if="addFormVisible" class="print-detail-designer__add-form" @submit.prevent="handleConfirmAddTable">
 			<label>
-				<span>子表名称</span>
+				<span>明细名称</span>
 				<input v-model="addFormModel.label" type="text" placeholder="例如：商品明细" autofocus />
 			</label>
 			<label>
@@ -166,7 +165,7 @@ function readString(value: unknown, fallback = '') {
 		</form>
 
 		<div v-if="tables.length" class="print-detail-designer__content">
-			<div class="print-detail-designer__tabs" role="tablist" aria-label="明细子表">
+			<div class="print-detail-designer__tabs" role="tablist" aria-label="明细明细">
 				<button v-for="table in tables" :key="table.id" type="button"
 					:class="['print-detail-designer__tab', { 'is-active': activeTable?.id === table.id }]"
 					role="tab" :aria-selected="activeTable?.id === table.id" @click="activeTableId = table.id">
@@ -193,7 +192,7 @@ function readString(value: unknown, fallback = '') {
 						<button type="button" class="print-detail-designer__button print-detail-designer__button--danger"
 							@click="handleDeleteTable">
 							<i class="ri-delete-bin-line" aria-hidden="true" />
-							<span>删除子表</span>
+							<span>删除明细</span>
 						</button>
 					</div>
 				</div>
@@ -223,8 +222,8 @@ function readString(value: unknown, fallback = '') {
 
 		<div v-else class="print-detail-designer__empty">
 			<i class="ri-table-line" aria-hidden="true" />
-			<strong>暂无明细子表</strong>
-			<span>点击“添加子表”创建第一个明细表。</span>
+			<strong>暂无明细明细</strong>
+			<span>点击“添加明细”创建第一个明细表。</span>
 		</div>
 	</section>
 </template>

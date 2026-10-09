@@ -744,6 +744,7 @@ async function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
     command: button.command,
     rows: rows.value,
     field: props.field,
+    formValues: props.formValues,
     rawEvent: payload,
   };
 
@@ -752,7 +753,13 @@ async function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
       ...actionPayload,
       click: payload,
       addRow,
+      setRows: (value) => {
+        rows.value = normalizeRows(value);
+        if (value === undefined) emit('update:modelValue', undefined);
+        else commitRows();
+      },
     });
+    if (!isSameValue(serializeRows(), normalizeModelValue(props.modelValue))) commitRows();
     return;
   }
 

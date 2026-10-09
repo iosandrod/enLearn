@@ -1,0 +1,1 @@
+import{t as e}from"./vxe-tabs-CkCrqtHJ.js";export{e as default};

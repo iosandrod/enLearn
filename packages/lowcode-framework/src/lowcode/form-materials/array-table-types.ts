@@ -21,6 +21,9 @@ export type ArrayTableToolbarExecutionContext = {
   command?: string;
   click: ArrayTableToolbarClickParams;
   rows: Record<string, unknown>[];
+  formValues?: Record<string, unknown>;
+  /** Pass undefined to unset a removed detail field in the form model. */
+  setRows: (rows: Record<string, unknown>[] | undefined) => void;
   field: LowCodeField;
   addRow: (row?: Record<string, unknown>) => Record<string, unknown>;
 };

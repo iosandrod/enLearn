@@ -1,4 +1,6 @@
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
+import { createPrintDetailToolbar, requestPrintDetailAction } from './print-detail-toolbar';
+import type { ArrayTableToolbarExecute } from '../lowcode/form-materials/array-table-types';
 import LowCodePageRenderer from '../components/LowCodePageRenderer.vue';
 import type {
   LowCodeHostRoute,
@@ -144,7 +146,7 @@ async function resolveFormDefinitionPage(config: LowCodePageConfirmDialogConfig)
     throw new Error(`数据源表单“${formCode}”不存在或配置无效。`);
   }
 
-  const formSchema = createImportFormSchema(schema as Record<string, unknown>);
+  const formSchema = createImportFormSchema(schema as Record<string, unknown>, formCode);
   const formId = `confirm-form-${formCode.replace(/[^a-zA-Z0-9_-]+/g, '-')}`;
   const initialValues = config.formInitialValues?.[formId]
     ?? config.formInitialValues?.[formCode]
@@ -190,7 +192,23 @@ async function resolveFormDefinitionPage(config: LowCodePageConfirmDialogConfig)
   } as LowCodePageRecord;
 }
 
-function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeFormSchema {
+function createImportFormSchema(
+  rawSchema: Record<string, unknown>,
+  formCode = '',
+  targetSchema?: LowCodeFormSchema,
+): LowCodeFormSchema {
+  const resultSchema = targetSchema ?? reactive<LowCodeFormSchema>({ title: '', columns: 1, fields: [], layout: [], actions: [] });
+  const guard = (execute: ArrayTableToolbarExecute): ArrayTableToolbarExecute => async (context) => {
+    try {
+      return await execute(context);
+    } catch (error) {
+      await openGlobalDialog({
+        title: '明细操作失败',
+        content: { type: 'render', render: () => error instanceof Error ? error.message : '明细操作失败，请重试。' },
+        actions: [{ code: 'close', label: '知道了', role: 'cancel' }],
+      });
+    }
+  };
   const fields = Array.isArray(rawSchema.fields)
     ? rawSchema.fields.filter(isRecord).map((field) => cloneValue(field))
     : [];
@@ -199,7 +217,7 @@ function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeForm
   fields.forEach((field) => {
     if (field.component === 'lc-array-table' || field.field === 'detail') {
       const fieldName = readString(field.field);
-      if (fieldName) detailFields.set(fieldName, field);
+      if (fieldName && !Array.isArray(rawSchema.printDetail)) detailFields.set(fieldName, field);
     }
   });
 
@@ -211,8 +229,8 @@ function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeForm
     detailFields.set('detail', { field: 'detail', label: '明细', columns: printDetail });
   } else {
     printDetail.forEach((item, index) => {
-      if (isRecord(item) && typeof item.field === 'string') {
-        const fieldName = readString(item.field, `detail_${index + 1}`);
+      if (isRecord(item) && (typeof item.field === 'string' || typeof item.key === 'string' || Array.isArray(item.columns))) {
+        const fieldName = readString(item.key, readString(item.field, `detail_${index + 1}`));
         const existing = detailFields.get(fieldName) ?? {};
         detailFields.set(fieldName, { ...existing, ...cloneValue(item), field: fieldName });
       } else if (isRecord(item)) {
@@ -222,7 +240,7 @@ function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeForm
     });
   }
 
-  if (!detailFields.size) return rawSchema as unknown as LowCodeFormSchema;
+  if (!detailFields.size && !Array.isArray(rawSchema.printDetail)) return rawSchema as unknown as LowCodeFormSchema;
 
   const normalizedDetailFields = [...detailFields.values()].map((field, index) => {
     const fieldName = readString(field.field, `detail_${index + 1}`);
@@ -243,11 +261,12 @@ function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeForm
       : Object.fromEntries(columns.map((column) => [column.field, column.defaultValue ?? '']));
     return {
       field: fieldName,
-      label: readString(field.label, `明细${index + 1}`),
+      label: readString(field.title, readString(field.label, `明细${index + 1}`)),
       component: 'lc-array-table',
       showTitle: false,
       props: {
         ...cloneValue(existingProps),
+        ...(isRecord(field.gridOptions) ? cloneValue(field.gridOptions) : {}),
         columns,
         defaultRow,
         rowKey: readString(existingProps.rowKey, '_rowId'),
@@ -255,50 +274,56 @@ function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeForm
         fillAvailableHeight: existingProps.fillAvailableHeight !== false,
         copyable: existingProps.copyable !== false,
         removable: existingProps.removable !== false,
-        toolbarButtons: [
-          { code: 'add', label: '新增行', command: 'add', status: 'primary' },
-          {
-            code: 'import',
-            label: '导入',
-            command: 'import',
-            status: 'info',
-            execute: ({ rows }: {
-              rows: Record<string, unknown>[];
-            }) => {
+        toolbarButtons: createPrintDetailToolbar({
+          fetch: guard(async ({ setRows, formValues }) => {
+            const currentField = resultSchema.fields.find((item) => item.field === fieldName);
+            const buttons = currentField?.props?.toolbarButtons as ReturnType<typeof createPrintDetailToolbar> | undefined;
+            const button = buttons?.find((item) => item.code === 'fetch');
+            if (button?.disabled) return;
+            if (button) button.disabled = true;
+            try {
+              const rows = await requestPrintDetailAction({ formCode, field: fieldName, action: 'fetch', formValues });
+              if (!Array.isArray(rows)) throw new Error('数据源脚本必须返回明细数组。');
+              setRows(cloneValue(rows));
+            } finally {
+              if (button) button.disabled = false;
+            }
+          }),
+          clear: ({ setRows }) => setRows([]),
+          import: ({ rows, setRows }) => {
               if (typeof window === 'undefined') return;
               window.dispatchEvent(new CustomEvent('enlearn:print-data-source-import', {
                 detail: {
                   field: fieldName,
+                  formCode,
                   onImported: (
                     importedRows: Record<string, unknown>[],
                     mode: 'append' | 'replace',
                   ) => {
-                    if (mode === 'replace') {
-                      rows.splice(0, rows.length, ...importedRows);
-                    } else {
-                      rows.push(...importedRows);
-                    }
+                    setRows(mode === 'replace' ? importedRows : [...rows, ...importedRows]);
                   },
                 },
               }));
-            },
           },
-          {
-            code: 'clear',
-            label: '清空',
-            command: 'clear',
-            status: 'warning',
-            execute: ({ rows }: { rows: Record<string, unknown>[] }) => {
-              rows.splice(0, rows.length);
-            },
-          },
-        ],
+          configure: guard(async () => {
+            const schema = await requestPrintDetailAction({ formCode, field: fieldName, action: 'configure' });
+            if (isRecord(schema)) createImportFormSchema(schema, formCode, resultSchema);
+          }),
+          delete: guard(async ({ setRows }) => {
+            const schema = await requestPrintDetailAction({ formCode, field: fieldName, action: 'delete' });
+            if (!isRecord(schema)) return;
+            setRows(undefined);
+            createImportFormSchema(schema, formCode, resultSchema);
+          }),
+        }),
       },
     };
   });
 
   const detailNames = new Set(normalizedDetailFields.map((field) => field.field));
-  const headerFields = fields.filter((field) => !detailNames.has(readString(field.field)));
+  const headerFields = fields.filter((field) =>
+    !detailNames.has(readString(field.field)) && field.component !== 'lc-array-table' && field.field !== 'detail',
+  );
   const headerLayout = headerFields.map((field) => ({
     kind: 'field' as const,
     field: readString(field.field),
@@ -308,13 +333,14 @@ function createImportFormSchema(rawSchema: Record<string, unknown>): LowCodeForm
     field: field.field,
   }));
 
-  return {
+  Object.assign(resultSchema, {
     title: readString(rawSchema.title, '数据源'),
     columns: 1,
     fields: [...headerFields, ...normalizedDetailFields] as LowCodeFormSchema['fields'],
     layout: [...headerLayout, ...detailLayout],
     actions: Array.isArray(rawSchema.actions) ? cloneValue(rawSchema.actions) : [],
-  };
+  });
+  return resultSchema;
 }
 
 export type LowCodePageConfirmDialogResult =

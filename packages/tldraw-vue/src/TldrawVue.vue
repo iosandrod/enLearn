@@ -41,6 +41,7 @@ import {
 	type PresentationConfig,
 } from './presentation'
 import { DEFAULT_WORKSPACE_PAGE_SIZE_MM } from './editor/interactions/WorkspaceBoundsManager'
+import { getEditorPrintDataSource } from './editor/workspaceDataSource'
 
 const props = withDefaults(
 	defineProps<{
@@ -329,6 +330,12 @@ function cloneTemplateValue<T>(value: T): T {
 	return JSON.parse(JSON.stringify(value)) as T
 }
 
+function getPrintDataSource() {
+	return cloneTemplateValue(
+		editor.value ? getEditorPrintDataSource(editor.value).value ?? { type: 'none' } : { type: 'none' }
+	)
+}
+
 async function getTemplateInfo() {
 	const currentEditor = editor.value
 	if (!currentEditor) return null
@@ -349,7 +356,10 @@ async function getTemplateInfo() {
 
 	if (!pages.length) return null
 
-	const workspace = cloneTemplateValue(getWorkspaceTemplateConfig() ?? {})
+	const workspace = {
+		...cloneTemplateValue(getWorkspaceTemplateConfig() ?? {}),
+		printDataSource: getPrintDataSource(),
+	}
 	return {
 		content: {
 			pages: cloneTemplateValue(pages),
@@ -514,6 +524,7 @@ defineExpose({
 	resetWorkspaceTemplateConfig,
 	canRunCommand,
 	getEditor,
+	getPrintDataSource,
 	getTemplateInfo,
 	getPluginIds,
 	getWorkspaceTemplateConfig,

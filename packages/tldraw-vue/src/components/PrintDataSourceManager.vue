@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dialog'
+import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
-import { onMounted, ref } from 'vue'
+import { h, nextTick, onMounted, ref } from 'vue'
+import { isLowCodeFormSchema } from '@/editor/dataSourceForm'
+
+const DATA_SOURCE_FORM_CODE = 'print-designer.datasource-typeorm'
+const DRIVER_PORTS: Record<string, number> = { mssql: 1433, mysql: 3306, pgsql: 5432 }
 
 type ServiceApi = {
 	invoke<TResponse = unknown>(serviceName: string, serviceMethod: string, postData?: Record<string, unknown>): Promise<TResponse>
@@ -23,6 +28,7 @@ const sources = ref<PrintDataSource[]>([])
 const selectedId = ref('')
 const loading = ref(true)
 const message = ref('')
+const opening = ref(false)
 
 onMounted(() => { void loadSources() })
 
@@ -31,7 +37,7 @@ function createDraft(): PrintDataSource {
 		type: 'typeorm',
 		code: '',
 		name: '',
-		schema: { driver: 'postgres', host: '', port: 5432, database: '', username: '', password: '', query: 'select * from your_table limit 100' },
+		schema: connectionModel({}),
 		enabled: true,
 		version: 1,
 	}
@@ -55,24 +61,85 @@ function selectSource(source: PrintDataSource) {
 	selectedId.value = source.id ?? source.code
 	}
 
-function editSource(source?: PrintDataSource) {
+async function editSource(source?: PrintDataSource) {
+	if (opening.value) return
+	opening.value = true
+	let formSchema: LowCodeFormSchema
+	try {
+		const rows = await props.serviceApi.invoke<Array<{ schema: unknown }>>('lowcode', 'listItems', {
+			resource: 'lowcode_form_definitions', filters: { code: DATA_SOURCE_FORM_CODE, enabled: true }, limit: 1,
+		})
+		const schema = Array.isArray(rows) ? rows[0]?.schema : undefined
+		if (!isLowCodeFormSchema(schema) || !schema.fields.some((field) => (
+			field.field === 'schema' && field.component === 'lc-sub-form' && isLowCodeFormSchema(field.props?.schema)
+		))) throw new Error('数据源连接子表单不存在、已停用或 schema 无效。')
+		formSchema = structuredClone(schema)
+	} catch (error) {
+		message.value = error instanceof Error ? error.message : '数据源配置表单加载失败。'
+		return
+	} finally {
+		opening.value = false
+	}
 	const original = source ? cloneSource(source) : createDraft()
 	const model = {
 		code: original.code,
 		name: original.name,
 		enabled: original.enabled,
-		schema: JSON.stringify(original.schema, null, 2),
+		schema: connectionModel(original.schema),
 	}
+	let previousDriver = String(model.schema.driver)
+	const form = ref<{ commitPendingValues(): void; validate(): Promise<boolean> } | null>(null)
+	const testing = ref(false)
+	const testResult = ref<{ ok: boolean; message: string; elapsedMs?: number } | null>(null)
 	void openGlobalDialog<Record<string, unknown>>({
-		title: source ? `编辑数据源 · ${source.name || source.code}` : '新建 TypeORM 数据源',
-		width: 720,
+		title: source ? `编辑数据源 · ${source.name || source.code}` : '新建数据库数据源',
+		width: 820,
 		model,
-		form: { schema: dataSourceSchema(), model },
+		body: (context) => h('div', [
+			h(LowCodeForm, {
+				ref: form, schema: formSchema, modelValue: context.model, disabled: testing.value,
+				'onUpdate:modelValue': (value: Record<string, unknown>) => {
+					const config = isRecord(value.schema) ? { ...value.schema } : {}
+					const driver = String(config.driver ?? 'pgsql')
+					if (driver !== previousDriver && Number(config.port) === DRIVER_PORTS[previousDriver]) {
+						config.port = DRIVER_PORTS[driver]
+					}
+					previousDriver = driver
+					testResult.value = null
+					context.setModel({ ...value, schema: config })
+				},
+			}),
+			testResult.value ? h('p', {
+				role: 'status', style: { color: testResult.value.ok ? '#15803d' : '#b91c1c', margin: '12px 0 0' },
+			}, `${testResult.value.message}${testResult.value.ok ? `（${testResult.value.elapsedMs ?? 0}ms）` : ''}`) : null,
+		]),
 		actions: [
 			{ code: 'cancel', label: '取消', role: 'cancel' },
+			{
+				code: 'test-connection', label: '测试数据源连接', role: 'custom', loading: testing,
+				onClick: async ({ model: values }) => {
+					form.value?.commitPendingValues()
+					await nextTick()
+					testing.value = true
+					testResult.value = null
+					try {
+						testResult.value = await props.serviceApi.invoke('print', 'testDataSourceConnection', {
+							schema: parseSchema(values.schema),
+						})
+					} catch (error) {
+						testResult.value = { ok: false, message: error instanceof Error ? error.message : '连接测试失败。' }
+					} finally {
+						testing.value = false
+					}
+					return false as const
+				},
+			},
 			{ code: 'confirm', label: '保存', role: 'confirm', status: 'primary' },
 		],
 		onConfirm: async ({ model: values }) => {
+			form.value?.commitPendingValues()
+			await nextTick()
+			if (!form.value || !(await form.value.validate())) return false
 			const code = String(values.code ?? '').trim()
 			if (!/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,119}$/.test(code)) {
 				throw new Error('数据源编码只能包含字母、数字、点、下划线、冒号和短横线。')
@@ -96,26 +163,47 @@ function editSource(source?: PrintDataSource) {
 }
 
 function parseSchema(value: unknown) {
-	try {
-		const parsed = typeof value === 'string' ? JSON.parse(value || '{}') : value
-		if (!isRecord(parsed)) throw new Error('schema 必须是 JSON 对象。')
-		return parsed
-	} catch (error) {
-		throw new Error(error instanceof Error ? error.message : 'schema JSON 格式不正确。')
+	if (!isRecord(value)) throw new Error('请填写连接与查询配置。')
+	const config = connectionModel(value)
+	if (!Object.prototype.hasOwnProperty.call(DRIVER_PORTS, String(config.driver))) throw new Error('请选择 MSSQL、MySQL 或 PostgreSQL 驱动。')
+	if (!String(config.host).trim() || !String(config.database).trim() || !String(config.username).trim()) {
+		throw new Error('请填写主机、数据库名称和用户名。')
 	}
+	if (!Number.isInteger(Number(config.port)) || Number(config.port) < 1 || Number(config.port) > 65535) {
+		throw new Error('数据库端口必须是 1 到 65535 的整数。')
+	}
+	if (typeof config.parameters === 'string') config.parameters = JSON.parse(config.parameters)
+	if (!Array.isArray(config.parameters)) throw new Error('查询参数必须是数组。')
+	return config
 }
 
-function dataSourceSchema(): LowCodeFormSchema {
+function connectionModel(value: Record<string, unknown>): Record<string, unknown> {
+	const config = { ...value }
+	const urlText = config.url || config.connectionString
+	if (!config.host && typeof urlText === 'string' && urlText) {
+		try {
+			const url = new URL(urlText)
+			Object.assign(config, {
+				host: url.hostname.replace(/^\[|\]$/g, ''), port: url.port || undefined,
+				driver: config.driver || config.type || url.protocol.replace(':', ''),
+				database: decodeURIComponent(url.pathname.slice(1)), username: decodeURIComponent(url.username),
+				password: decodeURIComponent(url.password),
+				ssl: config.ssl ?? ['require', 'verify-ca', 'verify-full'].includes(url.searchParams.get('sslmode') ?? ''),
+			})
+		} catch { /* Keep invalid legacy URLs editable through the explicit connection fields. */ }
+	}
+	const aliases: Record<string, string> = { postgres: 'pgsql', postgresql: 'pgsql', mysql2: 'mysql', sqlserver: 'mssql' }
+	const rawDriver = String(config.driver || config.type || 'pgsql').toLowerCase()
+	const driver = aliases[rawDriver] ?? rawDriver
 	return {
-		title: 'TypeORM 数据源配置',
-		columns: 1,
-		fields: [
-			{ field: 'code', label: '数据源编码', component: 'vxe-input', props: { placeholder: '例如 sales.orders' } },
-			{ field: 'name', label: '数据源名称', component: 'vxe-input', props: { placeholder: '例如 销售订单数据库' } },
-			{ field: 'enabled', label: '启用', component: 'vxe-switch' },
-			{ field: 'schema', label: '连接与查询配置', component: 'lc-json-editor', props: { jsonValueMode: 'string', jsonRootType: 'object' } },
-		],
-		actions: [],
+		...config, driver, port: config.port ?? DRIVER_PORTS[driver],
+		host: config.host ?? '', database: config.database ?? config.databaseName ?? '',
+		username: config.username ?? config.user ?? '', password: config.password ?? '',
+		query: config.query ?? 'SELECT 1 AS connected', parameters: config.parameters ?? [],
+		ssl: config.ssl === true, encrypt: config.encrypt !== false,
+		trustServerCertificate: config.trustServerCertificate === true,
+		instanceName: config.instanceName ?? '', applicationName: config.applicationName ?? 'EnLearn Print',
+		timeoutMs: 2000,
 	}
 }
 
@@ -146,9 +234,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 		<header class="print-data-source-manager__header">
 			<div>
 				<strong>数据源管理</strong>
-				<span>TypeORM / PostgreSQL 连接配置</span>
+				<span>MSSQL / MySQL / PostgreSQL 连接配置</span>
 			</div>
-			<button type="button" class="print-data-source-manager__new" @click="editSource()">
+			<button type="button" class="print-data-source-manager__new" :disabled="opening" @click="editSource()">
 				<i class="ri-add-line" aria-hidden="true" /> 新建数据源
 			</button>
 		</header>
@@ -165,7 +253,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 					<strong>{{ source.name || source.code }}</strong>
 					<small>{{ source.code }} · {{ source.enabled ? '已启用' : '已停用' }}</small>
 				</div>
-				<button type="button" class="print-data-source-manager__edit" @click="selectSource(source); editSource(source)">
+				<button type="button" class="print-data-source-manager__edit" :disabled="opening" @click="selectSource(source); editSource(source)">
 					<i class="ri-edit-line" aria-hidden="true" /> 编辑
 				</button>
 			</div>

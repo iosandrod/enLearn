@@ -160,6 +160,11 @@ function createScriptSource(
   };
   const context = ${capabilitiesEnabled ? `Object.freeze({
     ...snapshot.context,
+    ...(snapshot.context.datasource ? {
+      datasource: Object.freeze({
+        query: (sql, parameters = []) => call("dataSource.query", sql, parameters)
+      })
+    } : {}),
     http: Object.freeze({
       request: (url, init = {}) => call("http.request", url, init),
       get: (url, init = {}) => call("http.request", url, { ...init, method: "GET" }),

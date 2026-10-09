@@ -10,6 +10,7 @@
 /coverage
 /api/.trigger/*
 /artifacts/.mes-*.json
+/artifacts/
 /artifacts/.mes-*.mjs
 /artifacts/.mes-*.tmp
 /artifacts/mes-*.log

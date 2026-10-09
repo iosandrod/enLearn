@@ -1,0 +1,1 @@
+import{t as e}from"./router-DxEIGaM2.js";export{e as router};

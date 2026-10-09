@@ -268,6 +268,8 @@ export class PrintService implements ServiceExecutor {
         return this.dataSources.saveManaged(postData, context);
       case 'deleteDataSource':
         return this.dataSources.deleteManaged(postData, context);
+      case 'testDataSourceConnection':
+        return this.dataSources.testConnection(postData, context);
       case 'resolveDataSource':
       case 'testDataSource':
       case 'executeDataSource':

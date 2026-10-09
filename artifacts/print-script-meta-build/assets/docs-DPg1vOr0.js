@@ -1,0 +1,1 @@
+import{K as e,N as t,b as n}from"./vue.runtime.esm-bundler-C3HwMHSZ.js";import{t as r}from"./_plugin-vue_export-helper-BDNMzG2s.js";import{t as i}from"./DocsScreen-BjeafOVG.js";t();var a={};function o(t,r){let a=i;return e(),n(a)}var s=r(a,[[`render`,o]]);export{s as default};

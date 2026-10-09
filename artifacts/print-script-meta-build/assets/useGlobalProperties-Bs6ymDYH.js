@@ -1,0 +1,1 @@
+import{A as e,N as t}from"./vue.runtime.esm-bundler-C3HwMHSZ.js";t();var n=()=>{let t=e().appContext.config.globalProperties;return{globalProperties:t,registerRef:(e,n)=>e&&(t.$$refs[n]=e)}};export{n as t};

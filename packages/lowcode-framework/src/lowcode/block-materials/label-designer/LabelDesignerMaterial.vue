@@ -113,6 +113,9 @@ async function getTemplateInfo(getPreview: unknown = false) {
   }
   if (!pages.length) return null;
   const currentWorkspace = workspace();
+  // The runtime source lives in the editor, outside the saved workspace settings.
+  const printDataSource = designer.value?.getPrintDataSource?.();
+  if (printDataSource !== undefined) currentWorkspace.printDataSource = clone(printDataSource);
   let obj:any= {
     content: { pages: clone(pages), currentPageId, workspace: currentWorkspace },
     pages: clone(pages),
@@ -622,7 +625,7 @@ async function save(options: Record<string, any> = {}) {
     : await getTemplateInfo(true);
   if (!templateInfo?.content) throw new Error('模板内容尚未就绪，无法保存。');
   const api = host.getServiceApi();
-  const id = String(templateId.value || props.block.templateId || host.getRoute().query?.templateId || '').trim();
+  const id = String(templateId.value || '').trim();
   const payload = {
     name: String(templateName.value || props.block.templateName || '标签打印模板'),
     content: clone(templateInfo.content), workspace: clone(templateInfo.workspace || {}),
@@ -642,7 +645,20 @@ async function save(options: Record<string, any> = {}) {
   void refreshTemplateItems();
   return result;
 }
-
+async function copyData() {
+  // Capture every page and workspace setting before resetData clears them.
+  const source = await getTemplateInfo();
+  if (!source?.content) throw new Error('模板内容尚未就绪，无法复制。');
+  await resetData();
+  // Only restore document content, leaving the new template identity intact.
+  await setData({ content: source.content, workspace: source.workspace });
+  templateName.value = `${source.templateName || '新建模板'}（副本）`;
+  templateDirty.value = true;
+  dirty.value = true;
+  emitTemplateInfo();
+  message.value = '已复制为新模板，请保存';
+  return getTemplateInfo();
+}
 async function resetData() {
   const instance = await waitForEditor();
   const pages = instance.getPages();
@@ -728,6 +744,7 @@ onMounted(() => {
     getTemplateInfo,
     validate,
     resetData,
+    copyData,
     save,
     preview,
     print,

@@ -24,6 +24,7 @@ export type {
 
 export * from './global-dialog';
 export * from './page-reference-dialog';
+export * from './print-detail-toolbar';
 export * from './lowcode-pages';
 export * from './block-editor';
 export * from './page-runtime';

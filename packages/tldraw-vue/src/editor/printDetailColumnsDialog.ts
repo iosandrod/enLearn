@@ -8,7 +8,7 @@ const DETAIL_COLUMNS_FORM_CODE = 'print-designer.detail-table-columns'
 export async function openPrintDetailColumnsDialog(
 	serviceApi: LowCodeHostServiceApi,
 	table: PrintDataSourceDetailTable,
-	onConfirm: (columns: PrintDataSourceDetailColumn[]) => Promise<void> | void,
+	onConfirm: (config: PrintDataSourceDetailTable) => Promise<void> | void,
 ) {
 	const rows = await serviceApi.invoke<Array<{ schema?: unknown }>>('lowcode', 'listItems', {
 		resource: 'lowcode_form_definitions',
@@ -30,7 +30,7 @@ export async function openPrintDetailColumnsDialog(
 		})
 	}//
 	prepareColumns(columns)//
-	const model = { ...table }//
+	const model = { ...table, columns }
 	return openGlobalDialog<typeof model>({
 		title: `配置明细列 - ${table.label}`,
 		width: 'min(1100px, calc(100vw - 40px))',
@@ -43,7 +43,6 @@ export async function openPrintDetailColumnsDialog(
 		onConfirm: async ({ model: values }) => {
 			const normalized = normalizeColumns(values.columns)
 			values={...values, columns: normalized}
-			//@ts-ignore
 			await onConfirm(values)//
 		},
 	})
