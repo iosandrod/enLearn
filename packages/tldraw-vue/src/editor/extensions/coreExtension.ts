@@ -42,6 +42,7 @@ import {
 } from '../vueDefaultShapes'
 import { VueRichTextShapeUtil, type VueRichTextShape } from '../vueRichTextShape'
 import { vueRichTextDefaultProps } from '../shapeProps/vueRichText'
+import { editRichTextShape } from '../richTextEditorDialog'
 
 const textCanvasCreate: VueShapeCreateDefinition = {
 	shapeType: 'vue-text',
@@ -85,9 +86,8 @@ const richTextCreate: VueShapeCreateDefinition = {
 		editor.createShapes<VueRichTextShape>([{ id, type: 'vue-rich-text', x: rect.x, y: rect.y, props: { ...vueRichTextDefaultProps, w: rect.w, h: rect.h } }])
 	},
 	onComplete({ editor, id }) {
-		editor.select(id)
-		if (typeof window !== 'undefined') queueMicrotask(() => window.dispatchEvent(new CustomEvent('enlearn:open-rich-text-editor', { detail: { shapeId: id } })))
-	},
+		// void editRichTextShape(editor, id)
+	},//
 }
 
 const imageCreate: VueShapeCreateDefinition = {
@@ -376,8 +376,9 @@ export const coreExtension: VueEditorExtension = {
 		},
 		{
 			id: 'rich-text',
-			label: '富文本',
+			label: '高级文本',
 			icon: 'rich-text',
+			shortcut: 'R',
 			placement: { area: 'more', group: 'insert' },
 			selection: { tool: 'rich-text' },
 			canvasCreate: richTextCreate,

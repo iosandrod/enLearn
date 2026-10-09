@@ -57,7 +57,6 @@ import type { PrintDataSourceConfig } from '@/print/types'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
-import VueRichTextEditorDialog from './VueRichTextEditorDialog.vue'
 
 type ShapeFormModel = Record<string, unknown>
 
@@ -96,7 +95,6 @@ const columnFormModel = ref<ShapeFormModel>({})
 const imageSourceError = ref('')
 const designingForm = ref(false)
 const designFormMessage = ref('')
-const richTextDialogOpen = ref(false)
 const host = useLowCodeHost()
 const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const imageSourceCache = new Map<string, { src: string }>()
@@ -361,12 +359,6 @@ function handleModelUpdate(value: ShapeFormModel) {
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
 	}
-}
-
-function saveRichText(content: string) {
-	const shape = selectedShape.value
-	if (!shape || shape.type !== 'vue-rich-text') return
-	props.editor.updateShape({ id: shape.id, type: shape.type, props: { content } } as TLShapePartial)
 }
 
 function handleColumnModelUpdate(value: ShapeFormModel) {
@@ -1947,9 +1939,6 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 				<div class="lowcode-form-panel__subtitle">{{ panelSubtitle }}</div>
 			</div>
 			<div class="lowcode-form-panel__header-actions" aria-label="属性表单操作">
-				<button v-if="selectedShape?.type === 'vue-rich-text'" type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary" title="编辑富文本" @click="richTextDialogOpen = true">
-					<i class="ri-edit-line" aria-hidden="true" /><span>编辑富文本</span>
-				</button>
 				<button
 					type="button"
 					class="lowcode-form-panel__action lowcode-form-panel__action--primary"
@@ -1962,7 +1951,6 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 				</button>
 			</div>
 		</header>
-		<VueRichTextEditorDialog v-if="selectedShape?.type === 'vue-rich-text'" v-model="richTextDialogOpen" :content="String(selectedShape.props.content ?? '')" @save="saveRichText" />
 		<div v-if="props.columnOnly && showMaterialColumnTab" class="lowcode-form-panel__column-actions" aria-label="物料列操作">
 			<button type="button" :disabled="!canManageMaterialColumns" title="在当前列后添加同级列" @click="addColumn">
 				<i class="ri-add-line" aria-hidden="true" />

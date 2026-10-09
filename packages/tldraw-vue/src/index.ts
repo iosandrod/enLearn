@@ -46,6 +46,7 @@ export type {
 	VueTextShape,
 } from './editor/vueDefaultShapes'
 export type { VueRichTextShape } from './editor/vueRichTextShape'
+export { openRichTextEditor, type RichTextEditorOptions } from './editor/richTextEditorDialog'
 export {
 	createVueEditorExtensionRegistry,
 	getToolbarPlacementGroup,

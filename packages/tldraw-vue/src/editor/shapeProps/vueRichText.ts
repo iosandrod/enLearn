@@ -12,7 +12,7 @@ export const vueRichTextPropertyRegistry = extendShapeProperties(baseProps, {
 export const vueRichTextDefaultProps = {
 	w: 320,
 	h: 160,
-	content: '<p>富文本</p>',
+	content: '<p>text</p>',
 	color: 'black',
 	fontSize: 14,
 	showBorder: false,

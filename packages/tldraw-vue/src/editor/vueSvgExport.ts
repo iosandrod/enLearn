@@ -26,6 +26,7 @@ import type {
 	VueTextShape,
 } from './vueDefaultShapes'
 import type { VueRichTextShape } from './vueRichTextShape'
+import { sanitizeRichText } from './richTextContent'
 import type { VueFrameShape } from './extensions/frame/vueFrameShape'
 import type { VueTableColumn, VueTableShape } from './extensions/table/vueTableShape'
 import {
@@ -52,14 +53,41 @@ const VUE_MATERIAL_PRINT_GRID_COLOR = '#111827'
 const VUE_RESUME_BORDER_COLOR = '#cbd5e1'
 const VUE_RESUME_ACCENT_COLOR = '#0f766e'
 
-export function createVueRichTextSvg(shape: VueRichTextShape): SvgExportNode {
+export function createVueRichTextSvg(editor: Editor, shape: VueRichTextShape): SvgExportNode {
 	const width = Math.max(1, shape.props.w)
 	const height = Math.max(1, shape.props.h)
-	const text = String(shape.props.content ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '富文本'
-	return createElement('g', {}, [
-		createElement('rect', { x: 0, y: 0, width, height, fill: 'transparent', stroke: shape.props.showBorder ? VUE_VISIBLE_BORDER_COLOR : 'none' }),
-		createElement('text', { x: shape.props.paddingLeft ?? 0, y: Math.max(16, (shape.props.paddingTop ?? 0) + Number(shape.props.fontSize ?? 14)), fill: shape.props.color ?? '#111827', fontSize: Number(shape.props.fontSize ?? 14) }, text),
-	])
+	const { paddingTop, paddingRight, paddingBottom, paddingLeft, borderTop, borderRight, borderBottom, borderLeft } = shape.props
+	const hasSideBorders = Boolean(borderTop || borderRight || borderBottom || borderLeft)
+	const border = shape.props.showBorder || hasSideBorders ? '1px solid rgb(15 23 42 / 0.72)' : 'none'
+	const fontSize = Number(shape.props.fontSize)
+	const horizontal = shape.props.justifyContent ?? 'start'
+	const vertical = shape.props.alignItems ?? 'start'
+	const flexAlignment = (value: string) => value === 'start' ? 'flex-start' : value === 'end' ? 'flex-end' : 'center'
+
+	// Opt in to the existing export pipeline's CSS/font/media embedding so the
+	// HTML stays self-contained when the SVG is rasterized for print preview.
+	return createElement('foreignObject', {
+		x: 0, y: 0, width, height, className: 'tl-export-embed-styles',
+	}, createElement('div', {
+		xmlns: 'http://www.w3.org/1999/xhtml',
+		style: {
+			width: '100%', height: '100%', boxSizing: 'border-box', display: 'flex',
+			justifyContent: flexAlignment(horizontal), alignItems: flexAlignment(vertical),
+			textAlign: horizontal === 'start' ? 'left' : horizontal === 'end' ? 'right' : 'center',
+			fontFamily: 'sans-serif', fontSize: Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 14,
+			lineHeight: editor.getCurrentTheme().lineHeight,
+			color: getVueThemeColor(editor, shape.props.color, 'solid'),
+			paddingTop, paddingRight, paddingBottom, paddingLeft,
+			border,
+			...(hasSideBorders ? {
+				borderTop: borderTop ? border : 'none', borderRight: borderRight ? border : 'none',
+				borderBottom: borderBottom ? border : 'none', borderLeft: borderLeft ? border : 'none',
+			} : {}),
+		},
+	}, createElement('div', {
+		className: 'vue-rich-text-content',
+		dangerouslySetInnerHTML: { __html: sanitizeRichText(shape.props.content) },
+	})))
 }
 
 type VueMaterialSvgShape = {

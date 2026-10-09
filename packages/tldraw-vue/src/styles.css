@@ -2400,22 +2400,23 @@ button {
 	transform-origin: 0 0;
 }
 
-.vue-rich-text-shape { box-sizing: border-box; overflow: hidden; }
-.vue-rich-text-content { width: 100%; height: 100%; overflow: hidden; line-height: 1.45; word-break: break-word; }
+.vue-rich-text-content { width: 100%; height: auto; max-height: 100%; min-height: 0; overflow: hidden; word-break: break-word; }
 .vue-rich-text-content p { margin: 0 0 .35em; }
-.vue-rich-text-shape.has-visible-border { border: 1px solid #111827; }
-.vue-rich-text-edit-button { position: absolute; right: 4px; top: 4px; z-index: 3; border: 0; border-radius: 4px; padding: 2px 7px; color: #fff; background: #2563eb; cursor: pointer; }
-.rich-text-dialog { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; }
-.rich-text-dialog__backdrop { position: absolute; inset: 0; border: 0; background: rgb(15 23 42 / 45%); }
-.rich-text-dialog__panel { position: relative; z-index: 1; width: min(860px, calc(100vw - 32px)); height: min(620px, calc(100vh - 32px)); display: flex; flex-direction: column; overflow: hidden; border-radius: 10px; background: #fff; box-shadow: 0 20px 70px rgb(15 23 42 / 28%); }
-.rich-text-dialog__panel > header, .rich-text-dialog__panel > footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; }
-.rich-text-dialog__panel > header h2 { margin: 0; font-size: 16px; }
-.rich-text-dialog__panel > header button { border: 0; background: transparent; font-size: 24px; cursor: pointer; }
-.rich-text-dialog__editor { flex: 1; min-height: 0; }
-.rich-text-dialog__editor .w-e-text-container { height: 100% !important; }
-.rich-text-dialog__panel > footer { justify-content: flex-end; gap: 8px; border-top: 1px solid #e5e7eb; border-bottom: 0; }
-.rich-text-dialog__panel > footer button { padding: 7px 16px; border: 1px solid #d1d5db; border-radius: 5px; background: #fff; cursor: pointer; }
-.rich-text-dialog__panel > footer button.is-primary { border-color: #2563eb; color: #fff; background: #2563eb; }
+
+.rich-text-editor-modal .vxe-modal--body,
+.rich-text-editor-modal .vxe-modal--body-default,
+.rich-text-editor-modal .vxe-modal--content,
+.rich-text-editor-modal .lc-global-dialog__body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-height: 0;
+	padding: 0;
+}
+
+.rich-text-editor { display: flex; flex: 1; flex-direction: column; min-height: 0; height: 100%; }
+.rich-text-editor__content { flex: 1; min-height: 0; }
+.rich-text-editor__content .w-e-text-container { height: 100% !important; }
 
 .vue-frame-shape {
 	z-index: 1;
@@ -3047,7 +3048,8 @@ button {
 	background: #e5e7eb;
 }
 
-.vue-text-shape {
+.vue-text-shape,
+.vue-rich-text-shape {
 	display: flex;
 	box-sizing: border-box;
 	align-items: center;
@@ -3057,6 +3059,7 @@ button {
 }
 
 .vue-text-shape.has-visible-border,
+.vue-rich-text-shape.has-visible-border,
 .vue-image-shape.has-visible-border,
 .vue-qr-shape.has-visible-border,
 .vue-barcode-shape.has-visible-border,
@@ -3254,6 +3257,7 @@ button {
 }
 
 .vue-text-shape.is-selected,
+.vue-rich-text-shape.is-selected,
 .vue-image-shape.is-selected,
 .vue-qr-shape.is-selected,
 .vue-barcode-shape.is-selected,
@@ -3266,6 +3270,7 @@ button {
 }
 
 .vue-text-shape.is-selected:not(.has-visible-border),
+.vue-rich-text-shape.is-selected:not(.has-visible-border),
 .vue-image-shape.is-selected:not(.has-visible-border),
 .vue-qr-shape.is-selected:not(.has-visible-border),
 .vue-barcode-shape.is-selected:not(.has-visible-border),

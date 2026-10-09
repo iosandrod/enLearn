@@ -26,6 +26,7 @@ import { PanningState } from './PanningState'
 import { ResizingState } from './ResizingState'
 import { PointingShapeState } from './TranslatingState'
 import type { VueShapeCreateDefinition, VueToolbarToolDefinition } from '../vueEditorExtensions'
+import { editRichTextShape } from '../richTextEditorDialog'
 import {
 	getVueTableCellAtPoint,
 	getVueTableCellFrameAncestor,
@@ -206,6 +207,12 @@ export class VueEditorController {
 		this.updateViewport()
 		const editor = this.options.editor
 		const hitShape = this.findShapeAt(this.getPagePoint(event))
+		if (hitShape?.type === 'vue-rich-text') {
+			event.preventDefault()
+			event.stopPropagation()
+			void editRichTextShape(editor, hitShape.id)
+			return
+		}
 		if (!hitShape || hitShape.type !== 'vue-text') return
 
 		event.preventDefault()
@@ -220,6 +227,9 @@ export class VueEditorController {
 		const selectedShapes = editor.getSelectedShapes()
 		if (selectedShapes.length !== 1) return false
 		const shape = selectedShapes[0]
+		if (shape?.type === 'vue-rich-text') {
+			return editRichTextShape(editor, shape.id) !== undefined
+		}
 		if (!shape || shape.type !== 'vue-text') return false
 
 		editor.markHistoryStoppingPoint('editing text')

@@ -50,7 +50,7 @@ let toolbarPointerState: ToolbarPointerState = { name: 'idle' }
 const TOOL_GLYPHS: Partial<Record<ToolbarItemId, string>> = {
 	arrow: glyph(0x2197),
 	text: 'T',
-	'rich-text': '富',
+	'rich-text': 'R',
 	note: glyph(0x25a3),
 	asset: glyph(0x25a4),
 	qr: glyph(0x25a9),

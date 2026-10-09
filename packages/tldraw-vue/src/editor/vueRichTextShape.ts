@@ -17,6 +17,6 @@ export class VueRichTextShapeUtil extends BaseBoxShapeUtil<VueRichTextShape> {
 		return { ...baseProps.defaults, ...vueRichTextDefaultProps }
 	}
 	override component() { return null }
-	override toSvg(shape: VueRichTextShape, _ctx: SvgExportContext) { return createVueRichTextSvg(shape) }
+	override toSvg(shape: VueRichTextShape, _ctx: SvgExportContext) { return createVueRichTextSvg(this.editor, shape) }
 	override getIndicatorPath(shape: VueRichTextShape): Path2D { const path = new Path2D(); path.rect(0, 0, shape.props.w, shape.props.h); return path }
 }
