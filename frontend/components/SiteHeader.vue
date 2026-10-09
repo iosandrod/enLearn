@@ -49,9 +49,9 @@ const auth = useAuth();
 const signedIn = computed(() => Boolean(auth.user.value));
 const menuOpen = ref(false);
 const navItems = [
-  { label: '在线体验', href: '/#designer-preview' },
   { label: '核心能力', href: '/#capabilities' },
-  { label: '开始设计', href: '/#start-design' },
+  { label: '行业场景', href: '/#scenarios' },
+  { label: '在线体验', href: '/#designer-preview' },
 ];
 
 function closeMenu() {

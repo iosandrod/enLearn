@@ -4,12 +4,13 @@
       <section class="site-footer__brand">
         <RouterLink class="site-footer__logo" to="/">
           <span aria-hidden="true">峰</span>
-          <strong>{{ SITE_NAME }}</strong>
+          <strong>{{ isPrintLanding ? '研峰打印设计器' : SITE_NAME }}</strong>
         </RouterLink>
-        <p>{{ SITE_DESCRIPTION }}，记录个人对低代码、APS 与制造软件的学习实践。</p>
+        <p v-if="isPrintLanding">可视化设计、数据源绑定与批量输出，让标签、名片和业务单据成为业务的清晰表达。</p>
+        <p v-else>{{ SITE_DESCRIPTION }}，记录个人对低代码、APS 与制造软件的学习实践。</p>
         <div class="site-footer__status">
           <i aria-hidden="true"></i>
-          学习站点正常运行
+          {{ isPrintLanding ? '设计模板 · 绑定数据 · 批量输出' : '学习站点正常运行' }}
         </div>
       </section>
 
@@ -43,9 +44,14 @@
 
 <script setup lang="ts">
 import { SITE_DESCRIPTION, SITE_NAME } from '../config/site';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const isPrintLanding = computed(() => route.path === '/');
 
 const currentYear = new Date().getFullYear();
-const footerGroups = [
+const learningFooterGroups = [
   {
     title: '内容',
     links: [
@@ -71,6 +77,11 @@ const footerGroups = [
     ],
   },
 ];
+const footerGroups = computed(() => isPrintLanding.value ? [
+  { title: '打印设计', links: [{ label: '核心能力', href: '/#capabilities' }, { label: '在线体验', href: '/#designer-preview' }, { label: '进入设计器', href: '/print-designer' }] },
+  { title: '行业场景', links: [{ label: '仓储与收发货', href: '/#scenarios' }, { label: '产品标签与名片', href: '/#scenarios' }, { label: '生产与物流', href: '/#scenarios' }] },
+  { title: '更多', links: [{ label: '学习文档', href: '/docs' }, { label: '学习记录', href: '/blog' }, { label: '登录', href: '/signin' }] },
+] : learningFooterGroups);
 </script>
 
 <style scoped>
