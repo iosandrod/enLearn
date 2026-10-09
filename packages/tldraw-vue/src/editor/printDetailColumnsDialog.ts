@@ -28,9 +28,9 @@ export async function openPrintDetailColumnsDialog(
 			column.editType ??= isRecord(column.editRender) ? readString(column.editRender.name) : ''
 			if (Array.isArray(column.children)) prepareColumns(column.children)
 		})
-	}
-	prepareColumns(columns)
-	const model = { columns }
+	}//
+	prepareColumns(columns)//
+	const model = { ...table }//
 	return openGlobalDialog<typeof model>({
 		title: `配置明细列 - ${table.label}`,
 		width: 'min(1100px, calc(100vw - 40px))',
@@ -42,7 +42,9 @@ export async function openPrintDetailColumnsDialog(
 		],
 		onConfirm: async ({ model: values }) => {
 			const normalized = normalizeColumns(values.columns)
-			await onConfirm(normalized)
+			values={...values, columns: normalized}
+			//@ts-ignore
+			await onConfirm(values)//
 		},
 	})
 }

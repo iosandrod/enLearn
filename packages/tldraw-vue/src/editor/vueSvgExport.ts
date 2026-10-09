@@ -39,6 +39,11 @@ import {
 } from './extensions/table/tableRowHeight'
 import { getVueTableColumnWidths } from './extensions/table/tableSizing'
 import type { VueResumeSectionShape, VueResumeShape } from './extensions/resume/vueResumeShape'
+import {
+	createPrintBarcodeDataUrl,
+	createPrintQrDataUrl,
+	type PrintCodeCellType,
+} from '../print/codeCell'
 
 const VUE_VISIBLE_BORDER_COLOR = '#111827'
 const VUE_MATERIAL_TABLE_BORDER_COLOR = '#111827'
@@ -86,12 +91,14 @@ export interface VueMaterialPrintTableColumn {
 	width: number
 	type?: string
 	formatter?: unknown
+	codeType?: PrintCodeCellType
 	children?: any[]
 }
 
 export interface VueMaterialPrintTableCell {
 	text: string
 	lines: string[]
+	codeType?: PrintCodeCellType
 }
 
 export interface VueMaterialPrintTableRow {
@@ -761,20 +768,40 @@ function createVueMaterialPrintTableSvg(
 				)
 			)
 
-			children.push(
-				createElement(
-					'text',
-					{
-						x: cellX + override.paddingX,
-						y: rowY + override.paddingY + override.fontSize,
-						fill: '#111827',
-						fontFamily: 'Inter, Arial, sans-serif',
-						fontSize: override.fontSize,
-						pointerEvents: 'none',
-					},
-					lineChildren
+			if (cell.codeType) {
+				const src = cell.codeType === 'qrCode'
+					? createPrintQrDataUrl(cell.text)
+					: createPrintBarcodeDataUrl(cell.text)
+				if (src) {
+					const imageWidth = cell.codeType === 'qrCode'
+						? Math.min(columnWidth - override.paddingX * 2, rowHeight - override.paddingY * 2)
+						: Math.max(1, columnWidth - override.paddingX * 2)
+					const imageHeight = cell.codeType === 'qrCode' ? imageWidth : Math.min(rowHeight - override.paddingY * 2, 42)
+					children.push(createElement('image', {
+						x: cellX + Math.max(override.paddingX, (columnWidth - imageWidth) / 2),
+						y: rowY + Math.max(override.paddingY, (rowHeight - imageHeight) / 2),
+						width: imageWidth,
+						height: imageHeight,
+						href: src,
+						preserveAspectRatio: 'xMidYMid meet',
+					}))
+				}
+			} else {
+				children.push(
+					createElement(
+						'text',
+						{
+							x: cellX + override.paddingX,
+							y: rowY + override.paddingY + override.fontSize,
+							fill: '#111827',
+							fontFamily: 'Inter, Arial, sans-serif',
+							fontSize: override.fontSize,
+							pointerEvents: 'none',
+						},
+						lineChildren
+					)
 				)
-			)
+			}
 			cellX += columnWidth
 		}
 		rowY += rowHeight

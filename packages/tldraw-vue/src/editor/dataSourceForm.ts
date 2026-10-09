@@ -206,9 +206,11 @@ function normalizeDetailTable(
 		: []
 	if (!columns.length) return null
 	return {
+		...value,//
 		id: readString(value.id, field),
 		field,
 		label: readString(value.title, readString(value.label, `明细${index + 1}`)),
+		...(readString(value.dataSourceScript) ? { dataSourceScript: readString(value.dataSourceScript) } : {}),
 		columns,
 		...(isRecord(value.gridOptions) ? { gridOptions: value.gridOptions } : {}),
 		...(Array.isArray(value.gridEvents) ? { gridEvents: value.gridEvents.filter(isRecord) } : {}),

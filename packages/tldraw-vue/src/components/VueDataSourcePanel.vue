@@ -56,6 +56,7 @@ type PrintDataSourceImportRequest = {
 type AddDetailTableModel = {
 	label: string
 	field: string
+	dataSourceScript: string
 }
 
 interface StoredFormDefinition {
@@ -89,7 +90,7 @@ const definitionsLoading = ref(true)
 const definitionError = ref('')
 const selectorModel = ref<Record<string, unknown>>({ formCode: '' })
 const formModel = ref<Record<string, unknown>>({})
-const activeSourceTab = ref<'header' | 'detail'>('header')
+const activeSourceTab = ref<'header' | 'detail'>('detail')//
 const detailTables = computed(() =>
 	activeDefinition.value ? getPrintDataSourceDetailTables(activeDefinition.value.schema) : [],
 )
@@ -111,6 +112,17 @@ const detailFormSchema = computed<LowCodeFormSchema>(() => ({
 				fillAvailableHeight: true,
 				toolbarButtons: [
 					{ code: 'add', label: '新增行', command: 'add', status: 'primary' },
+					{
+						code: 'fetch',
+						label: '获取数据',
+						status: 'primary',
+						prefixIcon: 'ri-download-cloud-2-line',
+						disabled: detailDataLoadingTableId.value === table.id,
+						execute: async () => {
+							activeDetailTableId.value = table.id
+							await handleFetchDetailData(table)
+						},
+					},
 					{
 						code: 'clear',
 						label: '清空',
@@ -171,6 +183,7 @@ const detailRows = computed(() => {
 })
 const actionMessage = ref('')
 const actionMessageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+const detailDataLoadingTableId = ref('')
 const importFileInput = ref<HTMLInputElement | null>(null)
 const pendingDetailImportConfig = ref<DetailImportConfig | null>(null)
 const pendingDetailImportHandler = ref<DetailImportRowsHandler | null>(null)
@@ -243,7 +256,6 @@ async function handleAddDataSource() {
 		},
 		serviceApi,//
 		onConfirm: async (result) => {
-			// debugger//
 			const code = await saveDataSourceDefinition(
 				result.header ?? headerModel,
 				result,
@@ -343,6 +355,7 @@ async function handleAddDetailTable() {
 	const model: AddDetailTableModel = {
 		label: `明细${nextIndex}`,
 		field: `detail_${nextIndex}`,
+		dataSourceScript: '',
 	}
 	const result = await openGlobalDialog<AddDetailTableModel>({
 		title: '添加子表',
@@ -359,7 +372,7 @@ async function handleAddDetailTable() {
 		onConfirm: ({ model: values }) => {
 			const label = readString(values.label)
 			const field = readString(values.field)
-			if (!label) throw new Error('请输入子表名称。')
+			if (!label) throw new Error('请输入子表名称。')//
 			if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(field)) {
 				throw new Error('子表字段只能以字母或下划线开头，并包含字母、数字或下划线。')
 			}
@@ -372,10 +385,12 @@ async function handleAddDetailTable() {
 
 	const label = readString(result.values.label)
 	const field = readString(result.values.field)
+	const dataSourceScript = readString(result.values.dataSourceScript)
 	const table: PrintDataSourceDetailTable = {
 		id: createDetailTableId(),
 		field,
 		label,
+		...(dataSourceScript ? { dataSourceScript } : {}),
 		columns: [{ field: 'value', title: '值', width: 120 }],
 	}
 	try {
@@ -412,9 +427,56 @@ function createAddDetailTableSchema(): LowCodeFormSchema {
 				props: { placeholder: '例如：items' },
 				rules: [{ required: true, message: '请输入数据字段' }],
 			},
+			{
+				field: 'dataSourceScript',
+				label: '数据源脚本编码',
+				component: 'vxe-input',
+				props: { placeholder: '例如 orders.remote（可选）' },
+			},
 		],
 		actions: [],
 	}
+}
+
+async function handleFetchDetailData(table: PrintDataSourceDetailTable) {//
+	const sourceCode = readString(table.dataSourceScript)
+	if (!sourceCode) {
+		setActionMessage(`明细“${table.label}”尚未配置 dataSourceScript。`)
+		return
+	}
+	if (detailDataLoadingTableId.value) return
+	detailDataLoadingTableId.value = table.id
+	setActionMessage(`正在获取“${table.label}”的数据…`)
+	try {
+		const result = await host.getServiceApi().invoke<unknown>('print', 'resolveDataSource', {
+			sourceCode,
+			params: {
+				...formModel.value,
+				detailField: table.field,
+			},
+		})
+		const rows = normalizeFetchedDetailRows(result)
+		updateDetailRows(table.field, rows)
+		activeDetailTableId.value = table.id
+		setActionMessage(`已获取 ${rows.length} 行“${table.label}”数据。`)
+	} catch (error) {
+		setActionMessage(error instanceof Error ? error.message : '明细数据获取失败。')
+	} finally {
+		detailDataLoadingTableId.value = ''
+	}
+}
+
+function normalizeFetchedDetailRows(value: unknown): Record<string, unknown>[] {
+	const rows = Array.isArray(value)
+		? value
+		: isRecord(value) && Array.isArray(value.records)
+			? value.records
+			: isRecord(value) && Array.isArray(value.data)
+				? value.data
+				: null
+	if (!rows) throw new Error('数据源脚本必须返回数组或 { records }。')
+	if (!rows.every(isRecord)) throw new Error('明细数据必须是对象数组。')
+	return rows
 }
 
 async function handleDeleteDetailTable() {
@@ -438,8 +500,8 @@ async function handleConfigureDetailTable() {
 	}
 	setActionMessage('正在打开打印明细列配置…')
 	try {
-		await openPrintDetailColumnsDialog(host.getServiceApi(), table, async (columns) => {
-			const nextTable: PrintDataSourceDetailTable = { ...table, columns }
+		await openPrintDetailColumnsDialog(host.getServiceApi(), table, async (config) => {
+			const nextTable: PrintDataSourceDetailTable = { ...table, ...config }//
 			await saveDetailTables(
 				definition,
 				detailTables.value.map((item) => item.id === table.id ? nextTable : item),
@@ -840,7 +902,7 @@ async function loadDefinitions() {
 	} finally {
 		definitionsLoading.value = false
 	}
-}
+}//
 
 async function handleDefinitionChange(value: Record<string, unknown>) {
 	selectorModel.value = value
@@ -851,6 +913,7 @@ async function handleDefinitionChange(value: Record<string, unknown>) {
 	definitionError.value = ''
 	try {
 		await activateDefinition(nextCode, true)
+		
 	} catch (error) {
 		selectorModel.value = { formCode: activeDefinition.value?.code ?? '' }
 		definitionError.value = isOptionalFormDefinitionError(error)
@@ -893,7 +956,7 @@ async function activateDefinition(code: string, resetModel: boolean) {
 	}
 
 	activeDefinition.value = definition
-	activeSourceTab.value = 'header'
+	activeSourceTab.value = 'detail'//
 	const detailDefinitions = getPrintDataSourceDetailTables(definition.schema)
 	const workspaceSource = getWorkspaceDataSource()
 	const activeField = workspaceSource?.type === 'inline' ? workspaceSource.detailField : undefined
@@ -914,6 +977,9 @@ async function activateDefinition(code: string, resetModel: boolean) {
 	if (resetModel || !currentSource || currentSource.type === 'none') {
 		applyFormModel(formModel.value, definition)
 	}
+	setTimeout(() => {//
+			handleFetchDetailData(activeDetailTable.value as PrintDataSourceDetailTable)
+		}, 400)//
 }
 
 async function loadStoredFormDefinition(code: string): Promise<StoredFormDefinition> {
@@ -1034,13 +1100,13 @@ watch(
 		</div>
 		<div v-else-if="activeDefinition" class="data-source-panel__body">
 			<div class="data-source-panel__tabs" role="tablist" aria-label="数据源区域">
-				<button type="button" :class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'header' }]"
-					role="tab" :aria-selected="activeSourceTab === 'header'" @click="activeSourceTab = 'header'">
-					表头
-				</button>
 				<button type="button" :class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'detail' }]"
 					role="tab" :aria-selected="activeSourceTab === 'detail'" @click="activeSourceTab = 'detail'">
 					明细
+				</button>
+				<button type="button" :class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'header' }]"
+					role="tab" :aria-selected="activeSourceTab === 'header'" @click="activeSourceTab = 'header'">
+					表头
 				</button>
 			</div>
 			<div v-if="activeSourceTab === 'header'" class="data-source-panel__header-form" role="tabpanel">
@@ -1055,7 +1121,7 @@ watch(
 						<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary"
 							@click="handleAddDetailTable">
 							<i class="ri-add-line" aria-hidden="true" />
-							<span>添加子表</span>
+							<span>添加明细</span>
 						</button>
 					</div>
 				</div>

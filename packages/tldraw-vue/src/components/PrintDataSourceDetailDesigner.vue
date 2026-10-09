@@ -7,6 +7,7 @@ import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 type AddDetailTableModel = {
 	label: string
 	field: string
+	dataSourceScript: string
 }
 
 const props = defineProps<{
@@ -22,7 +23,7 @@ const activeTableId = ref('')
 const addFormVisible = ref(false)
 const addFormError = ref('')
 const configurationError = ref('')
-const addFormModel = ref<AddDetailTableModel>({ label: '', field: '' })
+const addFormModel = ref<AddDetailTableModel>({ label: '', field: '', dataSourceScript: '' })
 const tables = computed(() => props.modelValue ?? [])
 const activeTable = computed(() =>
 	tables.value.find((table) => table.id === activeTableId.value) ?? tables.value[0],
@@ -43,6 +44,7 @@ function handleAddTable() {
 	addFormModel.value = {
 		label: `明细${nextIndex}`,
 		field: `detail_${nextIndex}`,
+		dataSourceScript: '',
 	}
 	addFormError.value = ''
 	addFormVisible.value = true
@@ -51,6 +53,7 @@ function handleAddTable() {
 function handleConfirmAddTable() {
 	const label = readString(addFormModel.value.label)
 	const field = readString(addFormModel.value.field)
+	const dataSourceScript = readString(addFormModel.value.dataSourceScript)
 	if (!label) {
 		addFormError.value = '请输入子表名称。'
 		return
@@ -68,6 +71,7 @@ function handleConfirmAddTable() {
 		id: createDetailTableId(),
 		field,
 		label,
+		...(dataSourceScript ? { dataSourceScript } : {}),
 		columns: [{ field: 'value', title: '值', width: 120 }],
 	}
 	activeTableId.value = table.id
@@ -86,8 +90,8 @@ async function handleConfigureTable() {
 	if (!table) return
 	configurationError.value = ''
 	try {
-		await openPrintDetailColumnsDialog(props.serviceApi, table, (columns) => {
-			emitTables(tables.value.map((item) => item.id === table.id ? { ...table, columns } : item))
+		await openPrintDetailColumnsDialog(props.serviceApi, table, (config) => {
+			emitTables(tables.value.map((item) => item.id === table.id ? { ...table, ...config } : item))//
 		})
 	} catch (error) {
 		configurationError.value = error instanceof Error ? error.message : '打印明细列配置打开失败。'
@@ -100,6 +104,15 @@ function handleDeleteTable() {
 	const nextTables = tables.value.filter((item) => item.id !== table.id)
 	activeTableId.value = nextTables[0]?.id ?? ''
 	emitTables(nextTables)
+}
+
+function handleScriptChange(value: string) {
+	const table = activeTable.value
+	if (!table) return
+	const dataSourceScript = readString(value)
+	emitTables(tables.value.map((item) => item.id === table.id
+		? { ...item, ...(dataSourceScript ? { dataSourceScript } : { dataSourceScript: undefined }) }
+		: item))
 }
 
 function emitTables(value: PrintDataSourceDetailTable[]) {
@@ -141,6 +154,10 @@ function readString(value: unknown, fallback = '') {
 				<span>数据字段</span>
 				<input v-model="addFormModel.field" type="text" placeholder="例如：items" />
 			</label>
+			<label>
+				<span>数据源脚本编码</span>
+				<input v-model="addFormModel.dataSourceScript" type="text" placeholder="例如：orders.remote（可选）" />
+			</label>
 			<div class="print-detail-designer__add-actions">
 				<span v-if="addFormError" class="print-detail-designer__form-error" role="alert">{{ addFormError }}</span>
 				<button type="button" class="print-detail-designer__button" @click="handleCancelAddTable">取消</button>
@@ -164,6 +181,11 @@ function readString(value: unknown, fallback = '') {
 						<span>字段：{{ activeTable.field }}</span>
 					</div>
 					<div class="print-detail-designer__actions">
+						<label class="print-detail-designer__script-field">
+							<span>数据源脚本</span>
+							<input :value="activeTable.dataSourceScript || ''" type="text"
+								placeholder="脚本编码（可选）" @change="handleScriptChange(($event.target as HTMLInputElement).value)" />
+						</label>
 						<button type="button" class="print-detail-designer__button" @click="handleConfigureTable">
 							<i class="ri-layout-grid-line" aria-hidden="true" />
 							<span>表格配置</span>

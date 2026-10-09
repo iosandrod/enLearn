@@ -20,6 +20,7 @@ import type {
 	PrintMaterialGridConfig,
 	PrintMaterialGridInstance,
 } from './types'
+import { getPrintCodeCellType, getPrintCodeCellValue } from './codeCell'
 
 export interface MaterialGridPrintPlan {
 	pageCount: number
@@ -315,6 +316,7 @@ function createPrintTableRow(
 		height: Math.max(
 			options.minRowHeight,
 			options.cellPaddingY * 2 + maxLines * options.lineHeight
+				+ (cells.some((cell) => cell.codeType) ? 36 : 0)
 		),
 	}
 }
@@ -346,6 +348,7 @@ function createPrintTableCell(
 	return {
 		text,
 		lines: wrapText(text, maxWidth, options.fontSize),
+		codeType: column.codeType ?? getPrintCodeCellType(column as unknown as Record<string, unknown>),
 	}
 }
 
@@ -358,7 +361,7 @@ function getCellValue(
 	if (column.type === 'seq') return rowIndex + 1
 
 	const field = column.field
-	const cellValue = field ? getPathValue(row, field) : ''
+	const cellValue = getPrintCodeCellValue(row, field)
 	const formatter = column.formatter
 	if (typeof formatter === 'function') {
 		try {
@@ -530,6 +533,7 @@ function normalizeGridColumn(
 		label: getColumnLabel(column),
 		width: leafWidths[nextLeafIndex()] ?? 24,
 		type: column.type,
+		codeType: getPrintCodeCellType(column as unknown as Record<string, unknown>),
 		formatter: isRecord(column) ? column.formatter : undefined,
 	}
 }
@@ -644,14 +648,6 @@ function createTextMeasure(fontSize: number) {
 	}
 
 	return (text: string) => text.length * fontSize * 0.56
-}
-
-function getPathValue(row: PrintDataRow, path: string) {
-	if (!path.includes('.')) return row[path]
-	return path.split('.').reduce<unknown>((value, key) => {
-		if (!isRecord(value)) return undefined
-		return value[key]
-	}, row)
 }
 
 function callMethod(target: unknown, method: string) {

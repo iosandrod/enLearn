@@ -14,6 +14,7 @@ export interface PrintDataSourceDetailTable {
 	id: string
 	field: string
 	label: string
+	dataSourceScript?: string
 	columns: readonly PrintDataSourceDetailColumn[]
 	gridOptions?: Record<string, unknown>
 	gridEvents?: readonly Record<string, unknown>[]
@@ -126,6 +127,12 @@ export interface PrintMaterialGridColumn {
 	resizeWidth?: number
 	visible?: boolean
 	type?: string
+	cellType?: string
+	component?: string
+	renderer?: string
+	render?: string
+	props?: Record<string, unknown>
+	params?: Record<string, unknown>
 	formatter?: unknown
 	children?: any[]
 }

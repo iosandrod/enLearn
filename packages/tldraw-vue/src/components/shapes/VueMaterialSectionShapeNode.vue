@@ -22,6 +22,12 @@ import {
 } from '@/editor/materialColumnOperations'
 import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
+import {
+	createPrintCodeDataUrl,
+	getPrintCodeCellType,
+	getPrintCodeCellValue,
+	type PrintCodeCellType,
+} from '@/print/codeCell'
 
 const props = defineProps<VueShapeNodeProps<VueMaterialSectionShape>>()
 
@@ -445,7 +451,7 @@ onBeforeUnmount(() => {
 })
 
 function formatPreviewValue(row: Record<string, unknown>, field: string) {
-	const value = row[field]
+	const value = getPrintCodeCellValue(row, field)
 	if (value === undefined || value === null || value === '') return '—'
 	if (typeof value === 'object') {
 		try {
@@ -455,6 +461,15 @@ function formatPreviewValue(row: Record<string, unknown>, field: string) {
 		}
 	}
 	return String(value)
+}
+
+function previewCodeType(column: Record<string, unknown>): PrintCodeCellType | undefined {
+	return getPrintCodeCellType(column)
+}
+
+function previewCodeUrl(row: Record<string, unknown>, column: Record<string, unknown>) {
+	const type = previewCodeType(column)
+	return type ? createPrintCodeDataUrl(type, getPrintCodeCellValue(row, String(column.field ?? ''))) : ''
 }
 
 function getPositiveRowHeight(value: unknown, fallback: number) {
@@ -700,7 +715,11 @@ const borderObj=computed(()=>{
 						class="vue-material-table-row" :style="{ minHeight: `${previewBodyRowHeight}px` }">
 						<div v-for="column in previewLeafLayouts" :key="column.field"
 							:style="{ width: `${column.width}px`, flex: `0 0 ${column.width}px` }">
-							{{ formatPreviewValue(row, column.field) }}
+							<img v-if="previewCodeType(column) && previewCodeUrl(row, column)"
+								class="vue-material-table-code"
+								:class="{ 'is-barcode': previewCodeType(column) === 'barCode' }"
+								:src="previewCodeUrl(row, column)" :alt="formatPreviewValue(row, column.field)" />
+							<span v-else>{{ formatPreviewValue(row, column.field) }}</span>
 						</div>
 					</div>
 				</div>
