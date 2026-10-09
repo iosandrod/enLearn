@@ -9,9 +9,9 @@ import {
 } from '@/editor/interactions/TopMenuController'
 import { isVueMaterialShape } from '@/editor/extensions/material/vueMaterialShape'
 import {
-	getPrintDataSourceDetailColumns,
 	getPrintDataSourceDetailRows,
 } from '@/editor/dataSourceForm'
+import { getMaterialColumns } from '@/editor/materialColumnOperations'
 import {
 	cloneVueTemplateContent,
 	cloneVueTemplateRecord,
@@ -503,8 +503,10 @@ function createMaterialGridConfigs(
 		const dataSourceField = String(shape.props.dataSourceField ?? '').trim()
 		const isBound = Boolean(hasConfiguredDataSource && dataSourceField)
 		const inlineDetail = isBound ? getPrintDataSourceDetailRows(dataSource, dataSourceField) : []
-		const configuredColumns = isBound ? getPrintDataSourceDetailColumns(dataSource, dataSourceField) : []
-		const columns = isBound && configuredColumns.length ? configuredColumns : (isBound ? [] : PRINT_MATERIAL_SAMPLE_COLUMNS)
+		const configuredColumns = getMaterialColumns(dataSource, dataSourceField, shape.props.columns)
+		const columns = shape.props.columns !== undefined || configuredColumns.length
+			? configuredColumns
+			: (isBound ? [] : PRINT_MATERIAL_SAMPLE_COLUMNS)
 		const data = isBound ? inlineDetail : []
 		const headerRowHeight = shape.props.headerRowHeight ?? vueMaterialRowDefaults.headerRowHeight
 		const bodyRowHeight = shape.props.bodyRowHeight ?? vueMaterialRowDefaults.bodyRowHeight

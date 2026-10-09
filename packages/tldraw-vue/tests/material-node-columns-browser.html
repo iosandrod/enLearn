@@ -1,0 +1,55 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Material column persistence regression</title></head>
+<body><div id="editor" style="width:800px;height:600px"></div><div id="restored" style="width:800px;height:600px"></div>
+<script type="module">
+import { createShapeId } from '@tldraw/editor'
+import { createVueEditor } from '../src/editor/createVueEditor.ts'
+import { getDefaultVueEditorExtensions } from '../src/editor/extensions/defaultExtensions.ts'
+import { createVueMaterialShapePartials } from '../src/editor/extensions/material/vueMaterialShape.ts'
+import { getEditorPrintDataSource } from '../src/editor/workspaceDataSource.ts'
+import { updateMaterialNodeColumns } from '../src/editor/materialColumnOperations.ts'
+import { createMaterialGridPrintPlan } from '../src/print/materialGrid.ts'
+
+function check(condition, message) { if (!condition) throw new Error(message) }
+try {
+  const options = { createDefaultShapes: false, extensions: getDefaultVueEditorExtensions() }
+  const editor = createVueEditor(document.getElementById('editor'), options)
+  const source = getEditorPrintDataSource(editor)
+  source.value = { type: 'inline', detailTables: [
+    { field: 'items', columns: [{ field: 'sku', title: 'SKU', width: 100 }] },
+    { field: 'other', columns: [{ field: 'name', title: 'Other', width: 80 }] },
+  ] }
+  const id = createShapeId()
+  editor.createShapes(createVueMaterialShapePartials({ id, rect: { x: 0, y: 0, w: 500, h: 500 }, sectionIds: [] }))
+  editor.updateShape({ id, type: 'vue-material', props: { dataSourceField: 'items' } })
+  check(editor.getShape(id).props.columns[0].width === 100, 'Binding must initialize node columns')
+  const columns = [
+    { field: 'sku', title: 'Material QR', width: 170, type: 'qrCode', props: { margin: 4 } },
+    { field: 'barcode', title: 'Barcode', width: 330, type: 'barCode' },
+  ]
+  updateMaterialNodeColumns(editor, editor.getShape(id), columns)
+  editor.updateShape({ id, type: 'vue-material', props: { w: 550 } })
+  check(editor.getShape(id).props.columns[0].width === 170, 'Resize must preserve node columns')
+  check(source.value.detailTables[0].columns[0].width === 100, 'Source definition must stay isolated')
+
+  const content = JSON.parse(JSON.stringify(editor.getContentFromCurrentPage(editor.getCurrentPageShapeIdsSorted())))
+  const restored = createVueEditor(document.getElementById('restored'), options)
+  restored.putContentOntoCurrentPage(content)
+  const material = restored.getCurrentPageShapes().find(shape => shape.type === 'vue-material')
+  check(material.props.columns[0].type === 'qrCode', 'QR column must survive real editor save/load')
+  check(material.props.columns[1].type === 'barCode', 'Barcode column must survive real editor save/load')
+  check(material.props.columns[0].props.margin === 4, 'Nested column props must survive')
+  const plan = createMaterialGridPrintPlan(restored, { template: { materialGrid: {
+    columns: [{ field: 'wrong', title: 'Wrong' }], data: [{ sku: 'A-001', barcode: '12345678' }],
+  } } }, [material.id])
+  check(plan.materials[0].pages[0].tableOverride.rows[0].cells[0].codeType === 'qrCode', 'Preview must prioritize node columns')
+  check(plan.materials[0].pages[0].tableOverride.rows[0].cells[1].codeType === 'barCode', 'Preview must preserve barcode renderer')
+  editor.updateShape({ id, type: 'vue-material', props: { dataSourceField: 'other' } })
+  check(editor.getShape(id).props.columns[0].field === 'name', 'Changing binding must initialize its own columns')
+  window.testResult = { ok: true, savedColumns: material.props.columns.length, previewCodeTypes: ['qrCode', 'barCode'] }
+  editor.dispose()
+  restored.dispose()
+} catch (error) {
+  window.testResult = { ok: false, error: error.stack || String(error) }
+}
+</script></body></html>

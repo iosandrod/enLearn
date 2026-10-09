@@ -1,5 +1,5 @@
 import { isShapeId, type Editor, type TLShape, type TLShapeId } from '@tldraw/editor'
-import { getPrintDataSourceDetailColumns } from '@/editor/dataSourceForm'
+import { getMaterialColumns } from '@/editor/materialColumnOperations'
 import type { PrintDataSourceDetailColumn } from '@/print/types'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
@@ -32,7 +32,7 @@ export function getMaterialColumnGuides(editor: Editor): WorkspaceGuide[] {
 		const material = editor.getShape<VueMaterialShape>(materialId)
 		if (!isVueMaterialShape(material)) continue
 
-		const columns = getPrintDataSourceDetailColumns(source, material.props.dataSourceField)
+		const columns = getMaterialColumns(source, material.props.dataSourceField, material.props.columns)
 		const leafColumns = flattenLeafColumns(columns)
 		if (!leafColumns.length) continue
 

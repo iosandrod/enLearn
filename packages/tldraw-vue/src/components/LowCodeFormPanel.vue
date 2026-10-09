@@ -42,7 +42,7 @@ import {
 	findMaterialColumn,
 	getMaterialColumns,
 	removeMaterialColumn,
-	updateMaterialColumns,
+	updateMaterialNodeColumns,
 } from '@/editor/materialColumnOperations'
 import {
 	getMaterialDataSourceFieldOptions,
@@ -192,8 +192,10 @@ const materialColumnFallbackSchema: LowCodeFormSchema = {
 const materialColumnSchema = computed(() =>
 	formDefinitions.value[materialColumnFormCode] ?? materialColumnFallbackSchema,
 )
-const selectedMaterialShape = computed(() => {
-	const shape = selectedShape.value
+const selectedMaterialShape = useEditorValue('lowcode form selected material shape', () => {
+	const ids = props.editor.getSelectedShapeIds()
+	if (ids.length !== 1) return null
+	const shape = props.editor.getShape(ids[0])
 	if (shape?.type === 'vue-material') return shape
 	if (shape?.type !== 'vue-material-section' || shape.props.zone !== 'tableBody') return null
 	const parent = props.editor.getShape(shape.parentId)
@@ -210,9 +212,8 @@ const selectedMaterialColumnValue = computed(() => {
 	const selection = selectedMaterialColumn.value
 	const source = editorPrintDataSource.value
 	if (!shape || !selection || selection.materialShapeId !== shape.id) return null
-	if (!source || source.type !== 'inline') return null
 	const field = String(shape.props.dataSourceField ?? '').trim()
-	return findMaterialColumn(getMaterialColumns(source, field), selection.field)
+	return findMaterialColumn(getMaterialColumns(source, field, shape.props.columns), selection.field)
 })
 const canManageMaterialColumns = computed(() =>
 	showMaterialColumnTab.value && !props.editor.getIsReadonly()
@@ -374,7 +375,7 @@ function handleColumnModelUpdate(value: ShapeFormModel) {
 	const shape = selectedMaterialShape.value
 	const selection = selectedMaterialColumn.value
 	const source = editorPrintDataSource.value
-	if (!shape || !selection || source?.type !== 'inline') return
+	if (!shape || !selection) return
 	const field = String(shape.props.dataSourceField ?? '').trim()
 	if (!field || selection.materialShapeId !== shape.id) return
 	const nextColumn = {
@@ -404,7 +405,7 @@ function handleColumnModelUpdate(value: ShapeFormModel) {
 		}
 		return column
 	})
-	editorPrintDataSource.value = updateMaterialColumns(source, field, replaceColumns)
+	updateMaterialNodeColumns(props.editor, shape, replaceColumns(getMaterialColumns(source, field, shape.props.columns)))
 }
 
 function addColumn() {
@@ -424,12 +425,12 @@ function deleteColumn() {
 	if (!selectedField) return
 	const shape = selectedMaterialShape.value
 	const source = editorPrintDataSource.value
-	if (!shape || source?.type !== 'inline') return
+	if (!shape) return
 	const detailField = String(shape.props.dataSourceField ?? '').trim()
 	if (!detailField) return
-	const result = removeMaterialColumn(getMaterialColumns(source, detailField), selectedField)
+	const result = removeMaterialColumn(getMaterialColumns(source, detailField, shape.props.columns), selectedField)
 	if (!result) return
-	editorPrintDataSource.value = updateMaterialColumns(source, detailField, () => result.columns)
+	updateMaterialNodeColumns(props.editor, shape, result.columns)
 	selectedMaterialColumn.value = result.nextField
 		? { materialShapeId: shape.id, field: result.nextField }
 		: null
@@ -442,12 +443,12 @@ function updateSelectedMaterialColumns(
 	if (!canManageMaterialColumns.value) return
 	const shape = selectedMaterialShape.value
 	const source = editorPrintDataSource.value
-	if (!shape || source?.type !== 'inline') return
+	if (!shape) return
 	const detailField = String(shape.props.dataSourceField ?? '').trim()
 	if (!detailField) return
-	const result = update(getMaterialColumns(source, detailField))
+	const result = update(getMaterialColumns(source, detailField, shape.props.columns))
 	if (!result) return
-	editorPrintDataSource.value = updateMaterialColumns(source, detailField, () => result.columns)
+	updateMaterialNodeColumns(props.editor, shape, result.columns)
 	selectedMaterialColumn.value = { materialShapeId: shape.id, field: result.field }
 	dispatchMaterialColumnSelection(shape.id, result.field)
 }

@@ -26,6 +26,9 @@ import {
 	vueMaterialRowDefaults,
 } from '../../defaults'
 import type { VueFrameShape } from '../frame/vueFrameShape'
+import type { PrintDataSourceDetailColumn } from '@/print/types'
+import { getEditorPrintDataSource } from '../../workspaceDataSource'
+import { getMaterialColumns } from '../../materialColumnOperations'
 
 export type VueMaterialSectionZone =
 	| 'pageHeader'
@@ -132,6 +135,7 @@ export type VueMaterialShape = TLBaseShape<
 	BaseProps & {
 		name: string
 		dataSourceField: string
+		columns?: PrintDataSourceDetailColumn[]
 		headerRowHeight?: number
 		bodyRowHeight?: number
 		footerRowHeight?: number
@@ -223,11 +227,20 @@ export class VueMaterialShapeUtil extends BaseBoxShapeUtil<VueMaterialShape> {
 		return true
 	}
 
-	override onBeforeUpdate(_prev: VueMaterialShape, next: VueMaterialShape) {
+	override onBeforeUpdate(prev: VueMaterialShape, next: VueMaterialShape) {
+		const fieldChanged = prev.props.dataSourceField !== next.props.dataSourceField
+		// A different detail field starts with its own columns. Other node edits
+		// retain the template's column configuration.
+		if (fieldChanged && next.props.columns === prev.props.columns) {
+			const columns = getMaterialColumns(getEditorPrintDataSource(this.editor).value, next.props.dataSourceField)
+			next = { ...next, props: { ...next.props, columns: columns.length ? JSON.parse(JSON.stringify(columns)) : undefined } }
+		}
 		const minHeight = getVueMaterialMinHeight()
 		const w = Math.max(VUE_MATERIAL_MIN_WIDTH, next.props.w)
 		const h = Math.max(minHeight, next.props.h)
-		if (approximatelyEqual(w, next.props.w) && approximatelyEqual(h, next.props.h)) return
+		if (approximatelyEqual(w, next.props.w) && approximatelyEqual(h, next.props.h)) {
+			return fieldChanged ? next : undefined
+		}
 
 		return {
 			...next,

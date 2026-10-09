@@ -113,7 +113,10 @@ function createMaterialGridMaterialPlan(
 
 	const tableFooter = sections.find((section) => section.props.zone === 'tableFooter') ?? null
 	const options = getGridRenderOptions(gridConfig)
-	const columns = resolveGridColumns(gridConfig, tableBody.props.w)
+	const columns = resolveGridColumns(
+		material.props.columns !== undefined ? { ...gridConfig, columns: material.props.columns } : gridConfig,
+		tableBody.props.w,
+	)
 	const rows = resolveGridData(gridConfig)
 	const isContainerList = material.props.containerList === true
 	const headerHeight = isContainerList ? 0 : options.headerHeight * getPrintColumnDepth(columns)

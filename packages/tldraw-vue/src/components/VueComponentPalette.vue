@@ -115,7 +115,7 @@ function getToolGlyph(item: Pick<ToolbarItemSnapshot, 'glyph' | 'icon' | 'label'
 const TOOL_LABELS: Record<string, string> = {
 	Arrow: '箭头',
 	Text: '文字',
-	'Rich text': '富文本',
+	'Rich text': '高级文本',
 	Note: '便签',
 	Media: '图片',
 	Barcode: '条形码',

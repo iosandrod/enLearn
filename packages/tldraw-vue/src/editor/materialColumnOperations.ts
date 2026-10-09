@@ -2,6 +2,8 @@ import type {
 	PrintDataSourceConfig,
 	PrintDataSourceDetailColumn,
 } from '@/print/types'
+import type { Editor } from '@tldraw/editor'
+import type { VueMaterialShape } from './extensions/material/vueMaterialShape'
 
 export type MaterialColumnInsertResult = {
 	columns: PrintDataSourceDetailColumn[]
@@ -25,12 +27,26 @@ export function findMaterialColumn(
 export function getMaterialColumns(
 	source: PrintDataSourceConfig | undefined,
 	detailField: string,
+	nodeColumns?: readonly PrintDataSourceDetailColumn[],
 ): readonly PrintDataSourceDetailColumn[] {
+	if (Array.isArray(nodeColumns)) return nodeColumns
 	if (!source || source.type !== 'inline') return []
 	const table = Array.isArray(source.detailTables)
 		? source.detailTables.find((item) => item.field === detailField)
 		: undefined
 	return table?.columns ?? source.detailColumns ?? []
+}
+
+export function updateMaterialNodeColumns(
+	editor: Editor,
+	shape: VueMaterialShape,
+	columns: readonly PrintDataSourceDetailColumn[],
+) {
+	editor.updateShape<VueMaterialShape>({
+		id: shape.id,
+		type: 'vue-material',
+		props: { columns: JSON.parse(JSON.stringify(columns)) },
+	})
 }
 
 export function updateMaterialColumns(

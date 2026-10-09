@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { TLShapePartial } from '@tldraw/editor'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
-	getPrintDataSourceDetailColumns,
 	getPrintDataSourceDetailRows,
 } from '@/editor/dataSourceForm'
 import {
@@ -18,7 +17,7 @@ import {
 	areMaterialColumnsSiblings,
 	getMaterialColumns,
 	moveMaterialColumn,
-	updateMaterialColumns,
+	updateMaterialNodeColumns,
 } from '@/editor/materialColumnOperations'
 import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
@@ -61,11 +60,20 @@ const hasConfiguredDataSource = computed(() =>
 	Boolean(dataSourceField.value) &&
 	availableDataSourceFields.value.includes(dataSourceField.value)
 )
-const previewColumns = computed(() =>
-	hasConfiguredDataSource.value
-		? getPrintDataSourceDetailColumns(printDataSource.value, dataSourceField.value)
+const previewColumns = computed(() => {
+	const material = materialShape.value
+	return isVueMaterialShape(material)
+		? getMaterialColumns(printDataSource.value, dataSourceField.value, material.props.columns)
 		: []
-)
+})
+// Older templates have no node columns. Capture their definition once so that
+// subsequent template saves carry the columns with the material node.
+watch(previewColumns, (columns) => {
+	const material = materialShape.value
+	if (!isTableBody.value || !isVueMaterialShape(material) || props.editor.getIsReadonly()) return
+	if (!dataSourceField.value || material.props.columns !== undefined || !columns.length) return
+	props.editor.run(() => updateMaterialNodeColumns(props.editor, material, columns), { history: 'ignore' })
+}, { immediate: true })
 const previewLeafColumns = computed(() => flattenDetailColumns(previewColumns.value))
 const previewHeaderCells = computed(() => createPreviewHeaderCells(previewColumns.value))
 const previewHeaderDepth = computed(() => getColumnDepth(previewColumns.value))
@@ -263,16 +271,17 @@ function onColumnDragPointerUp(event: PointerEvent) {
 	if (state.didMove && dropTargetField.value) {
 		const source = printDataSource.value
 		const field = dataSourceField.value
-		if (source?.type === 'inline' && field) {
+		const material = materialShape.value
+		if (isVueMaterialShape(material) && field) {
 			const moved = moveMaterialColumn(
-				getMaterialColumns(source, field),
+				getMaterialColumns(source, field, material.props.columns),
 				state.field,
 				dropTargetField.value,
 				dropPosition.value,
 			)
 			if (moved) {
 				props.editor.markHistoryStoppingPoint('reorder material column')
-				printDataSource.value = updateMaterialColumns(source, field, () => moved)
+				updateMaterialNodeColumns(props.editor, material, moved)
 			}
 		}
 	}
@@ -327,9 +336,8 @@ function onColumnResizePointerUp(event: PointerEvent) {
 }
 
 function updateDataSourceColumnWidths(widths: readonly number[]) {
-	const source = printDataSource.value
-	const field = dataSourceField.value
-	if (!source || source.type !== 'inline' || !field) return
+	const material = materialShape.value
+	if (!isVueMaterialShape(material)) return
 	let widthIndex = 0
 	const updateColumns = (columns: readonly any[]): any[] => columns.map((column) => {
 		if (Array.isArray(column.children) && column.children.length) {
@@ -338,18 +346,7 @@ function updateDataSourceColumnWidths(widths: readonly number[]) {
 		const width = widths[widthIndex++]
 		return width === undefined ? { ...column } : { ...column, width }
 	})
-	const detailTables = Array.isArray(source.detailTables) ? source.detailTables : []
-	const nextTables = detailTables.map((table) =>
-		table.field === field ? { ...table, columns: updateColumns(table.columns) } : table,
-	)
-	const nextColumns = detailTables.length
-		? source.detailColumns
-		: updateColumns(Array.isArray(source.detailColumns) ? source.detailColumns : [])
-	printDataSource.value = {
-		...source,
-		...(nextTables ? { detailTables: nextTables } : {}),
-		...(nextColumns ? { detailColumns: nextColumns } : {}),
-	}
+	updateMaterialNodeColumns(props.editor, material, updateColumns(previewColumns.value))
 }
 
 function onResizePointerDown(event: PointerEvent) {
