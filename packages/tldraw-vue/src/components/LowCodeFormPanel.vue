@@ -17,13 +17,10 @@ import {
 	geoOptions,
 	sizeOptions,
 } from '@/editor/shapeProps/options'
-import { baseProps } from '@/editor/shapeProps/base'
 import { vueBoxPropertyRegistry } from '@/editor/shapeProps/vueBox'
 import { vueMaterialPropertyRegistry } from '@/editor/shapeProps/vueMaterial'
 import { biChartPropertyRegistry } from '@/editor/shapeProps/biChart'
-import { chartPresets } from '../editor/extensions/echarts/chartOptions'
 import type {
-	LowCodeField,
 	LowCodeFormSchema,
 	LowCodeOption,
 } from '@enlearn/lowcode-framework/types/lowcode'
@@ -65,7 +62,6 @@ type ShapeFormModel = Record<string, unknown>
 type ShapeFormDescriptor = {
 	title: string
 	formCode: string
-	schema: LowCodeFormSchema
 	toModel(shape: TLShape): ShapeFormModel
 	apply(editor: Editor, shape: TLShape, model: ShapeFormModel): void
 }
@@ -145,6 +141,14 @@ const activeDescriptor = computed(() =>
 const activeFormCode = computed(() =>
 	isCanvasFormActive.value ? workspaceFormDescriptor.formCode : activeDescriptor.value?.formCode ?? null
 )
+const displayedFormCode = computed(() => props.columnOnly ? materialColumnFormCode : activeFormCode.value)
+const displayedFormError = computed(() => {
+	if (formDefinitionError.value) return formDefinitionError.value
+	const code = displayedFormCode.value
+	return !formDefinitionsLoading.value && code && !formDefinitions.value[code]
+		? `属性表单“${code}”不存在、已停用或 schema 无效。`
+		: ''
+})
 const materialDataSourceFieldOptions = computed(() =>
 	getMaterialDataSourceFieldOptions(editorPrintDataSource.value)
 )
@@ -152,45 +156,20 @@ const activeSchema = computed(() => {
 	const code = activeFormCode.value
 	const schema = code ? formDefinitions.value[code] ?? null : null
 	if (!schema || activeFormCode.value !== propertyFormCode('vue-material')) return schema
-
 	return {
 		...schema,
 		fields: schema.fields.map((field) =>
 			field.field === 'dataSourceField'
 				? {
 					...field,
-					component: 'vxe-select',
 					options: materialDataSourceFieldOptions.value,
-					props: { ...(field.props ?? {}), clearable: false },
 				}
 				: field
 		),
 	}
 })
-const materialColumnFallbackSchema: LowCodeFormSchema = {
-	title: '物料表格列属性',
-	columns: 1,
-	fields: [
-		{ field: 'field', label: '字段名', component: 'vxe-input', props: { disabled: true } },
-		{ field: 'title', label: '列标题', component: 'vxe-input' },
-		{ field: 'width', label: '列宽', component: 'lc-number-input', props: { min: 36, step: 1 } },
-		{ field: 'visible', label: '显示列', component: 'vxe-switch', defaultValue: true },
-		{ field: 'align', label: '内容对齐', component: 'vxe-select', options: [
-			{ label: '默认', value: '' }, { label: '居左', value: 'left' },
-			{ label: '居中', value: 'center' }, { label: '居右', value: 'right' },
-		] },
-		{ field: 'headerAlign', label: '表头对齐', component: 'vxe-select', options: [
-			{ label: '默认', value: '' }, { label: '居左', value: 'left' },
-			{ label: '居中', value: 'center' }, { label: '居右', value: 'right' },
-		] },
-		{ field: 'component', label: '单元格组件', component: 'vxe-input' },
-		{ field: 'props', label: '组件属性', component: 'lc-json-editor', props: { jsonValueMode: 'string', jsonRootType: 'object' } },
-		{ field: 'formatter', label: '格式化配置', component: 'lc-json-editor', props: { jsonValueMode: 'string' } },
-	],
-	actions: [],
-}
 const materialColumnSchema = computed(() =>
-	formDefinitions.value[materialColumnFormCode] ?? materialColumnFallbackSchema,
+	formDefinitions.value[materialColumnFormCode] ?? null,
 )
 const selectedMaterialShape = useEditorValue('lowcode form selected material shape', () => {
 	const ids = props.editor.getSelectedShapeIds()
@@ -277,11 +256,11 @@ const formKey = computed(() => {
 })
 
 const designSchema = computed(() => {
-	const code = activeFormCode.value
+	const code = displayedFormCode.value
 	return code ? formDefinitions.value[code] ?? null : null
 })
 const canDesignForm = computed(() => {
-	const code = activeFormCode.value
+	const code = displayedFormCode.value
 	return Boolean(
 		code &&
 		designSchema.value &&
@@ -293,7 +272,7 @@ const canDesignForm = computed(() => {
 })
 
 async function handleDesignForm() {
-	const code = activeFormCode.value
+	const code = displayedFormCode.value
 	const originalSchema = designSchema.value
 	const id = code ? formDefinitionIds.value[code] : ''
 	if (!code || !originalSchema || !id || designingForm.value) return
@@ -359,7 +338,7 @@ function handleModelUpdate(value: ShapeFormModel) {
 	const descriptor = activeDescriptor.value
 	if (!descriptor || props.editor.getIsReadonly()) return
 
-	descriptor.apply(props.editor, shape, value)
+	descriptor.apply(props.editor, shape, normalizePropertyFormModel(value))
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
 	}
@@ -579,109 +558,6 @@ function propertyFormCode(type: string) {
 	return `${PROPERTY_FORM_CODE_PREFIX}${type}`
 }
 
-function createSchema(title: string, fields: LowCodeField[]): LowCodeFormSchema {
-	return {
-		title,
-		// fields: [...baseFields, ...baseStyleFields, ...fields],
-		fields: [ ...fields],//
-		actions: [],
-	}
-}
-
-function inputField(field: string, label: string, props: Record<string, unknown> = {}): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'vxe-input',
-		props,
-	}
-}
-
-function textareaField(
-	field: string,
-	label: string,
-	props: Record<string, unknown> = {}
-): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'vxe-textarea',
-		props: {
-			'auto-size': { minRows: 2, maxRows: 5 },
-			...props,
-		},
-	}
-}
-
-function jsonField(
-	field: string,
-	label: string,
-	props: Record<string, unknown> = {}
-): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'lc-json-editor',
-		props: {
-			jsonValueMode: 'string',
-			...props,
-		},
-	}
-}
-
-function numberField(
-	field: string,
-	label: string,
-	props: Record<string, unknown> = {}
-): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'lc-number-input',
-		props,
-	}
-}
-
-function switchField(field: string, label: string): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'vxe-switch',
-	}
-}
-
-function selectField(field: string, label: string, options: LowCodeOption[]): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'vxe-select',
-		options,
-		props: {
-			clearable: false,
-		},
-	}
-}
-
-function colorPickerField(field: string, label: string): LowCodeField {
-	return {
-		field,
-		label,
-		component: 'lc-color-picker',
-	}
-}
-
-const disabledInputProps = { disabled: true }
-const disabledNumberProps = { disabled: true }
-
-const dataSourceTypeOptions = [
-	{ label: '无', value: 'none' },
-	{ label: '内联 JSON', value: 'inline' },
-	{ label: 'JSON 文本', value: 'json' },
-	{ label: 'CSV 文本', value: 'csv' },
-	{ label: 'HTTP 接口', value: 'http' },
-	{ label: '自定义协议', value: 'custom' },
-] satisfies LowCodeOption[]
-
 const httpMethodOptions = [
 	{ label: 'GET', value: 'GET' },
 	{ label: 'POST', value: 'POST' },
@@ -692,36 +568,7 @@ const httpMethodOptions = [
 const workspaceFormDescriptor = {
 	title: '画布属性',
 	formCode: propertyFormCode('workspace'),
-	schema: {
-		title: '画布属性',
-		fields: [
-			numberField('pageWidthMm', '页面宽度(mm)', { min: 10, max: 1000, step: 0.1 }),
-			numberField('pageHeightMm', '页面高度(mm)', { min: 10, max: 1000, step: 0.1 }),
-			numberField('pageWidthPx', '页面宽度(px)', disabledNumberProps),
-			numberField('pageHeightPx', '页面高度(px)', disabledNumberProps),
-			numberField('zoomPercent', '缩放(%)', { min: 20, max: 400, step: 1 }),
-			numberField('cameraX', '视图 X', { step: 1 }),
-			numberField('cameraY', '视图 Y', { step: 1 }),
-			numberField('pxPerMm', '像素/mm', disabledNumberProps),
-			numberField('viewportW', '视口宽度', disabledNumberProps),
-			numberField('viewportH', '视口高度', disabledNumberProps),
-			selectField('dataSourceType', '打印数据源', dataSourceTypeOptions),
-			inputField('dataSourceProtocol', '自定义协议'),
-			inputField('dataSourceUrl', '接口地址'),
-			selectField('dataSourceMethod', '请求方法', httpMethodOptions),
-			inputField('dataSourceDataPath', '数据路径'),
-			textareaField('dataSourceText', '数据内容/配置', {
-				placeholder: 'JSON 数组、CSV 文本，或自定义协议配置 JSON',
-			}),
-			jsonField('dataSourceHeaders', '请求头 JSON', {
-				placeholder: '{"Authorization":"Bearer ..."}',
-				jsonRootType: 'object',
-			}),
-			textareaField('dataSourceBody', '请求体 JSON/文本'),
-		],
-		actions: [],
-	},
-	} satisfies { title: string; formCode: string; schema: LowCodeFormSchema }
+} satisfies { title: string; formCode: string }
 
 const fontOptions = [
 	{ label: '手写', value: 'draw' },
@@ -765,135 +612,24 @@ const materialZoneOptions = [
 	{ label: '页尾', value: 'pageFooter' },
 ] satisfies LowCodeOption[]
 
-const materialVisibilityFields = [
-	switchField('showPageHeader', '显示页头'),
-	switchField('showTableHeader', '显示表头'),
-	switchField('showTableFooter', '显示表尾'),
-	switchField('showPageFooter', '显示页尾'),
-] satisfies LowCodeField[]
-
-const materialHeightFields = [
-	numberField('pageHeaderHeight', '页头高度', { min: 0, step: 1 }),
-	numberField('tableHeaderHeight', '表头高度', { min: 0, step: 1 }),
-	numberField('tableFooterHeight', '表尾高度', { min: 0, step: 1 }),
-	numberField('pageFooterHeight', '页尾高度', { min: 0, step: 1 }),
-] satisfies LowCodeField[]
-
 const resumeZoneOptions = [
 	{ label: '简历页头', value: 'pageHeader' },
 	{ label: '自动填充内容', value: 'content' },
 	{ label: '简历页尾', value: 'pageFooter' },
 ] satisfies LowCodeOption[]
 
-const baseFields = [
-	inputField('shapeId', '节点 ID', disabledInputProps),
-	inputField('shapeTypeLabel', '节点类型', disabledInputProps),
-	numberField('x', 'X', { step: 1 }),
-	numberField('y', 'Y', { step: 1 }),
-	numberField('rotation', '旋转角度', { min: -360, max: 360, step: 1 }),
-	numberField('opacity', '透明度', { min: 0, max: 100, step: 1 }),
-	switchField('isLocked', '锁定'),
-] satisfies LowCodeField[]
-
-// Every custom node inherits these properties from baseProps. Keep their
-// panel fields in one place so local and database-backed schemas stay aligned.
-const baseStyleFields = baseProps.formFields.filter(
-	// (field) => field.field !== 'w' && field.field !== 'h'
-	(field) => false
-)
-
-const sizeFields = [
-	numberField('w', '宽度', { min: 1, step: 1 }),
-	numberField('h', '高度', { min: 1, step: 1 }),
-] satisfies LowCodeField[]
-
-const strokeStyleFields = [
-	selectField('color', '颜色', colorOptions),
-	selectField('dash', '线条', dashOptions),
-	selectField('size', '尺寸', sizeOptions),
-] satisfies LowCodeField[]
-
-const fillStyleFields = [selectField('fill', '填充', fillOptions)] satisfies LowCodeField[]
-const borderVisibilityFields = [switchField('showBorder', '显示边框')] satisfies LowCodeField[]
-
 const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
-	'bi-chart': createPropsDescriptor('bi-chart', 'ECharts 图表', [
-		...baseFields,
-		...baseProps.formFields,
-		selectField('chartType', '图表类型', chartPresets.map(preset => ({ label: preset.label, value: preset.type }))),
-		inputField('title', '标题'),
-		colorPickerField('chartColor', '图表颜色'),
-		colorPickerField('background', '背景色'),
-		switchField('showLegend', '显示图例'),
-		switchField('showTooltip', '显示提示框'),
-		...borderVisibilityFields,
-		numberField('borderRadius', '圆角', { min: 0, step: 1 }),
-		jsonField('dataJson', '图表数据', { jsonRootType: 'object', placeholder: '{"categories":["一月","二月"],"values":[120,180]}' }),
-		jsonField('optionJson', '高级配置（完整 option）', { jsonRootType: 'object', placeholder: '留空使用基础配置；填写后覆盖基础图表配置' }),
-	]),
-	'vue-box': createPropsDescriptor('vue-box', '几何节点', [
-		...vueBoxPropertyRegistry.formFields,
-	]),
-	'vue-text': createPropsDescriptor('vue-text', '文字节点', [
-		...sizeFields,
-		textareaField('text', '文本内容'),
-		selectField('color', '颜色', colorOptions),
-		selectField('font', '字体', fontOptions),
-		selectField('size', '字号', sizeOptions),
-		switchField('autoSize', '自动尺寸'),
-		...borderVisibilityFields,
-	]),
-	'vue-rich-text': createPropsDescriptor('vue-rich-text', '富文本节点', [
-		...sizeFields,
-		textareaField('content', '富文本内容'),
-		colorPickerField('color', '文字颜色'),
-		numberField('fontSize', '字号', { min: 8, max: 128, step: 1 }),
-		...borderVisibilityFields,
-	]),
-	'vue-image': createPropsDescriptor('vue-image', '图片节点', [
-		...sizeFields,
-		inputField('name', '图片名称'),
-		textareaField('src', '图片地址', {
-			placeholder: '输入 data URL 或图片 URL',
-		}),
-		inputField('assetId', '资源 ID', disabledInputProps),
-		...borderVisibilityFields,
-	]),
-	'vue-line': createPropsDescriptor('vue-line', '直线节点', [
-		...sizeFields,
-		numberField('startX', '起点 X', { step: 1 }),
-		numberField('startY', '起点 Y', { step: 1 }),
-		numberField('endX', '终点 X', { step: 1 }),
-		numberField('endY', '终点 Y', { step: 1 }),
-		...strokeStyleFields,
-	]),
-	'vue-arrow': createPropsDescriptor('vue-arrow', '箭头节点', [
-		...sizeFields,
-		numberField('startX', '起点 X', { step: 1 }),
-		numberField('startY', '起点 Y', { step: 1 }),
-		numberField('endX', '终点 X', { step: 1 }),
-		numberField('endY', '终点 Y', { step: 1 }),
-		...strokeStyleFields,
-		...fillStyleFields,
-	]),
-	'vue-draw': createPropsDescriptor('vue-draw', '手绘节点', [
-		...sizeFields,
-		numberField('pointsCount', '点数量', disabledNumberProps),
-		...strokeStyleFields,
-		...fillStyleFields,
-	]),
+	'bi-chart': createPropsDescriptor('bi-chart', 'ECharts 图表'),
+	'vue-box': createPropsDescriptor('vue-box', '几何节点'),
+	'vue-text': createPropsDescriptor('vue-text', '文字节点'),
+	'vue-rich-text': createPropsDescriptor('vue-rich-text', '富文本节点'),
+	'vue-image': createPropsDescriptor('vue-image', '图片节点'),
+	'vue-line': createPropsDescriptor('vue-line', '直线节点'),
+	'vue-arrow': createPropsDescriptor('vue-arrow', '箭头节点'),
+	'vue-draw': createPropsDescriptor('vue-draw', '手绘节点'),
 	'vue-qr': {
 		title: '二维码节点',
 		formCode: propertyFormCode('vue-qr'),
-		schema: createSchema('二维码节点', [
-			numberField('qrSize', '二维码尺寸', { min: 24, step: 1 }),
-			textareaField('text', '二维码内容'),
-			selectField('color', '前景色', colorOptions),
-			colorPickerField('background', '背景色'),
-			selectField('errorCorrectionLevel', '容错级别', qrLevelOptions),
-			numberField('margin', '留白', { min: 0, max: 24, step: 1 }),
-			...borderVisibilityFields,
-		]),
 		toModel(shape) {
 			const props = getProps(shape)
 			return {
@@ -936,16 +672,6 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	'vue-barcode': {
 		title: '条形码节点',
 		formCode: propertyFormCode('vue-barcode'),
-		schema: createSchema('条形码节点', [
-			...sizeFields,
-			textareaField('text', '条形码内容'),
-			selectField('format', '编码格式', barcodeFormatOptions),
-			colorPickerField('barColor', '条码颜色'),
-			colorPickerField('background', '背景色'),
-			switchField('includeText', '显示文本'),
-			numberField('padding', '留白', { min: 0, max: 48, step: 1 }),
-			...borderVisibilityFields,
-		]),
 		toModel(shape) {
 			const props = getProps(shape)
 			return {
@@ -979,27 +705,11 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			} as TLShapePartial)
 		},
 	},
-	'vue-frame': createPropsDescriptor('vue-frame', '画框节点', [
-		...sizeFields,
-		inputField('name', '画框名称'),
-		...borderVisibilityFields,
-	]),
-	'vue-table': createPropsDescriptor('vue-table', '表格节点', [
-		...sizeFields,
-		numberField('rowHeight', 'Row height', { min: 22, step: 1 }),
-		...borderVisibilityFields,
-	]),
+	'vue-frame': createPropsDescriptor('vue-frame', '画框节点'),
+	'vue-table': createPropsDescriptor('vue-table', '表格节点'),
 	'vue-material': {
 		title: '物料节点',
 		formCode: propertyFormCode('vue-material'),
-		schema: createSchema('物料节点', [
-			numberField('w', '宽度', { min: 280, step: 1 }),
-			numberField('h', '高度', { min: 272, step: 1 }),
-			inputField('name', '物料名称'),
-			selectField('dataSourceField', '数据源字段', []),
-			...materialHeightFields,
-			...materialVisibilityFields,
-		]),
 		toModel(shape) {
 			return {
 				...getMaterialFormValues(shape),
@@ -1085,12 +795,6 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	'vue-material-section': {
 		title: '物料分区',
 		formCode: propertyFormCode('vue-material-section'),
-		schema: createSchema('物料分区', [
-			numberField('w', '宽度', disabledNumberProps),
-			numberField('h', '高度', { min: 24, step: 1 }),
-			selectField('zone', '分区', materialZoneOptions),
-			inputField('label', '名称', disabledInputProps),
-		]),
 		toModel(shape) {
 			return {
 				...getCommonModel(shape),
@@ -1112,19 +816,10 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			}
 		},
 	},
-	'vue-resume': createPropsDescriptor('vue-resume', '简历分页组件', [
-		...sizeFields,
-		inputField('name', '组件名称'),
-	]),
+	'vue-resume': createPropsDescriptor('vue-resume', '简历分页组件'),
 	'vue-resume-section': {
 		title: '简历分区',
 		formCode: propertyFormCode('vue-resume-section'),
-		schema: createSchema('简历分区', [
-			numberField('w', '宽度', disabledNumberProps),
-			numberField('h', '高度', { min: 28, step: 1 }),
-			selectField('zone', '分区', resumeZoneOptions),
-			inputField('label', '名称', disabledInputProps),
-		]),
 		toModel(shape) {
 			return { ...getCommonModel(shape), ...getFlatPropsModel(shape) }
 		},
@@ -1147,7 +842,6 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 	group: {
 		title: '分组节点',
 		formCode: propertyFormCode('group'),
-		schema: createSchema('分组节点', []),
 		toModel(shape) {
 			return getCommonModel(shape)
 		},
@@ -1160,12 +854,6 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 const fallbackDescriptor: ShapeFormDescriptor = {
 	title: '通用节点',
 	formCode: propertyFormCode('generic'),
-	schema: createSchema('通用节点', [
-		jsonField('propsJson', 'Props JSON', {
-			readonly: true,
-			jsonRootType: 'object',
-		}),
-	]),
 	toModel(shape) {
 		return {
 			...getCommonModel(shape),
@@ -1194,53 +882,22 @@ async function loadPropertyFormDefinitions() {
 	formDefinitionError.value = ''
 
 	try {
-		// Keep the original property panel request unchanged. The column-only
-		// instance is the only consumer that needs the additional form definition.
 		const propertyFormCodes = props.columnOnly
-			? [...requiredPropertyFormCodes, materialColumnFormCode]
+			? [materialColumnFormCode]
 			: requiredPropertyFormCodes
 		const serviceApi = host.getServiceApi()
 		const rows = await serviceApi.invoke<PropertyFormDefinitionRow[]>('lowcode', 'listItems', {
 			resource: 'lowcode_form_definitions',
 			filters: { code: propertyFormCodes, enabled: true },
 			limit: propertyFormCodes.length,
-		})
+		}, { refresh: true })
 		const loaded: Record<string, LowCodeFormSchema> = {}
 		const ids: Record<string, string> = {}
 
 		for (const row of Array.isArray(rows) ? rows : []) {
-			// The low-code list cache keeps the requested code order and uses
-			// `undefined` for definitions that are not in the database yet. Keep
-			// the column-only panel on its local fallback schema in that case.
-			if (!isRecord(row) || typeof row.code !== 'string' || !isLowCodeFormSchema(row.schema)) continue
+			if (!isRecord(row) || typeof row.code !== 'string' || !propertyFormCodes.includes(row.code) || !isLowCodeFormSchema(row.schema)) continue
 			loaded[row.code] = structuredClone(row.schema)
 			if (typeof row.id === 'string' && row.id.trim()) ids[row.code] = row.id.trim()
-		}
-
-		const missing = requiredPropertyFormCodes.filter((code) => !loaded[code])
-		if (missing.length) {
-			// Database definitions are authoritative. Keep the designer usable while
-			// a new migration is rolling out by filling only missing codes from the
-			// matching local descriptor; later database responses still win.
-			const localSchemas = new Map<string, LowCodeFormSchema>([
-				[workspaceFormDescriptor.formCode, workspaceFormDescriptor.schema],
-				...Object.values(shapeFormDescriptors).map((descriptor) => [descriptor.formCode, descriptor.schema] as const),
-				[fallbackDescriptor.formCode, fallbackDescriptor.schema],
-			])
-			const unresolved = missing.filter((code) => !localSchemas.has(code))
-			if (unresolved.length) {
-				throw new Error(`缺少或停用了属性表单：${unresolved.join('、')}`)
-			}
-			for (const code of missing) {
-				const schema = localSchemas.get(code)
-				if (schema) loaded[code] = structuredClone(schema)
-			}
-		}
-
-		for (const code of requiredPropertyFormCodes) {
-			if (code !== workspaceFormDescriptor.formCode) {
-				ensureBasePropertyFields(loaded[code])
-			}
 		}
 
 		formDefinitions.value = loaded
@@ -1255,27 +912,6 @@ async function loadPropertyFormDefinitions() {
 	}
 }
 
-function ensureBasePropertyFields(schema: LowCodeFormSchema | undefined) {
-	if (!schema) return
-	const normalizedFields = [] as typeof schema.fields
-	const normalizedFieldNames = new Set<string>()
-	for (const field of schema.fields) {
-		const normalizedName = normalizeBasePropertyFieldName(field.field)
-		if (normalizedFieldNames.has(normalizedName)) continue
-		field.field = normalizedName
-		normalizedFieldNames.add(normalizedName)
-		normalizedFields.push(field)
-	}
-	schema.fields = normalizedFields
-	const existingFields = new Set(schema.fields.map((field) => field.field))
-	for (const field of baseStyleFields) {
-		const fieldName = field.field
-		if (existingFields.has(fieldName)) continue
-		schema.fields.push(structuredClone(field))
-		existingFields.add(fieldName)
-	}
-}
-
 function normalizeBasePropertyFieldName(field: string) {
 	return {
 		'align-items': 'alignItems',
@@ -1286,6 +922,19 @@ function normalizeBasePropertyFieldName(field: string) {
 		'padding-top': 'paddingTop',
 		'padding-bottom': 'paddingBottom',
 	}[field] ?? field
+}
+
+function normalizePropertyFormModel(model: ShapeFormModel): ShapeFormModel {
+	return Object.fromEntries(Object.entries(model).map(([key, value]) => [normalizeBasePropertyFieldName(key), value]))
+}
+
+function createPropertyFormModel(model: ShapeFormModel, schema: LowCodeFormSchema | null): ShapeFormModel {
+	const result = { ...model }
+	for (const field of schema?.fields ?? []) {
+		const property = normalizeBasePropertyFieldName(field.field)
+		if (property !== field.field && property in model) result[field.field] = model[property]
+	}
+	return result
 }
 
 function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
@@ -1414,7 +1063,7 @@ function syncFormModel() {
 
 	const shape = selectedShape.value
 	const descriptor = shape ? getShapeFormDescriptor(shape.type) : null
-	formModel.value = shape && descriptor ? descriptor.toModel(shape) : {}
+	formModel.value = shape && descriptor ? createPropertyFormModel(descriptor.toModel(shape), activeSchema.value) : {}
 }
 
 function applyMultiShapeFormModel(model: ShapeFormModel) {
@@ -1428,7 +1077,7 @@ function applyMultiShapeFormModel(model: ShapeFormModel) {
 
 	props.editor.run(() => {
 		for (const shape of selected) {
-			descriptor.apply(props.editor, shape, model)
+			descriptor.apply(props.editor, shape, normalizePropertyFormModel(model))
 		}
 	}, { history: 'record' })
 
@@ -1647,11 +1296,10 @@ function getWorkspaceConfigSnapshot(): VueTemplateWorkspaceConfig {
 	}
 }
 
-function createPropsDescriptor(type: string, title: string, fields: LowCodeField[]): ShapeFormDescriptor {
+function createPropsDescriptor(type: string, title: string): ShapeFormDescriptor {
 	return {
 		title,
 		formCode: propertyFormCode(type),
-		schema: createSchema(title, fields),
 		toModel(shape) {
 			return {
 				...getCommonModel(shape),
@@ -1998,12 +1646,8 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 		<div v-if="formDefinitionsLoading" class="lowcode-form-panel__state" role="status">
 			正在加载属性表单...
 		</div>
-		<div v-else-if="props.columnOnly && formDefinitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
-			<p>{{ formDefinitionError }}</p>
-			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
-		</div>
-		<div v-else-if="!props.columnOnly && formDefinitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
-			<p>{{ formDefinitionError }}</p>
+		<div v-else-if="displayedFormError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
+			<p>{{ displayedFormError }}</p>
 			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
 		</div>
 		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema && !selectedMaterialColumnValue" class="lowcode-form-panel__empty">

@@ -368,7 +368,7 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}) {
   const method = resolveRequestMethod(apiPath, options.method, options.body);
   const cacheKey = readLowCodeHttpCacheKey(apiPath, method, options.body);
 
-  if (cacheKey) {
+  if (cacheKey && options.cache !== 'no-store') {
     const cached = readLowCodeHttpCache<T>(cacheKey);
     if (cached !== undefined) return cached;
 

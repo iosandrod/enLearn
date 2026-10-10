@@ -23,8 +23,8 @@ let hydratedFileId = ''
 watch(
 	() => props.background,
 	(background) => {
-		const fileId = getBackgroundFileId(background)
-		//
+		const fileId = getBackgroundFileId(background)//
+		//Object.assign(model.value, background)//
 		model.value = {
 			...background,
 			color: background.color,

@@ -2,6 +2,7 @@ import { type InjectionKey, type Plugin, type Ref } from 'vue';
 export type LowCodeHostServiceApi = {
     invoke<T = unknown>(serviceName: string, serviceMethod: string, payload?: Record<string, unknown>, options?: {
         requestId?: string;
+        refresh?: boolean;
     }): Promise<T>;
     listPublishedLowCodeMaterials?<T = unknown>(): Promise<T[]>;
 };

@@ -7,6 +7,8 @@ type ServiceEnvelope<T> = {
 
 export type ServiceInvokeOptions = {
   requestId?: string;
+  /** Bypass both in-memory low-code caches for schema reads. */
+  refresh?: boolean;
 };
 
 export type PublicLowCodeCatalog<TMaterial = unknown, TFormDefinition = unknown> = {
@@ -209,16 +211,18 @@ export function useServiceApi() {
     const codeValues = lowCodeTable ? readCodeValues(postData) : [];
 
     if (lowCodeTable && codeValues.length) {
-      const cachedRows = readCachedLowCodeRows(postData, lowCodeTable);
+      const bypassCache = options.refresh === true;
+      const cachedRows = bypassCache ? undefined : readCachedLowCodeRows(postData, lowCodeTable);
       if (cachedRows) return cachedRows as TResponse;
 
       const requestKey = `${lowCodeTable}:${lowCodeCacheScope(postData)}:${[...codeValues].sort().join(',')}`;
-      const pendingRequest = lowCodeListRequests.get(requestKey);
+      const pendingRequest = bypassCache ? undefined : lowCodeListRequests.get(requestKey);
       if (pendingRequest) return await pendingRequest as TResponse;
 
       const requestPromise = (async () => {
         const requestId = options.requestId?.trim() || createRequestId();
         const response = await request<TResponse | ServiceEnvelope<TResponse>>('/api/service', {
+          ...(bypassCache ? { cache: 'no-store' as const } : {}),
           method: 'POST',
           headers: {
             'X-Request-Id': requestId
@@ -255,6 +259,7 @@ export function useServiceApi() {
 
     const requestId = options.requestId?.trim() || createRequestId();
     const response = await request<TResponse | ServiceEnvelope<TResponse>>('/api/service', {
+      ...(options.refresh === true ? { cache: 'no-store' as const } : {}),
       method: 'POST',
       headers: {
         'X-Request-Id': requestId

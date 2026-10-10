@@ -13,7 +13,7 @@ export type LowCodeHostServiceApi = {
     serviceName: string,
     serviceMethod: string,
     payload?: Record<string, unknown>,
-    options?: { requestId?: string }
+    options?: { requestId?: string; refresh?: boolean }
   ): Promise<T>;
   listPublishedLowCodeMaterials?<T = unknown>(): Promise<T[]>;
 };

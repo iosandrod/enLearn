@@ -2506,7 +2506,9 @@ button {
 	font-weight: 700;
 	pointer-events: none;
 }
-
+.vxe-form{
+	background:white;
+}
 .vue-resume-content-hint {
 	display: flex;
 	align-items: center;
@@ -5481,6 +5483,7 @@ button {
 }
 
 .lowcode-form-panel .lc-form {
+	background: #ffffff;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
@@ -6557,4 +6560,7 @@ button {
 	border-radius: 999px;
 	background: #172033;
 	/* opacity: 0.5; */
+}
+.context-menu{
+	background: #fff;
 }

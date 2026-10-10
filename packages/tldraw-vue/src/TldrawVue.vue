@@ -401,13 +401,21 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 		}
 	}
 	if (config.background) {
-		workspaceBackground.value = {
+		// workspaceBackground.value = {
+		// 	...workspaceBackground.value,
+		// 	...config.background,
+		// 	imageFileId: config.background.imageFileId ?? '',
+		// 	imageUrl: config.background.imageUrl ?? '',
+		// 	opacity: normalizeWorkspaceBackgroundOpacity(config.background.opacity),
+		// }
+		let obj=workspaceBackground.value = {
 			...workspaceBackground.value,
 			...config.background,
 			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
 			opacity: normalizeWorkspaceBackgroundOpacity(config.background.opacity),
 		}
+		Object.assign(workspaceBackground.value, obj)
 	}
 	canvasRef.value?.applyWorkspaceTemplateConfig(config)
 }
@@ -427,6 +435,7 @@ function resetWorkspaceTemplateConfig() {
 	syncModePanel()
 	presentationConfig.value = presentation
 	workspaceBackground.value = background
+	// Object.assign(workspaceBackground.value, background)
 	notifyDesignerModeState('print')
 	canvasRef.value?.applyWorkspaceTemplateConfig({
 		designerMode: 'print',
@@ -442,13 +451,14 @@ function resetWorkspaceTemplateConfig() {
 function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
 	workspaceRevision.value += 1
 	if (config.background) {
-		workspaceBackground.value = {
+		let obj = {
 			...workspaceBackground.value,
 			...config.background,
 			imageFileId: config.background.imageFileId ?? '',
 			imageUrl: config.background.imageUrl ?? '',
 			opacity: normalizeWorkspaceBackgroundOpacity(config.background.opacity),
 		}
+		Object.assign(workspaceBackground.value, obj)//
 	}
 	emit('workspace-config-change', {
 		...config,
@@ -459,7 +469,8 @@ function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
 
 function updateWorkspaceBackground(background: WorkspaceBackgroundConfig) {
 	const normalized = { ...background, opacity: normalizeWorkspaceBackgroundOpacity(background.opacity) }
-	workspaceBackground.value = normalized
+	Object.assign(workspaceBackground.value, normalized)
+	// workspaceBackground.value = normalized
 	canvasRef.value?.applyWorkspaceTemplateConfig({ background: normalized })
 }
 let _size: any = null

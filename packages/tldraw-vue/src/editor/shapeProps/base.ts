@@ -95,6 +95,10 @@ const baseDefinitions = {
 	borderRadius: {
 		validator: T.optional(T.number),
 		default: 0,
+	},
+	backgroundColor: {
+		validator: T.optional(T.string),
+		default: '',//
 	}
 } as const
 
