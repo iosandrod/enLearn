@@ -20,6 +20,8 @@ import {
 import { baseProps } from '@/editor/shapeProps/base'
 import { vueBoxPropertyRegistry } from '@/editor/shapeProps/vueBox'
 import { vueMaterialPropertyRegistry } from '@/editor/shapeProps/vueMaterial'
+import { biChartPropertyRegistry } from '@/editor/shapeProps/biChart'
+import { chartPresets } from '../editor/extensions/echarts/chartOptions'
 import type {
 	LowCodeField,
 	LowCodeFormSchema,
@@ -214,7 +216,9 @@ const selectedMaterialColumnValue = computed(() => {
 	return findMaterialColumn(getMaterialColumns(source, field, shape.props.columns), selection.field)
 })
 const canManageMaterialColumns = computed(() =>
-	showMaterialColumnTab.value && !props.editor.getIsReadonly()
+	showMaterialColumnTab.value &&
+	Boolean(selectedMaterialShape.value?.props.dataSourceField?.trim()) &&
+	!props.editor.getIsReadonly()
 )
 const canManageSelectedMaterialColumn = computed(() =>
 	canManageMaterialColumns.value && Boolean(selectedMaterialColumnValue.value)
@@ -813,6 +817,20 @@ const fillStyleFields = [selectField('fill', '填充', fillOptions)] satisfies L
 const borderVisibilityFields = [switchField('showBorder', '显示边框')] satisfies LowCodeField[]
 
 const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
+	'bi-chart': createPropsDescriptor('bi-chart', 'ECharts 图表', [
+		...baseFields,
+		...baseProps.formFields,
+		selectField('chartType', '图表类型', chartPresets.map(preset => ({ label: preset.label, value: preset.type }))),
+		inputField('title', '标题'),
+		colorPickerField('chartColor', '图表颜色'),
+		colorPickerField('background', '背景色'),
+		switchField('showLegend', '显示图例'),
+		switchField('showTooltip', '显示提示框'),
+		...borderVisibilityFields,
+		numberField('borderRadius', '圆角', { min: 0, step: 1 }),
+		jsonField('dataJson', '图表数据', { jsonRootType: 'object', placeholder: '{"categories":["一月","二月"],"values":[120,180]}' }),
+		jsonField('optionJson', '高级配置（完整 option）', { jsonRootType: 'object', placeholder: '留空使用基础配置；填写后覆盖基础图表配置' }),
+	]),
 	'vue-box': createPropsDescriptor('vue-box', '几何节点', [
 		...vueBoxPropertyRegistry.formFields,
 	]),
@@ -1738,6 +1756,13 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 		if (key in commonModelKeys || key === 'shapeTypeLabel') continue
 		if (key === 'assetId' || key === 'pointsCount' || key === 'propsJson') continue
 		if (isTableCellShape && (key === 'startX' || key === 'startY' || key === 'endX' || key === 'endY')) continue
+		if (shape.type === 'bi-chart' && biChartPropertyRegistry.has(key)) {
+			const value = key === 'dataJson' || key === 'optionJson'
+				? typeof model[key] === 'string' ? model[key] : JSON.stringify(model[key] ?? {})
+				: model[key]
+			nextProps[key] = biChartPropertyRegistry.normalize(key, value, currentProps[key])
+			continue
+		}
 		if (shape.type === 'vue-box' && vueBoxPropertyRegistry.has(key)) {
 			nextProps[key] = vueBoxPropertyRegistry.normalize(key, model[key], currentProps[key])
 			continue
@@ -1866,6 +1891,7 @@ function getShapeTypeLabel(type: string) {
 			'vue-barcode': '条形码节点',
 			'vue-frame': '画框节点',
 			'vue-table': '表格节点',
+			'bi-chart': 'ECharts 图表',
 			'vue-material': '物料节点',
 			'vue-material-section': '物料分区',
 			group: '分组',
@@ -1981,7 +2007,7 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
 		</div>
 		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema && !selectedMaterialColumnValue" class="lowcode-form-panel__empty">
-			请点击物料表格中的列标题查看列属性
+			{{ selectedMaterialShape?.props.dataSourceField?.trim() ? '请点击物料表格中的列标题查看列属性' : '请先设置物料表格的数据源字段' }}
 		</div>
 		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema" class="lowcode-form-panel__column-form">
 			<LowCodeForm

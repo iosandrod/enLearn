@@ -29,12 +29,13 @@ export function getMaterialColumns(
 	detailField: string,
 	nodeColumns?: readonly PrintDataSourceDetailColumn[],
 ): readonly PrintDataSourceDetailColumn[] {
+	if (!detailField.trim()) return []
 	if (Array.isArray(nodeColumns)) return nodeColumns
 	if (!source || source.type !== 'inline') return []
 	const table = Array.isArray(source.detailTables)
 		? source.detailTables.find((item) => item.field === detailField)
 		: undefined
-	return table?.columns ?? source.detailColumns ?? []
+	return table?.columns ?? (source.detailField === detailField ? source.detailColumns ?? [] : [])
 }
 
 /** Build the displayed column tree while retaining the complete saved definition. */

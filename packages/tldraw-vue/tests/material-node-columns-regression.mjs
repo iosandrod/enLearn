@@ -11,8 +11,17 @@ import { cloneVueTemplateDocument, cloneVueTemplateRecord } from '../src/editor/
 
 const source = {
 	type: 'inline',
+	detailField: 'items',
+	detailColumns: [{ field: 'default', title: '默认列' }],
 	detailTables: [{ field: 'items', columns: [{ field: 'sku', title: '物料', width: 100 }] }],
 }
+assert.deepEqual(getMaterialColumns(source, ''), [], 'New unbound nodes must not inherit default detail columns.')
+assert.deepEqual(getMaterialColumns(source, '   '), [], 'Whitespace does not count as a data source field.')
+assert.deepEqual(getMaterialColumns(source, '', [{ field: 'old', title: '旧列' }]), [],
+	'Unbinding also hides previously configured node columns.')
+assert.deepEqual(getMaterialColumns(source, 'missing'), [], 'Unknown bindings must not inherit another detail table.')
+assert.deepEqual(getMaterialColumns({ type: 'inline', detailField: 'items', detailColumns: source.detailColumns }, 'items'),
+	source.detailColumns, 'Legacy columns remain available for their matching data source field.')
 const originalSource = JSON.stringify(source)
 const node = { id: 'shape:material', type: 'vue-material', props: { dataSourceField: 'items' } }
 const editor = {

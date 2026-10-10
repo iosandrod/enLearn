@@ -23,6 +23,7 @@ const externalPackages = [
 	'@tiptap/pm',
 	'@tiptap/react',
 	'classnames',
+	'echarts',
 	'eventemitter3',
 	'idb',
 	'is-plain-object',

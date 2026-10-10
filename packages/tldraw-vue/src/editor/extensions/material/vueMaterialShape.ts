@@ -472,10 +472,10 @@ export function createVueMaterialShapePartials({
 			x: rect.x,
 			y: rect.y,
 			meta: {
-				showPageHeader: true,
-				showTableHeader: true,
-				showTableFooter: true,
-				showPageFooter: true,
+				showPageHeader: false,
+				showTableHeader: false,
+				showTableFooter: false,
+				showPageFooter: false,
 			},
 			props: {
 				w,

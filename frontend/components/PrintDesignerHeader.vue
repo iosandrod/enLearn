@@ -52,6 +52,16 @@
             <i class="ri-slideshow-3-line" aria-hidden="true" />
             <span>PPT 设计</span>
           </button>
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="designerMode === 'bi'"
+            :class="{ 'is-active': designerMode === 'bi' }"
+            @click="changeDesignerMode('bi')"
+          >
+            <i class="ri-bar-chart-box-line" aria-hidden="true" />
+            <span>BI 设计</span>
+          </button>
         </div>
 
         <div
@@ -172,7 +182,7 @@ const templateId=toRef(templateConfig,'templateId');
 const templateVersion=toRef(templateConfig,'templateVersion');
 const templateStatus=toRef(templateConfig,'templateStatus');
 const templateDirty=toRef(templateConfig,'templateDirty');
-const designerMode = ref<'print' | 'presentation'>('print');
+const designerMode = ref<'print' | 'presentation' | 'bi'>('print');
 
 type TemplateInfoDetail = {
   name?: unknown;
@@ -227,7 +237,7 @@ function handleTemplateInfoChange(event: Event) {
   applyTemplateInfo((event as CustomEvent<TemplateInfoDetail>).detail);
 }
 
-function changeDesignerMode(mode: 'print' | 'presentation') {
+function changeDesignerMode(mode: 'print' | 'presentation' | 'bi') {
   designerMode.value = mode;
   window.dispatchEvent(new CustomEvent('enlearn:print-designer-mode-change', {
     detail: { mode },
@@ -236,7 +246,7 @@ function changeDesignerMode(mode: 'print' | 'presentation') {
 
 function handleDesignerModeChange(event: Event) {
   const mode = (event as CustomEvent<{ mode?: unknown }>).detail?.mode;
-  if (mode === 'print' || mode === 'presentation') designerMode.value = mode;
+  if (mode === 'print' || mode === 'presentation' || mode === 'bi') designerMode.value = mode;
 }
 
 async function handleSignOut() {

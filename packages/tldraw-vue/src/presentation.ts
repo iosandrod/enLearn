@@ -1,6 +1,6 @@
 import type { Editor, TLPageId, TLShape } from '@tldraw/editor'
 
-export type DesignerMode = 'print' | 'presentation'
+export type DesignerMode = 'print' | 'presentation' | 'bi'
 
 export type PresentationAnimationPreset =
 	| 'none'

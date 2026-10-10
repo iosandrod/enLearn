@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import VueBottomToolbar from './components/VueBottomToolbar.vue'
 import VueCanvas from './components/VueCanvas.vue'
 import VueComponentPalette from './components/VueComponentPalette.vue'
+import VueEchartsPalette from './components/VueEchartsPalette.vue'
 import VueDataSourcePanel from './components/VueDataSourcePanel.vue'
 import VueAnimationPanel from './components/VueAnimationPanel.vue'
 import VueBackgroundPanel from './components/VueBackgroundPanel.vue'
@@ -105,8 +106,8 @@ const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
-	'tools' | 'templates' | 'components' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'animation'
->('tools')
+	'tools' | 'templates' | 'components' | 'echarts' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'animation'
+>(props.mode === 'bi' ? 'echarts' : 'tools')
 const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
 const failedTemplatePreviewIds = ref<Set<string>>(new Set())
@@ -126,6 +127,7 @@ const designerTabs = [
 	{ id: 'tools', label: '工具', icon: '✦' },
 	{ id: 'templates', label: '模板', icon: '▣' },
 	{ id: 'components', label: '组件', icon: '◇' },
+	{ id: 'echarts', label: 'ECharts', icon: '▥' },
 	{ id: 'layers', label: '图层', icon: '▱' },
 	{ id: 'dataSource', label: '数据源', icon: '▤' },
 	{ id: 'properties', label: '属性', icon: '⚙' },
@@ -180,6 +182,8 @@ const editorExtensions = computed(() => [
 const toolbarTools = computed(
 	() => createVueEditorExtensionRegistry(editorExtensions.value).toolbarTools
 )
+const ordinaryToolbarTools = computed(() => toolbarTools.value.filter(tool => !tool.id.startsWith('echarts-')))
+const echartsToolbarTools = computed(() => toolbarTools.value.filter(tool => tool.id.startsWith('echarts-')))
 
 function mountEditor(el: HTMLDivElement) {
 	if (editor.value) return
@@ -385,8 +389,9 @@ function getWorkspaceTemplateConfig() {
 }
 
 function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
-	if (config.designerMode === 'print' || config.designerMode === 'presentation') {
+	if (config.designerMode === 'print' || config.designerMode === 'presentation' || config.designerMode === 'bi') {
 		designerMode.value = config.designerMode
+		syncModePanel()
 		notifyDesignerModeState(config.designerMode)
 	}
 	if (config.presentation) {
@@ -419,6 +424,7 @@ function resetWorkspaceTemplateConfig() {
 	const presentation = clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG)
 
 	designerMode.value = 'print'
+	syncModePanel()
 	presentationConfig.value = presentation
 	workspaceBackground.value = background
 	notifyDesignerModeState('print')
@@ -459,12 +465,14 @@ function updateWorkspaceBackground(background: WorkspaceBackgroundConfig) {
 let _size: any = null
 function setDesignerMode(mode: DesignerMode) {
 	if (designerMode.value === mode) return
+	const previousMode = designerMode.value
 	designerMode.value = mode
+	syncModePanel()
 	if (mode === 'presentation' && presentationConfig.value.pageSizeMm) {
 		let oldPrintPageSize = canvasRef.value?.getWorkspaceTemplateConfig()?.pageSizeMm 
 		_size = oldPrintPageSize//
 		canvasRef.value?.applyWorkspaceTemplateConfig({ pageSizeMm: presentationConfig.value.pageSizeMm })
-	} else if (mode === 'print' && _size) {
+	} else if (previousMode === 'presentation' && _size) {
 		canvasRef.value?.applyWorkspaceTemplateConfig({ pageSizeMm: _size })
 	}
 	emit('mode-change', mode)
@@ -473,6 +481,13 @@ function setDesignerMode(mode: DesignerMode) {
 	setTimeout(() => {
 		canvasRef?.value?.workspaceFitCanvas()
 	}, 10)
+}
+
+function syncModePanel() {
+	presentationPreviewOpen.value = false
+	if (designerMode.value === 'bi') activeDesignerTab.value = 'echarts'
+	else if (activeDesignerTab.value === 'echarts') activeDesignerTab.value = 'components'
+	if (designerMode.value !== 'bi' && activeTool.value.startsWith('echarts-')) selectTool('select')
 }
 
 function togglePresentationPreview() {
@@ -488,7 +503,7 @@ function notifyDesignerModeState(mode: DesignerMode) {
 
 function handleExternalDesignerModeChange(event: Event) {
 	const mode = (event as CustomEvent<{ mode?: unknown }>).detail?.mode
-	if (mode === 'print' || mode === 'presentation') setDesignerMode(mode)
+	if (mode === 'print' || mode === 'presentation' || mode === 'bi') setDesignerMode(mode)
 }
 
 function handlePluginShortcut(event: KeyboardEvent) {
@@ -570,6 +585,8 @@ onBeforeUnmount(() => {
 					@click="setDesignerMode('print')">打印设计</button>
 				<button type="button" :class="{ 'is-active': designerMode === 'presentation' }"
 					@click="setDesignerMode('presentation')">PPT 设计</button>
+				<button type="button" :class="{ 'is-active': designerMode === 'bi' }"
+					@click="setDesignerMode('bi')">BI 设计</button>
 			</div>
 			<div v-if="designerMode === 'presentation'" class="designer-mode-actions">
 				<button type="button" title="预览当前演示文稿" @click="togglePresentationPreview">▶ 预览</button>
@@ -583,6 +600,7 @@ onBeforeUnmount(() => {
 				<nav class="designer-side-tabs" aria-label="设计器功能分类">
 					<button v-for="tab in designerTabs"
 						v-show="(tab.id !== 'animation' || designerMode === 'presentation')
+							&& (tab.id !== 'echarts' || designerMode === 'bi')
 							&& (tab.id !== 'columnProperties' || showMaterialColumnPanel)" :key="tab.id" type="button"
 						class="designer-side-tab" :class="{ 'is-active': activeDesignerTab === tab.id }"
 						:aria-selected="activeDesignerTab === tab.id" @click="selectDesignerTab(tab.id)">
@@ -641,7 +659,7 @@ onBeforeUnmount(() => {
 							<h2 class="designer-tool-section__title">绘制工具</h2>
 							<VueBottomToolbar v-if="editor" ref="bottomToolbarRef" :editor="editor"
 								:active-tool="activeTool" :current-geo-shape="currentGeoShape"
-								:toolbar-tools="toolbarTools" @before-action="closeContextAndTopMenus"
+								:toolbar-tools="ordinaryToolbarTools" @before-action="closeContextAndTopMenus"
 								@tool-select="selectTool" @tool-drag-cancel="cancelToolbarDrag"
 								@tool-drag-end="endToolbarDrag" @tool-drag-move="moveToolbarDrag"
 								@tool-drag-start="startToolbarDrag" />
@@ -658,10 +676,16 @@ onBeforeUnmount(() => {
 					</div>
 					<div v-show="activeDesignerTab === 'components'" class="designer-tool-view">
 						<VueComponentPalette v-if="editor" :active-tool="activeTool" :compact="false"
-							:current-geo-shape="currentGeoShape" :toolbar-tools="toolbarTools"
+							:current-geo-shape="currentGeoShape" :toolbar-tools="ordinaryToolbarTools"
 							@before-action="closeContextAndTopMenus" @tool-select="selectTool"
 							@tool-drag-cancel="cancelToolbarDrag" @tool-drag-end="endToolbarDrag"
 							@tool-drag-move="moveToolbarDrag" @tool-drag-start="startToolbarDrag" />
+					</div>
+					<div v-show="activeDesignerTab === 'echarts' && designerMode === 'bi'" class="designer-tool-view">
+						<VueEchartsPalette v-if="editor" :active-tool="activeTool" :current-geo-shape="currentGeoShape"
+							:toolbar-tools="echartsToolbarTools" @before-action="closeContextAndTopMenus"
+							@tool-select="selectTool" @tool-drag-cancel="cancelToolbarDrag"
+							@tool-drag-end="endToolbarDrag" @tool-drag-move="moveToolbarDrag" @tool-drag-start="startToolbarDrag" />
 					</div>
 					<div v-show="activeDesignerTab === 'layers'" class="designer-tool-view designer-tool-view--layers">
 						<VueLayersPanel v-if="editor" :editor="editor" @contextmenu="openLayerContextMenu" />

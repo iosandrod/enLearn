@@ -32,11 +32,6 @@ const materialCreate: VueShapeCreateDefinition = {
 			rect,
 			sectionIds,
 		})
-
-		if (footerSectionId) {
-			shapes.push(createFooterSampleTextShape(footerSectionId, rect.w))
-		}
-
 		editor.createShapes(shapes)
 	},
 	updateShape({ editor, id, rect }) {

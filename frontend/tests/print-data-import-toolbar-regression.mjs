@@ -27,6 +27,55 @@ const syncCode = await extract('../../packages/tldraw-vue/src/editor/printDetail
   'syncPrintDetailFields', 'readMetadataFields', 'isRecord', 'readString',
 ]);
 const { syncPrintDetailFields } = new Function(`${syncCode}; return { syncPrintDetailFields };`)();
+const columnOperationsCode = await extract('../../packages/tldraw-vue/src/editor/materialColumnOperations.ts', [
+  'getMaterialColumns', 'findMaterialColumn', 'updateMaterialNodeColumns', 'getVisibleMaterialColumns',
+]);
+const columnOperations = new Function(`${columnOperationsCode}; return { getMaterialColumns, findMaterialColumn, updateMaterialNodeColumns, getVisibleMaterialColumns };`)();
+const columnPanelCode = await extract('../../packages/tldraw-vue/src/components/LowCodeFormPanel.vue', [
+  'handleColumnModelUpdate', 'cloneSerializableValue', 'isRecord',
+]);
+const unboundMaterial = ref({ id: 'shape:unbound', type: 'vue-material', props: {
+  dataSourceField: '', columns: [{ field: 'sku', title: '编码', width: 100, visible: true }],
+} });
+const selectedColumn = ref({ materialShapeId: 'shape:unbound', field: 'sku' });
+const unboundColumnValue = computed(() => columnOperations.findMaterialColumn(
+  columnOperations.getMaterialColumns(undefined, unboundMaterial.value.props.dataSourceField, unboundMaterial.value.props.columns),
+  selectedColumn.value.field,
+));
+const unboundCanvasColumns = computed(() => columnOperations.getVisibleMaterialColumns(
+  columnOperations.getMaterialColumns(undefined, unboundMaterial.value.props.dataSourceField, unboundMaterial.value.props.columns),
+));
+let readonly = false;
+const editUnboundColumn = new Function('showMaterialColumnTab', 'props', 'columnFormModel', 'selectedMaterialShape',
+  'selectedMaterialColumn', 'editorPrintDataSource', 'selectedMaterialColumnValue',
+  'getMaterialColumns', 'updateMaterialNodeColumns', `${columnPanelCode}; return handleColumnModelUpdate;`,
+)(ref(true), { editor: {
+  getIsReadonly: () => readonly,
+  updateShape: partial => { unboundMaterial.value = { ...unboundMaterial.value, props: { ...unboundMaterial.value.props, ...partial.props } }; },
+} }, ref({}), unboundMaterial, selectedColumn, ref(undefined), unboundColumnValue,
+  columnOperations.getMaterialColumns, columnOperations.updateMaterialNodeColumns);
+editUnboundColumn({ title: '新编码', width: 160, visible: false });
+assert.equal(unboundColumnValue.value, null, 'Unbound material nodes must not expose column properties.');
+assert.deepEqual(unboundCanvasColumns.value, [], 'Canvas column display follows edits on unbound nodes.');
+assert.deepEqual(unboundMaterial.value.props.columns, [{ field: 'sku', title: '编码', width: 100, visible: true }],
+  'Editing is ignored until a data source is selected.');
+selectedColumn.value = { materialShapeId: 'shape:other', field: 'sku' };
+editUnboundColumn({ title: '错误节点' });
+assert.equal(unboundColumnValue.value, null, 'A stale column selection must not update another node.');
+selectedColumn.value = { materialShapeId: 'shape:unbound', field: 'sku' };
+readonly = true;
+editUnboundColumn({ title: '只读修改' });
+assert.equal(unboundColumnValue.value, null, 'Read-only unbound nodes remain protected.');
+readonly = false;
+unboundMaterial.value = { ...unboundMaterial.value, props: { ...unboundMaterial.value.props, dataSourceField: 'items' } };
+editUnboundColumn({ title: '新编码', width: 160, visible: false });
+assert.equal(unboundColumnValue.value.title, '新编码', 'Bound columns still save edited titles immediately.');
+assert.equal(unboundColumnValue.value.width, 160);
+assert.deepEqual(unboundCanvasColumns.value, [], 'Hiding a bound column updates the canvas.');
+editUnboundColumn({ visible: true });
+assert.equal(unboundCanvasColumns.value[0].title, '新编码', 'Showing a bound column retains its properties.');
+unboundMaterial.value = { ...unboundMaterial.value, props: { ...unboundMaterial.value.props, dataSourceField: '' } };
+assert.deepEqual(unboundCanvasColumns.value, [], 'Clearing the data source hides all columns.');
 const normalizeCode = await extract('../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue', [
   'normalizeColumns', 'isRecord', 'readString', 'cloneRecord', 'cloneValue', 'readJsonObject', 'readJsonArray',
   'readComponent', 'readSize', 'readAlign', 'readBoolean', 'normalizeVxeColumnType',

@@ -234,7 +234,7 @@ function isTemplateMetadata(value: unknown): value is VueTemplateMetadata {
 	return (
 		(value.editor === undefined || typeof value.editor === 'string') &&
 		(value.schemaVersion === undefined || isFiniteNumber(value.schemaVersion)) &&
-		(value.designerMode === undefined || value.designerMode === 'print' || value.designerMode === 'presentation') &&
+		(value.designerMode === undefined || value.designerMode === 'print' || value.designerMode === 'presentation' || value.designerMode === 'bi') &&
 		(value.pageSizeMm === undefined || isSizeLike(value.pageSizeMm)) &&
 		(value.pageBounds === undefined || isBoundsLike(value.pageBounds))
 	)
@@ -259,7 +259,7 @@ function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspac
 	if (!isObject(value)) return false
 	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, background, presentation } = value
 	return (
-		(designerMode === undefined || designerMode === 'print' || designerMode === 'presentation') &&
+		(designerMode === undefined || designerMode === 'print' || designerMode === 'presentation' || designerMode === 'bi') &&
 		(pageSizeMm === undefined || isSizeLike(pageSizeMm)) &&
 		(pageBounds === undefined || isBoundsLike(pageBounds)) &&
 		(camera === undefined || isCameraLike(camera)) &&

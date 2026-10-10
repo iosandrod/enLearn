@@ -725,3 +725,28 @@ const borderObj=computed(()=>{
 			aria-label="Resize section height" title="Resize section height" @pointerdown="onResizePointerDown" />
 	</div>
 </template>
+<style scoped>
+.is-table-body {
+	overflow: hidden;
+	border: 1px solid black;
+}
+.vue-material-section-shape--pageHeader{
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+}
+.vue-material-section-shape--tableHeader{
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+}
+.vue-material-section-shape--tableFooter{
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+}
+.vue-material-section-shape--pageFooter{
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+}
+</style>

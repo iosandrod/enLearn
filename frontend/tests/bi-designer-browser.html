@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>BI 设计器回归验证</title><link rel="icon" href="data:,"></head>
+<body style="margin:0"><div id="app" style="width:100vw;height:100vh"></div>
+<script type="module">
+import { createApp, h } from 'vue';
+import { install as installVxeUI } from 'vxe-pc-ui';
+import VxeUITable from 'vxe-table';
+import 'vxe-pc-ui/lib/style.css';
+import 'vxe-table/lib/style.css';
+import 'remixicon/fonts/remixicon.css';
+import TldrawVue from '../../packages/tldraw-vue/src/index.ts';
+import { lowCodeHostKey } from '../../packages/lowcode-framework/src/core/host';
+const app = createApp({ render: () => h(TldrawVue, {
+  ref: instance => { window.biDesigner = instance; },
+  showModeControls: true,
+  showTemplateControls: false,
+}) });
+app.provide(lowCodeHostKey, { serviceApi: { invoke: async () => [] } });
+app.use(installVxeUI);
+app.use(VxeUITable);
+app.mount('#app');
+</script></body></html>
