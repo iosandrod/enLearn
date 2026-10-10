@@ -56,8 +56,8 @@ const panelStyle = computed<CSSProperties>(() => {
 	if (!panelPosition.value) return {}
 	return {
 		left: `${panelPosition.value.x}px`,
-		top: `${panelPosition.value.y}px`,
-		bottom: 'auto',
+		// top: `${panelPosition.value.y}px`,
+		bottom: `${14}px`,
 	}
 })
 

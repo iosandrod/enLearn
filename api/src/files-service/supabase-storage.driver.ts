@@ -65,6 +65,21 @@ function readSupabaseUrl() {
   return value;
 }
 
+function readPublicSupabaseUrl() {
+  const env = getEnv();
+  const value = String(env.SUPABASE_PUBLIC_URL ?? '').trim().replace(/\/+$/, '');
+  return value || readSupabaseUrl();
+}
+
+function toPublicSupabaseUrl(value: string) {
+  const internalUrl = readSupabaseUrl();
+  const publicUrl = readPublicSupabaseUrl();
+  if (publicUrl === internalUrl) return value;
+  return value.startsWith(internalUrl + '/')
+    ? publicUrl + value.slice(internalUrl.length)
+    : value;
+}
+
 function readServiceRoleKey() {
   const env = getEnv();
   const value = String(env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
@@ -99,7 +114,9 @@ function normalizeSignedUploadResult(
     throw new BadRequestException('Storage provider did not return an upload URL.');
   }
   const storageBase = readSupabaseUrl() + '/storage/v1';
-  const signedUrl = rawUrl.startsWith('/') ? storageBase + rawUrl : rawUrl;
+  const signedUrl = toPublicSupabaseUrl(
+    rawUrl.startsWith('/') ? storageBase + rawUrl : rawUrl
+  );
   return {
     adapter: 'supabase',
     bucket: input.bucket,
@@ -332,8 +349,9 @@ export class SupabaseStorageDriver implements FileStorageDriver {
       bucket: input.bucket,
       objectKey: input.objectKey,
       objectUrl:
-        supabaseUrl + '/storage/v1/object/authenticated/' +
+        toPublicSupabaseUrl(supabaseUrl + '/storage/v1/object/authenticated/' +
         encodeURIComponent(input.bucket) + '/' + encodeObjectPath(input.objectKey)
+        ),
     };
   }
 
@@ -356,7 +374,7 @@ export class SupabaseStorageDriver implements FileStorageDriver {
       adapter: this.adapter,
       bucket: input.bucket,
       objectKey: input.objectKey,
-      signedUrl: data.signedUrl,
+      signedUrl: toPublicSupabaseUrl(data.signedUrl),
       expiresAt: expiresAt(input.expiresInSeconds)
     };
   }
