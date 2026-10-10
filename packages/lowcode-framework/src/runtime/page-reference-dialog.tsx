@@ -290,6 +290,13 @@ function createImportFormSchema(
             }
           }),
           clear: ({ setRows }) => setRows([]),
+          syncFields: guard(async ({ rows, formValues }) => {
+            const sourceRows = Array.isArray(formValues?.[fieldName])
+              ? formValues[fieldName] as Record<string, unknown>[]
+              : rows;
+            const schema = await requestPrintDetailAction({ formCode, field: fieldName, action: 'syncFields', rows: sourceRows });
+            if (isRecord(schema)) createImportFormSchema(schema, formCode, resultSchema);
+          }),
           import: ({ rows, setRows }) => {
               if (typeof window === 'undefined') return;
               window.dispatchEvent(new CustomEvent('enlearn:print-data-source-import', {

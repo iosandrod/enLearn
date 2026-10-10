@@ -55,6 +55,14 @@ function readSchema(value: unknown) {
   return value;
 }
 
+function readResultMetadata(value: unknown) {
+  if (!isRecord(value)) return undefined;
+  const metadata = value.metadata ?? value.metedata;
+  if (!Array.isArray(metadata) && !isRecord(metadata)) return undefined;
+  if (jsonBytes(metadata) > 256 * 1024) throw new BadRequestException('Data source metadata is too large.');
+  return metadata;
+}
+
 function readManagedSourceType(value: unknown): 'script' | 'typeorm' {
   return value === 'typeorm' ? 'typeorm' : 'script';
 }
@@ -100,11 +108,13 @@ export class PrintDataSourceRuntime {
       (name, args) => this.callCapability(name, args, context, datasourceCode),
       DEFAULT_TIMEOUT_MS
     );
+    const metadata = readResultMetadata(result);
     return {
       sourceCode,
       version: Number(script.version ?? 1),
       schema: isRecord(script.schema) ? script.schema : {},
-      records: normalizeRecords(result)
+      records: normalizeRecords(result),
+      ...(metadata !== undefined ? { metadata } : {})
     };
   }
 

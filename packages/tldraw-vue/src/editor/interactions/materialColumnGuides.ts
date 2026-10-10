@@ -1,5 +1,5 @@
 import { isShapeId, type Editor, type TLShape, type TLShapeId } from '@tldraw/editor'
-import { getMaterialColumns } from '@/editor/materialColumnOperations'
+import { getMaterialColumns, getVisibleMaterialColumns } from '@/editor/materialColumnOperations'
 import type { PrintDataSourceDetailColumn } from '@/print/types'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
@@ -33,7 +33,7 @@ export function getMaterialColumnGuides(editor: Editor): WorkspaceGuide[] {
 		if (!isVueMaterialShape(material)) continue
 
 		const columns = getMaterialColumns(source, material.props.dataSourceField, material.props.columns)
-		const leafColumns = flattenLeafColumns(columns)
+		const leafColumns = flattenLeafColumns(getVisibleMaterialColumns(columns))
 		if (!leafColumns.length) continue
 
 		const totalWidth = Math.max(1, material.props.w - 2 / (editor.getZoomLevel() || 1))

@@ -28,6 +28,7 @@ const tables = computed(() => props.modelValue ?? [])
 const activeTable = computed(() =>
 	tables.value.find((table) => table.id === activeTableId.value) ?? tables.value[0],
 )
+const visibleColumns = computed(() => (activeTable.value?.columns ?? []).filter((column) => column.visible !== false))
 
 watch(
 	tables,
@@ -202,7 +203,7 @@ function readString(value: unknown, fallback = '') {
 						<thead>
 							<tr>
 								<th class="print-detail-designer__sequence">序号</th>
-								<th v-for="column in activeTable.columns" :key="column.field">
+								<th v-for="column in visibleColumns" :key="column.field">
 									{{ column.title || column.field }}
 									<small>{{ column.field }}</small>
 								</th>
@@ -210,7 +211,7 @@ function readString(value: unknown, fallback = '') {
 						</thead>
 						<tbody>
 							<tr>
-								<td :colspan="Math.max(1, activeTable.columns.length + 1)" class="print-detail-designer__empty-row">
+								<td :colspan="Math.max(1, visibleColumns.length + 1)" class="print-detail-designer__empty-row">
 									明细数据将在左侧数据源面板中录入
 								</td>
 							</tr>

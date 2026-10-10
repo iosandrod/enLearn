@@ -2,6 +2,7 @@
   <vxe-colgroup
     v-if="column.children?.length"
     :title="column.title"
+    :visible="column.visible !== false"
     :width="column.width"
     :min-width="column.minWidth"
     :align="column.align"
@@ -22,6 +23,7 @@
   <vxe-column
     v-else-if="column.type"
     :type="column.type"
+    :visible="column.visible !== false"
     :field="column.field"
     :title="column.title"
     :width="column.width"
@@ -32,6 +34,7 @@
 
   <vxe-column
     v-else
+    :visible="column.visible !== false"
     :field="column.field"
     :title="column.title"
     :width="column.width"
@@ -52,6 +55,7 @@ import { computed } from 'vue';
 type ArrayTableColumnNode = {
   field: string;
   title: string;
+  visible?: boolean;
   type?: string;
   width?: number | string;
   minWidth?: number | string;
@@ -76,6 +80,7 @@ const firstLeafIndex = computed(() => {
 });
 
 function hasLeafDescendant(column: ArrayTableColumnNode) {
+  if (column.visible === false) return false;
   return !column.children?.length || column.children.some(hasLeafDescendant);
 }
 </script>

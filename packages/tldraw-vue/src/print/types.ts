@@ -5,6 +5,7 @@ export type PrintDataRow = Record<string, unknown>
 export interface PrintDataSourceDetailColumn {
 	field: string
 	title: string
+	visible?: boolean
 	width?: number
 	children?: any[]
 	[key: string]: unknown

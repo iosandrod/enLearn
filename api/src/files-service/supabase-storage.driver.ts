@@ -114,9 +114,7 @@ function normalizeSignedUploadResult(
     throw new BadRequestException('Storage provider did not return an upload URL.');
   }
   const storageBase = readSupabaseUrl() + '/storage/v1';
-  const signedUrl = toPublicSupabaseUrl(
-    rawUrl.startsWith('/') ? storageBase + rawUrl : rawUrl
-  );
+  const signedUrl = rawUrl.startsWith('/') ? storageBase + rawUrl : rawUrl;
   return {
     adapter: 'supabase',
     bucket: input.bucket,
@@ -315,11 +313,12 @@ export class SupabaseStorageDriver implements FileStorageDriver {
   async createUploadUrl(
     input: CreateUploadUrlInput
   ): Promise<CreateUploadUrlResult> {
-    return createSignedUpload(input);
+    const upload = await createSignedUpload(input);
+    return { ...upload, signedUrl: toPublicSupabaseUrl(upload.signedUrl) };
   }
 
   async uploadObject(input: UploadObjectInput): Promise<UploadObjectResult> {
-    const upload = await this.createUploadUrl({
+    const upload = await createSignedUpload({
       bucket: input.bucket,
       objectKey: input.objectKey,
       contentType: input.contentType

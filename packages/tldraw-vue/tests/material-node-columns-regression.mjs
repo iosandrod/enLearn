@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import {
 	getMaterialColumns,
+	getVisibleMaterialColumns,
+	updateVisibleMaterialColumnWidths,
 	updateMaterialNodeColumns,
 	moveMaterialColumn,
 	removeMaterialColumn,
@@ -55,4 +57,33 @@ const removed = removeMaterialColumn(node.props.columns, 'sku')
 updateMaterialNodeColumns(editor, node, removed.columns)
 assert.deepEqual(node.props.columns.map(column => column.field), ['codes'])
 assert.equal(restoredColumns.length, 2)
+
+const visibilityColumns = [
+	{ field: 'id', title: 'ID', width: 70, visible: false },
+	{ field: 'sku', title: '编码', width: 100 },
+	{ field: 'group', title: '分组', children: [
+		{ field: 'price', title: '单价', width: 80, visible: false },
+		{ field: 'qty', title: '数量', width: 120 },
+	] },
+	{ field: 'hiddenGroup', title: '隐藏分组', visible: false, children: [
+		{ field: 'secret', title: '隐藏子列', width: 60 },
+	] },
+	{ field: 'emptyGroup', title: '无显示子列', children: [
+		{ field: 'disabled', title: '隐藏子列', visible: false },
+	] },
+]
+const originalVisibilityColumns = JSON.stringify(visibilityColumns)
+assert.deepEqual(getVisibleMaterialColumns(visibilityColumns).map(column => column.field), ['sku', 'group'])
+assert.deepEqual(getVisibleMaterialColumns(visibilityColumns)[1].children.map(column => column.field), ['qty'])
+const resizedColumns = updateVisibleMaterialColumnWidths(visibilityColumns, [150, 200])
+assert.equal(resizedColumns[0].width, 70, 'Resizing displayed columns preserves hidden widths.')
+assert.equal(resizedColumns[1].width, 150)
+assert.equal(resizedColumns[2].children[0].width, 80)
+assert.equal(resizedColumns[2].children[1].width, 200)
+assert.equal(resizedColumns[3].children[0].width, 60)
+assert.equal(resizedColumns.length, visibilityColumns.length, 'Resizing does not remove hidden definitions.')
+assert.equal(JSON.stringify(visibilityColumns), originalVisibilityColumns, 'Display filtering and resizing do not mutate the input.')
+assert.deepEqual(getVisibleMaterialColumns([{ field: 'id', title: 'ID', visible: false }]), [])
+resizedColumns[0] = { ...resizedColumns[0], visible: true }
+assert.equal(getVisibleMaterialColumns(resizedColumns)[0].field, 'id', 'Re-enabling visibility restores the column.')
 console.log('Material node column configuration persists through template save/load and isolated edits.')

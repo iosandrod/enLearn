@@ -16,8 +16,10 @@ import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import {
 	areMaterialColumnsSiblings,
 	getMaterialColumns,
+	getVisibleMaterialColumns,
 	moveMaterialColumn,
 	updateMaterialNodeColumns,
+	updateVisibleMaterialColumnWidths,
 } from '@/editor/materialColumnOperations'
 import { useEditorValue } from '@/vue/useEditorValue'
 import type { VueShapeNodeProps } from './types'
@@ -74,9 +76,10 @@ watch(previewColumns, (columns) => {
 	if (!dataSourceField.value || material.props.columns !== undefined || !columns.length) return
 	props.editor.run(() => updateMaterialNodeColumns(props.editor, material, columns), { history: 'ignore' })
 }, { immediate: true })
-const previewLeafColumns = computed(() => flattenDetailColumns(previewColumns.value))
-const previewHeaderCells = computed(() => createPreviewHeaderCells(previewColumns.value))
-const previewHeaderDepth = computed(() => getColumnDepth(previewColumns.value))
+const visiblePreviewColumns = computed(() => getVisibleMaterialColumns(previewColumns.value))
+const previewLeafColumns = computed(() => flattenDetailColumns(visiblePreviewColumns.value))
+const previewHeaderCells = computed(() => createPreviewHeaderCells(visiblePreviewColumns.value))
+const previewHeaderDepth = computed(() => getColumnDepth(visiblePreviewColumns.value))
 const previewHeaderRowHeight = computed(() => getPositiveRowHeight(
 	isVueMaterialShape(materialShape.value) ? materialShape.value.props.headerRowHeight : undefined,
 	vueMaterialRowDefaults.headerRowHeight,
@@ -338,15 +341,7 @@ function onColumnResizePointerUp(event: PointerEvent) {
 function updateDataSourceColumnWidths(widths: readonly number[]) {
 	const material = materialShape.value
 	if (!isVueMaterialShape(material)) return
-	let widthIndex = 0
-	const updateColumns = (columns: readonly any[]): any[] => columns.map((column) => {
-		if (Array.isArray(column.children) && column.children.length) {
-			return { ...column, children: updateColumns(column.children) }
-		}
-		const width = widths[widthIndex++]
-		return width === undefined ? { ...column } : { ...column, width }
-	})
-	updateMaterialNodeColumns(props.editor, material, updateColumns(previewColumns.value))
+	updateMaterialNodeColumns(props.editor, material, updateVisibleMaterialColumnWidths(previewColumns.value, widths))
 }
 
 function onResizePointerDown(event: PointerEvent) {

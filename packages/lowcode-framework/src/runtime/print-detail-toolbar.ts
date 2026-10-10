@@ -1,6 +1,6 @@
 import type { ArrayTableToolbarButton, ArrayTableToolbarExecute } from '../lowcode/form-materials/array-table-types';
 
-export type PrintDetailAction = 'fetch' | 'clear' | 'import' | 'configure' | 'delete';
+export type PrintDetailAction = 'fetch' | 'syncFields' | 'clear' | 'import' | 'configure' | 'delete';
 
 /** Keep the designer panel and data import dialog in the same order. */
 export function createPrintDetailToolbar(
@@ -10,6 +10,7 @@ export function createPrintDetailToolbar(
   return [
     { code: 'add', label: '新增行', command: 'add', status: 'primary' },
     { code: 'fetch', label: '获取数据', status: 'primary', prefixIcon: 'ri-download-cloud-2-line', disabled: fetching, execute: handlers.fetch },
+    { code: 'syncFields', label: '同步字段', prefixIcon: 'ri-loop-left-line', disabled: fetching, execute: handlers.syncFields },
     { code: 'clear', label: '清空', status: 'warning', execute: handlers.clear },
     { code: 'import', label: '导入', execute: handlers.import },
     { code: 'configure', label: '表格配置', execute: handlers.configure },
@@ -20,7 +21,8 @@ export function createPrintDetailToolbar(
 export type PrintDetailActionRequest = {
   formCode: string;
   field: string;
-  action: 'fetch' | 'configure' | 'delete';
+  action: 'fetch' | 'syncFields' | 'configure' | 'delete';
+  rows?: Record<string, unknown>[];
   formValues?: Record<string, unknown>;
   /** Assigned synchronously by the matching designer panel. */
   run?: Promise<unknown>;

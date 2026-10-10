@@ -270,6 +270,7 @@ import type {
 type ArrayTableColumn = {
   field: string;
   title: string;
+  visible?: boolean;
   children?: ArrayTableColumn[];
   type?: string;
   component?: LowCodeFieldComponent;
@@ -631,19 +632,21 @@ function refreshTableColumns() {
   });
 }
 
-function normalizeColumns(value: unknown): ArrayTableColumn[] {
+function normalizeColumns(value: unknown, parentVisible = true): ArrayTableColumn[] {
   if (!Array.isArray(value)) return [];
 
   return value
     .filter(isRecord)
     .map((column, index) => {
-      const children = normalizeColumns(column.children);
+      const visible = parentVisible && column.visible !== false;
+      const children = normalizeColumns(column.children, visible);
       const field = children.length
         ? readString(column.field)
         : readString(column.field, `field${index + 1}`);
       return {
         field,
         title: readString(column.title ?? column.label, field),
+        visible,
         ...(children.length ? { children } : {}),
         type: normalizeVxeColumnType(column.type),
         component: readComponent(column.component),
@@ -1019,7 +1022,7 @@ function findRowLocation(
 
 function isTreeNodeColumn(column: ArrayTableColumn) {
   if (!treeEnabled.value) return false;
-  const firstLeaf = flattenLeafColumns(columns.value)[0];
+  const firstLeaf = flattenLeafColumns(columns.value).find((item) => item.visible !== false);
   return Boolean(firstLeaf && containsLeafColumn(column, firstLeaf));
 }
 

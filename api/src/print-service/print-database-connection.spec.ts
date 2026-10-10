@@ -68,6 +68,29 @@ async function main() {
   );
   assert.equal(noProxyResult, 'undefined');
 
+  const metadataRuntime = new PrintDataSourceRuntimeHarness(createDataSourceClient([
+    {
+      id: 'metadata-script', user_id: 'test', code: 'script.metadata', enabled: true,
+      version: 1, schema: {},
+      script: `function main(context) {
+        return { records: [], metadata: [{ field: 'sku', title: '编码' }] };
+      }`,
+    },
+    {
+      id: 'legacy-metadata-script', user_id: 'test', code: 'script.metedata', enabled: true,
+      version: 1, schema: {},
+      script: `function main(context) {
+        return { data: [{ qty: 1 }], metedata: { columns: [{ field: 'qty', title: '数量' }] } };
+      }`,
+    },
+  ], []));
+  const metadataResult = await metadataRuntime.resolve('script.metadata', {}, { accountId: 'test', userId: 'test' });
+  assert.deepEqual(metadataResult.records, []);
+  assert.deepEqual(metadataResult.metadata, [{ field: 'sku', title: '编码' }]);
+  const legacyMetadataResult = await metadataRuntime.resolve('script.metedata', {}, { accountId: 'test', userId: 'test' });
+  assert.deepEqual(legacyMetadataResult.records, [{ qty: 1 }]);
+  assert.deepEqual(legacyMetadataResult.metadata, { columns: [{ field: 'qty', title: '数量' }] });
+
   // A TCP server that accepts connections but never completes a database handshake.
   // Verify the actual drivers are cancelled within one shared 2000ms deadline.
   const sockets = new Set<Socket>();

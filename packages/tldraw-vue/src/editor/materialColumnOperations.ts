@@ -37,6 +37,33 @@ export function getMaterialColumns(
 	return table?.columns ?? source.detailColumns ?? []
 }
 
+/** Build the displayed column tree while retaining the complete saved definition. */
+export function getVisibleMaterialColumns(
+	columns: readonly PrintDataSourceDetailColumn[],
+): PrintDataSourceDetailColumn[] {
+	return columns.flatMap((column) => {
+		if (column.visible === false) return []
+		if (!column.children?.length) return [column]
+		const children = getVisibleMaterialColumns(column.children)
+		return children.length ? [{ ...column, children }] : []
+	})
+}
+
+export function updateVisibleMaterialColumnWidths(
+	columns: readonly PrintDataSourceDetailColumn[],
+	widths: readonly number[],
+): PrintDataSourceDetailColumn[] {
+	let widthIndex = 0
+	const updateColumns = (items: readonly PrintDataSourceDetailColumn[]): PrintDataSourceDetailColumn[] => items.map((column) => {
+		if (column.visible === false) return column
+		if (column.children?.length) return { ...column, children: updateColumns(column.children) }
+		if (!column.field) return column
+		const width = widths[widthIndex++]
+		return width === undefined ? column : { ...column, width }
+	})
+	return updateColumns(columns)
+}
+
 export function updateMaterialNodeColumns(
 	editor: Editor,
 	shape: VueMaterialShape,

@@ -5,6 +5,8 @@
     "start:redis": "\"C:/Program Files/Redis/redis-server.exe\" --service-run \"C:/Program Files/Redis/redis.windows-service.conf\"",
     "build": "pnpm --dir frontend build",
     "test:supabase-storage-roundtrip": "node scripts/test-supabase-storage-roundtrip.mjs",
+    "supabase:db:remote": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/switch-local-supabase-database.ps1 -Mode Remote",
+    "supabase:db:local": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/switch-local-supabase-database.ps1 -Mode Local",
     "deploy:sftp": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/deploy-sftp.ps1",
     "start": "pnpm --dir frontend preview",
     "typecheck": "pnpm --dir frontend typecheck",

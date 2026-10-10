@@ -29,6 +29,7 @@ import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
 import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
+import { syncPrintDetailFields } from '@/editor/printDetailFieldSync'
 import PrintScriptManager from './PrintRemoteDataSourceManager.vue'
 
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
@@ -117,6 +118,10 @@ const detailFormSchema = computed<LowCodeFormSchema>(() => ({
 							activeDetailTableId.value = table.id
 							await handleFetchDetailData(table)
 					},
+					syncFields: async () => {
+							activeDetailTableId.value = table.id
+							await handleSyncDetailFields(table)
+					},
 					clear: ({ rows }) => {
 							rows.splice(0, rows.length)
 							handleDetailFormUpdate({ ...detailFormModel.value, [table.field]: [] })
@@ -160,6 +165,7 @@ const detailRows = computed(() => {
 const actionMessage = ref('')
 const actionMessageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const detailDataLoadingTableId = ref('')
+const fetchedDetailResults = new Map<string, { metadata: unknown; rows: Record<string, unknown>[] }>()
 const importFileInput = ref<HTMLInputElement | null>(null)
 const pendingDetailImportConfig = ref<DetailImportConfig | null>(null)
 const pendingDetailImportHandler = ref<DetailImportRowsHandler | null>(null)
@@ -430,6 +436,7 @@ async function handleFetchDetailData(
 		return
 	}
 	detailDataLoadingTableId.value = table.id
+	const metadataKey = getDetailMetadataKey(table)
 	setActionMessage(`正在获取“${table.label}”的数据…`)
 	try {
 		const result = await host.getServiceApi().invoke<unknown>('print', 'resolveDataSource', {
@@ -440,6 +447,11 @@ async function handleFetchDetailData(
 			},
 		})
 		const rows = normalizeFetchedDetailRows(result)
+		fetchedDetailResults.set(metadataKey, {
+			metadata: isRecord(result) ? result.metadata ?? result.metedata : undefined,
+			// Keep the raw first row so generated table row keys cannot become fields.
+			rows: rows.slice(0, 1),
+		})
 		updateDetailRows(table.field, rows)
 		activeDetailTableId.value = table.id
 		setActionMessage(`已获取 ${rows.length} 行“${table.label}”数据。`)
@@ -463,6 +475,44 @@ function normalizeFetchedDetailRows(value: unknown): Record<string, unknown>[] {
 	if (!rows) throw new Error('数据源脚本必须返回数组或 { records }。')
 	if (!rows.every(isRecord)) throw new Error('明细数据必须是对象数组。')
 	return rows
+}
+
+function getDetailMetadataKey(table: PrintDataSourceDetailTable) {
+	return JSON.stringify([activeDefinition.value?.id, table.id, table.field, table.dataSourceScript])
+}
+
+async function handleSyncDetailFields(
+	table: PrintDataSourceDetailTable,
+	rows: readonly unknown[] = detailFormModel.value[table.field] ?? [],
+	reportFailure = false,
+) {
+	const definition = activeDefinition.value
+	if (!definition) return
+	if (detailDataLoadingTableId.value) {
+		setActionMessage('正在获取明细数据，请稍后再同步字段。')
+		if (reportFailure) throw new Error(actionMessage.value)
+		return
+	}
+	const fetched = fetchedDetailResults.get(getDetailMetadataKey(table))
+	const result = syncPrintDetailFields(table.columns, fetched?.metadata, fetched?.rows ?? rows)
+	if (!result.detected) {
+		setActionMessage('没有可同步的字段，请先获取数据。')
+		return
+	}
+	if (!result.added) {
+		setActionMessage('字段已同步，没有需要新增的字段。')
+		return
+	}
+	const saved = await saveDetailTables(
+		definition,
+		detailTables.value.map((item) => item.id === table.id ? { ...item, columns: result.columns } : item),
+		table.id,
+	)
+	if (!saved) {
+		if (reportFailure) throw new Error(actionMessage.value || '同步字段保存失败。')
+		return
+	}
+	setActionMessage(`已同步字段：新增 ${result.added} 个，跳过 ${result.detected - result.added} 个已有字段。`)
 }
 
 async function handleDeleteDetailTable(reportFailure = false) {
@@ -676,7 +726,8 @@ function handlePrintDetailActionRequest(event: Event) {
 		if (request.action === 'fetch') {
 			return handleFetchDetailData(table, request.formValues ?? formModel.value, true)
 		}
-		if (request.action === 'configure') await handleConfigureDetailTable(true)
+		if (request.action === 'syncFields') await handleSyncDetailFields(table, request.rows, true)
+		else if (request.action === 'configure') await handleConfigureDetailTable(true)
 		else if (request.action === 'delete') await handleDeleteDetailTable(true)
 		return activeDefinition.value?.schema
 	})()
