@@ -1056,7 +1056,7 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
 
     const pageWithCurrentForm = structuredClone(editorPage);
     const runtimeForm = structuredClone(formBlock);
-    runtimeForm.initialValues = createPageInfoDesignForm(currentPage);
+    runtimeForm.initialValues = createPageInfoDesignForm(currentPage);//
     runtimeForm.dataSource = undefined;
     delete (runtimeForm as unknown as { sourceKey?: unknown }).sourceKey;
     delete (runtimeForm as unknown as { submitSourceKey?: unknown }).submitSourceKey;
@@ -1065,7 +1065,7 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
     pageWithCurrentForm.schema.overlays = undefined;
     pageWithCurrentForm.schema.dataSources = {};
     delete pageWithCurrentForm.schema.visualEditor;
-
+    // debugger//
     const result = await confirmLowCodePage({
       page: pageWithCurrentForm,
       includeData: false,

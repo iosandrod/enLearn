@@ -11,12 +11,21 @@ import 'vxe-table/lib/style.css';
 import 'remixicon/fonts/remixicon.css';
 import TldrawVue from '../../packages/tldraw-vue/src/index.ts';
 import { lowCodeHostKey } from '../../packages/lowcode-framework/src/core/host';
+import biChartFormMigration from '../../supabase/migrations/20261011150000_print_designer_bi_chart_form.sql?raw';
+const schemaMatch = biChartFormMigration.match(/\$schema\$\s*([\s\S]*?)\s*\$schema\$/);
+if (!schemaMatch) throw new Error('BI chart property form schema was not found in the migration.');
+const biChartSchema = JSON.parse(schemaMatch[1]);
 const app = createApp({ render: () => h(TldrawVue, {
   ref: instance => { window.biDesigner = instance; },
   showModeControls: true,
   showTemplateControls: false,
 }) });
-app.provide(lowCodeHostKey, { serviceApi: { invoke: async () => [] } });
+app.provide(lowCodeHostKey, { serviceApi: { invoke: async (_service, method, request) => {
+  if (method === 'listItems' && request?.resource === 'lowcode_form_definitions') {
+    return [{ id: '00000000-0000-0000-0000-000000000001', code: 'print-designer.property.bi-chart', schema: biChartSchema }];
+  }
+  return [];
+} } });
 app.use(installVxeUI);
 app.use(VxeUITable);
 app.mount('#app');

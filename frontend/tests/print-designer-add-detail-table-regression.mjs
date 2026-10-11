@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [source, detailDesignerSource, formDesignerSource, globalDialogHostSource, frontendStyleSource] = await Promise.all([
+const [
+  source,
+  detailDesignerSource,
+  formDesignerSource,
+  globalDialogCoreSource,
+  globalDialogHostSource,
+  frontendStyleSource,
+] = await Promise.all([
   readFile(
     new URL(
       '../../packages/tldraw-vue/src/components/VueDataSourcePanel.vue',
@@ -19,6 +26,13 @@ const [source, detailDesignerSource, formDesignerSource, globalDialogHostSource,
   readFile(
     new URL(
       '../../packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+  readFile(
+    new URL(
+      '../../packages/lowcode-framework/src/runtime/global-dialog-core.ts',
       import.meta.url,
     ),
     'utf8',
@@ -72,6 +86,7 @@ assert.match(detailDesignerSource, /handleAddTable/);
 assert.match(detailDesignerSource, /handleConfirmAddTable/);
 assert.match(detailDesignerSource, /handleConfigureTable/);
 assert.match(detailDesignerSource, /handleDeleteTable/);
-assert.match(globalDialogHostSource, /isGridDesignerDialog \? 2000/);
+assert.match(globalDialogCoreSource, /GRID_DESIGNER_DIALOG_MIN_Z_INDEX = 12000/);
+assert.match(globalDialogHostSource, /zIndex:\s*instance\.zIndex/);
 
 console.log('print designer add detail table regression checks passed');

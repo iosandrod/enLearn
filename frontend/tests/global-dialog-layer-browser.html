@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global dialog layer smoke</title>
+    <link rel="icon" href="data:," />
+    <style>
+      body { margin: 0; }
+      #app { padding: 24px; }
+      #result { position: fixed; z-index: -1; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
+      import { openGlobalDialog } from '../../packages/lowcode-framework/src/runtime/global-dialog-core.ts';
+
+      const App = defineComponent({
+        setup() {
+          const openInnerDialog = () => {
+            void openGlobalDialog({
+              title: '选择默认按钮',
+              className: 'button-default-picker-dialog',
+              actions: [{ code: 'cancel', label: '关闭内层', role: 'cancel' }],
+              body: () => h('p', '内层弹框'),
+            });
+          };
+
+          const openOuterDialog = () => {
+            void openGlobalDialog({
+              title: '按钮组设计',
+              className: 'button-group-designer-dialog grid-designer-dialog',
+              actions: [{ code: 'cancel', label: '关闭外层', role: 'cancel' }],
+              body: () => h('button', { id: 'open-inner', onClick: openInnerDialog }, '新增默认'),
+            });
+          };
+
+          return () => h('main', [
+            h('button', { id: 'open-outer', onClick: openOuterDialog }, '打开外层'),
+            h(GlobalDialogHost),
+          ]);
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

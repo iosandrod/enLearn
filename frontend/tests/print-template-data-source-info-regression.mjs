@@ -31,21 +31,25 @@ const source = ref({
 });
 const workspace = { pageSizeMm: { w: 100, h: 150 } };
 const designerCode = await functionsFromVue('../../packages/tldraw-vue/src/TldrawVue.vue', [
-  'cloneTemplateValue', 'getPrintDataSource', 'getTemplateInfo',
+  'cloneTemplateValue', 'getPrintDataSource', 'getPrintDataSourceCode',
+  'applyTemplatePrintDataSource', 'getTemplateInfo',
 ]);
 const designer = new Function('editor', 'getEditorPrintDataSource', 'getWorkspaceTemplateConfig',
-  `${designerCode}\nreturn { getPrintDataSource, getTemplateInfo };`,
+  `${designerCode}\nreturn { getPrintDataSource, getPrintDataSourceCode, applyTemplatePrintDataSource, getTemplateInfo };`,
 )(editor, () => source, () => workspace);
 
 const info = await designer.getTemplateInfo();
 assert.deepEqual(info.workspace.printDataSource, source.value);
+assert.equal(info.workspace.printDataSourceCode, 'print-source.orders');
 assert.deepEqual(info.content.workspace.printDataSource, source.value);
+assert.equal(info.content.workspace.printDataSourceCode, 'print-source.orders');
+assert.equal(info.content.dataSourceCode, 'print-source.orders');
 info.workspace.printDataSource.rows[0].customer = '修改副本';
 assert.equal(source.value.rows[0].customer, '张三', 'Returned values must not mutate live form data.');
 assert.equal(workspace.printDataSource, undefined, 'Snapshot must not mutate workspace settings.');
 
 const materialCode = await functionsFromVue('../../packages/lowcode-framework/src/lowcode/block-materials/label-designer/LabelDesignerMaterial.vue', [
-  'clone', 'workspace', 'getTemplateInfo',
+  'clone', 'workspace', 'getCurrentDataSourceCode', 'getTemplateInfo',
 ]);
 const material = new Function('designer', 'waitForEditor', 'templateId', 'templateName', 'templateStatus', 'templateVersion',
   `${materialCode}\nreturn { getTemplateInfo };`,
@@ -53,12 +57,36 @@ const material = new Function('designer', 'waitForEditor', 'templateId', 'templa
   ref('template:one'), ref('订单'), ref('active'), ref(1));
 const runtimeInfo = await material.getTemplateInfo();
 assert.equal(runtimeInfo.workspace.printDataSource.formCode, 'print-source.orders');
+assert.equal(runtimeInfo.workspace.printDataSourceCode, 'print-source.orders');
+assert.equal(runtimeInfo.dataSourceCode, 'print-source.orders');
 assert.equal(runtimeInfo.workspace.printDataSource.rows[0].customer, '张三');
 assert.deepEqual(runtimeInfo.content.workspace.printDataSource, source.value);
+assert.equal(runtimeInfo.content.dataSourceCode, 'print-source.orders');
 source.value.rows[0].customer = '李四';
 assert.equal((await material.getTemplateInfo()).workspace.printDataSource.rows[0].customer, '李四', 'Action must read current data.');
 runtimeInfo.workspace.printDataSource.detailTables[0].columns[0].title = '副本';
 assert.equal(source.value.detailTables[0].columns[0].title, '物料');
 source.value = { type: 'none' };
 assert.deepEqual((await material.getTemplateInfo()).workspace.printDataSource, { type: 'none' });
-console.log('Verified runtime getTemplateInfo returns current cloned print data source, formCode and rows, including empty pages.');
+assert.equal((await material.getTemplateInfo()).dataSourceCode, '');
+
+designer.applyTemplatePrintDataSource({ printDataSourceCode: 'print-source.shipments' });
+assert.deepEqual(source.value, { type: 'inline', formCode: 'print-source.shipments', rows: [{}] });
+designer.applyTemplatePrintDataSource({
+  printDataSourceCode: 'print-source.orders',
+  printDataSource: { type: 'inline', formCode: 'print-source.orders', rows: [{ orderNo: 'SO-001' }] },
+});
+assert.equal(source.value.formCode, 'print-source.orders');
+assert.equal(source.value.rows[0].orderNo, 'SO-001');
+designer.applyTemplatePrintDataSource({ printDataSourceCode: '', printDataSource: { type: 'none' } });
+assert.deepEqual(source.value, { type: 'none' });
+
+const materialSource = await readFile(new URL('../../packages/lowcode-framework/src/lowcode/block-materials/label-designer/LabelDesignerMaterial.vue', import.meta.url), 'utf8');
+assert.match(materialSource, /data\.metadata\?\.dataSourceCode/);
+assert.match(materialSource, /nextWorkspace\.printDataSource[\s\S]*?type: 'none'/);
+assert.match(materialSource, /metadata:[\s\S]*?dataSourceCode:/);
+const panelSource = await readFile(new URL('../../packages/tldraw-vue/src/components/VueDataSourcePanel.vue', import.meta.url), 'utf8');
+assert.match(panelSource, /if \(!sourceCode\)[\s\S]*?selectorModel\.value = \{ formCode: '' \}/);
+const tldrawSource = await readFile(new URL('../../packages/tldraw-vue/src/TldrawVue.vue', import.meta.url), 'utf8');
+assert.match(tldrawSource, /resetWorkspaceTemplateConfig[\s\S]*?getEditorPrintDataSource\(editor\.value\)\.value = \{ type: 'none' \}/);
+console.log('Verified template data source code save, load switching, full snapshot restoration and new-template clearing.');

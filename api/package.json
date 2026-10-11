@@ -93,6 +93,7 @@
     "db:apply-runtime-form-field-base-info": "tsx scripts/apply-runtime-form-field-base-info.ts",
     "db:apply-runtime-form-field-editor-tabs": "tsx scripts/apply-runtime-form-field-editor-tabs.ts",
     "db:apply-print-designer-property-forms": "tsx scripts/apply-print-designer-property-forms.ts",
+    "db:apply-print-designer-bi-chart-form": "tsx scripts/apply-print-designer-bi-chart-form.ts",
     "db:apply-print-data-source-forms": "tsx scripts/apply-print-data-source-forms.ts",
     "db:apply-print-script-meta-form": "tsx scripts/apply-print-script-meta-form.ts",
     "db:apply-print-data-source-config-form": "tsx scripts/apply-print-script-meta-form.ts",

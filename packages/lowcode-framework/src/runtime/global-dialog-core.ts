@@ -275,6 +275,7 @@ export type GlobalDialogInstance<
 > = {
   id: string;
   visible: boolean;
+  zIndex: number;
   config: GlobalDialogConfig<TValues>;
   model: TValues;
   busyAction: string;
@@ -288,6 +289,43 @@ export const globalDialogHostStack = shallowReactive<string[]>([]);
 
 let globalDialogSeed = 0;
 let globalDialogHostSeed = 0;
+
+export const GLOBAL_DIALOG_BASE_Z_INDEX = 10000;
+export const GRID_DESIGNER_DIALOG_MIN_Z_INDEX = 12000;
+export const MONACO_EDITOR_DIALOG_MIN_Z_INDEX = 12500;
+
+function hasDialogClass(value: unknown, expectedClass: string): boolean {
+  if (typeof value === 'string') {
+    return value.split(/\s+/).includes(expectedClass);
+  }
+  if (Array.isArray(value)) {
+    return value.some((item) => hasDialogClass(item, expectedClass));
+  }
+  return false;
+}
+
+function readRequestedDialogZIndex(config: GlobalDialogConfig) {
+  const requestedZIndex = Number(config.props?.zIndex);
+  return Number.isFinite(requestedZIndex) && requestedZIndex > 0
+    ? requestedZIndex
+    : GLOBAL_DIALOG_BASE_Z_INDEX;
+}
+
+export function allocateGlobalDialogZIndex(config: GlobalDialogConfig) {
+  let minimumZIndex = readRequestedDialogZIndex(config);
+
+  if (hasDialogClass(config.className, 'lc-monaco-editor-dialog')) {
+    minimumZIndex = Math.max(minimumZIndex, MONACO_EDITOR_DIALOG_MIN_Z_INDEX);
+  } else if (hasDialogClass(config.className, 'grid-designer-dialog')) {
+    minimumZIndex = Math.max(minimumZIndex, GRID_DESIGNER_DIALOG_MIN_Z_INDEX);
+  }
+
+  const currentTopZIndex = globalDialogInstances.reduce(
+    (topZIndex, dialog) => Math.max(topZIndex, dialog.zIndex),
+    GLOBAL_DIALOG_BASE_Z_INDEX - 1,
+  );
+  return Math.max(minimumZIndex, currentTopZIndex + 1);
+}
 
 function createDialogId(id?: string) {
   if (id && !globalDialogInstances.some((dialog) => dialog.id === id)) {
@@ -357,6 +395,7 @@ export  function openGlobalDialog<
     const instance = reactive({
       id,
       visible: true,
+      zIndex: allocateGlobalDialogZIndex(config),
       config: {
         ...config,
         id,

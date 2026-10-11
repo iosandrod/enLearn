@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>Form canvas visibility regression</title></head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { createApp, defineComponent, h, reactive } from 'vue';
+      import { install } from 'vxe-pc-ui';
+      import 'vxe-pc-ui/lib/style.css';
+      import normalForm from '../../packages/lowcode-framework/src/packages/container-component/form/index.tsx';
+      import searchForm from '../../packages/lowcode-framework/src/packages/business-component/lowcode-search-form/index.tsx';
+      import { createNewBlock } from '../../packages/lowcode-framework/src/visual-editor/visual-editor.utils';
+
+      const blocks = reactive([normalForm, searchForm].map(createNewBlock));
+      const materials = [normalForm, searchForm];
+      const Case = defineComponent({
+        props: ['block', 'material'],
+        setup(props) {
+          return props.material.render({
+            block: props.block, props: props.block.props, styles: props.block.styles,
+            model: {}, custom: {},
+          });
+        },
+      });
+      const app = createApp({
+        setup: () => () => h('main', { style: { width: '600px' } }, blocks.map((block, index) =>
+          h('section', { id: block.componentKey }, [h(Case, { block, material: materials[index] })]),
+        )),
+      });
+      app.config.globalProperties.$$refs = {};
+      app.use(install).mount('#app');
+      window.formCanvasFixture = {
+        addFields() {
+          blocks.forEach((block) => {
+            block.props.fields = [{ field: 'name', label: '名称', component: 'vxe-input', placeholder: '请输入名称' }];
+          });
+        },
+        refs: app.config.globalProperties.$$refs,
+      };
+    </script>
+  </body>
+</html>

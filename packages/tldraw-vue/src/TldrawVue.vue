@@ -340,6 +340,28 @@ function getPrintDataSource() {
 	)
 }
 
+function getPrintDataSourceCode() {
+	const source = getPrintDataSource()
+	return source.type === 'inline' && typeof source.formCode === 'string'
+		? source.formCode.trim()
+		: ''
+}
+
+function applyTemplatePrintDataSource(config: VueTemplateWorkspaceConfig) {
+	const currentEditor = editor.value
+	if (!currentEditor) return
+	const hasSnapshot = Object.prototype.hasOwnProperty.call(config, 'printDataSource')
+	const hasCode = Object.prototype.hasOwnProperty.call(config, 'printDataSourceCode')
+	if (!hasSnapshot && !hasCode) return
+	const snapshot = config.printDataSource
+	const code = typeof config.printDataSourceCode === 'string' ? config.printDataSourceCode.trim() : ''
+	getEditorPrintDataSource(currentEditor).value = hasSnapshot && snapshot && typeof snapshot.type === 'string' && snapshot.type !== 'none'
+		? cloneTemplateValue(snapshot)
+		: code
+			? { type: 'inline', formCode: code, rows: [{}] }
+			: { type: 'none' }
+}
+
 async function getTemplateInfo() {
 	const currentEditor = editor.value
 	if (!currentEditor) return null
@@ -363,12 +385,14 @@ async function getTemplateInfo() {
 	const workspace = {
 		...cloneTemplateValue(getWorkspaceTemplateConfig() ?? {}),
 		printDataSource: getPrintDataSource(),
+		printDataSourceCode: getPrintDataSourceCode(),
 	}
 	return {
 		content: {
 			pages: cloneTemplateValue(pages),
 			currentPageId,
 			workspace,
+			dataSourceCode: getPrintDataSourceCode(),
 		},
 		pages: cloneTemplateValue(pages),
 		currentPageId,
@@ -385,10 +409,13 @@ function getWorkspaceTemplateConfig() {
 		background: cloneTemplateValue(workspaceBackground.value),
 		designerMode: designerMode.value,
 		presentation: clonePresentationConfig(presentationConfig.value),
+		printDataSource: getPrintDataSource(),
+		printDataSourceCode: getPrintDataSourceCode(),
 	}
 }
 
 function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
+	applyTemplatePrintDataSource(config)
 	if (config.designerMode === 'print' || config.designerMode === 'presentation' || config.designerMode === 'bi') {
 		designerMode.value = config.designerMode
 		syncModePanel()
@@ -435,6 +462,7 @@ function resetWorkspaceTemplateConfig() {
 	syncModePanel()
 	presentationConfig.value = presentation
 	workspaceBackground.value = background
+	if (editor.value) getEditorPrintDataSource(editor.value).value = { type: 'none' }
 	// Object.assign(workspaceBackground.value, background)
 	notifyDesignerModeState('print')
 	canvasRef.value?.applyWorkspaceTemplateConfig({
@@ -551,6 +579,7 @@ defineExpose({
 	canRunCommand,
 	getEditor,
 	getPrintDataSource,
+	getPrintDataSourceCode,
 	getTemplateInfo,
 	getPluginIds,
 	getWorkspaceTemplateConfig,

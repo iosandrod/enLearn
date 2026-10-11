@@ -6565,3 +6565,11 @@ button {
 .context-menu{
 	background: #fff;
 }
+.lowcode-form-panel__state{
+	background: #fff;
+}
+
+.lc-form-col{
+	height: 100%;
+	overflow: auto;
+}

@@ -95,7 +95,11 @@ state.designer.value = {
 
 const copied = await controller.copyData();
 assert.deepEqual(copied.pages, initialPages, 'Copy must include every page, rich text, expressions, bindings and assets.');
-assert.deepEqual(copied.workspace, initialWorkspace);
+assert.deepEqual(copied.workspace, {
+  ...initialWorkspace,
+  printDataSourceCode: '',
+  printDataSource: { type: 'none' },
+});
 assert.equal(copied.currentPageId, 'page:second');
 assert.equal(inserted, 3, 'Empty pages must also be preserved.');
 assert.equal(copied.templateId, '');

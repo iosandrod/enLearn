@@ -46,6 +46,22 @@ function createDesignFormProps(props: Record<string, unknown>): LowCodeFormProps
   };
 }
 
+function renderEmptyForm() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        minHeight: '88px',
+        placeItems: 'center',
+        color: '#909399',
+        fontSize: '13px',
+      }}
+    >
+      当前表单为空
+    </div>
+  );
+}
+
 export default {
   key: 'lowcode-search-form',
   moduleName: 'businessComponents',
@@ -53,20 +69,25 @@ export default {
   preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
   render({ props, styles, block }) {
     const { registerRef } = useGlobalProperties();
-    return () => (
-      <div style={{ ...styles, width: '100%', minWidth: 0 }}>
-        <LowCodeForm
-          ref={(element) => registerRef(element, block._vid)}
-          {...createDesignFormProps(props)}
-          {...{
-            'onUpdate:modelValue': (value: Record<string, unknown>) => {
-              props.modelValue = value;
-            },
-          }}
-        />
-      </div>
-    );
+    return () => {
+      const formProps = createDesignFormProps(props);
+      return (
+        <div style={{ minHeight: '112px', ...styles, width: '100%', minWidth: 0 }}>
+          <LowCodeForm
+            ref={(element) => registerRef(element, block._vid)}
+            {...formProps}
+            {...{
+              'onUpdate:modelValue': (value: Record<string, unknown>) => {
+                props.modelValue = value;
+              },
+            }}
+          />
+          {!formProps.schema.fields.length && renderEmptyForm()}
+        </div>
+      );
+    };
   },
+  styles: { width: '100%', minHeight: '112px' },
   showStyleConfig: true,
   events: [],
 } as VisualEditorComponent;

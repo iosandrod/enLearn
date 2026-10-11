@@ -27,6 +27,7 @@ export type DataSourceRequestResolverDependencies = {
   searchFilters: ValueRef<Record<string, Record<string, unknown>>>;
   gridStates: ValueRef<Record<string, unknown>>;
   selectedCategoryId: ValueRef<string>;
+  applyPagination?(key: string, postData: Record<string, unknown>): Record<string, unknown>;
   flattenPageBlocks(schema?: LowCodePageRendererProps['page']['schema']): LowCodePageBlock[];
 };
 
@@ -444,7 +445,11 @@ export class DataSourceRequestResolver {
       const postData = mergeMainGridCategoryFilter(key, searchedPostData);
       const service = resolveDataSourceService(source, postData);
 
-      return normalizeLegacyAdminListRequest(service.serviceName, service.serviceMethod, postData);
+      const request = normalizeLegacyAdminListRequest(service.serviceName, service.serviceMethod, postData);
+      return {
+        ...request,
+        postData: dependencies.applyPagination?.(key, request.postData) ?? request.postData,
+      };
     }
 
     function resolveDataSourcePostData(key: string, source: LowCodePageDataSource) {

@@ -23,6 +23,7 @@ export type PageInfoDesignForm = {
 
 export function createPageInfoDesignForm(page: LowCodePageRecord): PageInfoDesignForm {
   return {
+    ...page,//
     code: page.code,
     route: page.route,
     title: page.title,

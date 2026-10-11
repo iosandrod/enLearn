@@ -117,16 +117,6 @@ function readValue<T>(value: GlobalDialogMaybeRef<T> | undefined, fallback?: T) 
   return typeof resolved === 'undefined' ? fallback : resolved;
 }
 
-function hasDialogClass(value: unknown, expectedClass: string) {
-  if (typeof value === 'string') {
-    return value.split(/\s+/).includes(expectedClass);
-  }
-  if (Array.isArray(value)) {
-    return value.some((item) => hasDialogClass(item, expectedClass));
-  }
-  return false;
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -709,14 +699,6 @@ export default defineComponent({
         <Fragment>
           {globalDialogInstances.map((instance) => {
             const config = instance.config;
-            const isMonacoEditorDialog = hasDialogClass(
-              config.className,
-              'lc-monaco-editor-dialog',
-            );
-            const isGridDesignerDialog = hasDialogClass(
-              config.className,
-              'grid-designer-dialog',
-            );
             const modalProps = {
               modelValue: instance.visible,
               title: readValue(config.title, ''),
@@ -729,14 +711,10 @@ export default defineComponent({
               resize: true,
               escClosable: false,
               ...(config.props ?? {}),
-              // Keep global dialogs above page overlays while preserving the
-              // creation order for nested dialogs and VXE popups.
-              // Monaco dialogs can be opened from the standalone form
-              // designer (layer 11500). Keep them in the transferred-control
-              // layer so the editor remains interactive.
-              zIndex:
-                10000 + globalDialogInstances.indexOf(instance) +
-                (isMonacoEditorDialog ? 2500 : isGridDesignerDialog ? 2000 : 0),
+              // The core allocates a stable stack layer when the dialog opens.
+              // Later dialogs therefore stay above every earlier dialog even
+              // when an earlier designer requires a higher minimum layer.
+              zIndex: instance.zIndex,
               'onUpdate:modelValue': (visible: boolean) => {
                 if (!visible) {
                   void closeGlobalDialog(instance.id, {

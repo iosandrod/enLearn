@@ -31,6 +31,7 @@ import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
 import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 import { syncPrintDetailFields } from '@/editor/printDetailFieldSync'
 import PrintScriptManager from './PrintRemoteDataSourceManager.vue'
+import DetailImportTemplatePicker from './DetailImportTemplatePicker.vue'
 
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
 const DATA_SOURCE_DEFINITION_FORM_CODE = 'print-designer.datasource-definition'
@@ -248,9 +249,11 @@ async function handleAddDataSource() {
 				undefined,
 				detailTablesDraft.value,
 			)
-			await loadDefinitions()
+			setTimeout(async () => {//
+				await loadDefinitions()
 			await activateDefinition(code, true)
 			setActionMessage('数据源已创建。')
+		},100)
 		},//
 	})
 }
@@ -619,9 +622,23 @@ async function openDetailImportDialog(): Promise<DetailImportConfig | undefined>
 	}
 	const result = await openGlobalDialog<DetailImportConfig>({
 		title: '导入明细数据',
-		width: 520,
+		width: 680,
 		model,
-		form: { schema, model },
+		content: [
+			{ type: 'form', key: 'detail-import-form', form: { schema } },
+			{
+				type: 'render',
+				key: 'detail-import-template-picker',
+				render: (context) => h(DetailImportTemplatePicker, {
+					modelValue: {
+						hasFieldRow: Boolean(context.model.hasFieldRow),
+						hasChineseRow: Boolean(context.model.hasChineseRow),
+					},
+					columns: activeDetailTable.value?.columns ?? [],
+					'onUpdate:modelValue': (value) => context.updateModel(value),
+				}),
+			},
+		],
 		actions: [
 			{ code: 'cancel', label: '取消', role: 'cancel' },
 			{
@@ -956,15 +973,16 @@ async function loadDefinitions() {
 			DATA_SOURCE_DEFINITION_FORM_CODE,
 		)
 		const sourceCode = getPrintDataSourceFormCode(getWorkspaceDataSource())
-		const defaultCode = readString(
-			selectorDefinition.value.schema.fields.find((field) => field.field === 'formCode')
-				?.defaultValue
-		)
-		const nextCode = sourceCode || defaultCode
-		if (!nextCode) throw new Error('数据源选择器没有配置默认低代码表单。')
-
-		selectorModel.value = { formCode: nextCode }
-		await activateDefinition(nextCode, false)
+		if (sourceCode) {
+			selectorModel.value = { formCode: sourceCode }
+			await activateDefinition(sourceCode, false)
+		} else {
+			activeDefinition.value = null
+			selectorModel.value = { formCode: '' }
+			formModel.value = {}
+			detailFormModel.value = {}
+			activeDetailTableId.value = ''
+		}
 	} catch (error) {
 		selectorDefinition.value = null
 		dataSourceDefinitionForm.value = null
@@ -1124,6 +1142,14 @@ watch(
 	() => props.workspaceRevision,
 	() => {
 		const sourceCode = getPrintDataSourceFormCode(getWorkspaceDataSource())
+		if (!sourceCode) {
+			activeDefinition.value = null
+			selectorModel.value = { formCode: '' }
+			formModel.value = {}
+			detailFormModel.value = {}
+			activeDetailTableId.value = ''
+			return
+		}
 		if (sourceCode && sourceCode !== activeDefinition.value?.code) {
 			selectorModel.value = { formCode: sourceCode }
 			void activateDefinition(sourceCode, false).catch((error) => {

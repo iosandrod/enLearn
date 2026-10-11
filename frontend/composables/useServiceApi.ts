@@ -120,6 +120,53 @@ function withCachedLowCodeRows(
   });
 }
 
+function cacheRequestedLowCodeRows(
+  table: LowCodeDefinitionTable,
+  postData: Record<string, unknown>,
+  codes: string[],
+  rows: unknown[],
+) {
+  const rowByCode = new Map<string, unknown>();
+  rows.forEach((row) => {
+    if (typeof row !== 'object' || row === null || Array.isArray(row)) return;
+    const code = (row as { code?: unknown }).code;
+    if (typeof code === 'string' && code.trim()) rowByCode.set(code.trim(), row);
+  });
+  codes.forEach((code) => {
+    lowCodeListCache.set(lowCodeCacheKey(table, code, postData), {
+      value: cloneLowCodeCacheValue(rowByCode.get(code)),
+    });
+  });
+  withCachedLowCodeRows(postData, rows, table);
+}
+
+function cachePrintDesignerResourceBundle(
+  value: unknown,
+  request: Record<string, unknown>,
+) {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return;
+  const bundle = value as { pages?: unknown; formDefinitions?: unknown };
+  const pages = readRows(bundle.pages);
+  const formDefinitions = readRows(bundle.formDefinitions);
+  const pageCodes = Array.isArray(request.pageCodes)
+    ? request.pageCodes.filter((code): code is string => typeof code === 'string')
+    : [];
+  const formCodes = Array.isArray(request.formCodes)
+    ? request.formCodes.filter((code): code is string => typeof code === 'string')
+    : [];
+
+  // Runtime page reads currently return the full schema for either includeData
+  // mode, so one bundled response can satisfy both established lookup shapes.
+  cacheRequestedLowCodeRows('lowcode_pages', { filters: {}, includeData: true }, pageCodes, pages);
+  cacheRequestedLowCodeRows('lowcode_pages', { filters: {}, includeData: false }, pageCodes, pages);
+  cacheRequestedLowCodeRows(
+    'lowcode_form_definitions',
+    { filters: { enabled: true } },
+    formCodes,
+    formDefinitions,
+  );
+}
+
 function readCachedLowCodeRows(
   postData: Record<string, unknown>,
   table: LowCodeDefinitionTable,
@@ -272,6 +319,9 @@ export function useServiceApi() {
     });
 
     const data = isServiceEnvelope<TResponse>(response) ? response.data : response;
+    if (serviceName === 'lowcode' && serviceMethod === 'getPrintDesignerResources') {
+      cachePrintDesignerResourceBundle(data, postData);
+    }
     const writtenLowCodeTable = readLowCodeWriteTable(serviceName, serviceMethod, postData);
     if (writtenLowCodeTable) invalidateLowCodeListCache(writtenLowCodeTable);
     return data;

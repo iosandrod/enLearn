@@ -50,6 +50,7 @@ import {
 } from './runtime-directive-controller';
 import { LowCodePageScriptRuntime } from './lowcode-page-script-runtime';
 import { PageDataController } from './page-data-controller';
+import { useLowCodePagePagination } from './useLowCodePagePagination';
 import {
   DataSourceRequestResolver,
 } from './data-source-request-resolver';
@@ -179,6 +180,14 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     },
   });
 
+  const { isListPage, pagerSourceKey, pageVO, pagerLoading, applyPagination, pageChangeEvent } =
+    useLowCodePagePagination({
+      getPage: () => props.page,
+      getBlocks: () => flattenBlocks(validBlocks(props.page.schema.blocks).filter((block) => !isOverlayBlock(block))),
+      runtime,
+      refreshDataSources: (sourceKeys) => refreshDataSources(sourceKeys),
+    });
+
   const dataSourceRequestResolver = new DataSourceRequestResolver({
     props,
     host,
@@ -188,6 +197,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     searchFilters,
     gridStates,
     selectedCategoryId,
+    applyPagination,
     flattenPageBlocks: () => flattenPageBlocks(props.page.schema),
   });
   const {
@@ -1107,6 +1117,11 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   }
   return {
     page,
+    isListPage,
+    pagerSourceKey,
+    pageVO,
+    pagerLoading,
+    pageChangeEvent,
     showGlobalDialogHost,
     runtime,
     themeClass,

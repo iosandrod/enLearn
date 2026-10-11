@@ -36,11 +36,9 @@ const materialCreate: VueShapeCreateDefinition = {
 	},
 	updateShape({ editor, id, rect }) {
 		updateVueMaterialShapeLayout(editor, id, rect)
-		updateFooterSampleText(editor, id)
 	},
 	onComplete({ editor, shape }) {
 		normalizeVueMaterialSections(editor, shape.id, { fitToMaterialHeight: true })
-		updateFooterSampleText(editor, shape.id)
 		reparentShapesIntoVueMaterialSections(editor, shape.id)
 	},
 }
@@ -69,30 +67,6 @@ function createFooterSampleTextShape(parentId: TLShapeId, width: number): TLShap
 	} as TLShapePartial
 }
 
-function updateFooterSampleText(editor: Editor, materialId: TLShapeId) {
-	const tableFooter = getVueMaterialSections(editor, materialId).find(
-		(section) => section.props.zone === 'tableFooter'
-	)
-	if (!tableFooter) return
-
-	const sampleText = getFooterSampleText(editor, tableFooter.id)
-	if (!sampleText) {
-		editor.createShape(createFooterSampleTextShape(tableFooter.id, tableFooter.props.w))
-		return
-	}
-
-	editor.updateShape({
-		id: sampleText.id,
-		type: sampleText.type,
-		x: 0,
-		y: 0,
-		props: {
-			w: Math.max(80, tableFooter.props.w),
-			h: FOOTER_SAMPLE_TEXT_HEIGHT,
-			text: FOOTER_SAMPLE_TEXT,
-		},
-	} as TLShapePartial)
-}
 
 function getFooterSampleText(editor: Editor, tableFooterId: TLShapeId): TLShape | undefined {
 	return editor

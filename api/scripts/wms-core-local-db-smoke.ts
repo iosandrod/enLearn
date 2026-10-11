@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Client } from 'pg';
 
-// Only use a disposable, empty local database. Fixture item columns are the
-// proposed FK contract, not evidence about the user's existing item table.
+// Only use a disposable, empty local database. Fixture planning_item columns
+// reproduce the FK contract verified on the target database.
 const account = '00000000-0000-4000-8000-000000000001';
 const otherAccount = '00000000-0000-4000-8000-000000000002';
 const user = '00000000-0000-4000-8000-000000000003';
@@ -34,7 +34,7 @@ async function main() {
       grant usage on schema public, auth, basejump to authenticated, anon, service_role;
       create table auth.users(id uuid primary key);
       create table basejump.accounts(id uuid primary key);
-      create table public.item(
+      create table public.planning_item(
         id uuid primary key default gen_random_uuid(),
         account_id uuid not null references basejump.accounts(id),
         unique(account_id, id)
@@ -54,8 +54,8 @@ async function main() {
     `);
     await client.query('insert into auth.users values ($1)', [user]);
     await client.query('insert into basejump.accounts values ($1), ($2)', [account, otherAccount]);
-    const item = (await client.query('insert into public.item(account_id) values ($1) returning id', [account])).rows[0].id;
-    const otherItem = (await client.query('insert into public.item(account_id) values ($1) returning id', [otherAccount])).rows[0].id;
+    const item = (await client.query('insert into public.planning_item(account_id) values ($1) returning id', [account])).rows[0].id;
+    const otherItem = (await client.query('insert into public.planning_item(account_id) values ($1) returning id', [otherAccount])).rows[0].id;
     await client.query(await readFile(resolve(repoRoot, 'docs/wms-core-schema.sql'), 'utf8'));
 
     const warehouse = (await client.query(`insert into wms_warehouse(account_id,code,name)

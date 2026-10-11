@@ -1,12 +1,16 @@
 # 精简 WMS 核心结构
 
-本方案使用 6 张核心表，按用户指定复用 `public.item` 作为物料主数据，不新建物料表，也不使用排产模块的 `planning_item`。所有 `item_id` 使用 `(account_id, item_id)` 复合外键关联已有物料，不能引用其他账套的物料。物料编码、名称和单位沿用 `item` 的实际字段，不在 WMS 中复制主数据。
+本方案使用 6 张核心表，按用户最新确认复用 `public.planning_item` 作为物料主数据，不新建物料表。所有 `item_id` 使用 `(account_id, item_id)` 复合外键关联已有物料，不能引用其他账套的物料。物料编码、名称和单位沿用 `planning_item` 的 `name`、`display_name`、`uom` 等实际字段，不在 WMS 中复制主数据。
 
 建表及过账函数：[wms-core-schema.sql](wms-core-schema.sql)。本次交付数据库核心建表稿，不包含菜单、低代码页面、Nest 服务注册或外部系统同步。
 
-当前项目配置连接的数据库已有完整版 `wms_*` 表，但未查到 `public.item`。因此本稿不放入自动迁移目录、不在现有数据库执行，也不删除或覆盖已有 WMS。SQL 采用普通 `create table`，遇到同名表会失败并回滚，不能静默复用结构不同的旧表。实际部署前需确认 `item` 所在数据库、主键类型和账套字段，再制定旧 WMS 的数据兼容方案。
+2026-10-11 已核对用户指定目标库：`planning_item` 含 327 条物料，`id`、`account_id` 均为 UUID，已有 `(account_id,id)` 唯一约束，满足本稿关联要求。目标库已有 35 张完整版 `wms_*` 表，其中仓库、库位、库存余额和库存流水与本稿同名但结构不同；核对时这 4 张表为空。核心建表稿不放入自动迁移目录，尚未在远端执行；字段注释迁移已单独执行。SQL 采用普通 `create table`，遇到同名表会失败并回滚；建表前仍需明确旧 WMS 的兼容或替换方案，不能静默覆盖。
 
 ## 命名及公共字段
+
+核心表的 COMMENT 使用 JSON 格式：`title`（中文表名）、`description`（用途）、`relation`（实际外键关系列表）。关系项沿用项目的 `table`、`type`、`localColumns`、`relatedColumns`、`constraint`、`onDelete`；`type` 为 `references` 或 `referenced_by`，复合键按约束中的列顺序记录。注释随建表稿生成，也可单独运行 `supabase/migrations/20261011160000_wms_core_table_comments.sql`。只处理已存在的六张核心表，保留已有 JSON 扩展键，不推测尚不存在的关联。
+
+所有核心表字段的 COMMENT 使用项目现有 JSON 格式：`title`（中文名称）、`type`（展示类型）、`align`（对齐方式）、`description`（业务说明）。数量右对齐，日期时间、状态和布尔值居中，其余左对齐；关联字段的说明根据实际外键补充引用目标。字段注释随建表稿创建，也可单独运行 `supabase/migrations/20261011140000_wms_core_column_comments.sql`；单独迁移仅处理已存在的核心表及字段，兼容旧完整版结构，不创建表或修改业务数据、外键和权限。旧库存表仍引用 `wms_item` 时，其注释保留真实关联；精简表创建后则注释为 `planning_item`。已存在的 JSON 注释扩展键会保留。
 
 - 表名：`wms_` + 单数业务名，小写下划线；延续现有 `mes_work_order` 和 `planning_item` 的命名方式。
 - 主键：`id uuid`，默认 `gen_random_uuid()`。
@@ -66,14 +70,16 @@ select public.wms_post_document(:account_id, :document_id);
 
 6 张表均启用 RLS，权限复用现有 `is_active_account_member` 与 `has_account_permission`。迁移登记 `wms.core.view` 和 `wms.core.manage`，不自动给角色授权。普通认证用户可以按权限维护档案和草稿；库存余额和流水仅能读取，过账通过函数完成。
 
-执行建表稿前需已有 `basejump.accounts`、`auth.users`、`item`（本稿假设 `id uuid`、`account_id uuid`，含 `(account_id,id)` 唯一约束）、`admin_permissions` 和现有权限函数。若 `item` 是全局物料表、主键不是 UUID 或没有账套字段，应按实际结构调整关联，不能直接执行本稿。本稿不改动物料表，也不自动应用到远端数据库。
+执行建表稿前需已有 `basejump.accounts`、`auth.users`、`planning_item`（`id uuid`、`account_id uuid`，含 `(account_id,id)` 唯一约束）、`admin_permissions` 和现有权限函数。目标库的物料关联要求已核对通过。本稿不改动物料表；远端执行仍需解决同名 WMS 表冲突。
 
 首期没有独立的物料、批次、入库/出库头行、盘点头行、库存预留、条码、托盘、拣货、上架任务、接口日志等表，也不实现序列号、保质期、库存成本或订单预占。批次仅作为数量维度。
 
-早期商品交易设计稿中提及的 `wms_item`、`wms_shipment`、`wms_inventory_reservation` 属于其他方案，不是本期依赖；本期商品库存物料应关联 `item`，出库引用 `wms_document` 的 `issue` 类型。那些审核稿不能直接与本建表稿一起部署；正式接入订单履约与预占时需另行调整它们。
+早期商品交易设计稿中提及的 `wms_item`、`wms_shipment`、`wms_inventory_reservation` 属于其他方案，不是本期依赖；本期商品库存物料应关联 `planning_item`，出库引用 `wms_document` 的 `issue` 类型。那些审核稿不能直接与本建表稿一起部署；正式接入订单履约与预占时需另行调整它们。
 
 ## 验证
 
 `api/scripts/wms-core-local-db-smoke.ts` 使用空的隔离本地 PostgreSQL 数据库；通过 `WMS_TEST_DATABASE_URL` 指定连接，运行 `node api/node_modules/tsx/dist/cli.mjs api/scripts/wms-core-local-db-smoke.ts`。脚本不会覆盖已有表，测试数据库由调用方创建并回收。
 
-已通过 PostgreSQL 16 实测：6 表建表及过账函数、模拟 `item` 的复合外键、跨账套引用拦截、RLS、出入库/调拨/盘点/调整、重复过账、库存不足时整单回滚、并发扣减防超卖、余额与流水对账和流水不可变。测试物料表是符合本稿约定的模拟表，实际已有 `item` 的兼容性仍待核对。
+PostgreSQL 16 隔离验证覆盖：6 表建表及过账函数、模拟物料表的复合外键、跨账套引用拦截、RLS、出入库/调拨/盘点/调整、重复过账、库存不足时整单回滚、并发扣减防超卖、余额与流水对账和流水不可变。测试使用模拟 `planning_item`，其关联键与目标库已核对一致，不在远端创建测试业务数据。
+
+字段注释迁移已在隔离库验证 6 表共 72 个字段全部为合法 JSON，重复执行通过；已在用户指定目标库事务执行并提交，读回确认现有 4 表共 64 个字段全部包含 `title`、`type`、`align`、`description`。目标库的 `wms_document` 和 `wms_document_line` 尚未创建，相关注释随核心建表稿部署。此次远端变更仅涉及字段 COMMENT。

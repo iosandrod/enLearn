@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>导入样板选择器验证</title><link rel="icon" href="data:,"></head>
+<body style="margin:0;background:#f3f4f6"><div id="app"></div>
+<script type="module">
+import { createApp, defineComponent, h } from 'vue';
+import { install as installVxeUI } from 'vxe-pc-ui';
+import VxeUITable from 'vxe-table';
+import 'vxe-pc-ui/lib/style.css';
+import 'vxe-table/lib/style.css';
+import 'remixicon/fonts/remixicon.css';
+import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost';
+import { openGlobalDialog } from '../../packages/lowcode-framework/src/runtime/global-dialog';
+import DetailImportTemplatePicker from '../../packages/tldraw-vue/src/components/DetailImportTemplatePicker.vue';
+
+const schema = {
+  title: 'Excel 导入配置', columns: 2, actions: [], fields: [
+    { field: 'hasFieldRow', label: '包含 field 行', component: 'vxe-switch', defaultValue: true },
+    { field: 'hasChineseRow', label: '包含 title 行', component: 'vxe-switch', defaultValue: false },
+    { field: 'sheetName', label: '工作表名称', component: 'vxe-input' },
+    { field: 'mode', label: '导入方式', component: 'vxe-select', options: [
+      { label: '追加到现有数据', value: 'append' }, { label: '替换现有数据', value: 'replace' },
+    ] },
+  ],
+};
+const columns = [
+  { field: 'sku', title: '商品编码' },
+  { field: 'productName', title: '商品名称' },
+  { field: 'qty', title: '数量' },
+];
+const App = defineComponent({
+  setup() {
+    async function open() {
+      const result = await openGlobalDialog({
+        title: '导入明细数据', width: 680,
+        model: { hasFieldRow: true, hasChineseRow: false, sheetName: '', mode: 'append' },
+        content: [
+          { type: 'form', key: 'detail-import-form', form: { schema } },
+          { type: 'render', render: context => h(DetailImportTemplatePicker, {
+            modelValue: { hasFieldRow: Boolean(context.model.hasFieldRow), hasChineseRow: Boolean(context.model.hasChineseRow) },
+            columns,
+            'onUpdate:modelValue': value => context.updateModel(value),
+          }) },
+        ],
+        actions: [{ code: 'cancel', label: '取消', role: 'cancel' }, { code: 'confirm', label: '开始导入', role: 'confirm', status: 'primary' }],
+      });
+      window.dialogResult = result;
+    }
+    window.openDetailImportDialog = open;
+    return () => h('main', { style: 'padding:24px' }, [h('button', { id: 'open-dialog', onClick: open }, '打开导入弹框'), h(GlobalDialogHost)]);
+  },
+});
+const app = createApp(App);
+app.use(installVxeUI);
+app.use(VxeUITable);
+app.mount('#app');
+</script>
+</body>
+</html>

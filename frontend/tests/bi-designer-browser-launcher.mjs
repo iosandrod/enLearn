@@ -29,11 +29,17 @@ try {
   await page.locator('.designer-side-tab').filter({ has: page.locator('span', { hasText: /^组件$/ }) }).click();
   assert.ok(await page.getByRole('button', { name: '表格', exact: true }).isVisible(), 'BI retains print components');
   await page.locator('.designer-side-tab').filter({ has: page.locator('span', { hasText: /^属性$/ }) }).click();
+  for (const tab of ['基本属性', '数据配置', '样式属性', '高级属性']) {
+    await page.getByText(tab, { exact: true }).waitFor();
+  }
   const titleInput = page.locator('[data-lc-field="title"] input');
   await titleInput.waitFor();
   await titleInput.fill('销售趋势');
   await titleInput.blur();
   await page.waitForFunction(() => window.biDesigner.getEditor().getCurrentPageShapesSorted().some(shape => shape.type === 'bi-chart' && shape.props.title === '销售趋势'));
+  await page.getByText('数据配置', { exact: true }).click();
+  await page.locator('[data-lc-field="dataJson"]').waitFor();
+  await page.locator('[data-lc-field="optionJson"]').waitFor();
 
   const result = await page.evaluate(async () => {
     const designer = window.biDesigner;

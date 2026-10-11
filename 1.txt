@@ -4250,3 +4250,28 @@ function isUsableTemplateContent(value: unknown): value is TLContent {
   overflow: hidden;
 }
 </style>
+
+
+const sampleText = getFooterSampleText(editor, tableFooter.id)
+	if (!sampleText) {
+		editor.createShape(createFooterSampleTextShape(tableFooter.id, tableFooter.props.w))
+		return
+	}
+  const tableFooter = getVueMaterialSections(editor, materialId).find(
+		(section) => section.props.zone === 'tableFooter'
+	)
+	if (!tableFooter) return
+
+	
+
+	editor.updateShape({
+		id: sampleText.id,
+		type: sampleText.type,
+		x: 0,
+		y: 0,
+		props: {
+			w: Math.max(80, tableFooter.props.w),
+			h: FOOTER_SAMPLE_TEXT_HEIGHT,
+			text: FOOTER_SAMPLE_TEXT,
+		},
+	} as TLShapePartial)

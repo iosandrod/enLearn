@@ -90,6 +90,13 @@ function workspace() {
   return clone(designer.value?.getWorkspaceTemplateConfig?.() ?? {});
 }
 
+function getCurrentDataSourceCode() {
+  const exposedCode = designer.value?.getPrintDataSourceCode?.();
+  if (typeof exposedCode === 'string') return exposedCode.trim();
+  const source = designer.value?.getPrintDataSource?.();
+  return source?.type === 'inline' && typeof source.formCode === 'string' ? source.formCode.trim() : '';
+}
+
 function snapshot() {
   const instance = editor();
   if (!instance) throw new Error('标签设计器尚未就绪。');
@@ -116,8 +123,10 @@ async function getTemplateInfo(getPreview: unknown = false) {
   // The runtime source lives in the editor, outside the saved workspace settings.
   const printDataSource = designer.value?.getPrintDataSource?.();
   if (printDataSource !== undefined) currentWorkspace.printDataSource = clone(printDataSource);
+  const dataSourceCode = getCurrentDataSourceCode();
+  currentWorkspace.printDataSourceCode = dataSourceCode;
   let obj:any= {
-    content: { pages: clone(pages), currentPageId, workspace: currentWorkspace },
+    content: { pages: clone(pages), currentPageId, workspace: currentWorkspace, dataSourceCode },
     pages: clone(pages),
     currentPageId,//
     workspace: currentWorkspace,
@@ -125,6 +134,7 @@ async function getTemplateInfo(getPreview: unknown = false) {
     templateName: templateName.value,//
     templateStatus: templateStatus.value,
     templateVersion: templateVersion.value,
+    dataSourceCode,
   };
   
   const previewRequested = getPreview === true
@@ -219,7 +229,67 @@ async function createTemplatePreviewDataUrl(
     shapeImage,
     '</svg>',
   ].join('');
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  return compressTemplatePreview(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+}
+
+/** Keep thumbnails small, including previews supplied by a save action. */
+async function compressTemplatePreview(value: string | null): Promise<string | null> {
+  if (!value || typeof Image === 'undefined' || typeof document === 'undefined') return null;
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      const timeout = setTimeout(() => {
+        image.onload = image.onerror = null;
+        image.src = '';
+        reject(new Error('Preview image load timed out.'));
+      }, 5000);
+      image.onload = () => {
+        clearTimeout(timeout);
+        resolve(image);
+      };
+      image.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Preview image could not be decoded.'));
+      };
+      // Use data URLs for SVGs: blob URLs with foreignObject can taint canvas.
+      image.src = value;
+    });
+    const width = image.naturalWidth;
+    const height = image.naturalHeight;
+    if (!width || !height) return null;
+    const maxLength = 8 * 1024;
+    // Avoid recompressing an already compact thumbnail on the save path.
+    if (/^data:image\/(webp|jpeg|png);base64,/i.test(value)
+      && Math.max(width, height) <= 240 && value.length <= maxLength) return value;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    for (const maxSide of [240, 192, 144, 96]) {
+      const scale = Math.min(1, maxSide / Math.max(width, height));
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      for (const quality of [0.35, 0.2, 0.1]) {
+        // PNG can be smaller for nearly empty templates and is also the
+        // browser fallback when a requested encoder is unavailable.
+        const candidates = [
+          canvas.toDataURL('image/webp', quality),
+          canvas.toDataURL('image/jpeg', quality),
+          canvas.toDataURL('image/png'),
+        ].filter((url) => /^data:image\/(webp|jpeg|png);base64,/.test(url));
+        const smallest = candidates.sort((a, b) => a.length - b.length)[0];
+        if (smallest && smallest.length <= maxLength) return smallest;
+      }
+    }
+  } catch (error) {
+    console.warn('[label-designer] preview compression failed, saving without a thumbnail', error);
+  }
+  return null;
 }
 
 function getPreviewBounds(workspaceConfig: Record<string, any>) {
@@ -412,7 +482,23 @@ async function setData(value: unknown) {
   const workspaceConfig = document.workspace && typeof document.workspace === 'object'
     ? document.workspace
     : data.workspace && typeof data.workspace === 'object' ? data.workspace : undefined;
-  if (workspaceConfig) designer.value?.applyWorkspaceTemplateConfig?.(clone(workspaceConfig));
+  const savedSource = workspaceConfig?.printDataSource ?? document.printDataSource ?? data.printDataSource;
+  const savedSourceCode = [
+    workspaceConfig?.printDataSourceCode,
+    document.printDataSourceCode,
+    data.printDataSourceCode,
+    data.dataSourceCode,
+    data.metadata?.dataSourceCode,
+    savedSource?.formCode,
+  ].find((value) => typeof value === 'string' && value.trim());
+  const nextWorkspace = clone(workspaceConfig ?? {});
+  nextWorkspace.printDataSourceCode = typeof savedSourceCode === 'string' ? savedSourceCode.trim() : '';
+  nextWorkspace.printDataSource = savedSource && typeof savedSource === 'object'
+    ? clone(savedSource)
+    : nextWorkspace.printDataSourceCode
+      ? { type: 'inline', formCode: nextWorkspace.printDataSourceCode, rows: [{}] }
+      : { type: 'none' };
+  designer.value?.applyWorkspaceTemplateConfig?.(nextWorkspace);
   if (typeof data.id === 'string' && data.id.trim()) templateId.value = data.id.trim();
   if (typeof data.name === 'string' && data.name.trim()) templateName.value = data.name.trim();
   if (data.status === 'draft' || data.status === 'active' || data.status === 'archived') templateStatus.value = data.status;
@@ -601,7 +687,7 @@ function normalizePreviewValue(value: unknown, depth = 0): string | null {
 }
 
 setTimeout(() => {
-  loadData({ templateId: 'c3b869ea-e35f-48cd-90db-00892fe8ed8d' }).catch((error) => {
+  loadData({ templateId: '228fe240-fa67-4e43-b640-a9d335eb1616' }).catch((error) => {
   });
 },500)
 async function save(options: Record<string, any> = {}) {
@@ -629,9 +715,12 @@ async function save(options: Record<string, any> = {}) {
   const payload = {
     name: String(templateName.value || props.block.templateName || '标签打印模板'),
     content: clone(templateInfo.content), workspace: clone(templateInfo.workspace || {}),
-    preview: normalizePreviewValue(templateInfo.preview),
+    preview: await compressTemplatePreview(normalizePreviewValue(templateInfo.preview)),
     status: 'active', version: templateVersion.value,
-    metadata: { editor: 'tldraw-vue', source: 'lowcode-label-designer-static', schemaVersion: 1 },
+    metadata: {
+      editor: 'tldraw-vue', source: 'lowcode-label-designer-static', schemaVersion: 1,
+      dataSourceCode: String(templateInfo.dataSourceCode || templateInfo.workspace?.printDataSourceCode || '').trim(),
+    },
   };
   const result = await api.invoke<any>('admin', 'saveItem', { resource: 'print_templates', ...(id ? { id } : {}), data: payload });
   templateId.value = String(result?.id || id || '').trim();

@@ -107,6 +107,14 @@ try {
   }).click();
   const picker = page.locator('.button-default-picker-dialog').last();
   await picker.waitFor({ state: 'visible' });
+  const [designerZIndex, pickerZIndex] = await Promise.all([
+    designer.evaluate((element) => Number(getComputedStyle(element).zIndex)),
+    picker.evaluate((element) => Number(getComputedStyle(element).zIndex)),
+  ]);
+  assert.ok(
+    pickerZIndex > designerZIndex,
+    `A nested dialog (${pickerZIndex}) must render above its opener (${designerZIndex}).`,
+  );
   const pickerRows = picker.locator('.vxe-table--body-wrapper .vxe-body--row');
   const pickerLabels = (await pickerRows.locator('.vxe-cell--label').allTextContents())
     .map((label) => label.trim())

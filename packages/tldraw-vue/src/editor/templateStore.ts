@@ -7,6 +7,7 @@ import type {
 } from './interactions/WorkspaceBoundsManager'
 import type { WorkspaceGuide } from './interactions/guides'
 import type { DesignerMode, PresentationConfig } from '../presentation'
+import type { PrintDataSourceConfig } from '../print/types'
 
 const LOCAL_TEMPLATE_STORAGE_KEY = 'tldraw-vue.templates.v1'
 
@@ -20,6 +21,7 @@ export type VueTemplateDocument = Partial<TLContent> & {
 	pages?: VueTemplatePage[]
 	currentPageId?: string
 	workspace?: VueTemplateWorkspaceConfig
+	dataSourceCode?: string
 }
 
 export interface VueTemplateRecord {
@@ -59,6 +61,10 @@ export interface VueTemplateWorkspaceConfig {
 	pxPerMm?: number
 	background?: WorkspaceBackgroundConfig
 	presentation?: PresentationConfig
+	/** Current print data source snapshot used by database-backed templates. */
+	printDataSource?: PrintDataSourceConfig
+	/** Lightweight association retained even when the data rows are omitted. */
+	printDataSourceCode?: string
 }
 
 export interface WorkspaceBackgroundConfig {
@@ -156,6 +162,11 @@ export function createVueTemplateMetadata(
 	workspace: VueTemplateWorkspaceConfig | undefined,
 	templateName?: string
 ): VueTemplateMetadata {
+	const dataSourceCode = typeof workspace?.printDataSourceCode === 'string'
+		? workspace.printDataSourceCode.trim()
+		: workspace?.printDataSource?.type === 'inline' && typeof workspace.printDataSource.formCode === 'string'
+			? workspace.printDataSource.formCode.trim()
+			: ''
 	return {
 		editor: 'tldraw-vue',
 		schemaVersion: 1,
@@ -163,6 +174,7 @@ export function createVueTemplateMetadata(
 		...(templateName ? { templateName } : {}),
 		...(workspace?.pageSizeMm ? { pageSizeMm: { ...workspace.pageSizeMm } } : {}),
 		...(workspace?.pageBounds ? { pageBounds: { ...workspace.pageBounds } } : {}),
+		...(dataSourceCode ? { dataSourceCode } : {}),
 	}
 }
 
@@ -170,10 +182,16 @@ export function cloneVueTemplateWorkspaceConfig(
 	workspace: VueTemplateWorkspaceConfig | undefined
 ): VueTemplateWorkspaceConfig | undefined {
 	if (!workspace) return undefined
-	const { printDataSource: _printDataSource, ...lightweightWorkspace } = workspace as VueTemplateWorkspaceConfig & {
-		printDataSource?: unknown
-	}
-	return JSON.parse(JSON.stringify(lightweightWorkspace)) as VueTemplateWorkspaceConfig
+	const { printDataSource, ...lightweightWorkspace } = workspace
+	const sourceCode = typeof workspace.printDataSourceCode === 'string'
+		? workspace.printDataSourceCode.trim()
+		: printDataSource?.type === 'inline' && typeof printDataSource.formCode === 'string'
+			? printDataSource.formCode.trim()
+			: ''
+	return JSON.parse(JSON.stringify({
+		...lightweightWorkspace,
+		...(sourceCode ? { printDataSourceCode: sourceCode } : {}),
+	})) as VueTemplateWorkspaceConfig
 }
 
 export function normalizeVueTemplates(value: unknown): VueTemplateRecord[] {
@@ -257,7 +275,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspaceConfig {
 	if (!isObject(value)) return false
-	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, background, presentation } = value
+	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, background, presentation, printDataSource, printDataSourceCode } = value
 	return (
 		(designerMode === undefined || designerMode === 'print' || designerMode === 'presentation' || designerMode === 'bi') &&
 		(pageSizeMm === undefined || isSizeLike(pageSizeMm)) &&
@@ -267,7 +285,9 @@ function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspac
 		(viewportSize === undefined || isSizeLike(viewportSize)) &&
 		(pxPerMm === undefined || isFiniteNumber(pxPerMm)) &&
 		(background === undefined || isBackgroundConfig(background)) &&
-		(presentation === undefined || isObject(presentation))
+		(presentation === undefined || isObject(presentation)) &&
+		(printDataSource === undefined || (isObject(printDataSource) && typeof printDataSource.type === 'string')) &&
+		(printDataSourceCode === undefined || typeof printDataSourceCode === 'string')
 	)
 }
 

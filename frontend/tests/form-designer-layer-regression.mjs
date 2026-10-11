@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [designerSource, adapterSource, dialogHostSource, drawerHostSource, popupStyleSource] =
-  await Promise.all([
+const [
+  designerSource,
+  adapterSource,
+  dialogCoreSource,
+  dialogHostSource,
+  drawerHostSource,
+  popupStyleSource,
+] = await Promise.all([
     readFile(
       new URL(
         '../../packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx',
@@ -15,6 +21,10 @@ const [designerSource, adapterSource, dialogHostSource, drawerHostSource, popupS
         '../../packages/lowcode-framework/src/visual-editor/components/common/designer-ui/index.tsx',
         import.meta.url,
       ),
+      'utf8',
+    ),
+    readFile(
+      new URL('../../packages/lowcode-framework/src/runtime/global-dialog-core.ts', import.meta.url),
       'utf8',
     ),
     readFile(
@@ -38,8 +48,8 @@ function readLayer(source, pattern, label) {
 }
 
 const dialogLayer = readLayer(
-  dialogHostSource,
-  /zIndex:\s*(\d+)\s*\+\s*globalDialogInstances\.indexOf/,
+  dialogCoreSource,
+  /GLOBAL_DIALOG_BASE_Z_INDEX = (\d+);/,
   'Global dialog',
 );
 const drawerLayer = readLayer(
@@ -61,6 +71,16 @@ const popupLayer = readLayer(
 assert.ok(dialogLayer < drawerLayer, 'Global drawers must render above global dialogs.');
 assert.ok(drawerLayer < designerLayer, 'The form designer must render above its parent designer.');
 assert.ok(designerLayer < popupLayer, 'Transferred form controls must render above the form designer.');
+assert.match(
+  dialogCoreSource,
+  /currentTopZIndex[\s\S]*?Math\.max\(minimumZIndex, currentTopZIndex \+ 1\)/,
+  'Every newly opened global dialog must be allocated above the current dialog stack.',
+);
+assert.match(
+  dialogHostSource,
+  /zIndex:\s*instance\.zIndex/,
+  'The global dialog host must use the stable layer allocated by the dialog core.',
+);
 assert.match(
   designerSource,
   /<ElDialog[\s\S]*?zIndex=\{state\.option\.zIndex \?\? FORM_DESIGNER_Z_INDEX\}/,

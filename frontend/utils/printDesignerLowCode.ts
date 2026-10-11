@@ -1,10 +1,9 @@
 import type { LowCodeHostServiceApi } from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
-import { getLowCodePage } from './lowCodePages';
-import { loadAvailableLowCodeFormDefinitions } from './lowCodeFormDefinitions';
 
 export const PRINT_DESIGNER_PAGE_CODE = 'print-designer';
 export const PRINT_TEMPLATE_LIST_PAGE_CODE = 'print-templates';
+export const PRINT_TEMPLATE_EDIT_PAGE_CODE = 'print-templates-edit';
 
 export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.style',
@@ -31,6 +30,9 @@ export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.datasource-selector',
   'print-designer.datasource-definition',
   'print-designer.datasource-detail-import',
+  'print-designer.datasource-typeorm',
+  'print-designer.datasource-script-meta',
+  'print-designer.detail-table-columns',
   'print-designer.background',
   'presentation-animation',
 ] as const;
@@ -53,60 +55,24 @@ function asPage(value: unknown) {
 export async function prefetchPrintDesignerLowCodeResources(
   serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
 ): Promise<PrintDesignerLowCodePrefetch> {
-  let designerPage: LowCodePageRecord | null = null;
-  let templateListPage: LowCodePageRecord | null = null;
-  let templateEditPage: LowCodePageRecord | null = null;
+  const result = await serviceApi.invoke<{
+    pages?: LowCodePageRecord[];
+    formDefinitions?: unknown[];
+  }>('lowcode', 'getPrintDesignerResources', {
+    pageCodes: [
+      PRINT_DESIGNER_PAGE_CODE,
+      PRINT_TEMPLATE_LIST_PAGE_CODE,
+      PRINT_TEMPLATE_EDIT_PAGE_CODE,
+    ],
+    formCodes: PRINT_DESIGNER_FORM_CODES,
+    formCodeContains: 'print-designer.',
+  });
+  const pages = Array.isArray(result?.pages) ? result.pages : [];
+  const pageByCode = new Map(pages.map((page) => [page.code, page]));
 
-  const [designerResult, listResult] = await Promise.allSettled([
-    getLowCodePage(serviceApi, {
-      code: PRINT_DESIGNER_PAGE_CODE,
-      includeData: true,
-    }),
-    getLowCodePage(serviceApi, {
-      code: PRINT_TEMPLATE_LIST_PAGE_CODE,
-      includeData: true,
-    }),
-  ]);
-
-  if (designerResult.status === 'fulfilled') designerPage = asPage(designerResult.value);
-  if (listResult.status === 'fulfilled') templateListPage = asPage(listResult.value);
-
-  const followUpTasks: Promise<unknown>[] = [
-    getLowCodePage(serviceApi, {
-      code: PRINT_DESIGNER_PAGE_CODE,
-      includeData: false,
-    }),
-    getLowCodePage(serviceApi, {
-      code: PRINT_TEMPLATE_LIST_PAGE_CODE,
-      includeData: false,
-    }),
-    loadAvailableLowCodeFormDefinitions(serviceApi, PRINT_DESIGNER_FORM_CODES),
-  ];
-
-  if (templateListPage?.edit_page_id) {
-    followUpTasks.push(
-      getLowCodePage(serviceApi, {
-        id: templateListPage.edit_page_id,
-        includeData: false,
-      }).then(async (page) => {
-        const editPage = asPage(page);
-        const editPageCode = editPage?.code;
-        if (typeof editPageCode === 'string' && editPageCode.trim()) {
-          // Warm the canonical code key as well. The save dialog resolves the
-          // page by code, so this request must complete during page startup.
-          const codePage = await getLowCodePage(serviceApi, {
-            code: editPageCode,
-            includeData: false,
-          });
-          templateEditPage = asPage(codePage) ?? editPage;
-          return;
-        }
-        templateEditPage = editPage;
-      }),
-    );
-  }
-
-  await Promise.allSettled(followUpTasks);
-
-  return { designerPage, templateListPage, templateEditPage };
+  return {
+    designerPage: asPage(pageByCode.get(PRINT_DESIGNER_PAGE_CODE)),
+    templateListPage: asPage(pageByCode.get(PRINT_TEMPLATE_LIST_PAGE_CODE)),
+    templateEditPage: asPage(pageByCode.get(PRINT_TEMPLATE_EDIT_PAGE_CODE)),
+  };
 }

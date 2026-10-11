@@ -40,6 +40,22 @@ function createDesignFormProps(props: Record<string, unknown>): LowCodeFormProps
   };
 }
 
+function renderEmptyForm() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        minHeight: '88px',
+        placeItems: 'center',
+        color: '#909399',
+        fontSize: '13px',
+      }}
+    >
+      当前表单为空
+    </div>
+  );
+}
+
 export default {
   key: 'form',
   moduleName: 'businessComponents',
@@ -47,12 +63,17 @@ export default {
   preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
   render({ props, styles, block }) {
     const { registerRef } = useGlobalProperties();
-    return () => (
-      <div style={{ ...styles, width: '100%', minWidth: 0 }}>
-        <LowCodeForm ref={(el) => registerRef(el, block._vid)} {...createDesignFormProps(props)} />
-      </div>
-    );
+    return () => {
+      const formProps = createDesignFormProps(props);
+      return (
+        <div style={{ minHeight: '112px', ...styles, width: '100%', minWidth: 0 }}>
+          <LowCodeForm ref={(el) => registerRef(el, block._vid)} {...formProps} />
+          {!formProps.schema.fields.length && renderEmptyForm()}
+        </div>
+      );
+    };
   },
+  styles: { width: '100%', minHeight: '112px' },
   resize: { height: true, width: true },
   events: [
     { label: 'Submit', value: 'submit' },

@@ -308,7 +308,7 @@ async function handleDesignForm() {
 							id,
 							data: { schema },
 						})
-						await loadPropertyFormDefinitions()
+						await loadPropertyFormDefinitions(true)
 						resolve(true)
 					} catch (error) {
 						reject(error)
@@ -928,7 +928,7 @@ const requiredPropertyFormCodes = [
 	fallbackDescriptor.formCode,
 ].filter((code, index, codes) => codes.indexOf(code) === index)
 
-async function loadPropertyFormDefinitions() {
+async function loadPropertyFormDefinitions(refresh = false) {
 	formDefinitionsLoading.value = true
 	formDefinitionError.value = ''
 
@@ -941,7 +941,7 @@ async function loadPropertyFormDefinitions() {
 			resource: 'lowcode_form_definitions',
 			filters: { code: propertyFormCodes, enabled: true },
 			limit: propertyFormCodes.length,
-		}, { refresh: true })
+		}, { refresh })
 		const loaded: Record<string, LowCodeFormSchema> = {}
 		const ids: Record<string, string> = {}
 
@@ -1724,7 +1724,7 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 		</div>
 		<div v-else-if="displayedFormError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
 			<p>{{ displayedFormError }}</p>
-			<button type="button" @click="loadPropertyFormDefinitions">重新加载</button>
+			<button type="button" @click="loadPropertyFormDefinitions(true)">重新加载</button>
 		</div>
 		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema && !selectedMaterialColumnValue" class="lowcode-form-panel__empty">
 			{{ selectedMaterialShape?.props.dataSourceField?.trim() ? '请点击物料表格中的列标题查看列属性' : '请先设置物料表格的数据源字段' }}

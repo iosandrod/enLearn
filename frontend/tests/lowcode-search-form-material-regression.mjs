@@ -39,7 +39,7 @@ assert.match(
 );
 assert.match(
   material,
-  /<LowCodeForm[\s\S]*?\.\.\.createDesignFormProps\(props\)/,
+  /const formProps = createDesignFormProps\(props\);[\s\S]*?<LowCodeForm[\s\S]*?\.\.\.formProps/,
   'The design canvas must pass schema, modelValue, and optionSources to LowCodeForm.',
 );
 assert.doesNotMatch(

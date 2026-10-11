@@ -225,6 +225,8 @@ export class LowCodeService extends BaseService {
         return this.saveGeneratedTableListPage(postData, context);
       case 'getRuntimePage':
         return this.getRuntimePage(postData, context);
+      case 'getPrintDesignerResources':
+        return this.getPrintDesignerResources(postData, context);
       case 'executeRuntime':
         return this.executeRuntime(postData, context);
       default:
@@ -364,6 +366,103 @@ export class LowCodeService extends BaseService {
 
   private readRuntimeSnapshotRecord(value: unknown) {
     return this.isRecord(value) ? value : {};
+  }
+
+  private readRequestedCodes(value: unknown) {
+    if (!Array.isArray(value)) return [];
+    return [...new Set(value.map((item) => readString(item)).filter(Boolean))].slice(0, 100);
+  }
+
+  private async getPrintDesignerResources(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const pageCodes = this.readRequestedCodes(postData.pageCodes ?? postData.page_codes);
+    const formCodes = this.readRequestedCodes(postData.formCodes ?? postData.form_codes);
+    const formCodeContains = readString(postData.formCodeContains ?? postData.form_code_contains);
+    if (!pageCodes.length) {
+      throw new BadRequestException('pageCodes is required.');
+    }
+
+    const exactFormCodes = formCodes.filter((code) => !formCodeContains || !code.includes(formCodeContains));
+    const codeConditions = [
+      ...(formCodeContains
+        ? [{ field: 'code', op: 'ilike', value: formCodeContains }]
+        : []),
+      ...(exactFormCodes.length
+        ? [{ field: 'code', op: 'in', value: exactFormCodes }]
+        : [])
+    ];
+    const formDefinitionsRequest = codeConditions.length
+      ? this.execute('listItems', {
+          resource: 'lowcode_form_definitions',
+          filters: {
+            logic: 'and',
+            conditions: [
+              { field: 'enabled', op: 'eq', value: true },
+              { logic: 'or', conditions: codeConditions }
+            ]
+          },
+          limit: 100
+        }, context)
+      : Promise.resolve([]);
+
+    const [pages, formDefinitionsResult] = await Promise.all([
+      this.getRuntimePagesByCodes(pageCodes, context),
+      formDefinitionsRequest
+    ]);
+    const formDefinitions = asRows(formDefinitionsResult);
+
+    return { pages, formDefinitions };
+  }
+
+  private async getRuntimePagesByCodes(
+    pageCodes: string[],
+    context: ServiceContext
+  ) {
+    const anonymousAdminRead = context.serviceName === 'lowcode' && !context.authorization;
+    const activeAccount = anonymousAdminRead ? undefined : await requireActiveAccount(context);
+    const adminContext = activeAccount?.context ?? context;
+    let authorization: Awaited<ReturnType<typeof getUserAuthorization>>;
+    if (anonymousAdminRead) {
+      authorization = {
+        profile: null,
+        permissionCodes: [],
+        accounts: [],
+        isLegacyAdmin: true
+      };
+    } else {
+      const { client, user } = await getCurrentUser(activeAccount!.context);
+      authorization = await getUserAuthorization(client, user.id, {
+        accountId: activeAccount!.context.accountId
+      });
+    }
+
+    const adminClient = createSupabaseClient('admin', adminContext);
+    const canManagePages = hasRequiredPermission(authorization, 'lowcode.pages.manage');
+    let pageQuery = adminClient
+      .from('lowcode_pages')
+      .select('*')
+      .in('code', pageCodes);
+    if (!canManagePages) pageQuery = pageQuery.eq('status', 'published');
+    const { data: pages, error: pageError } = await pageQuery;
+    if (pageError) throw new BadRequestException(pageError.message);
+
+    const nodeActions = await this.readActiveNodeActions(adminClient);
+    const runtimePages = await Promise.all((pages ?? []).map(async (page) => ({
+      code: String(page.code ?? ''),
+      page: this.prepareRuntimePage(
+        page,
+        authorization,
+        nodeActions,
+        await this.readActiveRuntimeFunctions(adminClient, String(page.id ?? ''), page.page_type)
+      )
+    })));
+    const pageByCode = new Map(runtimePages.map(({ code, page }) => [code, page]));
+    return pageCodes.flatMap((code) => {
+      const page = pageByCode.get(code);
+      return page ? [page] : [];
+    });
   }
 
   private async getRuntimePage(

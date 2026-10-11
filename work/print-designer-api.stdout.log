@@ -1,0 +1,45 @@
+
+> hikari-api@ dev:api-only E:\enLearn\api
+> node ./node_modules/tsx/dist/cli.mjs watch src/main.ts --without-trigger-worker
+
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [NestFactory] Starting Nest application...
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] ChatModule dependencies initialized +25ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] ClientsModule dependencies initialized +16ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] DatabaseModule dependencies initialized +23ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] AuthModule dependencies initialized +22ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] DefinitionModule dependencies initialized +22ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] JobModule dependencies initialized +2ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] AiModule dependencies initialized +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] WorkflowModule dependencies initialized +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] DomainClientModule dependencies initialized +2ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [InstanceLoader] AppModule dependencies initialized +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RoutesResolver] ServiceGatewayController {/api}: +167ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/print/data-source, POST} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RoutesResolver] FileUploadController {/api/files}: +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/files/upload, POST} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RoutesResolver] InternalServiceController {/api/internal}: +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/internal/service, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/internal/workflow-command, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RoutesResolver] AuthController {/api/auth}: +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/lowcode-materials, GET} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/lowcode-catalog, GET} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RoutesResolver] AiController {/api/ai}: +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/runs/stream, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/runs/:runId/events, GET} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/runs/:runId/cancel, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/conversations, GET} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/conversations/:conversationId/messages, GET} route +1ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/proposals/:proposalId/apply, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [RouterExplorer] Mapped {/api/ai/proposals/:proposalId/reject, POST} route +0ms
+[Nest] 39468  - 2026/10/12 01:39:27     LOG [NestApplication] Nest application successfully started +1ms

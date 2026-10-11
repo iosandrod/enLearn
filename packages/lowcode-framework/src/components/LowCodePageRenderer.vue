@@ -1,78 +1,55 @@
 <template>
-  <div
-    class="lowcode-runtime-shell"
-    :class="themeClass"
-    :style="themeStyle"
+  <div class="lowcode-runtime-shell" :class="themeClass" :style="themeStyle"
     :aria-busy="runtime.state.status.mesCommandExecuting"
-    :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'"
-  > 
-    <LowCodeCategoryDrawer
-      v-if="hasCategoryRelation"
-      :config="page.relate_config"
-      :service-api="categoryServiceApi"
-      @select="handleCategorySelect"
-    />
+    :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'">
+    <LowCodeCategoryDrawer v-if="hasCategoryRelation" :config="page.relate_config" :service-api="categoryServiceApi"
+      @select="handleCategorySelect" />
 
-    <div class="lowcode-runtime-page">
-      <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
-        <span>{{ loadingText }}</span>
+    <div class="lowcode-runtime-content">
+      <div class="lowcode-runtime-page">
+        <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
+          <span>{{ loadingText }}</span>
+        </div>
+
+        <template v-for="(block, index) in layoutBlocks" :key="block.id">
+          <Teleport :disabled="!resolveBlockTeleportTarget(block)" :to="resolveBlockTeleportTarget(block) || 'body'">
+            <LowCodeBlockRenderer :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }" :block="block"
+              :resolved-data="resolvedData" :form-models="formModels" :search-filters="searchFilters"
+              :loading-block-id="loadingBlockId" :loading-grid-id="loadingGridId"
+              @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
+              @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
+              @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+              @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+              @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
+              @toolbar-action="({ action }) => handleToolbarAction(action)"
+              @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
+              @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
+              @runtime-event="publishRuntimeEvent" />
+          </Teleport>
+        </template>
+
+        <LowCodeOverlayHost v-if="pageOverlays.length" :overlays="pageOverlays" :resolved-data="resolvedData"
+          :form-models="formModels" :search-filters="searchFilters" :loading-block-id="loadingBlockId"
+          :loading-grid-id="loadingGridId"
+          @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
+          @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
+          @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+          @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+          @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
+          @toolbar-action="({ action }) => handleToolbarAction(action)"
+          @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
+          @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
+          @runtime-event="publishRuntimeEvent" />
+
+        <p v-if="message" class="lc-runtime-feedback" :class="messageClass"
+          :role="messageClass === 'lc-error' ? 'alert' : 'status'" aria-live="polite">
+          {{ message }}
+        </p>
+        <GlobalDialogHost v-if="showGlobalDialogHost" />
       </div>
-
-      <template v-for="(block, index) in layoutBlocks" :key="block.id">
-        <Teleport
-          :disabled="!resolveBlockTeleportTarget(block)"
-          :to="resolveBlockTeleportTarget(block) || 'body'"
-        >
-          <LowCodeBlockRenderer
-            :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
-            :block="block"
-            :resolved-data="resolvedData"
-            :form-models="formModels"
-            :search-filters="searchFilters"
-            :loading-block-id="loadingBlockId"
-            :loading-grid-id="loadingGridId"
-            @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
-            @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
-            @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
-            @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
-            @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
-            @toolbar-action="({ action }) => handleToolbarAction(action)"
-            @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
-            @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-            @runtime-event="publishRuntimeEvent"
-          />
-        </Teleport>
-      </template>
-
-      <LowCodeOverlayHost
-        v-if="pageOverlays.length"
-        :overlays="pageOverlays"
-        :resolved-data="resolvedData"
-        :form-models="formModels"
-        :search-filters="searchFilters"
-        :loading-block-id="loadingBlockId"
-        :loading-grid-id="loadingGridId"
-        @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
-        @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
-        @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
-        @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
-        @grid-row-action="({ block: gridBlock, action, row }) => handleGridRowAction(gridBlock, action, row)"
-        @toolbar-action="({ action }) => handleToolbarAction(action)"
-        @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
-        @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-        @runtime-event="publishRuntimeEvent"
-      />
-
-      <p
-        v-if="message"
-        class="lc-runtime-feedback"
-        :class="messageClass"
-        :role="messageClass === 'lc-error' ? 'alert' : 'status'"
-        aria-live="polite"
-      >
-        {{ message }}
-      </p>
-      <GlobalDialogHost v-if="showGlobalDialogHost" />
+      <LowCodePageRenderPager style="z-index: 100;" v-if="isListPage && pagerSourceKey"
+        v-model:current-page="pageVO.currentPage" v-model:page-size="pageVO.pageSize"
+        :total="pageVO.total" :loading="pagerLoading" @page-change="pageChangeEvent" />
     </div>
   </div>
 </template>
@@ -94,6 +71,7 @@ import GlobalDialogHost from './GlobalDialogHost';
 import LowCodeBlockRenderer from './LowCodeBlockRenderer.vue';
 import LowCodeCategoryDrawer from './LowCodeCategoryDrawer.vue';
 import LowCodeOverlayHost from './LowCodeOverlayHost.vue';
+import LowCodePageRenderPager from './LowCodePageRenderPager.vue';
 import {
   useLowCodePageRenderer,
   type LowCodePageRendererProps,
@@ -128,6 +106,11 @@ onBeforeMount(() => {
 const renderer = useLowCodePageRenderer(props);
 const {
   page,
+  isListPage,
+  pagerSourceKey,
+  pageVO,
+  pagerLoading,
+  pageChangeEvent,
   showGlobalDialogHost,
   runtime,
   themeClass,
@@ -164,6 +147,7 @@ defineExpose(renderer.exposed);
 .lowcode-runtime-shell {
   position: relative;
   display: flex;
+  flex-direction: row;
   flex: 1 1 auto;
   align-items: stretch;
   width: 100%;
@@ -173,8 +157,23 @@ defineExpose(renderer.exposed);
   overflow: hidden;
 }
 
+.lowcode-runtime-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .lowcode-runtime-page {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .lc-page-loading-overlay {
@@ -227,7 +226,7 @@ defineExpose(renderer.exposed);
     overscroll-behavior: contain;
   }
 
-  .lowcode-runtime-page > .lc-runtime-block--fill.lc-node-tabs {
+  .lowcode-runtime-page>.lc-runtime-block--fill.lc-node-tabs {
     flex: 0 0 min(560px, calc(100dvh - 16px));
     min-height: min(560px, calc(100dvh - 16px));
   }
