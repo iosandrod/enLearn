@@ -8,11 +8,12 @@
  * RightAttributePanel
  */
 
-import { defineComponent, onBeforeUnmount, onMounted, reactive, watch } from 'vue';
+import { computed, defineComponent, inject, onBeforeUnmount, onMounted, reactive, watch } from 'vue';
 import { ElTabPane, ElTabs } from '../common/designer-ui';
 import { DArrowLeft, DArrowRight } from '../common/remix-icons';
 import styles from './index.module.scss';
-import { AttrEditor, Animate, PageSetting, EventAction, FormRule, HooksEditor } from './components';
+import { AttrEditor, Animate, PageSetting, EventAction, FormRule, HooksEditor, QueryLogicEditor } from './components';
+import { formDesignerModeKey } from '../../form-designer-context';
 import { useVisualData } from '../../hooks/useVisualData';
 
 export default defineComponent({
@@ -25,6 +26,14 @@ export default defineComponent({
   },
   setup(props) {
     const { currentBlock } = useVisualData();
+    const formDesignerMode = inject(formDesignerModeKey, null);
+    const isSearchForm = computed(() => {
+      if (formDesignerMode) return formDesignerMode.value === 'search';
+      const block = currentBlock.value;
+      return isFormBlock() && (block.props?.formType
+        ? block.props.formType === 'search'
+        : block.componentKey === 'lowcode-search-form');
+    });
     const isFormBlock = () => {
       const block = currentBlock.value;
       return (
@@ -63,6 +72,9 @@ export default defineComponent({
         }
       },
     );
+    watch(isSearchForm, (isSearch) => {
+      if (!isSearch && state.activeName === 'query-logic') state.activeName = 'attr';
+    });
 
     return () => (
       <>
@@ -106,6 +118,11 @@ export default defineComponent({
                   <HooksEditor />
                 </div>
               </ElTabPane>
+              {isSearchForm.value ? (
+                <ElTabPane label="查询逻辑" name="query-logic" lazy>
+                  <div class={styles.panelBody}><QueryLogicEditor /></div>
+                </ElTabPane>
+              ) : null}
               {isFormBlock() ? (
                 <ElTabPane label="规则" name="form-rule" lazy>
                   <div class={styles.panelBody}>

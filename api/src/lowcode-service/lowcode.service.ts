@@ -225,6 +225,12 @@ export class LowCodeService extends BaseService {
         return this.saveGeneratedTableListPage(postData, context);
       case 'getRuntimePage':
         return this.getRuntimePage(postData, context);
+      case 'saveSearchModel':
+        return this.saveSearchModel(postData, context);
+      case 'listSearchModels':
+        return this.listSearchModels(postData, context);
+      case 'createSearchModel':
+        return this.createSearchModel(postData, context);
       case 'getPrintDesignerResources':
         return this.getPrintDesignerResources(postData, context);
       case 'executeRuntime':
@@ -232,6 +238,74 @@ export class LowCodeService extends BaseService {
       default:
         return super.executeAction(method, postData, context);
     }
+  }
+
+  private async saveSearchModel(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const pageCode = readString(postData.pageCode ?? postData.page_code);
+    const queryValues = this.isRecord(postData.queryValues ?? postData.query_values)
+      ? postData.queryValues ?? postData.query_values
+      : undefined;
+    if (!pageCode) throw new BadRequestException('pageCode is required.');
+    if (!queryValues) throw new BadRequestException('queryValues must be an object.');
+
+    const { client } = await getCurrentUser(context);
+    const { data, error } = await client.rpc('save_admin_search_model', {
+      p_page_code: pageCode,
+      p_query_values: queryValues,
+      p_model_id: readString(postData.modelId ?? postData.model_id) || null,
+      p_name: readString(postData.name) || null,
+    });
+    if (error) throw new BadRequestException(error.message);
+    return data;
+  }
+
+  private async listSearchModels(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const pageCode = readString(postData.pageCode ?? postData.page_code);
+    if (!pageCode) throw new BadRequestException('pageCode is required.');
+
+    const { client } = await getCurrentUser(context);
+    const { data, error } = await client
+      .from('admin_search_models')
+      .select('id,page_code,name,query_values,active,created_at,updated_at')
+      .eq('page_code', pageCode)
+      .order('active', { ascending: false })
+      .order('updated_at', { ascending: false });
+    if (error) throw new BadRequestException(error.message);
+    return data ?? [];
+  }
+
+  private async createSearchModel(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const pageCode = readString(postData.pageCode ?? postData.page_code);
+    const name = readString(postData.name);
+    const queryValues = this.isRecord(postData.queryValues ?? postData.query_values)
+      ? postData.queryValues ?? postData.query_values
+      : undefined;
+    if (!pageCode) throw new BadRequestException('pageCode is required.');
+    if (!name) throw new BadRequestException('name is required.');
+    if (!queryValues) throw new BadRequestException('queryValues must be an object.');
+
+    const { client } = await getCurrentUser(context);
+    const { data, error } = await client
+      .from('admin_search_models')
+      .insert({
+        page_code: pageCode,
+        name,
+        query_values: queryValues,
+        active: true
+      })
+      .select('id,page_code,name,query_values,active,created_at,updated_at')
+      .single();
+    if (error) throw new BadRequestException(error.message);
+    return data;
   }
 
   private async executeRuntime(

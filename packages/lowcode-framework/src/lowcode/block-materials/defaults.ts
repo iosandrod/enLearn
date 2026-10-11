@@ -150,6 +150,7 @@ export function createDefaultSearchFormBlock(overrides?: Partial<LowCodePageSear
       kind: 'searchForm',
       title: 'Query Conditions',
       targetSourceKey: 'records',
+      queryLogic: [],
       schema: {
         fields: [],
         actions: [

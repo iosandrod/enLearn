@@ -127,6 +127,9 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
     event: LowCodeRuntimeEvent,
     payload: LowCodePageConfirmPayload,
   ) => Promise<void> | void;
+  beforeConfirm?: (
+    payload: LowCodePageConfirmPayload,
+  ) => Promise<boolean | void> | boolean | void;
 };
 
 async function resolveFormDefinitionPage(config: LowCodePageConfirmDialogConfig) {
@@ -357,6 +360,7 @@ export type LowCodePageConfirmDialogResult =
 
 type LowCodePageRendererExpose = {
   getSnapshot: () => LowCodePageConfirmSnapshot;
+  validateForms: () => Promise<boolean>;
   submitForms: (options?: { reload?: boolean }) => Promise<boolean>;
   getLastSavedFormRecord: () => Record<string, unknown> | undefined;
 };
@@ -698,7 +702,6 @@ export async function openLowCodePageReferenceDialog(
 export async function openLowCodePageConfirmDialog(
   config: LowCodePageConfirmDialogConfig,
 ): Promise<LowCodePageConfirmDialogResult> {
-  return new Promise(async (resolve, reject) => {
     const page = prepareConfirmPage(await resolveReferencePage(config), config);
     const resultAction = readString(config.confirmAction ?? config.resultAction, 'confirm');
     const requireSelection = config.requireSelection === true;
@@ -817,6 +820,12 @@ export async function openLowCodePageConfirmDialog(
             let payload = createPayload();
             if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
 
+            if (config.formCode) {
+              if (!rendererRef.value) throw new Error('表单尚未加载完成，请稍后再试。');
+              if (!(await rendererRef.value.validateForms())) return false;
+              payload = createPayload();
+            }
+
             if (config.submitOnConfirm) {
               if (!rendererRef.value) {
                 throw new Error('模板编辑页尚未加载完成，请稍后再试。');
@@ -831,6 +840,8 @@ export async function openLowCodePageConfirmDialog(
               }
               payload = createPayload();
             }
+
+            if ((await config.beforeConfirm?.(payload)) === false) return false;
 
             return {
               close: true,
@@ -862,7 +873,6 @@ export async function openLowCodePageConfirmDialog(
         ),
       },
     });
-    resolve(result as LowCodePageConfirmDialogResult)
-  })
+    return result as LowCodePageConfirmDialogResult;
 
 }

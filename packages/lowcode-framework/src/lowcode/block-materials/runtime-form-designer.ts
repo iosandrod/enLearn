@@ -274,6 +274,8 @@ export function mergeRuntimeFormSchema(
   if (designed.layout?.length) schema.layout = cloneValue(designed.layout);
   else delete schema.layout;
 
+  if (designed.queryLogic) schema.queryLogic = cloneValue(designed.queryLogic);
+
   return schema;
 }
 
@@ -289,6 +291,7 @@ export async function openRuntimeFormDesigner(
   void formDesigner.$$formDesigner({
     title: `${block.title || (mode === 'search' ? '查询表单' : '当前表单')}设计`,
     mode,
+    queryLogic: block.queryLogic ?? block.schema.queryLogic,
     fields: block.schema.fields.map(runtimeFieldToDesignerField),
     layout: block.schema.layout,
     columns: block.schema.columns,
@@ -306,6 +309,7 @@ export async function openRuntimeFormDesigner(
           schema: mergeRuntimeFormSchema(block.schema, designedSchema, result.fields),
           formDesignerModel: result.designerModel,
           formDesignerUpdatedAt: Date.now(),
+          ...(result.queryLogic ? { queryLogic: result.queryLogic } : {}),
         },
       });
     },

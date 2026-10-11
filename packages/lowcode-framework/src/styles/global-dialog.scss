@@ -54,9 +54,34 @@
   min-height: 100%;
 }
 
+.lowcode-confirm-form-dialog .lc-global-dialog__page-reference {
+  height: auto;
+  min-height: 0;
+  max-height: min(560px, 70vh);
+  overflow-y: auto;
+}
+
+.lowcode-confirm-form-dialog .lowcode-runtime-shell,
+.lowcode-confirm-form-dialog .lowcode-runtime-page {
+  height: auto;
+  min-height: 0;
+}
+
+.lowcode-confirm-form-dialog .lc-global-dialog__body {
+  height: auto;
+}
+
 .lowcode-reference-dialog .vxe-modal--body {
   padding: 12px;
   background: #f5f7fb;
+}
+
+.lowcode-reference-dialog.lowcode-confirm-form-dialog .vxe-modal--body {
+  padding: 8px 12px;
+}
+
+.lowcode-reference-dialog.lowcode-confirm-form-dialog .vxe-modal--body-default {
+  padding: 0;
 }
 
 .lc-global-dialog__toolbar,

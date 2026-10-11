@@ -1,5 +1,6 @@
 import type { InjectionKey, Ref } from 'vue';
-import type { LowCodeOption } from '../types/lowcode';
+import type { LowCodeOption, LowCodeSearchQueryRule } from '../types/lowcode';
+import type { VisualEditorPage } from './visual-editor.utils';
 
 export type FormDesignerMode = 'search' | 'edit';
 
@@ -14,3 +15,7 @@ export const formDesignerTableFieldOptionsKey: InjectionKey<
 export const formDesignerModeKey: InjectionKey<Readonly<Ref<FormDesignerMode>>> = Symbol(
   'formDesignerMode',
 );
+
+export const formDesignerQueryLogicKey: InjectionKey<{
+  getFields: (page: VisualEditorPage) => Array<{ field: string; label: string }>;
+}> = Symbol('formDesignerQueryLogic');

@@ -539,6 +539,7 @@
     };
     block.props.formDesignerModel = cloneDeep(result.designerModel);
     block.props.formDesignerUpdatedAt = Date.now();
+    if (result.queryLogic) block.props.queryLogic = cloneDeep(result.queryLogic);
     selectComp(block);
   };
 
@@ -625,12 +626,15 @@
 
   const openFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
-    const isSearchForm = block.componentKey === 'lowcode-search-form';
+    const isSearchForm = block.props?.formType
+      ? block.props.formType === 'search'
+      : block.componentKey === 'lowcode-search-form';
     const runtimeSchema = isRecord(block.props?.schema) ? block.props.schema : {};
     const schemaColumns = Number(runtimeSchema.columns);
     const result = await $$formDesigner({
       title: `${block.label || '表单'}设计`,
       mode: isSearchForm ? 'search' : 'edit',
+      queryLogic: block.props?.queryLogic ?? runtimeSchema.queryLogic,
       fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
       layout: Array.isArray(runtimeSchema.layout)
         ? cloneDeep(runtimeSchema.layout)

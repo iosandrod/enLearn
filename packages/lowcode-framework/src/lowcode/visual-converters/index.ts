@@ -820,6 +820,7 @@ function convertRuntimeBlockToVisual(
             : undefined,
         formDesignerModel,
         formDesignerUpdatedAt: block.formDesignerUpdatedAt,
+        queryLogic: cloneJson(block.queryLogic ?? schema.queryLogic ?? []),
         fields,
       },
     });

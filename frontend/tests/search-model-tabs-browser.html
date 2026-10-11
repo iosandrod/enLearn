@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <title>查询方案运行时回归</title>
+    <style>
+      body { margin: 24px; background: #f6f7f9; font-family: sans-serif; }
+      #app { max-width: 900px; }
+      .test-query-form { display: flex; align-items: center; gap: 12px; padding: 16px; background: white; }
+      input { padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; }
+      pre { padding: 16px; background: white; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import { createApp, defineComponent, h, inject, onBeforeUnmount, provide, reactive, ref } from 'vue';
+      import { lowCodePageRuntimeKey } from '../../packages/lowcode-framework/src/runtime/page-runtime.ts';
+      import LowCodeForm from '../../packages/lowcode-framework/src/components/LowCodeForm.vue';
+      import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
+      import '../../packages/lowcode-framework/src/styles/global-dialog.scss';
+      import schemaMigration from '../../supabase/migrations/20261012140000_admin_search_model_form.sql?raw';
+      import { SearchModelController, searchModelControllerKey } from '../../packages/lowcode-framework/src/runtime/search-model-controller.ts';
+      import LowCodeBlockRenderer from '../../packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue';
+      import { registerLowCodeBlockMaterial } from '../../packages/lowcode-framework/src/lowcode/block-materials/index.ts';
+
+      const block = {
+        id: 'query', kind: 'searchForm', targetSourceKey: 'records',
+        schema: { fields: [{ field: 'name' }] },
+        queryLogic: [{ inputField: 'name', field: 'name', op: 'ilike', logic: 'and' }],
+      };
+      const page = { id: 'browser-page', code: 'browser-page', page_type: 'list' };
+      const rows = [
+        { id: 'first', page_code: page.code, name: '生产方案', active: true, query_values: { forms: { query: { name: '生产' } } } },
+        { id: 'second', page_code: page.code, name: '采购方案', active: false, query_values: { forms: { query: { name: '采购' } } } },
+      ];
+      const state = reactive({ forms: { query: { name: '' } }, searches: {} });
+      const result = ref('');
+      const runtime = { state, replaceForm: (id, values) => state.forms[id] = values,
+        replaceSearch: (key, values) => state.searches[key] = values };
+      const controller = new SearchModelController({
+        getPage: () => page, getBlocks: () => [block], runtime,
+        getSourceKeys: () => ['records'], commitForms: async () => {},
+        getApi: () => ({ invoke: async (_service, method, payload) => {
+          if (method === 'listSearchModels') return structuredClone(rows);
+          if (method === 'listItems' && payload.resource === 'lowcode_form_definitions') {
+            return [{ code: 'admin.search-model.create', name: '新增查询方案', schema: JSON.parse(schemaMigration.split('$schema$')[1]) }];
+          }
+          const saved = method === 'createSearchModel'
+            ? { id: `new-${rows.length}`, page_code: page.code, name: payload.name, query_values: payload.queryValues, active: true }
+            : { ...rows.find((row) => row.id === payload.modelId), query_values: payload.queryValues, active: true };
+          for (const row of rows) row.active = false;
+          if (method === 'createSearchModel') rows.push(saved);
+          else Object.assign(rows.find((row) => row.id === saved.id), saved);
+          return saved;
+        } }),
+        refresh: async () => { result.value = JSON.stringify({ activeId: controller.state.activeId, forms: state.forms, filters: state.searches.records }, null, 2); },
+        reportError: (error) => { result.value = String(error); },
+      });
+      registerLowCodeBlockMaterial({ type: 'searchForm', component: defineComponent({
+        props: ['formModels'], emits: ['searchSubmit'],
+        setup(props, { emit }) { return () => h('div', { class: 'test-query-form' }, [
+          h('label', { for: 'query-name' }, '名称'),
+          h('input', { id: 'query-name', value: props.formModels.query.name,
+            onInput: (event) => state.forms.query.name = event.target.value }),
+          h('button', { onClick: () => emit('searchSubmit', { block, values: state.forms.query }) }, '查询'),
+        ]); },
+      }) });
+      registerLowCodeBlockMaterial({ type: 'form', component: defineComponent({
+        props: ['block', 'formModels'],
+        setup(props) {
+          const runtime = inject(lowCodePageRuntimeKey);
+          const formRef = ref();
+          const unregister = runtime.registerFormController(props.block.id, {
+            validate: () => formRef.value.validate(),
+            clearValidation: () => formRef.value.clearValidation(),
+            commitPendingValues: () => formRef.value.commitPendingValues(),
+          });
+          onBeforeUnmount(unregister);
+          return () => h(LowCodeForm, {
+            ref: formRef, schema: props.block.schema, modelValue: props.formModels[props.block.id] ?? {},
+            'onUpdate:modelValue': (values) => runtime.replaceForm(props.block.id, values),
+          });
+        },
+      }) });
+      const App = defineComponent({ setup() {
+        provide(searchModelControllerKey, controller);
+        void controller.hydrate(page).then(() => result.value = '已恢复生产方案');
+        return () => h('main', [
+          h(LowCodeBlockRenderer, { block, resolvedData: {}, formModels: state.forms, searchFilters: state.searches,
+            onSearchSubmit: () => result.value = `查询事件正常透传：${state.forms.query.name}` }),
+          h('pre', { id: 'result' }, result.value),
+          h(GlobalDialogHost),
+        ]);
+      } });
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+    </script>
+  </body>
+</html>

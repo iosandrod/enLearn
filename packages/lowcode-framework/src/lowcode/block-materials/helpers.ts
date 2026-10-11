@@ -7,6 +7,7 @@ import type {
   LowCodePageStatCardBlock,
   LowCodeStatItem,
 } from '../../types/lowcode';
+import { matchesLowCodeSearchFilters } from '../search-query-logic';
 
 export function textToneClass(tone?: 'default' | 'muted' | 'success' | 'warning') {
   if (!tone || tone === 'default') return '';
@@ -42,22 +43,8 @@ export function getSourceValue(
   return resolvedData[sourceKey];
 }
 
-function isSearchValueActive(value: unknown) {
-  if (Array.isArray(value)) return value.length > 0;
-  return value !== undefined && value !== null && String(value).trim() !== '';
-}
-
 function matchesFilter(row: Record<string, unknown>, filters: Record<string, unknown>) {
-  return Object.entries(filters).every(([field, value]) => {
-    if (!isSearchValueActive(value)) return true;
-    const cell = row[field];
-
-    if (Array.isArray(value)) {
-      return value.map(String).includes(String(cell ?? ''));
-    }
-
-    return String(cell ?? '').toLowerCase().includes(String(value).toLowerCase());
-  });
+  return matchesLowCodeSearchFilters(row, filters);
 }
 
 export function resolveGridRows(

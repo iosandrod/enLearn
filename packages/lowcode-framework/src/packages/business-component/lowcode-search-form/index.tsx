@@ -66,6 +66,10 @@ export default {
   key: 'lowcode-search-form',
   moduleName: 'businessComponents',
   label: '查询表单',
+  defaultProps: {
+    formType: 'search',
+    queryLogic: [],
+  },
   preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
   render({ props, styles, block }) {
     const { registerRef } = useGlobalProperties();

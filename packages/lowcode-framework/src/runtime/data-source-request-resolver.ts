@@ -8,6 +8,8 @@ import type {
 import type { LowCodePageRuntimeContext } from './page-runtime';
 import type { LowCodePageRendererProps } from './renderer-types';
 import { isRecord, readPath, readString } from './renderer-value-utils';
+import { createLowCodeSearchFilters } from '../lowcode/search-query-logic';
+import { resolveSearchSourceKeys } from './search-source-targets';
 
 type ValueRef<T> = { value: T };
 
@@ -351,6 +353,33 @@ export class DataSourceRequestResolver {
       configured: unknown,
       additional: Record<string, unknown>,
     ) {
+      if (Array.isArray(additional.conditions) && ['and', 'or'].includes(String(additional.logic))) {
+        const collectFields = (value: unknown): string[] => {
+          if (!isRecord(value)) return [];
+          if (Array.isArray(value.conditions)) return value.conditions.flatMap(collectFields);
+          return typeof value.field === 'string' ? [value.field] : [];
+        };
+        const replacedFields = new Set(collectFields(additional));
+        const prune = (value: unknown): Record<string, unknown> | undefined => {
+          if (!isRecord(value)) return undefined;
+          if (Array.isArray(value.conditions)) {
+            const conditions = value.conditions.map(prune).filter(Boolean);
+            return conditions.length ? { ...value, conditions } : undefined;
+          }
+          return replacedFields.has(String(value.field)) ? undefined : value;
+        };
+        const base = isRecord(configured) && Array.isArray(configured.conditions)
+          ? prune(configured)
+          : { logic: 'and', conditions: Object.entries(isRecord(configured) ? configured : {})
+            .filter(([field]) => !replacedFields.has(field))
+            .map(([field, value]) => isRecord(value) && typeof value.op === 'string'
+              ? { field, ...value }
+              : value === null ? { field, op: 'isNull' }
+              : { field, op: Array.isArray(value) ? 'in' : 'eq', value }) };
+        return base && Array.isArray(base.conditions) && base.conditions.length
+          ? { logic: 'and', conditions: [base, additional] }
+          : additional;
+      }
       const entries = Object.entries(additional);
       if (!entries.length) return isRecord(configured) ? configured : {};
       if (
@@ -393,10 +422,28 @@ export class DataSourceRequestResolver {
       key: string,
       postData: Record<string, unknown>
     ) {
-      const sourceFilters = searchFilters.value[key];
+      const blocks = flattenPageBlocks(props.page.schema);
+      const queryBlock = blocks.find((block) =>
+        (block.kind === 'searchForm' &&
+          resolveSearchSourceKeys(block, blocks, props.page.schema.dataSources).includes(key)) ||
+        (block.kind === 'form' && block.formType === 'search' && block.id === key),
+      );
+      let sourceFilters = searchFilters.value[key];
 
       if (!sourceFilters || !Object.keys(sourceFilters).length) {
-        return postData;
+        if (!queryBlock || (queryBlock.kind !== 'searchForm' && queryBlock.kind !== 'form')) {
+          return postData;
+        }
+        sourceFilters = createLowCodeSearchFilters(
+          formModels.value[queryBlock.id] ?? {},
+          queryBlock.queryLogic ?? queryBlock.schema.queryLogic,
+        );
+        if (!Object.keys(sourceFilters).length) return postData;
+      }
+      if (!Array.isArray(sourceFilters.conditions)) {
+        if (queryBlock && (queryBlock.kind === 'searchForm' || queryBlock.kind === 'form')) {
+          sourceFilters = createLowCodeSearchFilters(sourceFilters, queryBlock.queryLogic ?? queryBlock.schema.queryLogic);
+        }
       }
 
       return {
@@ -436,7 +483,6 @@ export class DataSourceRequestResolver {
       postDataOverride?: Record<string, unknown>,
       includeSearchFilters = true,
     ) {
-      // debugger//
       const basePostData = resolveRuntimePostData(postDataOverride ?? source.postData);
       const targetedPostData = withDataSourceTargetPostData(source, basePostData);
       const searchedPostData = includeSearchFilters

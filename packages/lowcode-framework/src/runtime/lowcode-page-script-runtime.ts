@@ -110,6 +110,7 @@ export type LowCodePageScriptRuntimeDependencies = {
   readSavedRecordId(record: Record<string, unknown> | undefined, groups: SubmissionGroups): unknown;
   getLastSavedFormRecord(): Record<string, unknown> | undefined;
   publishRuntimeEvent(event: LowCodeRuntimeEvent): Promise<void>;
+  onSearchModelSaved?(value: unknown): void;
 };
 
 /** Executes isolated page scripts through registered host APIs and execution strategies. */
@@ -310,6 +311,7 @@ export class LowCodePageScriptRuntime {
       isCurrentSourceRequest,
       isOverlayBlock,
       loadingGridId,
+      props,
       refreshFormNodeOptions,
       resolveDataSourceRequest,
       resolveRuntimePostData,
@@ -350,7 +352,7 @@ export class LowCodePageScriptRuntime {
         const postData = resolveRuntimePostData(
           this.readScriptRecordArg([payload.postData], 0),
         );
-        let resolved = resolveDataSourceRequest(sourceKey, source, postData, false);
+        let resolved = resolveDataSourceRequest(sourceKey, source, postData, true);
         if(resolved.serviceMethod==null){
           debugger
         }
@@ -370,6 +372,23 @@ export class LowCodePageScriptRuntime {
             return [];
           }
           throw error;
+        }
+      }
+      case 'searchModel.save': {
+        const queryValues = isRecord(payload.queryValues) ? payload.queryValues : {};
+        if (!Object.keys(queryValues).length || !readString(props.page.code)) return undefined;
+        try {
+          const saved = await host.getServiceApi().invoke('lowcode', 'saveSearchModel', {
+            pageCode: props.page.code,
+            queryValues: cloneScriptValue(queryValues, {}),
+            ...(readString(payload.modelId) ? { modelId: readString(payload.modelId) } : {}),
+            ...(readString(payload.name) ? { name: readString(payload.name) } : {}),
+          });
+          this.dependencies.onSearchModelSaved?.(saved);
+          return saved;
+        } catch (error) {
+          console.warn('保存查询方案失败。', error);
+          return undefined;
         }
       }
       case 'source.set':

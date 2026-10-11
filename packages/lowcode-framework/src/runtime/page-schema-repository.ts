@@ -8,6 +8,7 @@ import type {
   LowCodePageSearchFormBlock,
 } from '../types/lowcode';
 import { isRecord, readString } from './renderer-value-utils';
+import { resolveSearchSourceKeys } from './search-source-targets';
 
 /** Centralizes schema traversal so every runtime service resolves nodes identically. */
 export class PageSchemaRepository {
@@ -74,12 +75,8 @@ export class PageSchemaRepository {
     );
   };
 
-  readonly searchTargetSourceKeys = (block: LowCodePageSearchFormBlock) => [
-    ...new Set([
-      block.targetSourceKey,
-      ...(Array.isArray(block.targetSourceKeys) ? block.targetSourceKeys : []),
-    ].map((key) => readString(key)).filter(Boolean)),
-  ];
+  readonly searchTargetSourceKeys = (block: LowCodePageSearchFormBlock) =>
+    resolveSearchSourceKeys(block, this.flattenPageBlocks(), this.getPage().schema.dataSources);
 
   readonly getDataSource = (key?: string): LowCodePageDataSource | undefined => {
     if (!key) return undefined;

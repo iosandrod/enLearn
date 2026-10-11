@@ -5,6 +5,7 @@ import type {
   LowCodePageBlock,
   LowCodePageRecord,
   LowCodePageGridBlock,
+  LowCodePageFormBlock,
   LowCodeGridRowAction,
   LowCodePageOverlayBlock,
   LowCodePageSearchFormBlock,
@@ -54,6 +55,8 @@ import { useLowCodePagePagination } from './useLowCodePagePagination';
 import {
   DataSourceRequestResolver,
 } from './data-source-request-resolver';
+import { createLowCodeSearchFilters } from '../lowcode/search-query-logic';
+import { SearchModelController, searchModelControllerKey } from './search-model-controller';
 import {
   cloneRuntimeValue,
   cloneRuntimeValueWithFunctions,
@@ -212,6 +215,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   } = dataSourceRequestResolver;
 
   let scriptRuntime!: LowCodePageScriptRuntime;
+  let searchModelController!: SearchModelController;
   const pageDataController = new PageDataController({
     props,
     host,
@@ -241,6 +245,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       scriptRuntime.executeIsolatedScript(script, event, mode),
     reportRuntimeDirectiveError,
     publishRuntimeEvent,
+    hydrateSearchModels: (page) => searchModelController.hydrate(page),
   });
   const {
     findLowCodePage,
@@ -314,7 +319,27 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     readSavedRecordId,
     getLastSavedFormRecord: pageDataController.getLastSavedFormRecord,
     publishRuntimeEvent,
+    onSearchModelSaved: (value) => searchModelController.acceptSaved(value),
   });
+  searchModelController = new SearchModelController({
+    getPage: () => props.page,
+    getBlocks: () => flattenPageBlocks(props.page.schema),
+    getApi: () => host.getServiceApi(),
+    runtime,
+    getSourceKeys: getSearchSourceKeys,
+    refresh: async (keys) => {
+      pageVO.currentPage = 1;
+      const errors = await refreshDataSources(keys);
+      if (errors.length) throw new Error(errors[0]);
+    },
+    commitForms: commitPendingFormValues,
+    reportError: (error) => {
+      reportRuntimeError('查询方案操作失败', error);
+      message.value = error instanceof Error ? error.message : '查询方案操作失败。';
+      messageClass.value = 'lc-error';
+    },
+  });
+  provide(searchModelControllerKey, searchModelController);
   const executeIsolatedScript = scriptRuntime.executeIsolatedScript;
   const executeButtonScript = scriptRuntime.executeButtonScript;
   const executeScriptNodeAction = scriptRuntime.executeNodeAction;
@@ -351,6 +376,15 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       searchFilters: cloneRuntimeValue(searchFilters.value),
       gridStates: cloneRuntimeValue(gridStates.value),
     }),
+    validateForms: async () => {
+      await commitPendingFormValues();
+      for (const block of flattenPageBlocks(props.page.schema)) {
+        if (block.kind !== 'form' && block.kind !== 'searchForm') continue;
+        const controller = runtime.getFormController(block.id);
+        if (!controller || !(await controller.validate())) return false;
+      }
+      return true;
+    },
     submitForms,
     getLastSavedFormRecord: pageDataController.getLastSavedFormRecord,
   };
@@ -895,6 +929,10 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
   ) {
     await waitForActionEvent(action);
     if (block.kind !== 'form') return;
+    if (block.formType === 'search') {
+      await applySearchSubmit(block as LowCodePageFormBlock, values);
+      return;
+    }
     if (
       props.page.page_type === 'edit' &&
       isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
@@ -944,6 +982,18 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
       return;
     }
 
+    if (block.kind === 'form' && block.formType === 'search') {
+      const searchBlock = block as LowCodePageFormBlock;
+      const sourceKeys = [searchBlock.id];
+      if (action.type === 'reset') {
+        sourceKeys.forEach((sourceKey) => runtime.replaceSearch(sourceKey, {}));
+        await refreshDataSources(sourceKeys);
+      } else if (action.code === 'submit') {
+        await applySearchSubmit(searchBlock, values);
+      }
+      return;
+    }
+
     if (action.code === 'submit') {
       await handleFormSubmit(block, values);
     }
@@ -975,16 +1025,28 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     }
   }
 
+  function getSearchSourceKeys(block: LowCodePageFormBlock | LowCodePageSearchFormBlock) {
+    return block.kind === 'form' ? [block.id] : searchTargetSourceKeys(block);
+  }
+
+  async function applySearchSubmit(
+    block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
+    values: Record<string, unknown>,
+  ) {
+    const sourceKeys = getSearchSourceKeys(block);
+    if (!sourceKeys.length) return;
+    const filters = createLowCodeSearchFilters(values, block.queryLogic ?? block.schema.queryLogic);
+    sourceKeys.forEach((sourceKey) => runtime.replaceSearch(sourceKey, filters));
+    await refreshDataSources(sourceKeys);
+  }
+
   async function handleSearchSubmit(
     block: LowCodePageSearchFormBlock,
     values: Record<string, unknown>,
     action?: LowCodeAction,
   ) {
     await waitForActionEvent(action);
-    const sourceKeys = searchTargetSourceKeys(block);
-    if (!sourceKeys.length) return;
-    sourceKeys.forEach((sourceKey) => runtime.replaceSearch(sourceKey, values));
-    await refreshDataSources(sourceKeys);
+    await applySearchSubmit(block, values);
   }
 
   async function handleSearchAction(
@@ -993,7 +1055,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     values: Record<string, unknown>
   ) {
     await waitForActionEvent(action);
-    const sourceKeys = searchTargetSourceKeys(block);
+    const sourceKeys = getSearchSourceKeys(block);
     if (action.type === 'reset' && sourceKeys.length) {
       sourceKeys.forEach((sourceKey) => runtime.replaceSearch(sourceKey, {}));
       await refreshDataSources(sourceKeys);
@@ -1001,7 +1063,7 @@ export function useLowCodePageRenderer(props: LowCodePageRendererProps) {
     }
 
     if (action.code === 'submit') {
-      await handleSearchSubmit(block, values);
+      await applySearchSubmit(block, values);
     }
   }
 

@@ -238,6 +238,7 @@ export type LowCodeFormSchema = {
     fields: LowCodeField[];
     layout?: LowCodeFormLayoutNode[];
     actions: LowCodeAction[];
+    queryLogic?: LowCodeSearchQueryRule[];
 };
 export type LowCodeSubFormProps = Record<string, unknown> & {
     schema: LowCodeFormSchema;
@@ -251,6 +252,14 @@ export type LowCodeSubFormField = Omit<LowCodeField, 'component' | 'props'> & {
     props: LowCodeSubFormProps;
 };
 export type LowCodeFormModel = Record<string, unknown>;
+export type LowCodeSearchQueryOperator = 'eq' | 'ne' | 'like' | 'ilike' | 'notLike' | 'notIlike' | 'gt' | 'gte' | 'lt' | 'lte' | 'between' | 'in' | 'notIn' | 'startsWith' | 'endsWith' | 'isNull' | 'isNotNull' | 'contains' | 'containedBy' | 'overlaps';
+export type LowCodeSearchQueryRule = {
+    inputField: string;
+    field?: string;
+    logic?: 'and' | 'or';
+    op?: LowCodeSearchQueryOperator;
+    enabled?: boolean;
+};
 /** Runtime state shared by every edit page. */
 export type LowCodeEditPageMode = 'scan' | 'edit' | 'add';
 export type LowCodeFormProps = {
@@ -585,6 +594,7 @@ export type LowCodePageFormBlock = LowCodeMaterialVersionedBlock & {
     initialValues?: Record<string, unknown>;
     formDesignerModel?: Record<string, unknown>;
     formDesignerUpdatedAt?: number;
+    queryLogic?: LowCodeSearchQueryRule[];
 };
 export type LowCodePageSearchFormBlock = LowCodeMaterialVersionedBlock & {
     id: string;
@@ -597,6 +607,7 @@ export type LowCodePageSearchFormBlock = LowCodeMaterialVersionedBlock & {
     initialValues?: Record<string, unknown>;
     formDesignerModel?: Record<string, unknown>;
     formDesignerUpdatedAt?: number;
+    queryLogic?: LowCodeSearchQueryRule[];
 };
 export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
     id: string;

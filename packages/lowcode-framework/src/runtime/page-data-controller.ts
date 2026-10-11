@@ -115,6 +115,7 @@ export type PageDataControllerDependencies = {
   ): Promise<{ value: unknown }>;
   reportRuntimeDirectiveError(error: unknown): void;
   publishRuntimeEvent(event: LowCodeRuntimeEvent): Promise<void>;
+  hydrateSearchModels?(page: LowCodePageRecord): Promise<void>;
 };
 
 /** Owns data-source concurrency, form persistence, grid hydration, and page loading. */
@@ -934,7 +935,9 @@ export class PageDataController {
 
   readonly commitPendingFormValues = async () => {
     const pendingCommits = this.dependencies.flattenPageBlocks(this.dependencies.props.page.schema)
-      .filter((block): block is LowCodePageFormBlock => block.kind === 'form')
+      .filter((block): block is LowCodePageFormBlock | LowCodePageSearchFormBlock =>
+        block.kind === 'form' || block.kind === 'searchForm',
+      )
       .map((block) => this.dependencies.runtime.getFormController(block.id)?.commitPendingValues?.())
       .filter((value): value is Promise<void> | void => typeof value !== 'undefined');
 
@@ -1069,6 +1072,8 @@ export class PageDataController {
       if (block.kind === 'grid') {
         await this.resolveGridDynamicDefaults(block);
       } else if (block.kind === 'form') {
+        if (preserveGrids && block.formType === 'search' &&
+          Object.prototype.hasOwnProperty.call(this.dependencies.formModels.value, block.id)) continue;
         const sourceKey = this.getFormSourceKey(block);
         this.dependencies.runtime.replaceForm(block.id, await this.deriveFormModel(
           block,
@@ -1084,6 +1089,7 @@ export class PageDataController {
         this.dependencies.runtime.replaceForm(block.id, await this.deriveFormModel(block));
       }
     }//
+    await this.dependencies.hydrateSearchModels?.(nextPage);
     if (!entries.length) {
       this.syncPageGridStates(nextPage.schema);
       this.restoreGridInteractionState(gridInteractionState);

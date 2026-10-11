@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8"><title>查询逻辑设计器回归</title></head>
+  <body>
+    <button id="search">打开查询表单</button>
+    <button id="edit">打开编辑表单</button>
+    <button id="reopen">重新打开已保存表单</button>
+    <pre id="result"></pre>
+    <script type="module">
+      import 'vxe-pc-ui/lib/style.css';
+      import { $$formDesigner } from '../../packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx';
+
+      const fields = [
+        { field: 'keyword', label: '名称', component: 'vxe-input' },
+        { field: 'status', label: '状态', component: 'vxe-input' },
+        { field: 'age', label: '年龄', component: 'vxe-number-input' },
+      ];
+      let saved;
+      async function open(mode, result) {
+        saved = await $$formDesigner({
+          title: mode === 'search' ? '查询表单回归' : '编辑表单回归',
+          mode, fields: result?.fields ?? fields,
+          queryLogic: result?.queryLogic,
+          designerModel: result?.designerModel,
+        });
+        document.querySelector('#result').textContent = JSON.stringify(saved.queryLogic, null, 2);
+      }
+      document.querySelector('#search').onclick = () => open('search');
+      document.querySelector('#edit').onclick = () => open('edit');
+      document.querySelector('#reopen').onclick = () => open('search', saved);
+    </script>
+  </body>
+</html>

@@ -3,21 +3,19 @@ import { access, readFile } from 'node:fs/promises';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const migration = await readFile(
-  new URL('../../supabase/migrations/20260826220000_database_node_actions.sql', import.meta.url),
+  new URL('../../supabase/migrations/20261012120000_grid_search_query_logic.sql', import.meta.url),
   'utf8',
 );
 
-function extractActionSource(anchor) {
-  const anchorIndex = migration.indexOf(anchor);
-  assert.notEqual(anchorIndex, -1, `Missing action seed anchor: ${anchor}`);
-  const sourceStart = migration.indexOf('$action$', anchorIndex);
+function extractActionSource() {
+  const sourceStart = migration.indexOf('$action$');
   const sourceEnd = migration.indexOf('$action$', sourceStart + '$action$'.length);
-  assert.ok(sourceStart > anchorIndex && sourceEnd > sourceStart);
+  assert.ok(sourceStart >= 0 && sourceEnd > sourceStart);
   return migration.slice(sourceStart + '$action$'.length, sourceEnd).trim();
 }
 
 const gridLoadDataMain = new Function(
-  `${extractActionSource("'grid', '表格', 'ri-table-2', 'loadData'")}\nreturn main;`,
+  `${extractActionSource()}\nreturn main;`,
 )();
 
 async function runGridLoadData({
@@ -34,6 +32,7 @@ async function runGridLoadData({
   const invocations = [];
   const assigned = [];
   const loading = [];
+  const savedSearchModels = [];
   const commands = [];
   let latestVersion = 0;
   const value = await gridLoadDataMain.call({
@@ -47,6 +46,7 @@ async function runGridLoadData({
         },
       },
     },
+    page: { code: 'form-definetion' },
     data,
     forms,
     searches,
@@ -63,6 +63,9 @@ async function runGridLoadData({
           case 'source.invoke':
             invocations.push(structuredClone(payload));
             return structuredClone(invokeValue);
+          case 'searchModel.save':
+            savedSearchModels.push(structuredClone(payload));
+            return { id: 'search-model-1', active: true };
           case 'source.isCurrent':
             return payload.version === latestVersion;
           case 'source.set':
@@ -79,7 +82,7 @@ async function runGridLoadData({
       },
     },
   });
-  return { value, invocations, assigned, loading, commands };
+  return { value, invocations, assigned, loading, commands, savedSearchModels };
 }
 
 const mainBlock = {
@@ -134,6 +137,48 @@ assert.deepEqual(mainResult.value, [{ id: 'order-1' }]);
 assert.deepEqual(mainResult.assigned, [[{ id: 'order-1' }]]);
 assert.deepEqual(mainResult.loading, [true, false]);
 
+const staleTargetSearchBlock = {
+  id: 'query-form',
+  kind: 'searchForm',
+  targetSourceKey: 'records',
+  queryLogic: [
+    { inputField: 'name', field: 'name', logic: 'and', op: 'ilike', enabled: true },
+  ],
+  schema: { fields: [{ field: 'name' }] },
+};
+const renamedGridBlock = {
+  ...mainBlock,
+  id: 'vid_877ad5473e',
+  sourceKey: 'vid_877ad5473e',
+};
+const queryLogicResult = await runGridLoadData({
+  block: renamedGridBlock,
+  blocks: [staleTargetSearchBlock, renamedGridBlock],
+  source: {
+    key: 'vid_877ad5473e',
+    postData: { tableName: 'lowcode_form_definitions', filters: { account_id: 'account-1' } },
+  },
+  forms: { 'query-form': { name: '生产' } },
+});
+assert.deepEqual(queryLogicResult.invocations[0].postData.filters, {
+  logic: 'and',
+  conditions: [
+    {
+      logic: 'and',
+      conditions: [{ field: 'account_id', op: 'eq', value: 'account-1' }],
+    },
+    { logic: 'and', conditions: [{ field: 'name', op: 'ilike', value: '生产' }] },
+  ],
+});
+assert.deepEqual(queryLogicResult.savedSearchModels, [{
+  queryValues: {
+    sourceKey: 'vid_877ad5473e',
+    forms: { 'query-form': { name: '生产' } },
+    searches: {},
+    filters: queryLogicResult.invocations[0].postData.filters,
+  },
+}]);
+
 const detailResult = await runGridLoadData({
   block: detailBlock,
   blocks: [mainBlock, detailBlock],
@@ -160,6 +205,7 @@ assert.deepEqual(detailResult.invocations[0].postData.filters, {
   order_id: 'order-1',
 });
 assert.deepEqual(detailResult.invocations[0].postData.requiredFilters, ['order_id']);
+assert.deepEqual(detailResult.savedSearchModels, []);
 
 const configuredDetailResult = await runGridLoadData({
   block: configuredDetailBlock,
@@ -231,7 +277,9 @@ assert.match(
   pageDataControllerSource,
   /resolveLowCodeDataSourceNodeAction\([\s\S]*?props\.page\.node_actions/,
 );
-assert.match(migration, /'grid', '表格', 'ri-table-2', 'loadData'/);
+assert.match(migration, /where node_type = 'grid'[\s\S]*action_code = 'loadData'/);
+assert.match(migration, /function buildSearchFilters\(values, queryLogic\)/);
+assert.match(migration, /this\.\$node\.call\('searchModel\.save'/);
 await assert.rejects(access(new URL('runtime/grid-node-actions.ts', frameworkRoot)), {
   code: 'ENOENT',
 });

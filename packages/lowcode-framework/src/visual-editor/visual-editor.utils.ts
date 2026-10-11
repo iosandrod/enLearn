@@ -3,7 +3,7 @@ import type { CSSProperties } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import type { RequestEnum, ContentTypeEnum } from '../enums/httpEnum';
 import { generateNanoid } from './utils';
-import type { LowCodeExecuteActionHook } from '../types/lowcode';
+import type { LowCodeExecuteActionHook, LowCodeSearchQueryRule } from '../types/lowcode';
 
 /**
  * @description 组件属性
@@ -93,6 +93,7 @@ export type VisualEditorPage = {
   /** 当前页面的所有组件 */
   blocks: VisualEditorBlockData[];
   overlays?: VisualEditorBlockData[];
+  queryLogic?: LowCodeSearchQueryRule[];
 };
 /**
  * @description 可以认为是 路由=>页面

@@ -9,6 +9,7 @@ import {
   readVisualBlockProps,
   toBlockId,
 } from '../helpers';
+import { normalizeLowCodeSearchQueryLogic } from '../../search-query-logic';
 
 const converter: VisualToLowCodeConverter = {
   type: 'lowcode-search-form',
@@ -20,6 +21,7 @@ const converter: VisualToLowCodeConverter = {
     sourceKey: 'records',
     initialValuesJson: '{}',
     fields: [],
+    queryLogic: [],
   },
   toRuntimeBlock(block) {
     const props = readVisualBlockProps(block);
@@ -44,8 +46,10 @@ const converter: VisualToLowCodeConverter = {
       ...(typeof props.formDesignerUpdatedAt === 'number'
         ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
         : {}),
+      queryLogic: normalizeLowCodeSearchQueryLogic(props.queryLogic ?? preservedSchema?.queryLogic),
       schema: {
         ...formSchema,
+        queryLogic: normalizeLowCodeSearchQueryLogic(props.queryLogic ?? preservedSchema?.queryLogic),
         actions: preservedSchema
           ? formSchema.actions
           : [

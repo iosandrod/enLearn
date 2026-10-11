@@ -314,6 +314,17 @@ export type LowCodeFormDefinitionRow = {
   updated_at: string;
 };
 
+export type AdminSearchModelRow = {
+  id: string;
+  user_id: string;
+  page_code: string;
+  name: string;
+  query_values: Json;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 type TableDefinition<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row;
   Insert: Insert;
@@ -387,9 +398,19 @@ export interface Database {
       lowcode_node_actions: TableDefinition<LowCodeNodeActionRow>;
       lowcode_page_runtime: TableDefinition<LowCodeRuntimeFunctionRow>;
       lowcode_form_definitions: TableDefinition<LowCodeFormDefinitionRow>;
+      admin_search_models: TableDefinition<AdminSearchModelRow>;
     };
     Views: Record<string, never>;
     Functions: {
+      save_admin_search_model: {
+        Args: {
+          p_page_code: string;
+          p_query_values: Json;
+          p_model_id: string | null;
+          p_name: string | null;
+        };
+        Returns: Json;
+      };
       add_account_member: {
         Args: {
           account_id: string;

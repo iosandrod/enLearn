@@ -1,7 +1,19 @@
 <template>
+  <div v-if="searchModelsEnabled && searchModelController" class="lc-search-form-host" :class="blockClass" :style="blockStyle">
+    <LowCodeSearchModelTabs
+      :models="searchModelController.state.models"
+      :active-model-id="searchModelController.state.activeId"
+      :loading="searchModelController.state.loading"
+      :create-model="searchModelController.create"
+      :service-api="searchModelController.serviceApi()"
+      @select="searchModelController.select"
+    />
+    <component :is="materialComponent" v-if="materialComponent" v-bind="props" v-on="materialEvents" />
+  </div>
+
   <component
     :is="materialComponent"
-    v-if="materialComponent"
+    v-else-if="materialComponent"
     :class="blockClass"
     :style="blockStyle"
     :block="block"
@@ -28,7 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
+import LowCodeSearchModelTabs from './LowCodeSearchModelTabs.vue';
+import { searchModelControllerKey } from '../runtime/search-model-controller';
 import {
   getLowCodeBlockMaterial,
   lowCodeBlockMaterialRevision,
@@ -38,6 +52,15 @@ import {
 
 const props = defineProps<LowCodeBlockMaterialProps>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const searchModelController = inject(searchModelControllerKey, undefined);
+const searchModelsEnabled = computed(() => searchModelController?.enabled(props.block) ?? false);
+const materialEvents = {
+  formSubmit: (payload: LowCodeBlockMaterialEmits['formSubmit'][0]) => emit('formSubmit', payload),
+  formAction: (payload: LowCodeBlockMaterialEmits['formAction'][0]) => emit('formAction', payload),
+  searchSubmit: (payload: LowCodeBlockMaterialEmits['searchSubmit'][0]) => emit('searchSubmit', payload),
+  searchAction: (payload: LowCodeBlockMaterialEmits['searchAction'][0]) => emit('searchAction', payload),
+  runtimeEvent: (payload: LowCodeBlockMaterialEmits['runtimeEvent'][0]) => emit('runtimeEvent', payload),
+};
 const materialComponent = computed(() => {
   lowCodeBlockMaterialRevision.value;
   return getLowCodeBlockMaterial(props.block.kind)?.component;
@@ -51,3 +74,13 @@ const blockClass = computed(() => [
 ]);
 const blockStyle = computed(() => props.block.style);
 </script>
+
+<style scoped>
+.lc-search-form-host {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+</style>

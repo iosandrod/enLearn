@@ -21,6 +21,7 @@ import type {
   LowCodeOption,
   LowCodePageRecord,
   LowCodeFormSchema,
+  LowCodeSearchQueryRule,
 } from '../../../types/lowcode';
 import type { LowCodeHostServiceApi } from '../../../core/host';
 import { readFormDesignerLayout } from '../../../lowcode/visual-converters/helpers';
@@ -34,6 +35,7 @@ import { defer } from '../../utils/defer';
 import {
   formDesignerPageDataKey,
   formDesignerModeKey,
+  formDesignerQueryLogicKey,
   formDesignerTableFieldOptionsKey,
   type FormDesignerMode,
 } from '../../form-designer-context';
@@ -42,6 +44,7 @@ import {
   loadFormDesignerTableFieldOptions,
   mergeTableFieldOptions,
 } from '../../material-prop-forms/table-field-options';
+import { normalizeLowCodeSearchQueryLogic, reconcileLowCodeSearchQueryLogic } from '../../../lowcode/search-query-logic';
 
 export type FormDesignerField = {
   field: string;
@@ -66,6 +69,7 @@ export type FormDesignerResult = {
   layout: LowCodeFormLayoutNode[];
   designerModel: VisualEditorModelValue;
   header?: Record<string, unknown>;
+  queryLogic?: LowCodeSearchQueryRule[];
 };
 
 export type FormDesignerHeaderForm = {
@@ -87,6 +91,7 @@ export interface FormDesignerServiceOption {
   /** The layer is allocated by $$formDesigner so nested designers stack above their parent. */
   zIndex?: number;
   mode?: FormDesignerMode;
+  queryLogic?: LowCodeSearchQueryRule[];
   fields?: FormDesignerField[];
   layout?: LowCodeFormLayoutNode[];
   columns?: number;
@@ -503,7 +508,10 @@ function createLowCodeFormSchema(
 export function createLowCodeFormSchemaFromDesignerResult(
   result: FormDesignerResult,
 ): LowCodeFormSchema {
-  return createLowCodeFormSchema(result.fields, result.designerModel, result.layout);
+  return {
+    ...createLowCodeFormSchema(result.fields, result.designerModel, result.layout),
+    ...(result.queryLogic ? { queryLogic: cloneDeep(result.queryLogic) } : {}),
+  };
 }
 
 function normalizeSubFormProps(props: Record<string, unknown>) {
@@ -1141,6 +1149,7 @@ const ServiceComponent = defineComponent({
       computed<FormDesignerMode>(() => state.option.mode || 'edit'),
     );
     provide(formDesignerTableFieldOptionsKey, tableFieldOptions);
+    provide(formDesignerQueryLogicKey, { getFields: extractFields });
 
     const loadTableFieldOptions = async () => {
       const sequence = ++tableFieldLoadSequence;
@@ -1225,6 +1234,9 @@ const ServiceComponent = defineComponent({
         // state.activeContentTab = 'form';
         void loadTableFieldOptions();
         state.initialData = resolveInitialModel(option);
+        state.initialData.pages['/'].queryLogic = normalizeLowCodeSearchQueryLogic(
+          option.queryLogic ?? option.designerModel?.pages?.['/']?.queryLogic,
+        );
         state.providerKey += 1;
         providerRef.value = null;
         await methods.show();
@@ -1259,6 +1271,9 @@ const ServiceComponent = defineComponent({
             fields,
             layout: readFormDesignerLayout(snapshot.model) ?? [],
             designerModel: snapshot.model,
+            ...(state.option.mode === 'search' ? {
+              queryLogic: reconcileLowCodeSearchQueryLogic(snapshot.currentPage.queryLogic, fields),
+            } : {}),
             header: state.option.headerForm
               ? cloneDeep(state.option.headerForm.model)
               : undefined,

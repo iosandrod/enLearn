@@ -16,6 +16,7 @@ import {
   readVisualBlockProps,
   toBlockId,
 } from '../helpers';
+import { normalizeLowCodeSearchQueryLogic } from '../../search-query-logic';
 
 type FormType = 'edit' | 'search' | 'default';
 
@@ -99,6 +100,7 @@ const converter: VisualToLowCodeConverter = {
       { code: 'reset', label: '重置', type: 'reset', eventName: 'form.reset', directivesJson: [] },
     ],
     fields: [],
+    queryLogic: [],
   },
   validate(block) {
     const props = readVisualBlockProps(block);
@@ -137,8 +139,14 @@ const converter: VisualToLowCodeConverter = {
       ...(typeof props.formDesignerUpdatedAt === 'number'
         ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
         : {}),
+      ...(formType === 'search'
+        ? { queryLogic: normalizeLowCodeSearchQueryLogic(props.queryLogic ?? preservedSchema?.queryLogic) }
+        : {}),
       schema: {
         ...formSchema,
+        ...(formType === 'search'
+          ? { queryLogic: normalizeLowCodeSearchQueryLogic(props.queryLogic ?? preservedSchema?.queryLogic) }
+          : {}),
         actions: designedActions.length
           ? designedActions
           : preservedSchema

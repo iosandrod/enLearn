@@ -60,6 +60,9 @@ export class RuntimeBlockMapper {
           'formDesignerModel' in update.changes ? update.changes.formDesignerModel : null,
         );
         visualProps.formDesignerUpdatedAt = update.changes.formDesignerUpdatedAt ?? Date.now();
+        visualProps.queryLogic = cloneRuntimeValue(
+          update.changes.queryLogic ?? targetBlock.queryLogic ?? schema.queryLogic ?? [],
+        );
         candidate.props = visualProps;
       }
 
