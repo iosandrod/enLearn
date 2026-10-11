@@ -5696,6 +5696,7 @@ button {
 .data-source-panel__header-form {
 	height: calc(100% - 42px);
 	min-height: 0;
+	background:white;
 }
 
 .data-source-panel__detail {

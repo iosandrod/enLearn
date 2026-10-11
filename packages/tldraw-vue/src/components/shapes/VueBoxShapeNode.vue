@@ -18,6 +18,17 @@ const strokeWidth = computed(() => getCanvasStrokeWidth(props.shape.props.size, 
 const strokeColor = computed(() => getThemeColor(props.shape.props.color, 'solid'))
 const markColor = computed(() => props.shape.props.fill === 'solid' ? '#ffffff' : strokeColor.value)
 const patternId = computed(() => `vue-box-pattern-${props.shape.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`)
+const backgroundClipId = computed(() => `vue-box-background-${props.shape.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`)
+const backgroundColor = computed(() =>
+	typeof props.shape.props.backgroundColor === 'string'
+		? props.shape.props.backgroundColor.trim()
+		: ''
+)
+const backgroundImage = computed(() =>
+	typeof props.shape.props.backgroundImage === 'string'
+		? props.shape.props.backgroundImage.trim()
+		: ''
+)
 const fillValue = computed(() =>
 	props.shape.props.fill === 'pattern'
 		? `url(#${patternId.value})`
@@ -55,12 +66,28 @@ const markSegments = computed(() => getVueBoxMarkSegments(
 			preserveAspectRatio="none"
 			aria-hidden="true"
 		>
-			<defs v-if="shape.props.fill === 'pattern'">
-				<pattern :id="patternId" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(135)">
+			<defs v-if="shape.props.fill === 'pattern' || backgroundImage">
+				<clipPath v-if="backgroundImage" :id="backgroundClipId">
+					<path :d="shapePath" />
+				</clipPath>
+				<pattern v-if="shape.props.fill === 'pattern'" :id="patternId" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(135)">
 					<rect width="12" height="12" :fill="getThemeColor(shape.props.color, 'semi')" />
 					<rect x="6" width="1" height="12" :fill="getThemeColor(shape.props.color, 'pattern')" />
 				</pattern>
 			</defs>
+			<path
+				class="vue-box-shape__surface"
+				:d="shapePath"
+				:fill="backgroundColor || 'transparent'"
+			/>
+			<image
+				v-if="backgroundImage"
+				:href="backgroundImage"
+				:width="shape.props.w"
+				:height="shape.props.h"
+				:clip-path="`url(#${backgroundClipId})`"
+				preserveAspectRatio="xMidYMid slice"
+			/>
 			<path
 				class="vue-box-shape__surface"
 				:d="shapePath"

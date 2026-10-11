@@ -98,8 +98,12 @@ const baseDefinitions = {
 	},
 	backgroundColor: {
 		validator: T.optional(T.string),
-		default: '',//
-	}
+		defaultValue: '',
+	},
+	backgroundImage: {
+		validator: T.optional(T.string),
+		defaultValue: '',
+	},//
 } as const
 
 /** Properties present on every custom canvas node. Node registries extend this set. */
@@ -121,4 +125,6 @@ export type BaseProps = {
 	expression?: string
 	showBorder?: boolean//
 	borderRadius?: number//
+	backgroundColor?: string
+	backgroundImage?: string
 }

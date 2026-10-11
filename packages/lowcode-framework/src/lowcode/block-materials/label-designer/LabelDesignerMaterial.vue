@@ -445,9 +445,9 @@ async function loadTemplatePage(append: boolean) {
   templateLoading.value = true;
   try {
     const filters: Record<string, unknown> = {};
-    if (templateStatusFilter.value === 'all') filters.status = ['active', 'draft'];
-    else filters.status = templateStatusFilter.value;
-    const search = templateSearch.value.trim();
+    // if (templateStatusFilter.value === 'all') filters.status = ['active', 'draft'];
+    // else filters.status = templateStatusFilter.value;
+    const search = templateSearch.value.trim();//
     if (search) filters.name = { op: 'ilike', value: search };
     const response = await host.getServiceApi().invoke<any>('admin', 'listItems', {
       tableName: 'print_templates',

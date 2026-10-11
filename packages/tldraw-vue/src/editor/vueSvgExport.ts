@@ -202,11 +202,35 @@ export function createVueBoxSvg(editor: Editor, shape: VueBoxShape): SvgExportNo
 		shape.props.borderRadius
 	)
 	const dashArray = getDashArray(shape.props.dash, strokeWidth)
+	const backgroundClipId = `vue-box-background-${sanitizeSvgId(shape.id)}`
+	const backgroundColor = typeof shape.props.backgroundColor === 'string'
+		? shape.props.backgroundColor.trim()
+		: ''
+	const backgroundImage = typeof shape.props.backgroundImage === 'string'
+		? shape.props.backgroundImage.trim()
+		: ''
 
 	return createElement(
 		'g',
 		null,
 		fill.def,
+		backgroundImage
+			? createElement('defs', null, createElement('clipPath', { id: backgroundClipId },
+				createElement('path', { d: path })))
+			: null,
+		createElement('path', {
+			d: path,
+			fill: backgroundColor || 'transparent',
+		}),
+		backgroundImage
+			? createElement('image', {
+				href: backgroundImage,
+				width: shape.props.w,
+				height: shape.props.h,
+				clipPath: `url(#${backgroundClipId})`,
+				preserveAspectRatio: 'xMidYMid slice',
+			})
+			: null,
 		createElement('path', {
 			d: path,
 			fill: fill.value,

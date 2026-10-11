@@ -60,6 +60,10 @@ function normalizeOption<T extends string>(
 }
 
 const definitions = {
+	backgroundImageFileId: {
+		validator: T.optional(T.string),
+		defaultValue: '',
+	},
 	geo: {
 		validator: T.literalEnum(
 			'rectangle',
@@ -123,6 +127,7 @@ const definitions = {
 
 export const vueBoxPropertyRegistry = extendShapeProperties(baseProps, definitions)
 export type VueBoxProps = BaseProps & {
+	backgroundImageFileId?: string
 	geo: VueGeoShape
 	borderRadius: number
 	color: TLDefaultColorStyle

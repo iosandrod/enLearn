@@ -2,7 +2,7 @@
 import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { normalizeWorkspaceBackgroundOpacity, type WorkspaceBackgroundConfig } from '@/editor/templateStore'
 
 const BACKGROUND_FORM_CODE = 'print-designer.background'
@@ -13,7 +13,10 @@ const emit = defineEmits<{ 'update:background': [background: WorkspaceBackground
 
 const host = useLowCodeHost()
 const schema = ref<LowCodeFormSchema | null>(null)
-const model = ref<Record<string, unknown>>({})
+// const model = ref<Record<string, unknown>>({})
+const model = computed(()=>{
+	return props.background//
+})
 const loading = ref(true)
 const errorMessage = ref('')
 const uploadError = ref('')
@@ -25,14 +28,14 @@ watch(
 	(background) => {
 		const fileId = getBackgroundFileId(background)//
 		//Object.assign(model.value, background)//
-		model.value = {
-			...background,
-			color: background.color,
-			imageUrl: fileId || background.imageUrl || '',
-			imageSize: background.imageSize,
-			imagePosition: background.imagePosition,//
-			opacity: normalizeWorkspaceBackgroundOpacity(background.opacity),
-		}//
+		// model.value = {
+		// 	...background,
+		// 	color: background.color,
+		// 	imageUrl: fileId || background.imageUrl || '',
+		// 	imageSize: background.imageSize,
+		// 	imagePosition: background.imagePosition,//
+		// 	opacity: normalizeWorkspaceBackgroundOpacity(background.opacity),
+		// }//
 		if (fileId && fileId !== hydratedFileId) {
 			hydratedFileId = fileId
 			void hydrateBackgroundImage(fileId)
@@ -70,7 +73,8 @@ async function loadSchema() {
 
 function handleModelUpdate(value: Record<string, unknown>) {
 	const nextModel = { ...model.value, ...value }
-	model.value = nextModel
+	// model.value = nextModel//
+	Object.assign(model.value, nextModel)//
 	const imageSize = nextModel.imageSize
 	const opacity = normalizeWorkspaceBackgroundOpacity(nextModel.opacity, props.background.opacity ?? 100)
 	const hasImageValue = Object.prototype.hasOwnProperty.call(value, 'imageUrl')

@@ -128,6 +128,16 @@ const uploadedImageShapeKeys = useEditorValue('uploaded image shape keys', () =>
 		})
 		.join('|')
 )
+const uploadedBoxBackgroundKeys = useEditorValue('uploaded box background keys', () =>
+	props.editor.getCurrentPageShapes()
+		.filter((shape) => shape.type === 'vue-box')
+		.map((shape) => {
+			const shapeProps = getProps(shape)
+			const legacyId = readImageFileId(shapeProps.backgroundImage)
+			return `${shape.id}:${shapeProps.backgroundImageFileId ?? ''}:${isFileObjectId(legacyId) ? legacyId : ''}`
+		})
+		.join('|')
+)
 
 const isCanvasFormActive = computed(() => selectedShapeIds.value.length === 0)
 const isMultiShapeFormActive = computed(() => multiSelectedShapeType.value !== null)
@@ -448,6 +458,47 @@ function readImageFileId(value: unknown) {
 
 function isFileObjectId(value: string) {
 	return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
+async function hydrateUploadedBoxBackground(shapeId: TLShape['id']) {
+	const shape = props.editor.getShape(shapeId)
+	if (!shape || shape.type !== 'vue-box') return
+	const currentProps = getProps(shape)
+	const storedId = readImageFileId(currentProps.backgroundImageFileId)
+	const legacyId = readImageFileId(currentProps.backgroundImage)
+	const fileId = storedId || (isFileObjectId(legacyId) ? legacyId : '')
+	if (!isFileObjectId(fileId)) return
+	if (!storedId) {
+		props.editor.run(() => props.editor.updateShape({
+			id: shape.id, type: shape.type,
+			props: { backgroundImageFileId: fileId, backgroundImage: '' },
+		} as TLShapePartial), { history: 'ignore' })
+	}
+
+	try {
+		let resolved = imageSourceCache.get(fileId)
+		if (!resolved) {
+			let request = imageSourceRequests.get(fileId)
+			if (!request) {
+				request = resolveUploadedImageSource(fileId)
+				imageSourceRequests.set(fileId, request)
+				request.finally(() => imageSourceRequests.delete(fileId)).catch(() => undefined)
+			}
+			resolved = await request
+			imageSourceCache.set(fileId, resolved)
+		}
+		const current = props.editor.getShape(shapeId)
+		if (!current || current.type !== 'vue-box' || getProps(current).backgroundImageFileId !== fileId) return
+		if (getProps(current).backgroundImage === resolved.src) return
+		props.editor.run(() => props.editor.updateShape({
+			id: current.id, type: current.type, props: { backgroundImage: resolved.src },
+		} as TLShapePartial), { history: 'ignore' })
+	} catch (error) {
+		const current = props.editor.getShape(shapeId)
+		if (current && getProps(current).backgroundImageFileId === fileId) {
+			imageSourceError.value = error instanceof Error ? error.message : '背景图片加载失败，请重新上传。'
+		}
+	}
 }
 
 async function hydrateUploadedImageShape(shapeId: TLShape['id'], requestedFileId = '') {
@@ -1046,6 +1097,13 @@ watch(
 	{ immediate: true }
 )
 
+watch(uploadedBoxBackgroundKeys, () => {
+	if (props.columnOnly) return
+	for (const shape of props.editor.getCurrentPageShapes()) {
+		if (shape.type === 'vue-box') void hydrateUploadedBoxBackground(shape.id)
+	}
+}, { immediate: true })
+
 function syncFormModel() {
 	skipNextMultiModelChange = false
 	previousMultiFormModel = {}
@@ -1353,6 +1411,12 @@ function getFlatPropsModel(shape: TLShape): ShapeFormModel {
 		const fileId = readImageFileId(props.fileId)
 		if (fileId) model.src = fileId
 	}
+	if (shape.type === 'vue-box') {
+		const fileId = readImageFileId(props.backgroundImageFileId)
+		if (fileId && activeSchema.value?.fields.some((field) => field.field === 'backgroundImage' && field.component === 'vxe-upload')) {
+			model.backgroundImage = fileId
+		}
+	}
 	if (shape.type === 'vue-text') {
 		model.justifyContent = getOptionValue(props.justifyContent, textJustifyContentOptions, 'start')
 		model.alignItems = getOptionValue(props.alignItems, textAlignItemsOptions, 'center')
@@ -1409,6 +1473,18 @@ function getPropsPartial(shape: TLShape, model: ShapeFormModel) {
 				? typeof model[key] === 'string' ? model[key] : JSON.stringify(model[key] ?? {})
 				: model[key]
 			nextProps[key] = biChartPropertyRegistry.normalize(key, value, currentProps[key])
+			continue
+		}
+		if (shape.type === 'vue-box' && key === 'backgroundImage') {
+			const candidate = Array.isArray(model[key]) ? model[key][0] : model[key]
+			const value = isRecord(candidate)
+				? String(candidate.fileId ?? candidate.id ?? candidate.url ?? '').trim()
+				: typeof candidate === 'string' ? candidate.trim() : ''
+			const fileId = isFileObjectId(value) ? value : ''
+			nextProps.backgroundImageFileId = fileId
+			nextProps.backgroundImage = fileId
+				? fileId === currentProps.backgroundImageFileId ? currentProps.backgroundImage ?? '' : ''
+				: value
 			continue
 		}
 		if (shape.type === 'vue-box' && vueBoxPropertyRegistry.has(key)) {

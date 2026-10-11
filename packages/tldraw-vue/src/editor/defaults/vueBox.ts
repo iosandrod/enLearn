@@ -15,4 +15,7 @@ export const vueBoxDefaultProps = {
 	dash: 'draw' as TLDefaultDashStyle,
 	size: 'm' as TLDefaultSizeStyle,
 	fill: 'semi' as TLDefaultFillStyle,
+	backgroundColor: '',
+	backgroundImage: '',
+	backgroundImageFileId: '',
 } as const

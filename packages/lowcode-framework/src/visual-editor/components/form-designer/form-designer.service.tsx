@@ -540,8 +540,8 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     component === 'lc-monaco-editor'
       ? normalizeCodeEditorProps(fieldProps)
       : component === 'lc-sub-form'
-      ? normalizeSubFormProps(fieldProps)
-      : fieldProps;
+        ? normalizeSubFormProps(fieldProps)
+        : fieldProps;
   const options = parseJsonArray(field.optionsJson);
   const optionsCode = readString(field.optionsCode);
   const defaultValueType = field.defaultValueType === 'function' || field.defaultValueType === 'procedure'
@@ -657,10 +657,10 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     else delete block.props.schema;
     block.props.subFormDesignerModel =
       isVisualEditorModel(subFormDesignerModel) &&
-      isDesignerModelCompatible(subFormDesignerModel, designerFields) &&
-      canReuseDesignerLayout(subFormDesignerModel, initialLayout)
-      ? cloneDeep(subFormDesignerModel)
-      : createFormModel(
+        isDesignerModelCompatible(subFormDesignerModel, designerFields) &&
+        canReuseDesignerLayout(subFormDesignerModel, initialLayout)
+        ? cloneDeep(subFormDesignerModel)
+        : createFormModel(
           designerFields,
           `${block.props.label || '子表单'}设计`,
           schemaLayout,
@@ -1005,7 +1005,7 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     optionsJson: getOptionsJson(block, runtimeComponent),
     defaultValueType:
       block.props?.__lowcodeDefaultValueType === 'function' ||
-      block.props?.__lowcodeDefaultValueType === 'procedure'
+        block.props?.__lowcodeDefaultValueType === 'procedure'
         ? block.props.__lowcodeDefaultValueType
         : undefined,
     defaultValue: block.props?.__lowcodeDefaultValue,
@@ -1095,10 +1095,7 @@ function isDesignerModelCompatible(
 }
 
 function validateFields(fields: FormDesignerField[]) {
-  if (!fields.length) {
-    ElMessage.error('请至少拖入一个表单项控件');
-    return false;
-  }
+  
 
   const invalidField = fields.find((field) => !field.field || !field.label);
   if (invalidField) {
@@ -1106,14 +1103,7 @@ function validateFields(fields: FormDesignerField[]) {
     return false;
   }
 
-  const duplicateField = fields.find(
-    (field, index) => fields.findIndex((item) => item.field === field.field) !== index,
-  );
-
-  if (duplicateField) {
-    ElMessage.error(`字段 ${duplicateField.field} 重复`);
-    return false;
-  }
+  
 
   return true;
 }
@@ -1134,8 +1124,9 @@ const ServiceComponent = defineComponent({
 
     const state = reactive({
       option: props.option,
-      showFlag: false,
-      activeContentTab: 'form',
+      showFlag: false,//
+      //@ts-ignore
+      activeContentTab: props.option.activeContentTab || 'form',
       providerKey: 0,
       initialData: createFormModel([], props.option.title || '表单设计'),
       mounted: (() => {
@@ -1231,7 +1222,7 @@ const ServiceComponent = defineComponent({
       service: async (option: FormDesignerServiceOption) => {
         closeCommitted = false;
         state.option = option;
-        state.activeContentTab = 'form';
+        // state.activeContentTab = 'form';
         void loadTableFieldOptions();
         state.initialData = resolveInitialModel(option);
         state.providerKey += 1;
@@ -1333,24 +1324,7 @@ const ServiceComponent = defineComponent({
             <strong>表单拖拽设计</strong>
             <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
           </div>
-          {state.option.headerForm ? (
-            <div class="form-workbench-header-form">
-              <LowCodeForm
-                ref={headerFormRef}
-                schema={state.option.headerForm.schema}
-                modelValue={state.option.headerForm.model}
-                onUpdate:modelValue={(value: Record<string, unknown>) => {
-                  const nextModel = { ...value };
-                  state.option.headerForm?.onUpdateModel?.(nextModel);
-                  if (state.option.headerForm) {
-                    const model = state.option.headerForm.model;
-                    Object.keys(model).forEach((key) => delete model[key]);
-                    Object.assign(model, nextModel);
-                  }
-                }}
-              />
-            </div>
-          ) : null}
+
         </div>
         {renderDesigner()}
       </div>
@@ -1361,48 +1335,69 @@ const ServiceComponent = defineComponent({
       if (!contentTabs.length) return renderPrimaryTab();
 
       return (
-        <div class="form-workbench-content-tabs">
-          <div class="form-workbench-content-tabs__header" role="tablist" aria-label="数据源设计区域">
-            <button
-              type="button"
-              class={{ 'is-active': state.activeContentTab === 'form' }}
-              role="tab"
-              aria-selected={state.activeContentTab === 'form'}
-              onClick={() => { state.activeContentTab = 'form'; }}
-            >
-              {state.option.primaryTabLabel || '表单'}
-            </button>
-            {contentTabs.map((tab) => (
+        <div class="form-workbench-content-tabs h-full overflow-hidden">
+          <div class="form-workbench-content-tabs__header flex flex-col h-full overflow-hidden" role="tablist" aria-label="数据源设计区域" style="height: 100%;">
+            {state.option.headerForm ? (
+              <div class="form-workbench-header-form">
+                <LowCodeForm
+                  ref={headerFormRef}
+                  schema={state.option.headerForm.schema}
+                  modelValue={state.option.headerForm.model}
+                  onUpdate:modelValue={(value: Record<string, unknown>) => {
+                    const nextModel = { ...value };
+                    state.option.headerForm?.onUpdateModel?.(nextModel);
+                    if (state.option.headerForm) {
+                      const model = state.option.headerForm.model;
+                      Object.keys(model).forEach((key) => delete model[key]);
+                      Object.assign(model, nextModel);
+                    }
+                  }}
+                />
+              </div>
+            ) : null}
+            <div class='flex-1'>
               <button
-                key={tab.name}
                 type="button"
-                class={{ 'is-active': state.activeContentTab === tab.name }}
+                class={{ 'is-active': state.activeContentTab === 'form' }}
                 role="tab"
-                aria-selected={state.activeContentTab === tab.name}
-                onClick={() => { state.activeContentTab = tab.name; }}
+                aria-selected={state.activeContentTab === 'form'}
+                onClick={() => { state.activeContentTab = 'form'; }}
               >
-                {tab.label}
+                {state.option.primaryTabLabel || '表单'}
               </button>
-            ))}
-          </div>
-          <div class="form-workbench-content-tabs__body">
-            <div
-              class="form-workbench-tab-pane form-workbench-tab-pane--designer"
-              style={{ display: state.activeContentTab === 'form' ? 'flex' : 'none' }}
-              role="tabpanel"
-            >
-              {renderPrimaryTab()}
+
+              {contentTabs.map((tab) => (
+                <button
+                  key={tab.name}
+                  type="button"
+                  class={{ 'is-active': state.activeContentTab === tab.name }}
+                  role="tab"
+                  aria-selected={state.activeContentTab === tab.name}
+                  onClick={() => { state.activeContentTab = tab.name; }}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
-            {contentTabs.map((tab) => (
+            <div class="form-workbench-content-tabs__body">
+              {contentTabs.map((tab) => (
+                <div
+                  key={tab.name}
+                  class="form-workbench-tab-pane form-workbench-tab-pane--custom"
+                  style={{ display: state.activeContentTab === tab.name ? 'flex' : 'none' }}
+                  role="tabpanel"
+                >
+                  {tab.render()}
+                </div>
+              ))}
               <div
-                key={tab.name}
-                class="form-workbench-tab-pane form-workbench-tab-pane--custom"
-                style={{ display: state.activeContentTab === tab.name ? 'flex' : 'none' }}
+                class="form-workbench-tab-pane form-workbench-tab-pane--designer"
+                style={{ display: state.activeContentTab === 'form' ? 'flex' : 'none' }}
                 role="tabpanel"
               >
-                {tab.render()}
+                {renderPrimaryTab()}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       );

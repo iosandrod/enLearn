@@ -9,7 +9,7 @@ import { createFormDesignerFieldsFromSchema } from '@enlearn/lowcode-framework/l
 import type { FormDesignerResult } from '@enlearn/lowcode-framework/visual-editor/components/form-designer/form-designer.service'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dialog'
-import { createPrintDetailToolbar, type PrintDetailActionRequest } from '@enlearn/lowcode-framework/runtime'
+import { createPrintDetailToolbar, lowCodeOptionSourceRegistry, type PrintDetailActionRequest } from '@enlearn/lowcode-framework/runtime'
 import type { Editor } from '@tldraw/editor'
 import { computed, h, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import * as XLSX from 'xlsx'
@@ -221,9 +221,12 @@ async function handleAddDataSource() {
 		],
 		columns: 1,
 		primaryTabLabel: '表单',
+		//@ts-ignore
+		activeContentTab: 'detail',
 		contentTabs: [{
 			name: 'detail',
 			label: '明细',
+
 			render: () => h(PrintDataSourceDetailDesigner, {
 				modelValue: detailTablesDraft.value,
 				serviceApi,
@@ -318,10 +321,10 @@ function handleDesignDataSource() {
 				result,
 				definition.id,
 				definition.schema,
-				detailTablesDraft.value,
+				detailTablesDraft.value,//
 			)
-			await loadDefinitions()
-			setActionMessage('数据源设计已保存。')
+			// await loadDefinitions()
+			// setActionMessage('数据源设计已保存。')
 		},
 	})
 }
@@ -808,6 +811,20 @@ function createDataSourceDefinitionSchema(readonlyCode = false): LowCodeFormSche
 	return {} as any
 }
 
+async function refreshDataSourceSelectorOptions() {
+	const optionsCode = readString(
+		selectorDefinition.value?.schema.fields.find((field) => field.field === 'formCode')?.optionsCode,
+	) || 'print_data_source_form_definition'
+	if (!optionsCode) return
+	try {
+		await lowCodeOptionSourceRegistry.refresh([optionsCode], () => host.getServiceApi())
+	} catch (error) {
+		// The definition has already been saved. A refresh failure must not keep
+		// the designer open and cause a duplicate create on the next confirmation.
+		console.warn('刷新打印数据源下拉选项失败。', error)
+	}
+}
+
 async function saveDataSourceDefinition(
 	model: Record<string, unknown>,
 	result: FormDesignerResult,
@@ -839,18 +856,19 @@ async function saveDataSourceDefinition(
 		columns: 1,
 		printDetail: detailTableDefinitions ?? existingSchema?.printDetail ?? [],
 	}
-	await serviceApi.invoke('lowcode', id ? 'updateItem' : 'createItem', {
+	await serviceApi.invoke('lowcode', id ? 'saveItem' : 'saveItem', {
 		resource: 'lowcode_form_definitions',
 		...(id ? { id } : {}),
 		data: {
 			...(id ? {} : { code }),
 			name,
 			description,
-			table_name: tableName,
+			table_name: tableName || null,
 			schema,
 			enabled: true,
-		},
+		},//
 	})
+	await refreshDataSourceSelectorOptions()
 	return code
 }
 
@@ -1011,7 +1029,7 @@ async function activateDefinition(code: string, resetModel: boolean) {
 	const definition = await loadStoredFormDefinition(code)
 	if (requestRevision !== definitionRequestRevision) return
 	if (!isPrintDataSourceFormDefinition(definition)) {
-		throw new Error(`表单定义“${code}”未关联业务表或 schema 无效。`)
+		throw new Error(`表单定义“${code}”的 schema 无效。`)
 	}
 
 	activeDefinition.value = definition
@@ -1036,9 +1054,10 @@ async function activateDefinition(code: string, resetModel: boolean) {
 	if (resetModel || !currentSource || currentSource.type === 'none') {
 		applyFormModel(formModel.value, definition)
 	}
-	setTimeout(() => {//
-			handleFetchDetailData(activeDetailTable.value as PrintDataSourceDetailTable)
-		}, 400)//
+	setTimeout(() => {
+		const table = activeDetailTable.value
+		if (table) void handleFetchDetailData(table)
+	}, 400)
 }
 
 async function loadStoredFormDefinition(code: string): Promise<StoredFormDefinition> {
@@ -1054,6 +1073,9 @@ async function loadStoredFormDefinition(code: string): Promise<StoredFormDefinit
 	}
 	return {
 		...definition,
+		table_name: typeof definition.table_name === 'string' && definition.table_name.trim()
+			? definition.table_name.trim()
+			: null,
 		schema: structuredClone(definition.schema),
 	}
 }

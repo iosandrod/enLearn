@@ -16,7 +16,7 @@ export interface PrintDataSourceFormDefinition {
 	code: string
 	name: string
 	description?: string | null
-	table_name: string
+	table_name: string | null
 	schema: PrintDataSourceFormSchema
 	enabled: boolean
 }
@@ -75,8 +75,7 @@ export function isPrintDataSourceFormDefinition(
 		typeof value.id === 'string' &&
 		typeof value.code === 'string' &&
 		typeof value.name === 'string' &&
-		typeof value.table_name === 'string' &&
-		value.table_name.trim().length > 0 &&
+		(value.table_name === null || typeof value.table_name === 'string') &&
 		value.enabled !== false &&
 		isLowCodeFormSchema(value.schema)
 	)
@@ -112,7 +111,7 @@ export function createInlinePrintDataSource(
 	return {
 		type: 'inline',
 		formCode: definition.code,
-		tableName: definition.table_name,
+		...(definition.table_name ? { tableName: definition.table_name } : {}),
 		detailField,
 		detailColumns: detailTables[0]?.columns ?? [],
 		detailTables,

@@ -73,7 +73,9 @@
                   :label="option.label"
                   :value="option.value"
                   :disabled="option.disabled"
-                />
+                >
+                  <template #default>{{ option.label }}({{ option.value }})</template>
+                </vxe-option>
               </vxe-select>
               <div
                 v-else-if="shouldUseObjectEditor(column, scope.row)"
