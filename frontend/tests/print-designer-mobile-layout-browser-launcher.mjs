@@ -62,7 +62,8 @@ try {
   });
 
   const panelBox = await box(page.locator('.designer-side-panel'));
-  assert.deepEqual(panelBox, { x: 0, y: 368, width: 442, height: 460 });
+  assert.deepEqual(panelBox, { x: 0, y: 548, width: 442, height: 280 });
+  assert.equal(await page.locator('.designer-mobile-backdrop').count(), 0);
 
   const firstTabBox = await box(page.locator('.designer-side-tab').first());
   assert.equal(firstTabBox.width, 46);

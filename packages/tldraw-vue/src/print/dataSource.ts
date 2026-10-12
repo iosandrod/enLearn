@@ -1,9 +1,21 @@
 import type { PrintDataRow, PrintDataSourceConfig, PrintDataSourceProvider, PrintPreviewSettings } from './types'
 
 const providerRegistry = new Map<string, PrintDataSourceProvider>()
+const previewDetailRows = new WeakMap<PrintDataRow, Record<string, PrintDataRow>>()
 
 // Reserved preview source selector; the inline source remains { rows, detailTables }.
 export const PRINT_HEADER_PREVIEW_SOURCE = '$header'
+
+/** The active detail record, without replacing the source's full detail array. */
+export function getPrintPreviewDetailRows(row: PrintDataRow) {
+	return previewDetailRows.get(row)
+}
+
+function createDetailPreviewRow(sourceRow: PrintDataRow, detailField: string, detailRow: PrintDataRow) {
+	const row = { ...detailRow, ...sourceRow }
+	previewDetailRows.set(row, { [detailField]: detailRow })
+	return row
+}
 
 type InlinePrintDataSourceConfig = Extract<PrintDataSourceConfig, { type: 'inline' }>
 type JsonPrintDataSourceConfig = Extract<PrintDataSourceConfig, { type: 'json' }>
@@ -101,7 +113,9 @@ export function resolvePrintPreviewRows(
 		return sourceRows.flatMap(sourceRow => {
 			const details = sourceRow[detailField]
 			const records = Array.isArray(details) ? details.filter(isRecord) : []
-			return records.length ? records.map(detail => ({ ...detail, ...sourceRow })) : [{ ...sourceRow }]
+			return records.length
+				? records.map(detail => createDetailPreviewRow(sourceRow, detailField, detail))
+				: [{ ...sourceRow }]
 		})
 	}
 	if (!dataSource || dataSource.type !== 'inline') return rows ? normalizeRows(rows) : undefined
@@ -112,7 +126,7 @@ export function resolvePrintPreviewRows(
 	const detailRows = sourceRow?.[detailField]
 	const normalized = normalizeRows(detailRows).filter((row) => isRecord(row))
 	return normalized.length
-		? normalized.map((detailRow) => ({ ...detailRow, ...sourceRow }))
+		? normalized.map((detailRow) => createDetailPreviewRow(sourceRow, detailField, detailRow))
 		: [{}]
 }
 

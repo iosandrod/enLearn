@@ -1,4 +1,5 @@
 import { evaluateNamedPrintExpression } from './expressions.ts'
+import { getPrintPreviewDetailRows } from './dataSource.ts'
 import type { PrintExpressionConfig, PrintExpressionContext, PrintNamedExpression } from './types'
 
 const EXPRESSION_PATTERN = /{{\s*([^{}]+?)\s*}}/g
@@ -59,6 +60,11 @@ function resolvePathExpression(
 	context: PrintExpressionContext,
 	config: PrintExpressionConfig
 ) {
+	if (expression.includes('.')) {
+		const details = context.currentDetailRows ?? getPrintPreviewDetailRows(context.row)
+		const detailValue = getPathValue(details, expression)
+		if (detailValue !== undefined) return detailValue
+	}
 	const rowValue = getPathValue(context.row, expression)
 	if (rowValue !== undefined) return rowValue
 

@@ -12,7 +12,7 @@ export type DevTestUser = {
 type AdminUserRow = {
   id?: unknown;
   user_id?: unknown;
-  email?: unknown;
+  email?: unknown;//
   full_name?: unknown;
   nickname?: unknown;
   name?: unknown;
@@ -20,7 +20,7 @@ type AdminUserRow = {
   role_names?: unknown;
   role?: unknown;
 };
-
+import { autoLogin } from './authConfig';//
 const DEV_AUTO_LOGIN_CREDENTIALS = {
   email: 'admin',
   password: '123456'

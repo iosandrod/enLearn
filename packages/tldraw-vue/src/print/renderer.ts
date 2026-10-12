@@ -11,7 +11,7 @@ import {
 } from '@/editor/extensions/material/vueMaterialShape'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { normalizeWorkspaceBackgroundOpacity } from '@/editor/templateStore'
-import { PRINT_HEADER_PREVIEW_SOURCE, resolvePrintPreviewRows } from './dataSource'
+import { getPrintPreviewDetailRows, PRINT_HEADER_PREVIEW_SOURCE, resolvePrintPreviewRows } from './dataSource'
 import { PrintShapePreviewResolver } from './shapePreviewStrategies'
 import {
 	createMaterialGridPrintPlan,
@@ -95,6 +95,7 @@ export class PrintRenderer {
 		const shapeIds = this.getTemplateShapeIds(config)
 		const context = {
 			row,
+			currentDetailRows: getPrintPreviewDetailRows(row),
 			data: config.data ?? [],
 			currentTable: getCurrentTablesData(options.materialGridPlan, options.materialGridPageIndex ?? index),
 			currentTables: getCurrentTablesData(options.materialGridPlan, options.materialGridPageIndex ?? index),
@@ -236,6 +237,7 @@ export class PrintRenderer {
 			const itemWidth = page.tableOverride.listItemWidth ?? frame.props.w
 			const itemGap = page.tableOverride.listItemGap ?? 0
 			const columnCount = Math.max(1, page.tableOverride.listColumnCount ?? 1)
+			const detailField = materialPlan.material.props.dataSourceField?.trim()
 
 			page.data.forEach((row, rowIndex) => {
 				const cloneIds = new Map<TLShapeId, TLShapeId>()
@@ -244,6 +246,9 @@ export class PrintRenderer {
 				const rowContext: PrintExpressionContext = {
 					...context,
 					row,
+					currentDetailRows: detailField
+						? { ...context.currentDetailRows, [detailField]: row }
+						: context.currentDetailRows,
 					index: rowIndex,
 				}
 

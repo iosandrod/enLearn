@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
 const panelRef = ref<HTMLDivElement | null>(null)
 const collapsed = ref(false)
-const mobileDrawerOpen = ref(false)
+const mobileDrawerOpen = ref(true)
 const zoomMenuOpen = ref(false)
 const panelPosition = ref<PanelPosition | null>(null)
 const isDraggingPanel = ref(false)

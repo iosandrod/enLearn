@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>打印数据源拖拽验证</title>
+<style>html,body,#app{height:100%;margin:0}</style></head>
+<body><div id="app"></div>
+<script type="module">
+import { createApp } from 'vue';
+import { install as installVxeUI } from 'vxe-pc-ui';
+import VxeUITable from 'vxe-table';
+import 'vxe-pc-ui/lib/style.css';
+import 'vxe-table/lib/style.css';
+import '../../packages/tldraw-vue/src/styles.css';
+import TldrawVue from '../../packages/tldraw-vue/src/TldrawVue.vue';
+import { getEditorPrintDataSource } from '../../packages/tldraw-vue/src/editor/workspaceDataSource';
+import { lowCodeHostKey } from '@enlearn/lowcode-framework/core/host';
+const app = createApp(TldrawVue, {
+  createDefaultShapes: false, showTemplateControls: false,
+  onReady(editor) {
+    window.dragTestEditor = editor;
+    getEditorPrintDataSource(editor).value = {
+      type: 'inline', rows: [{ name: '测试', items: [{ code: 'A' }] }],
+      headerFields: [{ field: 'name', label: '姓名' }],
+      detailTables: [{ id: 'items', field: 'items', label: '订单明细', columns: [{ field: 'code', title: '商品编码' }] }],
+    };
+    window.setDragTestSource = (source) => { getEditorPrintDataSource(editor).value = source; };
+  },
+});
+app.provide(lowCodeHostKey, { serviceApi: { invoke: async (_service, _method, params) => {
+  if (params?.resource !== 'lowcode_form_definitions') return [];
+  const codes = Array.isArray(params.filters?.code) ? params.filters.code : [params.filters?.code];
+  return codes.filter(Boolean).map((code) => ({ id: code, code, name: code, enabled: true, table_name: null,
+    schema: { fields: [{ field: 'formCode', label: '数据源', component: 'vxe-input' }], actions: [] },
+  }));
+} } });
+app.use(installVxeUI);
+app.use(VxeUITable);
+window.dragTestDesigner = app.mount('#app');
+</script></body></html>

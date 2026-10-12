@@ -3,6 +3,7 @@ export { BluetoothPrintAdapter } from './adapters/BluetoothPrintAdapter'
 export { NetworkPrintAdapter } from './adapters/NetworkPrintAdapter'
 export {
 	getPrintDataSourceProvider,
+	getPrintPreviewDetailRows,
 	normalizeRows,
 	registerPrintDataSourceProvider,
 	resolvePrintDataSource,

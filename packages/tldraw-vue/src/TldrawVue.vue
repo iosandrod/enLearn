@@ -6,6 +6,7 @@ import VueCanvas from './components/VueCanvas.vue'
 import VueComponentPalette from './components/VueComponentPalette.vue'
 import VueEchartsPalette from './components/VueEchartsPalette.vue'
 import VueDataSourcePanel from './components/VueDataSourcePanel.vue'
+import VueDataSourceTreePanel from './components/VueDataSourceTreePanel.vue'
 import VueAnimationPanel from './components/VueAnimationPanel.vue'
 import VueBackgroundPanel from './components/VueBackgroundPanel.vue'
 import VuePreviewSettingsPanel from './components/VuePreviewSettingsPanel.vue'
@@ -112,6 +113,7 @@ const activeDesignerTab = ref<
 >(props.mode === 'bi' ? 'echarts' : 'tools')
 const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
+const dataSourceTreeRef = ref<{ closeMobileDrawer(): void } | null>(null)
 const failedTemplatePreviewIds = ref<Set<string>>(new Set())
 const dataSourceDrawerOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
@@ -315,6 +317,16 @@ function selectDesignerTab(tabId: typeof designerTabs[number]['id']) {
 		return
 	}
 	dataSourceDrawerOpen.value = false
+}
+
+function openDataSourceDrawer() {
+	dataSourceTreeRef.value?.closeMobileDrawer()
+	selectDesignerTab('dataSource')
+}
+
+function toggleMobileToolPanel() {
+	dataSourceTreeRef.value?.closeMobileDrawer()
+	mobilePanelOpen.value = !mobilePanelOpen.value
 }
 
 function closeDataSourceDrawer() {
@@ -657,9 +669,7 @@ onBeforeUnmount(() => {
 			</div>
 		</header>
 		<section ref="editorHost" class="editor-host flex flex-row w-full"
-			:class="{ 'is-mobile-panel-open': mobilePanelOpen }">
-			<button v-if="mobilePanelOpen" class="designer-mobile-backdrop" type="button" aria-label="关闭设计器工具面板"
-				@click="mobilePanelOpen = false" />
+			:class="{ 'is-mobile-panel-open': mobilePanelOpen, 'has-data-source-tree': designerMode === 'print' }">
 			<div style="width:350px;" class="designer-side-panel" aria-label="设计器工具面板">
 				<nav class="designer-side-tabs" aria-label="设计器功能分类">
 					<button v-for="tab in designerTabs"
@@ -797,7 +807,7 @@ onBeforeUnmount(() => {
 					:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig" />
 			</aside>
 			<button class="designer-mobile-panel-toggle" type="button" :aria-expanded="mobilePanelOpen"
-				aria-label="打开设计器工具面板" @click="mobilePanelOpen = !mobilePanelOpen">
+				aria-label="打开设计器工具面板" @click="toggleMobileToolPanel">
 				<span aria-hidden="true">{{ mobilePanelOpen ? '⌄' : '✦' }}</span>
 				{{ mobilePanelOpen ? '收起' : '工具' }}
 			</button>
@@ -806,6 +816,8 @@ onBeforeUnmount(() => {
 					:current-geo-shape="currentGeoShape" :handle-shortcut="handlePluginShortcut"
 					:toolbar-tools="toolbarTools" @tool-change="selectTool"
 					@workspace-config-change="handleWorkspaceConfigChange" />
+				<VueDataSourceTreePanel v-if="editor && designerMode === 'print'" ref="dataSourceTreeRef" :editor="editor"
+					@configure="openDataSourceDrawer" @before-drag="closeContextAndTopMenus" @drawer-open="mobilePanelOpen = false" />
 				<VueTopLeftMenu v-if="editor" ref="canvasMenuRef" :editor="editor" controls="dropdowns"
 					:active-tool="activeTool" :current-geo-shape="currentGeoShape"
 					:toolbar-tools="ordinaryToolbarTools" :on-preview="previewPrint" :on-print="printCurrentPage"

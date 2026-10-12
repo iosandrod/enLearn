@@ -39,6 +39,8 @@ import { useEditorValue } from '@/vue/useEditorValue'
 import VueShapeWrapper from './VueShapeWrapper.vue'
 import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
 import type { PrintPreviewSettings } from '@/print/types'
+import { PRINT_DATA_SOURCE_FIELD_MIME } from '@/editor/printDataSourceFields'
+import { dropPrintDataSourceField } from '@/editor/interactions/printDataSourceDrop'
 
 const props = defineProps<{
 	editor: Editor
@@ -365,12 +367,29 @@ function onSelectionDoubleClick(event: MouseEvent) {
 async function onCanvasDrop(event: DragEvent) {
 	event.preventDefault()
 	controller.updateViewport()
+	if (event.dataTransfer?.types.includes(PRINT_DATA_SOURCE_FIELD_MIME)) {
+		event.stopPropagation()
+		const path = event.dataTransfer.getData(PRINT_DATA_SOURCE_FIELD_MIME)
+		const id = dropPrintDataSourceField(props.editor, path,
+			props.editor.screenToPage({ x: event.clientX, y: event.clientY }), workspaceBounds)
+		if (id) {
+			controller.closeContextMenu()
+			emit('tool-change', 'select')
+			containerRef.value?.focus({ preventScroll: true })
+		}
+		return
+	}
 	const file = [...(event.dataTransfer?.files ?? [])].find((item) => item.type.startsWith('image/'))
 	if (!file) return
 	await assetManager.createImageFromFile(file, props.editor.screenToPage({ x: event.clientX, y: event.clientY }))
 }
 
 function onCanvasDragOver(event: DragEvent) {
+	if (event.dataTransfer?.types.includes(PRINT_DATA_SOURCE_FIELD_MIME)) {
+		event.preventDefault()
+		event.dataTransfer.dropEffect = props.editor.getIsReadonly() ? 'none' : 'copy'
+		return
+	}
 	if ([...(event.dataTransfer?.items ?? [])].some((item) => item.type.startsWith('image/'))) {
 		event.preventDefault()
 	}

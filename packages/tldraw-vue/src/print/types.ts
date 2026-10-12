@@ -182,6 +182,8 @@ export type ExpressionMissingValue =
 
 export interface PrintExpressionContext {
 	row: PrintDataRow
+	/** Current record for each detail source being iterated, keyed by source field. */
+	currentDetailRows?: Record<string, PrintDataRow>
 	data?: readonly PrintDataRow[]
 	/** Current print page's material tables, keyed by their data-source field. */
 	currentTable: PrintCurrentTables
