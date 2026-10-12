@@ -59,6 +59,10 @@ export function createMaterialGridPrintPlan(
 	const materialShapes = getTemplateMaterialShapes(editor, shapeIds)
 	if (!materialShapes.length) return null
 	const gridConfigs = resolveMaterialGridConfigs(config, materialShapes)
+	const selectedMaterialId = config.previewSettings?.mode === 'component' ? config.previewSettings.materialId : undefined
+	if (config.previewSettings?.mode === 'component' && !materialShapes.some(material => material.id === selectedMaterialId)) {
+		throw new Error('预览设置中的物料表格组件已不存在或尚未选择，请重新选择。')
+	}
 	const materialPlans = materialShapes.map((material) => {
 		const gridConfig = gridConfigs.get(material.id)
 		if (!gridConfig) {
@@ -72,7 +76,9 @@ export function createMaterialGridPrintPlan(
 	})
 
 	return {
-		pageCount: Math.max(...materialPlans.map((plan) => plan.pages.length), 1),
+		pageCount: selectedMaterialId
+			? Math.max(materialPlans.find(plan => plan.material.id === selectedMaterialId)!.pages.length, 1)
+			: Math.max(...materialPlans.map((plan) => plan.pages.length), 1),
 		materials: materialPlans,
 	}
 }

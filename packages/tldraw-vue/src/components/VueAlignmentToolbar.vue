@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Editor } from '@tldraw/editor'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getUnlockedSelectedShapeIds } from '@/editor/interactions/selectionActions'
 import { useEditorValue } from '@/vue/useEditorValue'
 
@@ -18,6 +18,9 @@ type EditorShape = NonNullable<ReturnType<Editor['getShape']>>
 const props = defineProps<{
 	editor: Editor
 }>()
+
+const panelRef = ref<HTMLDivElement | null>(null)
+const mobileDrawerOpen = ref(false)
 
 const actions = [
 	{ id: 'left', label: '水平布局左', icon: 'ri-align-item-left-line' },
@@ -114,11 +117,36 @@ function toggleBorder(operation: BorderOperation) {
 		props: { [operation]: nextValue },
 	})) as never)
 }
+
+function toggleMobileDrawer() {
+	mobileDrawerOpen.value = !mobileDrawerOpen.value
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+	const target = event.target
+	if (target instanceof Node && !panelRef.value?.contains(target)) mobileDrawerOpen.value = false
+}
+
+function onDocumentKeyDown(event: KeyboardEvent) {
+	if (event.key === 'Escape') mobileDrawerOpen.value = false
+}
+
+onMounted(() => {
+	document.addEventListener('pointerdown', onDocumentPointerDown, true)
+	document.addEventListener('keydown', onDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+	document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+	document.removeEventListener('keydown', onDocumentKeyDown)
+})
 </script>
 
 <template>
 	<div
+		ref="panelRef"
 		class="alignment-toolbar"
+		:class="{ 'is-mobile-drawer-open': mobileDrawerOpen }"
 		aria-label="节点属性工具栏"
 		@pointerdown.stop
 		@pointermove.stop
@@ -126,6 +154,19 @@ function toggleBorder(operation: BorderOperation) {
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
+		<button
+			type="button"
+			class="alignment-toolbar__drawer-trigger"
+			:aria-expanded="mobileDrawerOpen"
+			aria-controls="alignment-toolbar-drawer"
+			aria-label="对齐与边框"
+			title="对齐与边框"
+			@click="toggleMobileDrawer"
+		>
+			<i :class="mobileDrawerOpen ? 'ri-close-line' : 'ri-align-item-horizontal-center-line'" aria-hidden="true" />
+		</button>
+
+		<div id="alignment-toolbar-drawer" class="alignment-toolbar__drawer">
 		<div class="alignment-toolbar__group" aria-label="节点对齐">
 			<button
 				v-for="action in actions"
@@ -160,6 +201,7 @@ function toggleBorder(operation: BorderOperation) {
 					aria-hidden="true"
 				/>
 			</button>
+		</div>
 		</div>
 	</div>
 </template>

@@ -64,11 +64,25 @@
           </button>
         </div>
 
-        <div
-          id="print-designer-header-actions"
-          class="print-app-header__designer-actions"
-          aria-label="打印设计器操作"
-        />
+        <div class="print-app-header__controls">
+          <button
+            class="print-app-header__controls-trigger"
+            type="button"
+            :aria-expanded="designerActionsOpen"
+            aria-controls="print-designer-header-actions"
+            aria-label="设计器操作"
+            @click="designerActionsOpen = !designerActionsOpen"
+          >
+            <i :class="designerActionsOpen ? 'ri-close-line' : 'ri-more-2-fill'" aria-hidden="true" />
+          </button>
+          <div
+            id="print-designer-header-actions"
+            class="print-app-header__designer-actions"
+            :class="{ 'is-open': designerActionsOpen }"
+            aria-label="打印设计器操作"
+            @click="handleDesignerActionsClick"
+          />
+        </div>
       </div>
 
       <nav
@@ -170,6 +184,7 @@ defineProps<{ accountSetting?: boolean }>();
 const auth = useAuth();
 const headerRef = ref<HTMLElement | null>(null);
 const userMenuOpen = ref(false);//
+const designerActionsOpen = ref(false);
 const signingOut = ref(false);
 const templateConfig:any=inject('printTemplateConfig');
 // const templateName = ref('新建模板');
@@ -215,12 +230,22 @@ function closeUserMenu() {
   userMenuOpen.value = false;
 }
 
+function handleDesignerActionsClick(event: MouseEvent) {
+  if ((event.target as HTMLElement | null)?.closest('button')) designerActionsOpen.value = false;
+}
+
 function handleDocumentPointerDown(event: PointerEvent) {
-  if (!headerRef.value?.contains(event.target as Node)) closeUserMenu();
+  if (!headerRef.value?.contains(event.target as Node)) {
+    closeUserMenu();
+    designerActionsOpen.value = false;
+  }
 }
 
 function handleDocumentKeyDown(event: KeyboardEvent) {
-  if (event.key === 'Escape') closeUserMenu();
+  if (event.key === 'Escape') {
+    closeUserMenu();
+    designerActionsOpen.value = false;
+  }
 }
 
 function applyTemplateInfo(detail: TemplateInfoDetail | undefined) {
@@ -261,7 +286,7 @@ async function handleSignOut() {
 }
 
 onMounted(() => {
-  document.addEventListener('pointerdown', handleDocumentPointerDown);
+  document.addEventListener('pointerdown', handleDocumentPointerDown, true);
   document.addEventListener('keydown', handleDocumentKeyDown);
   window.addEventListener('enlearn:print-template-info-change', handleTemplateInfoChange);
   window.addEventListener('enlearn:print-designer-mode-change', handleDesignerModeChange);
@@ -271,7 +296,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', handleDocumentPointerDown);
+  document.removeEventListener('pointerdown', handleDocumentPointerDown, true);
   document.removeEventListener('keydown', handleDocumentKeyDown);
   window.removeEventListener('enlearn:print-template-info-change', handleTemplateInfoChange);
   window.removeEventListener('enlearn:print-designer-mode-change', handleDesignerModeChange);
@@ -720,6 +745,9 @@ onBeforeUnmount(() => {
 
 @keyframes print-app-spin { to { transform: rotate(360deg); } }
 
+.print-app-header__controls { display: flex; min-width: 0; align-items: center; }
+.print-app-header__controls-trigger { display: none; }
+
 @media (max-width: 1080px) {
   .print-app-template { display: none; }
   .print-app-workspace { justify-content: flex-start; }
@@ -733,57 +761,69 @@ onBeforeUnmount(() => {
 
 @media (max-width: 680px) {
   .print-app-header {
-    flex-basis: 126px;
-    min-height: 126px;
+    flex-basis: 56px;
+    min-height: 56px;
   }
   .print-app-header__inner {
-    display: grid;
-    height: 126px;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-rows: 50px minmax(0, 1fr);
-    gap: 0 8px;
-    padding: 0 10px 8px;
+    display: flex;
+    height: 56px;
+    gap: 9px;
+    padding: 0 10px;
   }
-  .print-app-brand { grid-column: 1; grid-row: 1; }
+  .print-app-brand { flex: 0 0 auto; }
   .print-app-brand__copy small,
   .print-app-context,
   .print-app-action-link--dashboard { display: none; }
   .print-app-header__divider { display: none; }
-  .print-app-workspace {
-    display: contents;
-  }
+  .print-app-workspace { display: contents; }
   .print-app-mode-switch {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: start;
+    margin-left: auto;
   }
   .print-app-mode-switch button span { display: none; }
   .print-app-mode-switch button { width: 32px; justify-content: center; padding: 0; }
-  .print-app-header__designer-actions {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    grid-column: 1 / -1;
-    grid-row: 2;
-    align-self: stretch;
+  .print-app-header__controls { position: relative; flex: 0 0 auto; }
+  .print-app-header__controls-trigger {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid #dfe5ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    font-size: 17px;
   }
+  .print-app-header__designer-actions {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: -8px;
+    z-index: 130;
+    display: none;
+    width: min(260px, calc(100vw - 16px));
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #dfe5ea;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgb(15 23 42 / 18%);
+  }
+  .print-app-header__designer-actions.is-open { display: block; }
   .print-app-header__designer-actions :deep(.lc-node-button-group) {
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
   }
   .print-app-header__designer-actions :deep(.lc-button-group) {
     display: grid !important;
     width: 100%;
-    height: 100%;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-rows: minmax(30px, 1fr);
+    grid-auto-rows: 36px;
     gap: 5px !important;
   }
   .print-app-header__designer-actions :deep(.vxe-button) {
     width: 100% !important;
     min-width: 0 !important;
-    height: 100% !important;
-    min-height: 30px !important;
+    height: 36px !important;
+    min-height: 36px !important;
     justify-content: center;
     padding: 0 7px !important;
     font-size: 10px !important;
@@ -793,8 +833,7 @@ onBeforeUnmount(() => {
     font-size: 12px !important;
   }
   .print-app-actions {
-    grid-column: 3;
-    grid-row: 1;
+    flex: 0 0 auto;
   }
   .print-app-user__trigger { max-width: 170px; }
 }

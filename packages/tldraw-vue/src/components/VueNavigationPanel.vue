@@ -27,6 +27,7 @@ const emit = defineEmits<{
 
 const panelRef = ref<HTMLDivElement | null>(null)
 const collapsed = ref(false)
+const mobileDrawerOpen = ref(false)
 const zoomMenuOpen = ref(false)
 const panelPosition = ref<PanelPosition | null>(null)
 const isDraggingPanel = ref(false)
@@ -94,6 +95,12 @@ function toggleMinimap() {
 	} catch {
 		// Ignore storage failures.
 	}
+	requestAnimationFrame(constrainPanelPosition)
+}
+
+function toggleMobileDrawer() {
+	closeZoomMenu()
+	mobileDrawerOpen.value = !mobileDrawerOpen.value
 	requestAnimationFrame(constrainPanelPosition)
 }
 
@@ -253,11 +260,17 @@ function closeZoomMenu() {
 function onDocumentPointerDown(event: PointerEvent) {
 	const target = event.target
 	if (!(target instanceof Node)) return
-	if (!panelRef.value?.contains(target)) closeZoomMenu()
+	if (!panelRef.value?.contains(target)) {
+		closeZoomMenu()
+		mobileDrawerOpen.value = false
+	}
 }
 
 function onDocumentKeyDown(event: KeyboardEvent) {
-	if (event.key === 'Escape') closeZoomMenu()
+	if (event.key === 'Escape') {
+		closeZoomMenu()
+		mobileDrawerOpen.value = false
+	}
 }
 
 onMounted(() => {
@@ -268,13 +281,13 @@ onMounted(() => {
 	}
 	loadPanelPosition()
 
-	window.addEventListener('pointerdown', onDocumentPointerDown)
+	document.addEventListener('pointerdown', onDocumentPointerDown, true)
 	window.addEventListener('keydown', onDocumentKeyDown)
 	window.addEventListener('resize', constrainPanelPosition)
 })
 
 onBeforeUnmount(() => {
-	window.removeEventListener('pointerdown', onDocumentPointerDown)
+	document.removeEventListener('pointerdown', onDocumentPointerDown, true)
 	window.removeEventListener('keydown', onDocumentKeyDown)
 	window.removeEventListener('resize', constrainPanelPosition)
 	removePanelDragListeners()
@@ -285,13 +298,30 @@ onBeforeUnmount(() => {
 	<div
 		ref="panelRef"
 		class="navigation-panel"
-		:class="{ 'is-collapsed': collapsed, 'is-dragging': isDraggingPanel }"
+		:class="{
+			'is-collapsed': collapsed,
+			'is-dragging': isDraggingPanel,
+			'is-mobile-drawer-open': mobileDrawerOpen,
+		}"
 		:style="panelStyle"
 		@pointerdown.stop="onPanelPointerDown"
 		@pointermove.stop
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
+		<button
+			type="button"
+			class="navigation-drawer-trigger"
+			:aria-expanded="mobileDrawerOpen"
+			aria-controls="navigation-panel-drawer"
+			aria-label="导航与小地图"
+			title="导航与小地图"
+			@click="toggleMobileDrawer"
+		>
+			<i :class="mobileDrawerOpen ? 'ri-close-line' : 'ri-map-2-line'" aria-hidden="true" />
+		</button>
+
+		<div id="navigation-panel-drawer" class="navigation-panel-drawer">
 		<div class="navigation-toolbar" role="toolbar" aria-label="Navigation">
 			<button
 				v-if="!collapsed"
@@ -354,5 +384,6 @@ onBeforeUnmount(() => {
 
 		<VueMinimap v-if="!collapsed" :editor="editor" />
 		<slot name="presentation-pages" />
+		</div>
 	</div>
 </template>

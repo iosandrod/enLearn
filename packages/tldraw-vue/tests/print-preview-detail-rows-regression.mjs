@@ -25,4 +25,20 @@ assert.deepEqual(resolvePrintPreviewRows({ ...source, rows: [{ selectedItems: []
 assert.deepEqual(resolvePrintPreviewRows({ ...source, rows: [{ selectedItems: [{ value: 1 }] }] }, []), [{}])
 assert.deepEqual(resolvePrintPreviewRows({ type: 'json', value: [] }, [{ value: 1 }]), [{ value: 1 }])
 
+const dataModeRows = resolvePrintPreviewRows(source, source.rows, {
+	mode: 'data',
+	detailField: 'detail_a',
+})
+assert.equal(dataModeRows?.length, 1)
+assert.equal(dataModeRows?.[0].sku, 'ignored')
+assert.equal(dataModeRows?.[0].customerName, '表单客户')
+assert.throws(
+	() => resolvePrintPreviewRows(source, source.rows, { mode: 'data', detailField: 'removed_detail' }),
+	/明细源已不存在/,
+)
+assert.throws(
+	() => resolvePrintPreviewRows(source, source.rows, { mode: 'data' }),
+	/选择明细源/,
+)
+
 console.log('print preview detail row regression checks passed')

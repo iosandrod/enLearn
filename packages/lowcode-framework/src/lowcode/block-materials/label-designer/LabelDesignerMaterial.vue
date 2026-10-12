@@ -58,7 +58,7 @@ const templateLoading = ref(false);
 const templateHasMore = ref(false);
 const templateTotal = ref(0);
 const templatePage = ref(1);
-const templatePageSize = 24;
+const templatePageSize = 8;
 let templateRequestId = 0;
 let templateSearchTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressDirty = false;
@@ -456,14 +456,19 @@ async function setData(value: unknown) {
       if (!targetPageIds.has(page.id) && instance.getPages().length > 1) instance.deletePage(page.id);
     }
     ensureStoreIsUsable?.call(instance.store);
+    // Clear every target page first so saved shape IDs can be restored even
+    // when a component has moved between pages since the template was saved.
+    for (const pageId of loadedPageIds.values()) {
+      const oldIds = [...instance.getPageShapeIds(pageId)];
+      if (oldIds.length) instance.deleteShapes(oldIds);
+    }
     for (const page of pages) {
       const pageId = loadedPageIds.get(page.id);
       if (!pageId) continue;
       ensureStoreIsUsable?.call(instance.store);
       if (instance.getCurrentPageId() !== pageId) instance.setCurrentPage(pageId);
-      const oldIds = [...instance.getPageShapeIds(pageId)];
-      if (oldIds.length) instance.deleteShapes(oldIds);
-      instance.putContentOntoCurrentPage(clone(page.content), { preservePosition: true, preserveIds: false, select: false });
+      // Preview pagination references the saved material component ID.
+      instance.putContentOntoCurrentPage(clone(page.content), { preservePosition: true, preserveIds: true, select: false });
     }
     const requestedCurrent = document.currentPageId && loadedPageIds.get(document.currentPageId);
     const currentPageId = requestedCurrent || firstPageId;
@@ -475,7 +480,7 @@ async function setData(value: unknown) {
     const oldIds = instance.getCurrentPageShapeIdsSorted();
     if (oldIds.length) instance.deleteShapes(oldIds);
     const singlePageContent = normalizePageContent(document, instance.getCurrentPageId());
-    if (singlePageContent) instance.putContentOntoCurrentPage(clone(singlePageContent), { preservePosition: true, preserveIds: false, select: false });
+    if (singlePageContent) instance.putContentOntoCurrentPage(clone(singlePageContent), { preservePosition: true, preserveIds: true, select: false });
   }
   instance.selectNone();
 

@@ -37,8 +37,15 @@ export class PrintRenderer {
 
 	createRenderJobs(config: PrintJobConfig): PrintRenderJob[] {
 		const shapeIds = this.getTemplateShapeIds(config)
+		if (config.previewSettings?.mode === 'data') {
+			const rows = resolvePrintPreviewRows(config.dataSource, config.data, config.previewSettings) ?? []
+			return rows.map(row => ({ row }))
+		}
 		const materialGridPlan = createMaterialGridPrintPlan(this.editor, config, shapeIds)
-		const resumePlan = createResumePrintPlan(this.editor, config, shapeIds)
+		if (config.previewSettings?.mode === 'component' && !materialGridPlan) {
+			throw new Error('请在预览设置中选择当前画布的物料表格组件。')
+		}
+		const resumePlan = config.previewSettings?.mode === 'component' ? null : createResumePrintPlan(this.editor, config, shapeIds)
 
 		if (!materialGridPlan && !resumePlan) {
 			const rows = resolvePrintPreviewRows(config.dataSource, config.data) ?? config.data ?? []

@@ -1,4 +1,4 @@
-import type { PrintDataRow, PrintDataSourceConfig, PrintDataSourceProvider } from './types'
+import type { PrintDataRow, PrintDataSourceConfig, PrintDataSourceProvider, PrintPreviewSettings } from './types'
 
 const providerRegistry = new Map<string, PrintDataSourceProvider>()
 
@@ -79,7 +79,24 @@ export async function resolvePrintDataSource(
 export function resolvePrintPreviewRows(
 	dataSource: PrintDataSourceConfig | undefined,
 	rows: readonly PrintDataRow[] | undefined,
+	settings?: PrintPreviewSettings,
 ): PrintDataRow[] | undefined {
+	if (settings?.mode === 'data') {
+		const detailField = settings.detailField?.trim()
+		if (!dataSource || dataSource.type !== 'inline' || !detailField) {
+			throw new Error('请在预览设置中选择明细源。')
+		}
+		const sourceRows = normalizeRows(rows ?? dataSource.rows)
+		const tables = Array.isArray(dataSource.detailTables) ? dataSource.detailTables : []
+		const hasDetail = tables.some(table => table.field === detailField || table.key === detailField) ||
+			dataSource.detailField === detailField || sourceRows.some(row => Array.isArray(row[detailField]))
+		if (!hasDetail) throw new Error('预览设置中的明细源已不存在，请重新选择。')
+		return sourceRows.flatMap(sourceRow => {
+			const details = sourceRow[detailField]
+			const records = Array.isArray(details) ? details.filter(isRecord) : []
+			return records.length ? records.map(detail => ({ ...detail, ...sourceRow })) : [{ ...sourceRow }]
+		})
+	}
 	if (!dataSource || dataSource.type !== 'inline') return rows ? normalizeRows(rows) : undefined
 	const detailTables = Array.isArray(dataSource.detailTables) ? dataSource.detailTables : []
 	const detailField = dataSource.detailField || detailTables[0]?.field

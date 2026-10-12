@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { WorkspacePageSizeMm } from '@/editor/interactions/WorkspaceBoundsManager'
 
 const PAGE_SIZE_PRESETS = [
@@ -28,6 +28,9 @@ const emit = defineEmits<{
 	'zoom-out': []
 	'zoom-reset': []
 }>()
+
+const panelRef = ref<HTMLDivElement | null>(null)
+const mobileDrawerOpen = ref(false)
 
 const zoomLabel = computed(() => `${Math.round(props.zoom * 100)}%`)
 
@@ -66,16 +69,53 @@ function setPagePreset(event: Event) {
 	if (!preset) return
 	emit('page-size-change', { w: preset.w, h: preset.h })
 }
+
+function toggleMobileDrawer() {
+	mobileDrawerOpen.value = !mobileDrawerOpen.value
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+	const target = event.target
+	if (target instanceof Node && !panelRef.value?.contains(target)) mobileDrawerOpen.value = false
+}
+
+function onDocumentKeyDown(event: KeyboardEvent) {
+	if (event.key === 'Escape') mobileDrawerOpen.value = false
+}
+
+onMounted(() => {
+	document.addEventListener('pointerdown', onDocumentPointerDown, true)
+	document.addEventListener('keydown', onDocumentKeyDown)
+})
+
+onBeforeUnmount(() => {
+	document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+	document.removeEventListener('keydown', onDocumentKeyDown)
+})
 </script>
 
 <template>
 	<div
+		ref="panelRef"
 		class="workspace-toolbar"
+		:class="{ 'is-mobile-drawer-open': mobileDrawerOpen }"
 		@pointerdown.stop
 		@pointermove.stop
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
+		<button
+			type="button"
+			class="workspace-toolbar-drawer-trigger"
+			:aria-expanded="mobileDrawerOpen"
+			aria-controls="workspace-toolbar-drawer"
+			aria-label="页面与缩放"
+			title="页面与缩放"
+			@click="toggleMobileDrawer"
+		>
+			<i :class="mobileDrawerOpen ? 'ri-close-line' : 'ri-ruler-2-line'" aria-hidden="true" />
+		</button>
+		<div id="workspace-toolbar-drawer" class="workspace-toolbar-drawer">
 		<button
 			type="button"
 			class="workspace-toolbar-button workspace-fit-button"
@@ -156,5 +196,6 @@ function setPagePreset(event: Event) {
 		>
 			+
 		</button>
+		</div>
 	</div>
 </template>

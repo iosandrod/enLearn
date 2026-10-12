@@ -45,6 +45,9 @@ import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { vueMaterialRowDefaults } from '@/editor/defaults'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import type { PrintDataSourceConfig } from '@/print/types'
+import { ToolbarController } from '@/editor/interactions/ToolbarController'
+import type { CanvasTool, VueGeoShape } from '@/editor/interactions/types'
+import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
 
 const props = defineProps<{
 	editor: Editor
@@ -52,6 +55,12 @@ const props = defineProps<{
 	canRunCommand?: (commandId: string) => boolean
 	runCommand?: (commandId: string, event?: Event) => Promise<boolean>
 	embedded?: boolean
+	controls?: 'all' | 'dropdowns' | 'actions'
+	activeTool?: CanvasTool
+	currentGeoShape?: VueGeoShape
+	toolbarTools?: readonly VueToolbarToolDefinition[]
+	onPreview?: () => Promise<void>
+	onPrint?: () => Promise<void>
 	getWorkspaceTemplateConfig?: () => VueTemplateWorkspaceConfig
 	loadTemplates?: VueTemplateLoadHandler
 	saveTemplates?: VueTemplateSaveHandler
@@ -60,11 +69,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	'before-action': []
+	'tool-select': [tool: CanvasTool, geoShape?: VueGeoShape]
 }>()
 
 const panelRef = ref<HTMLDivElement | null>(null)
 const mainMenuOpen = ref(false)
 const pageMenuOpen = ref(false)
+const canvasDrawerOpen = ref(false)
 const actionsMenuOpen = ref(false)
 const templateMenuOpen = ref(false)
 const openPageSubmenuId = ref<TLPageId | null>(null)
@@ -119,9 +130,56 @@ const hasShapesOnPage = useEditorValue(
 const gridActionGroups = useEditorValue('top menu grid actions', () => controller.getGridActionGroups())
 
 const pageLabel = computed(() => currentPage.value.name || 'Page 1')
+const showDropdownControls = computed(() => props.controls !== 'actions')
+const showActionControls = computed(() => props.controls !== 'dropdowns')
 const hasReachedMaxPages = computed(() => pages.value.length >= props.editor.options.maxPages)
 const canPreviewPrint = computed(() => props.canRunCommand?.('print.preview') ?? false)
 const canPrint = computed(() => props.canRunCommand?.('print.print') ?? false)
+const canvasQuickActions = computed(() => {
+	const tools = new ToolbarController(props.toolbarTools ?? []).getPrimaryItems(
+		props.activeTool ?? 'select', props.currentGeoShape ?? 'rectangle'
+	)
+	const toolAction = (id: string, label: string, glyph: string) => {
+		const item = tools.find((tool) => tool.id === id)
+		const selection = item?.selection
+		return {
+			id, label, glyph, selected: item?.selected ?? false,
+			disabled: !selection || Boolean(item?.disabled),
+			isTool: true,
+			title: item?.shortcut ? `${label} (${item.shortcut})` : label,
+			run: () => {
+				if (!selection) return
+				runAndClose(() => emit('tool-select', selection.tool, selection.geoShape))
+			},
+		}
+	}
+	const action = (id: string, label: string, glyph: string, disabled: boolean, run: () => void | Promise<void>) =>
+		({ id, label, glyph, disabled, selected: false, isTool: false, title: label, run })
+	return [
+		toolAction('select', '选择', '↖'),
+		toolAction('eraser', '橡皮擦', '⌫'),
+		action('undo', '撤销', '↶', !canUndo.value, undo),
+		action('duplicate', '复制', '⧉', !hasSelection.value, duplicateSelection),
+		toolAction('hand', '抓手', '✋'),
+		action('redo', '重做', '↷', !canRedo.value, redo),
+		action('preview', '预览', '👁', printPreviewLoading.value, () => runCanvasPrintAction('preview')),
+		toolAction('text', '文字', 'T'),
+		action('delete', '删除', '×', !hasSelection.value, deleteSelection),
+		action('print', '打印', '🖶', printPreviewLoading.value, () => runCanvasPrintAction('print')),
+	]
+})
+
+async function runCanvasPrintAction(action: 'preview' | 'print') {
+	if (printPreviewLoading.value) return
+	emit('before-action')
+	closeMenus()
+	printPreviewLoading.value = true
+	try {
+		await (action === 'preview' ? props.onPreview?.() : props.onPrint?.())
+	} finally {
+		printPreviewLoading.value = false
+	}
+}
 const printPreviewPageCount = computed(() =>
 	Math.max(1, Math.ceil(printPreviewPages.value.length / printPreviewPageSize.value))
 )
@@ -157,9 +215,21 @@ watch(printPreviewPageCount, (pageCount) => {
 function closeMenus() {
 	mainMenuOpen.value = false
 	pageMenuOpen.value = false
+	canvasDrawerOpen.value = false
 	actionsMenuOpen.value = false
 	templateMenuOpen.value = false
 	openPageSubmenuId.value = null
+}
+
+function toggleCanvasDrawer() {
+	if (canvasDrawerOpen.value) {
+		closeMenus()
+		return
+	}
+
+	emit('before-action')
+	closeMenus()
+	canvasDrawerOpen.value = true
 }
 
 function updateEmbeddedPopoverPosition(event?: MouseEvent) {
@@ -200,6 +270,7 @@ function toggleMainMenu(event?: MouseEvent) {
 		return
 	}
 
+	emit('before-action')
 	updateEmbeddedPopoverPosition(event)
 	pageMenuOpen.value = false
 	actionsMenuOpen.value = false
@@ -213,6 +284,7 @@ function togglePageMenu(event?: MouseEvent) {
 		return
 	}
 
+	emit('before-action')
 	updateEmbeddedPopoverPosition(event)
 	mainMenuOpen.value = false
 	actionsMenuOpen.value = false
@@ -431,6 +503,7 @@ function createPrintJobConfig(expression?: PrintExpressionConfig): PrintJobConfi
 	const printPage = getCurrentPrintPageConfig()
 
 	return {
+		previewSettings: props.getWorkspaceTemplateConfig?.()?.previewSettings,
 		template: {
 			shapeIds,
 			pageBounds: printPage.pageBounds,
@@ -791,7 +864,7 @@ defineExpose({
 
 onMounted(() => {
 	void Promise.resolve().then(() => ensurePrintExpressionsLoaded(host.getServiceApi(), { refresh: true })).catch(() => undefined)
-	window.addEventListener('pointerdown', onDocumentPointerDown)
+	document.addEventListener('pointerdown', onDocumentPointerDown, true)
 	window.addEventListener('keydown', onDocumentKeyDown)
 	updatePrintPreviewModalSize()
 	if (typeof ResizeObserver !== 'undefined') {
@@ -801,7 +874,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-	window.removeEventListener('pointerdown', onDocumentPointerDown)
+	document.removeEventListener('pointerdown', onDocumentPointerDown, true)
 	window.removeEventListener('keydown', onDocumentKeyDown)
 	printPreviewResizeObserver?.disconnect()
 	printPreviewResizeObserver = null
@@ -812,13 +885,34 @@ onBeforeUnmount(() => {
 	<div
 		ref="panelRef"
 		class="top-menu-panel"
+		:class="{
+			'top-menu-panel--canvas-shortcuts': props.controls === 'dropdowns',
+			'top-menu-panel--actions-only': props.controls === 'actions',
+		}"
 		@pointerdown.stop
 		@pointermove.stop
 		@wheel.stop
 		@contextmenu.prevent.stop
 	>
-		<div class="top-menu-toolbar">
+		<button
+			v-if="props.controls === 'dropdowns'"
+			type="button"
+			class="top-menu-canvas-drawer-trigger"
+			:aria-expanded="canvasDrawerOpen"
+			aria-controls="top-menu-canvas-drawer"
+			aria-label="画布工具"
+			title="画布工具"
+			@click="toggleCanvasDrawer"
+		>
+			<span aria-hidden="true">{{ canvasDrawerOpen ? '×' : '☰' }}</span>
+		</button>
+		<div
+			:id="props.controls === 'dropdowns' ? 'top-menu-canvas-drawer' : undefined"
+			class="top-menu-toolbar"
+			:class="{ 'is-canvas-drawer-open': canvasDrawerOpen }"
+		>
 			<button
+				v-if="showDropdownControls"
 				type="button"
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="菜单"
@@ -829,7 +923,30 @@ onBeforeUnmount(() => {
 				<span class="top-menu-button-label">菜单</span>
 			</button>
 			<button
-				v-if="props.showTemplateControls !== false && canPreviewPrint"
+				v-if="showDropdownControls"
+				type="button"
+				class="top-menu-page-button top-menu-labeled-button"
+				aria-label="页面"
+				:title="pageLabel"
+				@click="togglePageMenu($event)"
+			>
+				<span class="top-menu-button-icon" aria-hidden="true">&#9636;</span>
+				<span class="top-menu-button-label">页面</span>
+				<span class="top-menu-page-label">{{ pageLabel }}</span>
+				<span class="top-menu-page-caret">&#9662;</span>
+			</button>
+			<div v-if="props.controls === 'dropdowns' && props.toolbarTools" class="top-menu-quick-actions">
+				<button v-for="action in canvasQuickActions" :key="action.id"
+					type="button" class="top-menu-icon-button"
+					:class="{ 'is-selected': action.selected }"
+					:disabled="action.disabled" :aria-label="action.label"
+					:aria-pressed="action.isTool ? action.selected : undefined"
+					:title="action.title" @click="action.run()">
+					<span class="top-menu-button-icon" aria-hidden="true">{{ action.glyph }}</span>
+				</button>
+			</div>
+			<button
+				v-if="showActionControls && props.showTemplateControls !== false && canPreviewPrint"
 				type="button"
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="加载模板"
@@ -841,7 +958,7 @@ onBeforeUnmount(() => {
 				<span class="top-menu-button-label">加载模板</span>
 			</button>
 			<button
-				v-if="props.showTemplateControls !== false && canPrint"
+				v-if="showActionControls && props.showTemplateControls !== false && canPrint"
 				type="button"
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="保存模板"
@@ -853,18 +970,7 @@ onBeforeUnmount(() => {
 				<span class="top-menu-button-label">保存模板</span>
 			</button>
 			<button
-				type="button"
-				class="top-menu-page-button top-menu-labeled-button"
-				aria-label="页面"
-				:title="pageLabel"
-				@click="togglePageMenu($event)"
-			>
-				<span class="top-menu-button-icon" aria-hidden="true">&#128196;</span>
-				<span class="top-menu-button-label">页面</span>
-				<span class="top-menu-page-label">{{ pageLabel }}</span>
-				<span class="top-menu-page-caret">&#9662;</span>
-			</button>
-			<button
+				v-if="showActionControls"
 				type="button"
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印预览"
@@ -876,6 +982,7 @@ onBeforeUnmount(() => {
 				<span class="top-menu-button-label">预览</span>
 			</button>
 			<button
+				v-if="showActionControls"
 				type="button"
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印"
@@ -886,8 +993,8 @@ onBeforeUnmount(() => {
 				<span class="top-menu-button-icon" aria-hidden="true">&#128438;</span>
 				<span class="top-menu-button-label">打印</span>
 			</button>
-			<div class="top-menu-separator" />
-			<div class="top-menu-inline-actions" aria-label="对齐与层级操作">
+			<div v-if="showActionControls" class="top-menu-separator" />
+			<div v-if="showActionControls" class="top-menu-inline-actions" aria-label="对齐与层级操作">
 				<div
 					v-for="(group, groupIndex) in gridActionGroups"
 					:key="groupIndex"
@@ -911,7 +1018,7 @@ onBeforeUnmount(() => {
 		</div>
 
 		<div
-			v-if="props.showTemplateControls !== false && templateMenuOpen"
+			v-if="showActionControls && props.showTemplateControls !== false && templateMenuOpen"
 			class="top-menu-popover top-menu-popover--templates"
 			:style="embeddedPopoverStyle"
 		>
@@ -945,7 +1052,7 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<div v-if="mainMenuOpen" class="top-menu-popover top-menu-popover--main" :style="embeddedPopoverStyle">
+		<div v-if="showDropdownControls && mainMenuOpen" class="top-menu-popover top-menu-popover--main" :style="embeddedPopoverStyle">
 			<button type="button" class="top-menu-menu-item" :disabled="!canUndo" @click="undo">
 				撤销
 			</button>
@@ -1006,7 +1113,7 @@ onBeforeUnmount(() => {
 			</button>
 		</div>
 
-		<div v-if="pageMenuOpen" class="top-menu-popover top-menu-popover--page" :style="embeddedPopoverStyle">
+		<div v-if="showDropdownControls && pageMenuOpen" class="top-menu-popover top-menu-popover--page" :style="embeddedPopoverStyle">
 			<div class="top-menu-page-list">
 				<div v-for="page in pages" :key="page.id" class="top-menu-page-row" :data-current="page.isCurrent">
 					<button
@@ -1081,7 +1188,7 @@ onBeforeUnmount(() => {
 			</button>
 		</div>
 
-		<div v-if="actionsMenuOpen" class="top-menu-popover top-menu-popover--actions" :style="embeddedPopoverStyle">
+		<div v-if="showActionControls && actionsMenuOpen" class="top-menu-popover top-menu-popover--actions" :style="embeddedPopoverStyle">
 			<div v-for="(group, groupIndex) in gridActionGroups" :key="groupIndex" class="top-menu-grid-row">
 				<template v-for="action in group" :key="action.id">
 					<button
@@ -1098,7 +1205,7 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<Teleport to="body">
+		<Teleport v-if="showActionControls" to="body">
 			<vxe-modal
 				v-model="printPreviewOpen"
 				class-name="print-preview-modal"

@@ -8,6 +8,7 @@ import VueEchartsPalette from './components/VueEchartsPalette.vue'
 import VueDataSourcePanel from './components/VueDataSourcePanel.vue'
 import VueAnimationPanel from './components/VueAnimationPanel.vue'
 import VueBackgroundPanel from './components/VueBackgroundPanel.vue'
+import VuePreviewSettingsPanel from './components/VuePreviewSettingsPanel.vue'
 import VuePresentationPages from './components/VuePresentationPages.vue'
 import VuePresentationPreview from './components/VuePresentationPreview.vue'
 import VueLayersPanel from './components/VueLayersPanel.vue'
@@ -101,12 +102,13 @@ const topMenuRef = ref<{
 	previewPrint(): Promise<void>
 	printCurrentPage(): Promise<void>
 } | null>(null)
+const canvasMenuRef = ref<{ closeMenus(): void } | null>(null)
 const bottomToolbarRef = ref<{ closeMenus(): void } | null>(null)
 const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
-	'tools' | 'templates' | 'components' | 'echarts' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'animation'
+	'tools' | 'templates' | 'components' | 'echarts' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'previewSettings' | 'animation'
 >(props.mode === 'bi' ? 'echarts' : 'tools')
 const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
@@ -134,6 +136,7 @@ const designerTabs = [
 	{ id: 'columnProperties', label: '列属性', icon: '▥' },
 	{ id: 'style', label: '样式', icon: '◐' },
 	{ id: 'background', label: '背景', icon: '▧' },
+	{ id: 'previewSettings', label: '预览设置', icon: '▣' },
 	{ id: 'animation', label: '动画', icon: '▶' },
 ] as const
 
@@ -256,6 +259,7 @@ function handleDesignerPointerDownCapture(event: PointerEvent) {
 function selectTool(tool: CanvasTool, geoShape?: VueGeoShape) {
 	canvasRef.value?.closeContextMenu()
 	topMenuRef.value?.closeMenus()
+	canvasMenuRef.value?.closeMenus()
 	bottomToolbarRef.value?.closeMenus()
 	activeTool.value = tool
 	if (geoShape) {
@@ -264,6 +268,17 @@ function selectTool(tool: CanvasTool, geoShape?: VueGeoShape) {
 }
 
 function closeContextAndTopMenus() {
+	canvasRef.value?.closeContextMenu()
+	topMenuRef.value?.closeMenus()
+	canvasMenuRef.value?.closeMenus()
+}
+
+function handleSideMenuBeforeAction() {
+	canvasRef.value?.closeContextMenu()
+	canvasMenuRef.value?.closeMenus()
+}
+
+function handleCanvasMenuBeforeAction() {
 	canvasRef.value?.closeContextMenu()
 	topMenuRef.value?.closeMenus()
 }
@@ -275,6 +290,7 @@ function openLayerContextMenu(shapeId: TLShapeId, event: MouseEvent) {
 function startToolbarDrag(tool: CanvasTool, geoShape: VueGeoShape | undefined, event: PointerEvent) {
 	canvasRef.value?.closeContextMenu()
 	topMenuRef.value?.closeMenus()
+	canvasMenuRef.value?.closeMenus()
 	bottomToolbarRef.value?.closeMenus()
 	canvasRef.value?.startToolbarDrag(tool, geoShape, event)
 }
@@ -314,6 +330,7 @@ function onKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			canvasRef.value.closeContextMenu()
 			topMenuRef.value?.closeMenus()
+			canvasMenuRef.value?.closeMenus()
 		}
 		return
 	}
@@ -322,6 +339,7 @@ function onKeyDown(event: KeyboardEvent) {
 		mobilePanelOpen.value = false
 		if (dataSourceDrawerOpen.value) closeDataSourceDrawer()
 		topMenuRef.value?.closeMenus()
+		canvasMenuRef.value?.closeMenus()
 		return
 	}
 }
@@ -444,7 +462,7 @@ function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 		}
 		Object.assign(workspaceBackground.value, obj)
 	}
-	canvasRef.value?.applyWorkspaceTemplateConfig(config)
+	canvasRef.value?.applyWorkspaceTemplateConfig({ ...config, previewSettings: config.previewSettings })
 }
 
 function resetWorkspaceTemplateConfig() {
@@ -470,6 +488,7 @@ function resetWorkspaceTemplateConfig() {
 		pageSizeMm: { ...DEFAULT_WORKSPACE_PAGE_SIZE_MM },
 		guides: [],
 		background: { ...background },
+		previewSettings: undefined,
 		presentation: clonePresentationConfig(presentation),
 	})
 	canvasRef.value?.workspaceFitCanvas()
@@ -500,6 +519,11 @@ function updateWorkspaceBackground(background: WorkspaceBackgroundConfig) {
 	Object.assign(workspaceBackground.value, normalized)
 	// workspaceBackground.value = normalized
 	canvasRef.value?.applyWorkspaceTemplateConfig({ background: normalized })
+}
+
+function updatePreviewSettings(config: VueTemplateWorkspaceConfig) {
+	canvasRef.value?.applyWorkspaceTemplateConfig(config)
+	emit('content-change')
 }
 let _size: any = null
 function setDesignerMode(mode: DesignerMode) {
@@ -710,8 +734,8 @@ onBeforeUnmount(() => {
 								:load-templates="props.loadTemplates"
 								:apply-workspace-template-config="applyWorkspaceTemplateConfig"
 								:save-templates="props.saveTemplates"
-								:show-template-controls="props.showTemplateControls" embedded
-								@before-action="canvasRef?.closeContextMenu()" />
+								:show-template-controls="props.showTemplateControls" controls="actions" embedded
+								@before-action="handleSideMenuBeforeAction" />
 						</section>
 					</div>
 					<div v-show="activeDesignerTab === 'components'" class="designer-tool-view">
@@ -750,6 +774,11 @@ onBeforeUnmount(() => {
 						<VueBackgroundPanel :background="workspaceBackground"
 							@update:background="updateWorkspaceBackground" />
 					</div>
+					<div v-show="activeDesignerTab === 'previewSettings'" class="designer-tool-view">
+						<VuePreviewSettingsPanel v-if="editor" :editor="editor" :workspace-revision="workspaceRevision"
+							:get-workspace-template-config="getWorkspaceTemplateConfig"
+							:apply-workspace-template-config="updatePreviewSettings" />
+					</div>
 					<div v-show="activeDesignerTab === 'animation'" class="designer-tool-view">
 						<VueAnimationPanel v-if="editor && designerMode === 'presentation'" :editor="editor" />
 					</div>
@@ -777,6 +806,10 @@ onBeforeUnmount(() => {
 					:current-geo-shape="currentGeoShape" :handle-shortcut="handlePluginShortcut"
 					:toolbar-tools="toolbarTools" @tool-change="selectTool"
 					@workspace-config-change="handleWorkspaceConfigChange" />
+				<VueTopLeftMenu v-if="editor" ref="canvasMenuRef" :editor="editor" controls="dropdowns"
+					:active-tool="activeTool" :current-geo-shape="currentGeoShape"
+					:toolbar-tools="ordinaryToolbarTools" :on-preview="previewPrint" :on-print="printCurrentPage"
+					@tool-select="selectTool" @before-action="handleCanvasMenuBeforeAction" />
 				<VueNavigationPanel v-if="editor" :editor="editor" @before-action="closeContextAndTopMenus">
 					<template #presentation-pages>
 						<VuePresentationPages v-if="designerMode === 'presentation'" class="presentation-pages--dock"

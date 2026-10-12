@@ -7,7 +7,7 @@ import type {
 } from './interactions/WorkspaceBoundsManager'
 import type { WorkspaceGuide } from './interactions/guides'
 import type { DesignerMode, PresentationConfig } from '../presentation'
-import type { PrintDataSourceConfig } from '../print/types'
+import type { PrintDataSourceConfig, PrintPreviewSettings } from '../print/types'
 
 const LOCAL_TEMPLATE_STORAGE_KEY = 'tldraw-vue.templates.v1'
 
@@ -60,6 +60,7 @@ export interface VueTemplateWorkspaceConfig {
 	viewportSize?: WorkspaceViewportSize
 	pxPerMm?: number
 	background?: WorkspaceBackgroundConfig
+	previewSettings?: PrintPreviewSettings
 	presentation?: PresentationConfig
 	/** Current print data source snapshot used by database-backed templates. */
 	printDataSource?: PrintDataSourceConfig
@@ -275,7 +276,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspaceConfig {
 	if (!isObject(value)) return false
-	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, background, presentation, printDataSource, printDataSourceCode } = value
+	const { designerMode, pageSizeMm, pageBounds, camera, guides, viewportSize, pxPerMm, background, previewSettings, presentation, printDataSource, printDataSourceCode } = value
 	return (
 		(designerMode === undefined || designerMode === 'print' || designerMode === 'presentation' || designerMode === 'bi') &&
 		(pageSizeMm === undefined || isSizeLike(pageSizeMm)) &&
@@ -285,6 +286,10 @@ function isTemplateWorkspaceConfig(value: unknown): value is VueTemplateWorkspac
 		(viewportSize === undefined || isSizeLike(viewportSize)) &&
 		(pxPerMm === undefined || isFiniteNumber(pxPerMm)) &&
 		(background === undefined || isBackgroundConfig(background)) &&
+		(previewSettings === undefined || (isObject(previewSettings) &&
+			(previewSettings.mode === 'component' || previewSettings.mode === 'data') &&
+			(previewSettings.materialId === undefined || typeof previewSettings.materialId === 'string') &&
+			(previewSettings.detailField === undefined || typeof previewSettings.detailField === 'string'))) &&
 		(presentation === undefined || isObject(presentation)) &&
 		(printDataSource === undefined || (isObject(printDataSource) && typeof printDataSource.type === 'string')) &&
 		(printDataSourceCode === undefined || typeof printDataSourceCode === 'string')

@@ -76,6 +76,12 @@ export interface PrintTemplateConfig {
 	resume?: PrintResumeConfig | PrintResumeInstance
 }
 
+export interface PrintPreviewSettings {
+	mode: 'component' | 'data'
+	materialId?: string
+	detailField?: string
+}
+
 export type PrintMaterialGridCollection =
 	| readonly PrintMaterialGridConfig[]
 	| Record<string, PrintMaterialGridConfig | PrintMaterialGridInstance>
@@ -225,6 +231,7 @@ export type PrinterConfig = BrowserPrinterConfig | BluetoothPrinterConfig | Netw
 
 export interface PrintJobConfig {
 	template?: PrintTemplateConfig
+	previewSettings?: PrintPreviewSettings
 	data?: PrintDataRow[]
 	dataSource?: PrintDataSourceConfig
 	page: PrintPageConfig

@@ -38,6 +38,7 @@ import type { ContextMenuActionId, ContextMenuSnapshot } from '@/editor/interact
 import { useEditorValue } from '@/vue/useEditorValue'
 import VueShapeWrapper from './VueShapeWrapper.vue'
 import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
+import type { PrintPreviewSettings } from '@/print/types'
 
 const props = defineProps<{
 	editor: Editor
@@ -61,6 +62,7 @@ const RULER_SIZE = 28
 const assetManager = new VueAssetManager(props.editor, workspaceBounds)
 const workspaceRevision = ref(0)
 const workspacePageSizeMm = ref(workspaceBounds.getPageSizeMm())
+const previewSettings = ref<PrintPreviewSettings>()
 const workspaceBackground = ref<WorkspaceBackgroundConfig>({
 	color: '#ffffff',
 	imageFileId: '',
@@ -693,11 +695,16 @@ function getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig {
 		viewportSize: { ...viewportSize.value },
 		pxPerMm: workspaceBounds.getPxPerMm(),
 		background: cloneJson(workspaceBackground.value),
+		previewSettings: previewSettings.value ? cloneJson(previewSettings.value) : undefined,
 	}
 }
 
 function applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig) {
 	let didUpdatePageSize = false
+	if (Object.prototype.hasOwnProperty.call(config, 'previewSettings')) {
+		previewSettings.value = config.previewSettings ? cloneJson(config.previewSettings) : undefined
+		workspaceRevision.value++
+	}
 	if (config.pageSizeMm) {
 		workspaceBounds.setPageSizeMm(config.pageSizeMm)
 		workspacePageSizeMm.value = workspaceBounds.getPageSizeMm()

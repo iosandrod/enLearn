@@ -58,6 +58,7 @@ export type {
 	PrintPageConfig,
 	PrintPageRenderResult,
 	PrintProgress,
+	PrintPreviewSettings,
 	PrintTemplateConfig,
 	PrinterAdapter,
 	PrinterConfig,

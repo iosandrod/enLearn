@@ -30,7 +30,7 @@ const initialPages = [
   ]) },
   { id: 'page:empty', name: '空白页', content: createContent() },
 ];
-const initialWorkspace = { pageSizeMm: { w: 100, h: 150 }, background: { imageUrl: '/background.png' }, guides: [{ x: 20 }], dataSource: { table: 'orders' } };
+const initialWorkspace = { pageSizeMm: { w: 100, h: 150 }, background: { imageUrl: '/background.png' }, guides: [{ x: 20 }], dataSource: { table: 'orders' }, previewSettings: { mode: 'component', materialId: 'shape:rich' } };
 let pages = clone(initialPages);
 let currentPageId = 'page:second';
 let workspace = clone(initialWorkspace);
@@ -62,7 +62,7 @@ const editor = {
   run: (fn) => fn(),
   store: { mergeRemoteChanges: (fn) => fn(), ensureStoreIsUsable() {} },
   putContentOntoCurrentPage: (content, options) => {
-    assert.deepEqual(options, { preservePosition: true, preserveIds: false, select: false });
+    assert.deepEqual(options, { preservePosition: true, preserveIds: true, select: false });
     editor.getPage(currentPageId).content = clone(content);
     inserted++;
   },
