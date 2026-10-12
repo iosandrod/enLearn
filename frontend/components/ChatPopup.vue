@@ -3,6 +3,7 @@
     :api="chatApi"
     :socket="chatSocket"
     :current-user-id="auth.user.value?.id ?? ''"
+    @error="showVxeMessage($event, 'error')"
   />
 </template>
 

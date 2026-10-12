@@ -4,6 +4,7 @@ import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import type { Editor, TLShape } from '@tldraw/editor'
 import { computed, onMounted, ref } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { normalizePresentationAnimation, type PresentationAnimationPreset, type PresentationAnimationStart } from '@/presentation'
 import { useEditorValue } from '@/vue/useEditorValue'
 
@@ -11,6 +12,7 @@ const props = defineProps<{ editor: Editor }>()
 const host = useLowCodeHost()
 const formSchema = ref<LowCodeFormSchema | null>(null)
 const formSchemaError = ref('')
+useVxeMessage(formSchemaError, 'error')
 
 const selectedShape = useEditorValue('presentation animation selected shape', () => {
 	const ids = props.editor.getSelectedShapeIds()
@@ -112,8 +114,7 @@ function readAnimation(shape: TLShape | null) {
 				vertical
 				@update:model-value="handleFormUpdate"
 			/>
-			<p v-else-if="formSchemaError" class="presentation-animation-form__error">{{ formSchemaError }}</p>
-			<p v-else class="presentation-animation-form__loading">正在加载动画表单...</p>
+			<p v-else-if="!formSchemaError" class="presentation-animation-form__loading">正在加载动画表单...</p>
 		</div>
 	</section>
 </template>

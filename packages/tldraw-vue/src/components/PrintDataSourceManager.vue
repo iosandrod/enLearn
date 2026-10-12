@@ -3,6 +3,7 @@ import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dial
 import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import { h, nextTick, onMounted, ref } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { isLowCodeFormSchema } from '@/editor/dataSourceForm'
 
 const DATA_SOURCE_FORM_CODE = 'print-designer.datasource-typeorm'
@@ -28,6 +29,7 @@ const sources = ref<PrintDataSource[]>([])
 const selectedId = ref('')
 const loading = ref(true)
 const message = ref('')
+useVxeMessage(message, () => /失败|错误|请先|不能为空|未找到/.test(message.value) ? 'error' : 'success')
 const opening = ref(false)
 
 onMounted(() => { void loadSources() })
@@ -240,7 +242,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 				<i class="ri-add-line" aria-hidden="true" /> 新建数据源
 			</button>
 		</header>
-		<div v-if="message" class="print-data-source-manager__message" role="status">{{ message }}</div>
 		<div v-if="loading" class="print-data-source-manager__state">正在加载...</div>
 		<div v-else-if="!sources.length" class="print-data-source-manager__state">
 			暂无数据源，点击右上角“新建数据源”开始配置。

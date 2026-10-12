@@ -39,10 +39,6 @@
         <i class="ri-loader-4-line is-spinning" aria-hidden="true" />
         <span>正在加载类别...</span>
       </div>
-      <div v-else-if="errorMessage" class="lc-category-drawer__state is-error">
-        <i class="ri-error-warning-line" aria-hidden="true" />
-        <span>{{ errorMessage }}</span>
-      </div>
       <div v-else-if="!tree.length" class="lc-category-drawer__state">
         <i class="ri-folder-line" aria-hidden="true" />
         <span>暂无类别</span>
@@ -73,6 +69,7 @@ import { getLowCodePage } from '../runtime/lowcode-pages';
 import LowCodeCategoryTreeNode, {
   type LowCodeCategoryTreeNodeData,
 } from './LowCodeCategoryTreeNode.vue';
+import { useVxeMessage } from '../utils/vxe-message';
 
 const props = defineProps<{
   config: LowCodePageRelateConfig;
@@ -86,6 +83,7 @@ const emit = defineEmits<{
 const collapsed = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const tree = ref<LowCodeCategoryTreeNodeData[]>([]);
 const expandedIds = ref(new Set<string>());
 const selectedId = ref('');

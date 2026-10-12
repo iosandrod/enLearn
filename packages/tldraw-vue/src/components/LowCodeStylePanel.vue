@@ -17,6 +17,7 @@ import type {
 	TLDefaultSizeStyle,
 } from '@tldraw/tlschema'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { StylePanelController, type VueStylePanelSnapshot } from '@/editor/interactions/StylePanelController'
 import {
 	VUE_COLOR_ITEMS,
@@ -36,6 +37,7 @@ const controller = new StylePanelController(props.editor)
 const schema = ref<LowCodeFormSchema | null>(null)
 const loading = ref(true)
 const error = ref('')
+useVxeMessage(error, 'error')
 const formModel = ref<StyleFormModel>({})
 let syncingFromEditor = false
 let lastModel: StyleFormModel = {}
@@ -226,9 +228,6 @@ watch(snapshot, (value) => syncFromEditor(value), { deep: true })
 				@update:model-value="handleModelUpdate"
 			/>
 		</div>
-		<div v-if="error" class="lowcode-style-panel__state lowcode-style-panel__state--error" role="alert">
-			{{ error }}
-			<button type="button" @click="loadDefinition">重新加载</button>
-		</div>
+		<button v-if="error" type="button" @click="loadDefinition">重新加载</button>
 	</section>
 </template>

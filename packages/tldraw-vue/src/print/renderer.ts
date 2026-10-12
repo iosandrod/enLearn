@@ -11,7 +11,7 @@ import {
 } from '@/editor/extensions/material/vueMaterialShape'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { normalizeWorkspaceBackgroundOpacity } from '@/editor/templateStore'
-import { resolvePrintPreviewRows } from './dataSource'
+import { PRINT_HEADER_PREVIEW_SOURCE, resolvePrintPreviewRows } from './dataSource'
 import { PrintShapePreviewResolver } from './shapePreviewStrategies'
 import {
 	createMaterialGridPrintPlan,
@@ -39,7 +39,16 @@ export class PrintRenderer {
 		const shapeIds = this.getTemplateShapeIds(config)
 		if (config.previewSettings?.mode === 'data') {
 			const rows = resolvePrintPreviewRows(config.dataSource, config.data, config.previewSettings) ?? []
-			return rows.map(row => ({ row }))
+			if (config.previewSettings.detailField !== PRINT_HEADER_PREVIEW_SOURCE) {
+				return rows.map(row => ({ row }))
+			}
+			return rows.flatMap(row => {
+				const materialGridPlan = createMaterialGridPrintPlan(this.editor, config, shapeIds, row) ?? undefined
+				if (!materialGridPlan) return [{ row }]
+				return Array.from({ length: materialGridPlan.pageCount }, (_, materialGridPageIndex) => ({
+					row, materialGridPlan, materialGridPageIndex,
+				}))
+			})
 		}
 		const materialGridPlan = createMaterialGridPrintPlan(this.editor, config, shapeIds)
 		if (config.previewSettings?.mode === 'component' && !materialGridPlan) {

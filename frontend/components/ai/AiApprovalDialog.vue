@@ -27,7 +27,6 @@
           <input v-model="confirmed" type="checkbox" />
           <span>我已审阅差异，并理解该变更的全局影响。</span>
         </label>
-        <p v-if="errorMessage" class="ai-approval-dialog__error" role="alert">{{ errorMessage }}</p>
       </div>
       <footer>
         <button class="is-secondary" type="button" :disabled="applying" @click="reject">拒绝方案</button>
@@ -50,6 +49,7 @@ const assistant = useAiAssistant();
 const confirmed = ref(false);
 const applying = ref(false);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const hasErrors = computed(() => props.proposal.validationIssues.some((issue) => issue.level === 'error'));
 function close() { if (!applying.value) emit('close'); }
 async function apply() {

@@ -170,11 +170,6 @@
             </div>
           </header>
 
-          <div v-if="runtimeMonitorErrorText" class="runtime-monitor-alert" role="alert">
-            <i class="ri-error-warning-line" aria-hidden="true" />
-            <span>{{ runtimeMonitorErrorText }}</span>
-          </div>
-
           <template v-if="runtimeMonitorData">
             <div class="runtime-monitor-metrics">
               <div>
@@ -557,6 +552,9 @@ const validationIssues = ref<WorkflowSchemaIssue[]>([]);
 const schemaText = ref(serializeWorkflowModel(workflowModel.value));
 const message = ref('');
 const messageClass = ref('workflow-help');
+useVxeMessage(message, () => messageClass.value === 'workflow-error'
+  ? 'error'
+  : messageClass.value === 'workflow-success' ? 'success' : 'info');
 const isApplyingSchemaText = ref(false);
 const isApiBusy = ref(false);
 const savedModelId = ref('');
@@ -610,6 +608,7 @@ const runtimeMonitorErrorText = computed(() => {
   const errors = Object.values(runtimeMonitorData.value?.errors ?? {}).filter(Boolean);
   return errors.length ? `部分 Trigger.dev 状态读取失败：${errors.join('；')}` : '';
 });
+useVxeMessage(runtimeMonitorErrorText, 'warning');
 const runtimeEngineLabel = computed(() => {
   if (!runtimeMonitorData.value?.engine.configured) return '未连接';
   if (runtimeMonitorData.value.partial) return '部分可用';

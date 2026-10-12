@@ -67,10 +67,6 @@
           <span>注册账号</span>
         </button>
 
-        <p v-if="message" class="erp-login-panel__error" role="alert">
-          <i class="ri-error-warning-line" aria-hidden="true" />
-          {{ message }}
-        </p>
       </div>
 
       <footer class="erp-signin__footer">{{ SITE_NAME }} · 个人学习交流站点</footer>
@@ -94,6 +90,7 @@ if (pendingSignup) {
 const auth = useAuth();
 const loading = ref(false);
 const message = ref('');
+useVxeMessage(message, 'error');
 const rememberLoginAccount = ref(true);
 const loginFormRef = ref<{
   validate: () => Promise<boolean>;

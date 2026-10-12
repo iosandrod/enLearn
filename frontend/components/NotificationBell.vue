@@ -34,9 +34,6 @@
 
       <div class="notification-bell__content">
         <p v-if="loading" class="notification-bell__state">加载中...</p>
-        <p v-else-if="errorMessage" class="notification-bell__state notification-bell__state--error">
-          {{ errorMessage }}
-        </p>
         <p v-else-if="messages.length === 0" class="notification-bell__state">暂无消息</p>
 
         <button
@@ -75,6 +72,7 @@ const rootEl = ref<HTMLElement | null>(null);
 const open = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const unreadTotal = ref(0);
 const messages = ref<NotificationMessage[]>([]);
 

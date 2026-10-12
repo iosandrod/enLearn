@@ -41,10 +41,6 @@
           @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
           @runtime-event="publishRuntimeEvent" />
 
-        <p v-if="message" class="lc-runtime-feedback" :class="messageClass"
-          :role="messageClass === 'lc-error' ? 'alert' : 'status'" aria-live="polite">
-          {{ message }}
-        </p>
         <GlobalDialogHost v-if="showGlobalDialogHost" />
       </div>
       <LowCodePageRenderPager style="z-index: 100;" v-if="isListPage && pagerSourceKey"
@@ -79,6 +75,7 @@ import {
 import { onBeforeMount } from 'vue';
 import { initializeLowCodeMaterialCatalog } from '../lowcode/material-runtime/catalog';
 import { useLowCodeHost } from '../core/host';
+import { useVxeMessage } from '../utils/vxe-message';
 const props = withDefaults(defineProps<LowCodePageRendererProps>(), {
   showGlobalDialogHost: true,
 });
@@ -139,6 +136,7 @@ const {
   handleSearchAction,
   publishRuntimeEvent,
 } = renderer;
+useVxeMessage(message, () => messageClass.value === 'lc-error' ? 'error' : 'success');
 
 defineExpose(renderer.exposed);
 </script>

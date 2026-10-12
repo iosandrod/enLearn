@@ -4,11 +4,13 @@ import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import type { Editor } from '@tldraw/editor'
 import { computed, onMounted, ref } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { isVueMaterialShape } from '@/editor/extensions/material/vueMaterialShape'
 import { getMaterialDataSourceFieldOptions } from '@/editor/materialDataSourceFields'
 import type { VueTemplateWorkspaceConfig } from '@/editor/templateStore'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import { useEditorValue } from '@/vue/useEditorValue'
+import { PRINT_HEADER_PREVIEW_SOURCE } from '@/print/dataSource'
 
 const PREVIEW_FORM_CODE = 'print-designer.preview-settings'
 const props = defineProps<{
@@ -21,6 +23,7 @@ const host = useLowCodeHost()
 const definition = ref<LowCodeFormSchema | null>(null)
 const loading = ref(true)
 const errorMessage = ref('')
+useVxeMessage(errorMessage, 'error')
 const source = getEditorPrintDataSource(props.editor)
 const readonly = useEditorValue('preview settings readonly', () => props.editor.getIsReadonly())
 const materialOptions = useEditorValue('preview pagination components', () =>
@@ -31,7 +34,10 @@ const materialOptions = useEditorValue('preview pagination components', () =>
 			value: shape.id,
 		}))
 )
-const detailOptions = computed(() => getMaterialDataSourceFieldOptions(source.value).filter(option => option.value))
+const detailOptions = computed(() => [
+	...getMaterialDataSourceFieldOptions(source.value).filter(option => option.value),
+	...(source.value?.type === 'inline' ? [{ label: '表头表格', value: PRINT_HEADER_PREVIEW_SOURCE }] : []),
+])
 const model = computed(() => {
 	props.workspaceRevision
 	const settings = props.getWorkspaceTemplateConfig()?.previewSettings
@@ -45,7 +51,10 @@ const schema = computed(() => definition.value ? {
 	...definition.value,
 	fields: definition.value.fields.map(field => {
 		if (field.field === 'materialId') return { ...field, options: materialOptions.value }
-		if (field.field === 'detailField') return { ...field, options: detailOptions.value }
+		if (field.field === 'detailField') return {
+			...field, label: '分页数据源', options: detailOptions.value,
+			props: { ...field.props, placeholder: '选择表头表格或明细源' },
+		}
 		return field
 	}),
 } : null)
@@ -54,11 +63,12 @@ const selectionMessage = computed(() => {
 		if (!materialOptions.value.length) return '请先在当前画布添加物料表格组件。'
 		if (!materialOptions.value.some(option => option.value === model.value.materialId)) return '已选组件不在当前画布中，请重新选择。'
 	} else {
-		if (!detailOptions.value.length) return '请先在数据源中配置明细源。'
-		if (!detailOptions.value.some(option => option.value === model.value.detailField)) return '已选明细源不存在，请重新选择。'
+		if (!detailOptions.value.length) return '请先配置表头或明细数据源。'
+		if (!detailOptions.value.some(option => option.value === model.value.detailField)) return '已选分页数据源不存在，请重新选择。'
 	}
 	return ''
 })
+useVxeMessage(selectionMessage, 'warning')
 
 function handleModelUpdate(value: Record<string, unknown>) {
 	if (readonly.value) return
@@ -101,14 +111,10 @@ onMounted(() => { void loadSchema() })
 	<section class="preview-settings-panel" aria-label="预览设置" @pointerdown.stop @pointermove.stop @wheel.stop @contextmenu.prevent.stop>
 		<header><strong>预览设置</strong><span>设置预览的分页依据</span></header>
 		<p v-if="loading" role="status">正在加载低代码表单...</p>
-		<div v-else-if="errorMessage" role="alert">
-			<p>{{ errorMessage }}</p>
-			<button type="button" @click="loadSchema">重新加载</button>
-		</div>
+		<button v-else-if="errorMessage" type="button" @click="loadSchema">重新加载</button>
 		<template v-else-if="schema">
 			<LowCodeForm :schema="schema" :model-value="model" :disabled="readonly" @update:model-value="handleModelUpdate" />
-			<p class="preview-settings-panel__hint">{{ model.mode === 'component' ? '根据所选物料表格的内容和表体高度分页。' : '所选明细源每条记录生成一页，可在表达式中读取当前记录。' }}</p>
-			<p v-if="selectionMessage" class="preview-settings-panel__warning" role="status">{{ selectionMessage }}</p>
+			<p class="preview-settings-panel__hint">{{ model.mode === 'component' ? '根据所选物料表格的内容和表体高度分页。' : model.detailField === PRINT_HEADER_PREVIEW_SOURCE ? '表头表格每条记录独立分页，明细保留为数组字段；物料表格明细过长时按表体高度续页。' : '所选明细源每条记录生成一页，可在表达式中读取当前记录。' }}</p>
 		</template>
 	</section>
 </template>

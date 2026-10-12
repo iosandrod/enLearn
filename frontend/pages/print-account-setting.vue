@@ -58,14 +58,6 @@
           </div>
         </template>
 
-        <p v-if="errorMessage" class="print-account-setting__message is-error" role="alert">
-          <i class="ri-error-warning-line" aria-hidden="true" />
-          {{ errorMessage }}
-        </p>
-        <p v-else-if="successMessage" class="print-account-setting__message is-success" role="status">
-          <i class="ri-checkbox-circle-line" aria-hidden="true" />
-          {{ successMessage }}
-        </p>
       </section>
     </main>
   </div>
@@ -101,6 +93,8 @@ const loadingAccount = ref(true);
 const saving = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+useVxeMessage(errorMessage, 'error');
+useVxeMessage(successMessage, 'success');
 const accountName = computed(() => auth.activeAccount.value?.name ?? '个人工作区');
 
 function readText(value: unknown) {

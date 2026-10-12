@@ -35,6 +35,7 @@
     "test:files-auth-loading": "node tests/files-auth-loading-regression.mjs",
     "test:signed-upload-cors": "node tests/signed-upload-cors-regression.mjs",
 	"test:files-upload-progress": "node tests/files-upload-progress-regression.mjs",
+    "test:vxe-message-feedback": "node tests/vxe-message-feedback-regression.mjs",
     "test:service-request-id": "node tests/service-api-request-id-regression.mjs",
     "test:system-settings": "node tests/system-settings-page-regression.mjs",
     "test:system-settings-runtime": "node tests/system-settings-runtime-regression.mjs",

@@ -4,11 +4,6 @@
       <p class="page-description">正在加载低代码页面...</p>
     </div>
 
-    <div v-else-if="errorMessage" class="content-panel">
-      <h2 class="page-title">页面不可用</h2>
-      <p class="page-description">{{ errorMessage }}</p>
-    </div>
-
     <LowCodePageRenderer
       v-else-if="page"
       :page="page"
@@ -31,6 +26,7 @@ const route = useRoute();
 const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 
 async function loadPage() {
   loading.value = true;

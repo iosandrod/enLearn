@@ -2,6 +2,9 @@ import type { PrintDataRow, PrintDataSourceConfig, PrintDataSourceProvider, Prin
 
 const providerRegistry = new Map<string, PrintDataSourceProvider>()
 
+// Reserved preview source selector; the inline source remains { rows, detailTables }.
+export const PRINT_HEADER_PREVIEW_SOURCE = '$header'
+
 type InlinePrintDataSourceConfig = Extract<PrintDataSourceConfig, { type: 'inline' }>
 type JsonPrintDataSourceConfig = Extract<PrintDataSourceConfig, { type: 'json' }>
 type CsvPrintDataSourceConfig = Extract<PrintDataSourceConfig, { type: 'csv' }>
@@ -83,6 +86,10 @@ export function resolvePrintPreviewRows(
 ): PrintDataRow[] | undefined {
 	if (settings?.mode === 'data') {
 		const detailField = settings.detailField?.trim()
+		if (detailField === PRINT_HEADER_PREVIEW_SOURCE) {
+			if (!dataSource || dataSource.type !== 'inline') throw new Error('请先配置表头数据源。')
+			return normalizeRows(rows ?? dataSource.rows)
+		}
 		if (!dataSource || dataSource.type !== 'inline' || !detailField) {
 			throw new Error('请在预览设置中选择明细源。')
 		}

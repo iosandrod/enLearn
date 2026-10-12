@@ -47,10 +47,6 @@
           <span>{{ loading ? '正在创建账号...' : '创建账号' }}</span>
         </button>
 
-        <p v-if="message" :class="['print-signup__message', `print-signup__message--${messageStatus}`]" role="status">
-          <i :class="messageStatus === 'success' ? 'ri-checkbox-circle-line' : 'ri-error-warning-line'" aria-hidden="true" />
-          <span>{{ message }}</span>
-        </p>
 
         <div class="print-signup__signin">
           <span>已有账号？</span>
@@ -75,6 +71,7 @@ const auth = useAuth();
 const loading = ref(false);
 const message = ref('');
 const messageStatus = ref<'success' | 'error'>('error');
+useVxeMessage(message, () => messageStatus.value);
 const signupFormRef = ref<{
   validate: () => Promise<boolean>;
   snapshot: () => Record<string, unknown>;

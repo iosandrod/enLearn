@@ -2,6 +2,7 @@
 import type { Editor, TLShapeId } from '@tldraw/editor'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import { computed, nextTick, onMounted, ref } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import { ensurePrintExpressionsLoaded, upsertLoadedPrintExpression } from '@/print/expressions'
 import { resolveTemplateString } from '@/print/expression'
@@ -60,6 +61,7 @@ const loading = ref(true)
 const activeTab = ref<ReferenceTab>('guide')
 const testMessage = ref('')
 const testFailed = ref(false)
+useVxeMessage(testMessage, () => testFailed.value ? 'error' : 'success')
 const saving = ref(false)
 const dialogVisible = ref(true)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -624,7 +626,6 @@ function getErrorMessage(error: unknown) {
 						<button type="button" @click="source = `(context) => ({ text: String(context.pageNo) + ' / ' + String(context.total) })`">属性示例</button>
 						<button type="button" @click="source = `(context) => (context.row.items || []).reduce((sum, item) => sum + Number(item.amount || 0), 0).toFixed(2)`">汇总示例</button>
 					</div>
-					<div v-if="testMessage" class="expression-dialog__test-result" :class="{ 'is-error': testFailed }" role="status">{{ testMessage }}</div>
 				</section>
 
 				<aside class="expression-dialog__support">

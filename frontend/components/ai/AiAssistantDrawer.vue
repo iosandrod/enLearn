@@ -20,9 +20,6 @@
           </Transition>
           <main>
             <AiMessageList @suggest="useSuggestion" />
-            <p v-if="assistant.errorMessage.value" class="ai-assistant-drawer__error" role="alert">
-              <i class="ri-error-warning-line" aria-hidden="true" /> {{ assistant.errorMessage.value }}
-            </p>
             <AiPromptComposer ref="composerRef" />
           </main>
         </div>

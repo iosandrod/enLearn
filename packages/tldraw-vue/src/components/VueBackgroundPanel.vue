@@ -3,6 +3,7 @@ import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { normalizeWorkspaceBackgroundOpacity, type WorkspaceBackgroundConfig } from '@/editor/templateStore'
 
 const BACKGROUND_FORM_CODE = 'print-designer.background'
@@ -20,6 +21,8 @@ const model = computed(()=>{
 const loading = ref(true)
 const errorMessage = ref('')
 const uploadError = ref('')
+useVxeMessage(errorMessage, 'error')
+useVxeMessage(uploadError, 'error')
 let previewRequest = 0
 let hydratedFileId = ''
 
@@ -220,10 +223,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 		</header>
 
 		<div v-if="loading" class="background-panel__state" role="status">正在加载低代码表单...</div>
-		<div v-else-if="errorMessage" class="background-panel__state background-panel__state--error" role="alert">
-			<p>{{ errorMessage }}</p>
-			<button type="button" @click="loadSchema">重新加载</button>
-		</div>
+		<button v-else-if="errorMessage" type="button" @click="loadSchema">重新加载</button>
 		<template v-else-if="schema">
 			<LowCodeForm
 				:key="BACKGROUND_FORM_CODE"
@@ -231,7 +231,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 				:schema="schema"
 				@update:model-value="handleModelUpdate"
 			/>
-			<p v-if="uploadError" class="background-panel__error">{{ uploadError }}</p>
 		</template>
 	</section>
 </template>

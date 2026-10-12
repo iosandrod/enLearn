@@ -1,7 +1,6 @@
 <template>
   <section class="print-lowcode-page">
     <div v-if="loading" class="content-panel"><p class="page-description">正在加载打印设计器...</p></div>
-    <div v-else-if="errorMessage" class="content-panel"><p class="page-description">{{ errorMessage }}</p></div>
     <LowCodePageRenderer
       v-else-if="page"
       :page="page"
@@ -23,6 +22,7 @@ import {
   PRINT_DESIGNER_PAGE_CODE,
   prefetchPrintDesignerLowCodeResources,
 } from '../../../utils/printDesignerLowCode';
+import { useVxeMessage } from '~/composables/useVxeMessage';
 
 const route = useRoute();
 const router = useRouter();
@@ -30,6 +30,7 @@ const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const pagePrefetch = prefetchPrintDesignerLowCodeResources(serviceApi);
 const headerBlockTeleport = computed(() => (
   route.path.replace(/\/+$/, '') === '/print-designer'

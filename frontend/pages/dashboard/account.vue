@@ -34,8 +34,6 @@
       />
     </div>
 
-    <p v-if="formDefinitionError" class="lc-error">{{ formDefinitionError }}</p>
-    <p v-if="message" :class="messageClass">{{ message }}</p>
   </section>
 </template>
 
@@ -56,6 +54,8 @@ const profileSchema = shallowRef<LowCodeFormSchema | null>(null);
 const emailSchema = shallowRef<LowCodeFormSchema | null>(null);
 const message = ref('');
 const messageClass = ref('lc-help');
+useVxeMessage(formDefinitionError, 'error');
+useVxeMessage(message, () => messageClass.value === 'lc-error' ? 'error' : 'success');
 const profileForm = ref<Record<string, unknown>>({ fullName: '' });
 const emailForm = ref<Record<string, unknown>>({ email: '' });
 const subscriptionRows = ref<Record<string, unknown>[]>([

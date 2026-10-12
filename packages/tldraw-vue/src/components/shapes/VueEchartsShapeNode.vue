@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { init, type ECharts } from 'echarts'
 import type { BIChartShape } from '../../editor/extensions/echarts/biChartShape'
 import { buildChartOption } from '../../editor/extensions/echarts/chartOptions'
@@ -8,6 +9,7 @@ import type { VueShapeNodeProps } from './types'
 const props = defineProps<VueShapeNodeProps<BIChartShape>>()
 const chartElement = ref<HTMLDivElement | null>(null)
 const errorMessage = ref('')
+useVxeMessage(errorMessage, 'error')
 let chart: ECharts | null = null
 let resizeObserver: ResizeObserver | null = null
 let disposed = false
@@ -51,7 +53,6 @@ onBeforeUnmount(() => {
 		'--inverse-zoom': String(1 / zoom),
 	}">
 		<div ref="chartElement" class="vue-echarts-shape__chart" :aria-label="shape.props.title" role="img" />
-		<div v-if="errorMessage" class="vue-echarts-shape__error" role="status">{{ errorMessage }}</div>
 	</div>
 </template>
 

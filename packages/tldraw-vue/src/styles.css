@@ -5920,10 +5920,17 @@ button {
 }
 
 .data-source-panel__header-form {
+	display: flex;
+	flex-direction: column;
 	height: calc(100% - 42px);
 	min-height: 0;
 	background:white;
 }
+
+.data-source-panel__header-mode { display: flex; flex: none; gap: 4px; padding: 4px 12px; border-bottom: 1px solid #e5eaf1; }
+.data-source-panel__header-form > .lc-form { min-height: 0; overflow: auto; }
+.data-source-panel__header-form > .print-header-table { flex: 1; }
+.data-source-panel__record-selector { flex: none; margin: 8px 12px; }
 
 .data-source-panel__detail {
 	height: calc(100% - 42px);

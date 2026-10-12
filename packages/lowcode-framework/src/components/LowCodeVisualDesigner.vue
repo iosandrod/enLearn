@@ -37,9 +37,6 @@
                   正在加载菜单树...
                 </p>
                 <template v-else>
-                  <p v-if="menuTreeError" class="visual-designer-drawer__notice" role="alert">
-                    {{ menuTreeError }}
-                  </p>
                   <p v-if="!filteredMenuTree.length" class="admin-menu-empty">
                     {{ normalizedMenuFilter ? '无匹配菜单' : '暂无可用菜单' }}
                   </p>
@@ -73,22 +70,13 @@
           </aside>
 
           <main class="visual-designer-workbench">
-            <div v-if="errorMessage"
-              class="content-panel visual-designer-placeholder visual-designer-placeholder--error">
-              <h2 class="page-title">设计器不可用</h2>
-              <p class="page-description">{{ errorMessage }}</p>
-            </div>
-
-            <VisualEditorProvider v-else-if="ready" ref="providerRef" :initial-data="visualModel"
+            <VisualEditorProvider v-if="ready" ref="providerRef" :initial-data="visualModel"
               :page-record="designerPageRecord" :show-header="!embedded" :show-global-dialog-host="!embedded"
               @save="saveVisualProject">
               <template #meta>
                 <div class="visual-designer-summary">
                   <strong>{{ form.title || '未命名页面' }}</strong>
-                  <span v-if="message" :class="['visual-designer-message', messageType]">
-                    {{ message }}
-                  </span>
-                  <span v-else>{{ form.code }} · {{ form.route }}</span>
+                  <span>{{ form.code }} · {{ form.route }}</span>
                 </div>
               </template>
 
@@ -162,6 +150,7 @@ import {
   type AdminRouteNode,
 } from '../utils/admin-navigation';
 import { initializeLowCodeMaterialCatalog } from '../lowcode/material-runtime/catalog';
+import { useVxeMessage } from '../utils/vxe-message';
 
 const props = defineProps<{
   code?: string;
@@ -252,6 +241,8 @@ const providerRef = ref<{
 const errorMessage = ref('');
 const message = ref('');
 const messageType = ref<'success' | 'error'>('success');
+useVxeMessage(errorMessage, 'error');
+useVxeMessage(message, () => messageType.value);
 const visualModel = ref<VisualEditorModelValue | null>(null);
 const loadingPageCode = ref('');
 const pagePickerLoading = ref(false);
@@ -259,6 +250,7 @@ const menuFilter = ref('');
 const navigationRoutes = ref<AdminRouteNode[]>([]);
 const menuTreeLoading = ref(false);
 const menuTreeError = ref('');
+useVxeMessage(menuTreeError, 'error');
 const menuActionLoadingCode = ref('');
 const menuDrawerCollapsed = ref(false);
 const isMobileDesigner = ref(false);

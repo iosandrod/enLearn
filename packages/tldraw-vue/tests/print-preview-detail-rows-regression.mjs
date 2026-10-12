@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { resolvePrintPreviewRows } from '../src/print/dataSource.ts'
+import { PRINT_HEADER_PREVIEW_SOURCE, resolvePrintPreviewRows } from '../src/print/dataSource.ts'
 
 const source = {
 	type: 'inline',
@@ -40,5 +40,19 @@ assert.throws(
 	() => resolvePrintPreviewRows(source, source.rows, { mode: 'data' }),
 	/选择明细源/,
 )
+
+const headerSource = {
+	...source,
+	rows: [source.rows[0], { customerName: '第二位客户', selectedItems: [{ sku: 'B-1' }] }],
+}
+const original = structuredClone(headerSource)
+const headerPages = resolvePrintPreviewRows(headerSource, undefined, { mode: 'data', detailField: PRINT_HEADER_PREVIEW_SOURCE })
+assert.deepEqual(headerPages, headerSource.rows)
+assert.equal(headerPages.length, 2)
+assert.equal(headerPages[0].selectedItems.length, 2)
+assert.equal(headerPages[1].selectedItems[0].sku, 'B-1')
+assert.equal(headerPages[0].sku, undefined, 'Nested details must not be flattened into header records')
+assert.deepEqual(headerSource, original, 'Preview must leave the source unchanged')
+assert.deepEqual(resolvePrintPreviewRows(headerSource, [], { mode: 'data', detailField: PRINT_HEADER_PREVIEW_SOURCE }), [])
 
 console.log('print preview detail row regression checks passed')

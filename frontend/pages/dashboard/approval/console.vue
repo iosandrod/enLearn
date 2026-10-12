@@ -1,13 +1,5 @@
 <template>
   <section class="approval-console-page">
-    <p v-if="errorMessage" class="approval-console-alert" role="alert">
-      <i class="ri-error-warning-line" aria-hidden="true" />
-      <span>{{ errorMessage }}</span>
-      <button type="button" @click="errorMessage = ''" title="关闭" aria-label="关闭">
-        <i class="ri-close-line" aria-hidden="true" />
-      </button>
-    </p>
-
     <div class="approval-console-workspace">
       <aside class="approval-console-instances">
         <header class="approval-console-list-header">
@@ -135,6 +127,7 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const selectedInstanceId = ref('');
 const consoleDetail = ref<ConsoleDetail | null>(null);
 const consoleData = reactive<ConsoleResponse>({

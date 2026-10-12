@@ -1,7 +1,6 @@
 <template>
   <section class="label-designer-material" :aria-busy="busy">
     <slot name="header"></slot>
-    <div v-if="message" class="label-designer-material__message" role="status">{{ message }}</div>
     <TldrawVue
       ref="designer"
       :show-template-controls="false"
@@ -27,6 +26,7 @@
 import { inject, nextTick, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import { useLowCodeHost } from '../../../core/host';
 import { registerLowCodeMaterialRuntimeController } from '../../../runtime/material-controller-registry';
+import { useVxeMessage } from '../../../utils/vxe-message';
 const props = defineProps<{
   block: Record<string, any>;
   resolvedData: Record<string, any>;
@@ -38,6 +38,7 @@ const designer = ref<any>();
 const busy = ref(false);
 const dirty = ref(false);
 const message = ref('');
+useVxeMessage(message, () => /失败|错误|请至少/.test(message.value) ? 'error' : 'success');
 const templateConfig: any = inject('printTemplateConfig');
 
 const templateName = toRef(templateConfig, 'templateName');

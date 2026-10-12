@@ -54,7 +54,8 @@ const DEFAULT_LIST_ITEM_GAP = 12
 export function createMaterialGridPrintPlan(
 	editor: Editor,
 	config: PrintJobConfig,
-	shapeIds: readonly TLShapeId[]
+	shapeIds: readonly TLShapeId[],
+	contextRow?: PrintDataRow,
 ): MaterialGridPrintPlan | null {
 	const materialShapes = getTemplateMaterialShapes(editor, shapeIds)
 	if (!materialShapes.length) return null
@@ -64,7 +65,16 @@ export function createMaterialGridPrintPlan(
 		throw new Error('预览设置中的物料表格组件已不存在或尚未选择，请重新选择。')
 	}
 	const materialPlans = materialShapes.map((material) => {
-		const gridConfig = gridConfigs.get(material.id)
+		let gridConfig = gridConfigs.get(material.id)
+		const field = material.props.dataSourceField?.trim()
+		if (contextRow && field) {
+			const value = contextRow[field]
+			gridConfig = {
+				...gridConfig, grid: undefined,
+				data: Array.isArray(value) ? value.filter(row => row && typeof row === 'object' && !Array.isArray(row)) : [],
+				columns: gridConfig?.columns ?? material.props.columns ?? [],
+			}
+		}
 		if (!gridConfig) {
 			throw new Error(material.props.containerList
 				? '检测到物料列表节点，请传入 vxe-grid 实例或 data/columns 列表数据。'

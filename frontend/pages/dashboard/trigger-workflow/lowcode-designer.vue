@@ -1,7 +1,6 @@
 <template>
   <section class="trigger-workflow-lowcode-page">
     <div v-if="loading" class="content-panel"><p class="page-description">正在加载触发器编排器...</p></div>
-    <div v-else-if="errorMessage" class="content-panel"><p class="page-description">{{ errorMessage }}</p></div>
     <LowCodePageRenderer
       v-else-if="page"
       :page="page"
@@ -23,6 +22,7 @@ const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const pageRoute = computed(() => ({
   path: route.path,
   fullPath: route.fullPath,

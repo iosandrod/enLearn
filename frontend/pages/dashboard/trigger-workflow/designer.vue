@@ -197,13 +197,9 @@ async function saveWorkflow() {
   const validationErrors = validateTriggerWorkflow(model.value)
     .filter((issue) => issue.level === 'error');
   if (validationErrors.length) {
-    await VxeUI.modal.alert({
-      title: '流程校验失败',
-      status: 'error',
-      content: validationErrors
-        .map((issue) => `${issue.path}：${issue.message}`)
-        .join('\n')
-    });
+    notify(validationErrors
+      .map((issue) => `${issue.path}：${issue.message}`)
+      .join('；'), 'error');
     return;
   }
   isJobBusy.value = true;

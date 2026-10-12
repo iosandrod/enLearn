@@ -43,6 +43,7 @@
     "./actions": "./src/lowcode/actions/index.ts",
     "./core/host": "./src/core/host.ts",
     "./types/lowcode": "./src/types/lowcode.ts",
+    "./utils/vxe-message": "./src/utils/vxe-message.ts",
     "./lowcode/schema": "./src/lowcode/schema.ts",
     "./styles/visual-editor-utilities.scss": "./src/styles/visual-editor-utilities.scss"
   },

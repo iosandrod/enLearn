@@ -20,7 +20,8 @@ assert.match(assistantSource, /event\.sequence <= lastEventSequence\.value/, 're
 assert.match(assistantSource, /wasRunning && targetRunId/, 'new-conversation cleanup must not cancel a completed run');
 assert.match(assistantSource, /else \{\s*await stream\.start\(input/s, 'pre-header failures must retry with the same request id');
 assert.match(assistantSource, /resetForIdentityChange/, 'AI state must support account and user isolation resets');
-assert.match(assistantSource, /if \(!target\.content\) target\.content = message/, 'provider errors must be shown in the failed assistant message');
+assert.match(assistantSource, /useVxeMessage\(errorMessage, 'error'\)/, 'provider errors must use the global VXE message');
+assert.doesNotMatch(assistantSource, /target\.content\s*\|\|=\s*errorMessage\.value/, 'provider errors must not be rendered in the assistant transcript');
 assert.match(assistantSource, /event\.payload\.status === 'failed'/, 'failed runs must not be rendered as successfully completed');
 assert.match(compatSource, /authenticatedFetchResponse/, 'raw authenticated fetch must share auth refresh');
 assert.match(contextSource, /SENSITIVE_KEY/, 'client context must redact sensitive keys');

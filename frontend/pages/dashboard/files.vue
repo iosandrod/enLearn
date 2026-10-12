@@ -92,11 +92,6 @@
           正在加载文件
         </div>
 
-        <div v-else-if="errorMessage" class="file-empty error">
-          <i class="ri-error-warning-line" aria-hidden="true"></i>
-          {{ errorMessage }}
-        </div>
-
         <div v-else-if="!filteredFiles.length" class="file-empty">
           <i class="ri-folder-open-line" aria-hidden="true"></i>
           当前目录没有文件
@@ -206,9 +201,6 @@
           <div>
             <h2 id="upload-progress-title">{{ uploadDialogTitle }}</h2>
             <p>{{ uploadDialogStatusText }}</p>
-            <p v-if="uploadDialog.phase === 'failed' && errorMessage" class="upload-progress-error">
-              {{ errorMessage }}
-            </p>
           </div>
           <button
             v-if="uploadDialog.phase === 'failed'"
@@ -268,6 +260,7 @@ const folders = ref<FileFolder[]>([]);
 const loading = ref(false);
 const uploading = ref(false);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const keyword = ref('');
 const selectedNodeKey = ref('all');
 const selectedPrefix = ref('');
@@ -450,11 +443,8 @@ async function handleFileInput(event: Event) {
     uploadDialog.overallProgress = 100;
     await loadAll();
     uploadDialog.phase = 'success';
-    window.setTimeout(() => {
-      if (uploadDialog.phase === 'success') {
-        uploadDialog.visible = false;
-      }
-    }, 800);
+    uploadDialog.visible = false;
+    showVxeMessage('文件已上传完成。', 'success');
   } catch (error) {
     uploadDialog.phase = 'failed';
     errorMessage.value = error instanceof Error ? error.message : '文件上传失败。';

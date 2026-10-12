@@ -54,7 +54,6 @@
           />
         </section>
 
-        <p v-if="message" class="designer-message" :class="messageClass">{{ message }}</p>
       </aside>
 
       <main class="entity-flow-shell">
@@ -371,6 +370,7 @@ const syncingColumns = ref(false);
 const loadingPhysicalTables = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
+useVxeMessage(message, () => messageClass.value === 'lc-error' ? 'error' : 'success');
 const tables = ref<EntityTable[]>([]);
 const relations = ref<EntityRelation[]>([]);
 const flowNodes = shallowRef<EntityNode[]>([]);
@@ -1316,7 +1316,6 @@ async function confirmLoadTables(selectedRows: PhysicalTableLoaderRow[]) {
     const errorMessage = error instanceof Error ? error.message : '加载选中表失败。';
     message.value = errorMessage;
     messageClass.value = 'lc-error';
-    void VxeUI.modal.message({ content: errorMessage, status: 'error' });
     return false;
   }
 }

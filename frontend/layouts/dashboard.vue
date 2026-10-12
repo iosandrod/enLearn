@@ -70,10 +70,6 @@
             />
           </label>
 
-          <p v-if="accountSwitchError" class="admin-account-switcher__error" role="alert">
-            {{ accountSwitchError }}
-          </p>
-
           <div class="admin-account-switcher__list" role="listbox" aria-label="可用账套">
             <button
               v-for="account in filteredAccounts"
@@ -246,11 +242,6 @@
                 placeholder="搜索姓名、角色或邮箱"
               />
             </label>
-
-            <p v-if="devUsersError" class="admin-user-switcher__notice" role="status">
-              <i class="ri-error-warning-line" aria-hidden="true" />
-              {{ devUsersError }}
-            </p>
 
             <div class="admin-user-switcher__list" role="listbox" aria-label="审批测试用户">
               <button
@@ -486,8 +477,6 @@
           </RouterLink>
         </section>
 
-        <p v-if="routeError" class="admin-route-error lc-error">{{ routeError }}</p>
-
         <slot />
       </main>
     </div>
@@ -596,6 +585,7 @@ const testUserSearchInput = ref<HTMLInputElement | null>(null);
 const devUsersLoading = ref(false);
 const devUserSwitching = ref(false);
 const devUsersError = ref('');
+useVxeMessage(devUsersError, 'error');
 const filteredDevTestUsers = computed(() => {
   const keyword = testUserSearch.value.trim().toLowerCase();
   if (!keyword) return devTestUsers.value;
@@ -605,6 +595,7 @@ const filteredDevTestUsers = computed(() => {
   );
 });
 const routeError = ref('');
+useVxeMessage(routeError, 'error');
 const systemSettingsOpening = ref(false);
 const routes = ref<AdminRouteNode[]>([]);
 let routesReloadPromise: Promise<void> | null = null;
@@ -621,6 +612,7 @@ const accountSearch = ref('');
 const accountSearchInput = ref<HTMLInputElement | null>(null);
 const accountSwitching = ref(false);
 const accountSwitchError = ref('');
+useVxeMessage(accountSwitchError, 'error');
 let pageInfoDesignOpening = false;
 let mobileViewportQuery: MediaQueryList | null = null;
 const filteredAccounts = computed(() => {
@@ -1106,7 +1098,6 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
     replaceVisitedTabPageInfo(tab, page);
   } catch (error) {
     const message = error instanceof Error ? error.message : '页面信息设计打开失败。';
-    routeError.value = message;
     showPageInfoDesignMessage(message, 'error');
   } finally {
     pageInfoDesignOpening = false;
@@ -1275,7 +1266,6 @@ async function openLowCodeDesignerByCode(pageCode: string, tab?: VisitedTab) {
     if (targetTab) await reloadVisitedTab(targetTab);
   } catch (error) {
     const message = error instanceof Error ? error.message : '可视化设计打开失败。';
-    routeError.value = message;
     showPageInfoDesignMessage(message, 'error');
   }
 }

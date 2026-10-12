@@ -3,6 +3,7 @@ import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import type { LowCodeFormSchema, LowCodeOption } from '@enlearn/lowcode-framework/types/lowcode'
 import MonacoEditor from '@enlearn/lowcode-framework/visual-editor/components/common/monaco-editor/MonacoEditor'
 import { computed, h, onMounted, ref } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dialog'
 import { isLowCodeFormSchema } from '@/editor/dataSourceForm'
 import PrintDataSourceManager from './PrintDataSourceManager.vue'
@@ -39,9 +40,11 @@ const draft = ref<RemoteDataSource>(createDraft())
 const loading = ref(true)
 const saving = ref(false)
 const message = ref('')
+useVxeMessage(message, () => /失败|错误|请先|不能为空|只能/.test(message.value) ? 'error' : 'success')
 const metaSchema = ref<LowCodeFormSchema | null>(null)
 const metaSchemaLoading = ref(true)
 const metaSchemaError = ref('')
+useVxeMessage(metaSchemaError, 'error')
 const metaForm = ref<{ commitPendingValues(): void; validate(): Promise<boolean> } | null>(null)
 const metaModel = computed<Record<string, unknown>>(() => ({
 	code: draft.value.code,
@@ -320,15 +323,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 			</header>
 			<div class="print-remote-data-source-manager__meta">
 				<div v-if="metaSchemaLoading" class="print-remote-data-source-manager__state" role="status">正在加载脚本表单...</div>
-				<div v-else-if="metaSchemaError" class="print-remote-data-source-manager__state" role="alert">
-					<p>{{ metaSchemaError }}</p>
-					<button type="button" class="print-remote-data-source-manager__button" @click="loadMetaSchema">重新加载</button>
-				</div>
+				<button v-else-if="metaSchemaError" type="button" class="print-remote-data-source-manager__button" @click="loadMetaSchema">重新加载</button>
 				<LowCodeForm v-else-if="metaSchema" ref="metaForm" :key="editorKey" :schema="metaSchema"
 					:model-value="metaModel" :option-sources="optionSources" :disabled="loading || saving" vertical
 					@update:model-value="updateMetaModel" />
 			</div>
-			<div v-if="message" class="print-remote-data-source-manager__message" role="status">{{ message }}</div>
 			<div class="print-remote-data-source-manager__editor-shell">
 				<div class="print-remote-data-source-manager__editor">
 					<MonacoEditor :key="editorKey" :code="draft.script" :vid="draft.id || draft.code" :layout="{ width: 0, height: 0 }"

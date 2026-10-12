@@ -13,13 +13,6 @@
       </span>
     </header>
 
-    <p v-if="errorMessage" class="workflow-task-page__message workflow-task-page__message--error">
-      {{ errorMessage }}
-    </p>
-    <p v-if="successMessage" class="workflow-task-page__message workflow-task-page__message--success">
-      {{ successMessage }}
-    </p>
-
     <div class="workflow-task-page__grid">
       <section class="content-panel workflow-task-page__panel">
         <header class="workflow-task-page__panel-head">
@@ -177,6 +170,8 @@ const loading = ref(false);
 const approving = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+useVxeMessage(errorMessage, 'error');
+useVxeMessage(successMessage, 'success');
 
 const taskId = computed(() => String(route.params.taskId ?? '').trim());
 const currentUserId = computed(

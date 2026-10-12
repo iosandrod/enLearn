@@ -97,15 +97,6 @@
       <span class="permission-count">已选择 {{ selectedPermissionIds.size }} 项权限</span>
     </div>
 
-    <p v-if="errorMessage" class="permission-message permission-message--error" role="alert">
-      <i class="ri-error-warning-line" aria-hidden="true" />
-      {{ errorMessage }}
-    </p>
-    <p v-if="successMessage" class="permission-message permission-message--success" role="status">
-      <i class="ri-checkbox-circle-line" aria-hidden="true" />
-      {{ successMessage }}
-    </p>
-
     <div class="permission-table-wrap" :class="{ 'is-loading': loading }">
       <vxe-grid
         class="permission-table"
@@ -193,6 +184,8 @@ const loading = ref(false);
 const saving = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+useVxeMessage(errorMessage, 'error');
+useVxeMessage(successMessage, 'success');
 const initialSelection = ref<string[]>([]);
 
 const selectedRole = computed(() => roles.value.find((role) => role.id === selectedRoleId.value));

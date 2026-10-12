@@ -10,6 +10,7 @@ import type {
 } from '../types/ai';
 import { useAiStream } from './useAiStream';
 import { useAiPageContext } from './useAiPageContext';
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message';
 
 const open = ref(false);
 const mode = ref<AiRunMode>('ask');
@@ -23,6 +24,7 @@ const traces = ref<AiToolTrace[]>([]);
 const proposals = ref<AiProposal[]>([]);
 const conversations = ref<AiConversation[]>([]);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const includeSampleData = ref(false);
 let abortController: AbortController | undefined;
 const appliedEvent = 'enlearn:ai-page-applied';
@@ -83,7 +85,6 @@ export function useAiAssistant() {
       const target = [...messages.value].reverse().find((message) => message.streaming);
       if (target) {
         target.error = true;
-        if (!target.content) target.content = message;
       }
       return;
     }
@@ -92,11 +93,11 @@ export function useAiAssistant() {
       if (target) {
         target.streaming = false;
         if (!target.content) {
-          target.content = event.payload.status === 'cancelled'
-            ? '已取消生成。'
-            : event.payload.status === 'failed'
-              ? errorMessage.value || 'AI 生成失败。'
-              : '处理完成。';
+          if (event.payload.status === 'failed') {
+            messages.value = messages.value.filter((item) => item !== target);
+          } else {
+            target.content = event.payload.status === 'cancelled' ? '已取消生成。' : '处理完成。';
+          }
         }
       }
       running.value = false;
@@ -159,7 +160,7 @@ export function useAiAssistant() {
       if (target) {
         target.streaming = false;
         target.error = true;
-        target.content ||= errorMessage.value;
+        if (!target.content) messages.value = messages.value.filter((item) => item !== target);
       }
     } finally {
       if (abortController === controller) abortController = undefined;

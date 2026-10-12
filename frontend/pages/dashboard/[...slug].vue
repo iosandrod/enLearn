@@ -4,11 +4,6 @@
       <p class="page-description">Loading page...</p>
     </div>
 
-    <div v-else-if="errorMessage" class="content-panel">
-      <h2 class="page-title">Page not available</h2>
-      <p class="page-description">{{ errorMessage }}</p>
-    </div>
-
     <LowCodePageRenderer
       v-else-if="page"
       ref="rendererRef"
@@ -52,6 +47,7 @@ const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } 
 );
 const loading = ref(true);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const rendererRef = ref<{ getSnapshot?: () => unknown } | null>(null);
 let loadSequence = 0;
 

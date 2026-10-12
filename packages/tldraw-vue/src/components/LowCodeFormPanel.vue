@@ -26,6 +26,7 @@ import type {
 } from '@enlearn/lowcode-framework/types/lowcode'
 import { isShapeId, type Editor, type TLShape, type TLShapePartial } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import {
 	getVueMaterialSectionHeightModel,
 	getVueMaterialVisibilityModel,
@@ -91,8 +92,10 @@ const materialColumnFormCode = propertyFormCode('vue-material-column')
 const selectedMaterialColumn = ref<{ materialShapeId: TLShape['id']; field: string } | null>(null)
 const columnFormModel = ref<ShapeFormModel>({})
 const imageSourceError = ref('')
+useVxeMessage(imageSourceError, 'error')
 const designingForm = ref(false)
 const designFormMessage = ref('')
+useVxeMessage(designFormMessage, () => /失败|错误/.test(designFormMessage.value) ? 'error' : 'info')
 const host = useLowCodeHost()
 const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const imageSourceCache = new Map<string, { src: string }>()
@@ -928,6 +931,10 @@ const requiredPropertyFormCodes = [
 	fallbackDescriptor.formCode,
 ].filter((code, index, codes) => codes.indexOf(code) === index)
 
+// Watching a computed source evaluates it immediately. Register this only after
+// every descriptor it can read has been initialized to avoid temporal dead zones.
+useVxeMessage(displayedFormError, 'error')
+
 async function loadPropertyFormDefinitions(refresh = false) {
 	formDefinitionsLoading.value = true
 	formDefinitionError.value = ''
@@ -1715,17 +1722,10 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 				<span>添加子列</span>
 			</button>
 		</div>
-		<div v-if="designFormMessage" class="lowcode-form-panel__action-message" role="status">
-			<i :class="designingForm ? 'ri-loader-4-line print-spin' : 'ri-checkbox-circle-line'" aria-hidden="true" />
-			<span>{{ designFormMessage }}</span>
-		</div>
 		<div v-if="formDefinitionsLoading" class="lowcode-form-panel__state" role="status">
 			正在加载属性表单...
 		</div>
-		<div v-else-if="displayedFormError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
-			<p>{{ displayedFormError }}</p>
-			<button type="button" @click="loadPropertyFormDefinitions(true)">重新加载</button>
-		</div>
+		<button v-else-if="displayedFormError" type="button" @click="loadPropertyFormDefinitions(true)">重新加载</button>
 		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema && !selectedMaterialColumnValue" class="lowcode-form-panel__empty">
 			{{ selectedMaterialShape?.props.dataSourceField?.trim() ? '请点击物料表格中的列标题查看列属性' : '请先设置物料表格的数据源字段' }}
 		</div>
@@ -1745,8 +1745,5 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 			:schema="activeSchema"
 			@update:model-value="handleModelUpdate"
 		/>
-		<div v-if="imageSourceError" class="lowcode-form-panel__state lowcode-form-panel__state--error" role="alert">
-			{{ imageSourceError }}
-		</div>
 	</section>
 </template>

@@ -83,9 +83,10 @@ export function isPrintDataSourceFormDefinition(
 
 export function getPrintDataSourceFormModel(
 	source: PrintDataSourceConfig | undefined,
-	schema: LowCodeFormSchema
+	schema: LowCodeFormSchema,
+	rowIndex = 0,
 ): Record<string, unknown> {
-	const sourceRow = getInlineSourceRow(source)
+	const sourceRow = getInlineSourceRow(source, rowIndex)
 	return Object.fromEntries(
 		schema.fields.map((field) => [field.field, getFieldModelValue(field, sourceRow)])
 	)
@@ -95,19 +96,24 @@ export function createInlinePrintDataSource(
 	model: Record<string, unknown>,
 	definition: PrintDataSourceFormDefinition,
 	source?: PrintDataSourceConfig,
+	rowIndex = 0,
 ): Extract<PrintDataSourceConfig, { type: 'inline' }> {
 	// LowCodeForm emits a reactive model; JSON cloning unwraps Vue proxies before
 	// the data is persisted into the workspace configuration.
-	const normalizedModel = cloneJson(model)
+	const currentSource = source?.type === 'inline' && (!source.formCode || source.formCode === definition.code) ? source : undefined
+	const normalizedModel = { ...cloneJson(getInlineSourceRow(currentSource, rowIndex) ?? {}), ...cloneJson(model) }
 	const detailTables = getPrintDataSourceDetailTables(definition.schema)
 	const headerSchema = getPrintDataSourceHeaderSchema(definition.schema)
 	const detailField = detailTables[0]?.field
 	if (detailField) {
 		detailTables.forEach((table) => {
-			normalizedModel[table.field] = getPrintDataSourceDetailRows(source, table.field)
+			normalizedModel[table.field] = getPrintDataSourceDetailRows(currentSource, table.field, rowIndex)
 		})
 	}
 
+	const rows = currentSource?.type === 'inline' && Array.isArray(currentSource.rows)
+		? currentSource.rows.map((row) => cloneJson(row)) : []
+	rows[rowIndex] = normalizedModel
 	return {
 		type: 'inline',
 		formCode: definition.code,
@@ -119,7 +125,7 @@ export function createInlinePrintDataSource(
 			field: field.field,
 			label: field.label,
 		})),
-		rows: [normalizedModel],
+		rows,
 	}
 }
 
@@ -131,8 +137,9 @@ export function getPrintDataSourceFormCode(source: PrintDataSourceConfig | undef
 export function getPrintDataSourceDetailRows(
 	source: PrintDataSourceConfig | undefined,
 	field?: string,
+	rowIndex = 0,
 ) {//
-	const row = getInlineSourceRow(source)
+	const row = getInlineSourceRow(source, rowIndex)
 	if (!row) return []
 	const detailTables = source && source.type === 'inline'
 		? source.detailTables as PrintDataSourceDetailTable[] | undefined
@@ -249,9 +256,10 @@ function flattenDetailColumns(
 	return result
 }
 
-function getInlineSourceRow(source: PrintDataSourceConfig | undefined) {
+function getInlineSourceRow(source: PrintDataSourceConfig | undefined, rowIndex = 0) {
 	if (!source || source.type !== 'inline' || !Array.isArray(source.rows)) return undefined
-	return source.rows.find(isRecord)
+	const row = source.rows[rowIndex]
+	return isRecord(row) ? row : undefined
 }
 
 function getFieldModelValue(field: LowCodeField, sourceRow: PrintDataRow | undefined) {

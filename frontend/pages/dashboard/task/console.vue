@@ -35,18 +35,6 @@
       </div>
     </header>
 
-    <p v-if="errorMessage" class="task-console-alert is-error" role="alert">
-      <i class="ri-error-warning-line" aria-hidden="true" />
-      <span>{{ errorMessage }}</span>
-      <button type="button" title="关闭" aria-label="关闭" @click="errorMessage = ''">
-        <i class="ri-close-line" aria-hidden="true" />
-      </button>
-    </p>
-    <p v-else-if="consoleData.partial" class="task-console-alert is-warning" role="status">
-      <i class="ri-alert-line" aria-hidden="true" />
-      <span>Trigger.dev 部分状态不可用，作业定义和数据库运行记录仍可正常查看。{{ partialErrorText }}</span>
-    </p>
-
     <section class="task-console-metrics" aria-label="任务运行指标">
       <article>
         <i class="ri-task-line" aria-hidden="true" />
@@ -417,6 +405,7 @@ const loading = ref(false);
 const detailLoading = ref(false);
 const actionLoading = ref(false);
 const errorMessage = ref('');
+useVxeMessage(errorMessage, 'error');
 const selectedTaskId = ref('');
 const consoleDetail = ref<TaskConsoleDetail | null>(null);
 const keyword = ref('');
@@ -468,6 +457,10 @@ const partialErrorText = computed(() => {
   if (!entries.length) return '';
   return `（${entries.map(([key, value]) => `${sectionLabel(key)}：${value}`).join('；')}）`;
 });
+const partialWarningMessage = computed(() => consoleData.partial
+  ? `Trigger.dev 部分状态不可用，作业定义和数据库运行记录仍可正常查看。${partialErrorText.value}`
+  : '');
+useVxeMessage(partialWarningMessage, 'warning');
 
 const workerStatusLabel = computed(() => {
   if (consoleData.summary.workerConnected === true) return '已连接';

@@ -13,8 +13,6 @@
       @submit="saveSettings"
     />
 
-    <p v-if="formDefinitionError" class="lc-error">{{ formDefinitionError }}</p>
-    <p v-if="message" :class="messageClass">{{ message }}</p>
   </section>
 </template>
 
@@ -34,6 +32,8 @@ const formDefinitionError = ref('');
 const settingsSchema = shallowRef<LowCodeFormSchema | null>(null);
 const message = ref('');
 const messageClass = ref('lc-help');
+useVxeMessage(formDefinitionError, 'error');
+useVxeMessage(message, () => messageClass.value === 'lc-error' ? 'warning' : 'success');
 const settingsForm = ref<Record<string, unknown>>({
   notifyEverything: false,
   notifyAvailable: true,

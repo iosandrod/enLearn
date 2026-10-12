@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LowCodeHostServiceApi } from '@enlearn/lowcode-framework/core/host'
 import { computed, ref, watch } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import type { PrintDataSourceDetailTable } from '@/print/types'
 import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 
@@ -23,6 +24,8 @@ const activeTableId = ref('')
 const addFormVisible = ref(false)
 const addFormError = ref('')
 const configurationError = ref('')
+useVxeMessage(configurationError, 'error')
+useVxeMessage(addFormError, 'warning')
 const addFormModel = ref<AddDetailTableModel>({ label: '', field: '', dataSourceScript: '' })
 const tables = computed(() => props.modelValue ?? [])
 const activeTable = computed(() =>
@@ -144,7 +147,6 @@ function readString(value: unknown, fallback = '') {
 				<span>添加明细</span>
 			</button>
 		</header>
-		<p v-if="configurationError" class="print-detail-designer__form-error" role="alert">{{ configurationError }}</p>
 		<form v-if="addFormVisible" class="print-detail-designer__add-form" @submit.prevent="handleConfirmAddTable">
 			<label>
 				<span>明细名称</span>
@@ -159,7 +161,6 @@ function readString(value: unknown, fallback = '') {
 				<input v-model="addFormModel.dataSourceScript" type="text" placeholder="例如：orders.remote（可选）" />
 			</label>
 			<div class="print-detail-designer__add-actions">
-				<span v-if="addFormError" class="print-detail-designer__form-error" role="alert">{{ addFormError }}</span>
 				<button type="button" class="print-detail-designer__button" @click="handleCancelAddTable">取消</button>
 				<button type="submit" class="print-detail-designer__button print-detail-designer__button--primary">添加</button>
 			</div>

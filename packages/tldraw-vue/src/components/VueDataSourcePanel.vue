@@ -12,6 +12,7 @@ import { openGlobalDialog } from '@enlearn/lowcode-framework/runtime/global-dial
 import { createPrintDetailToolbar, lowCodeOptionSourceRegistry, type PrintDetailActionRequest } from '@enlearn/lowcode-framework/runtime'
 import type { Editor } from '@tldraw/editor'
 import { computed, h, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import * as XLSX from 'xlsx'
 import {
 	createInlinePrintDataSource,
@@ -32,6 +33,8 @@ import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 import { syncPrintDetailFields } from '@/editor/printDetailFieldSync'
 import PrintScriptManager from './PrintRemoteDataSourceManager.vue'
 import DetailImportTemplatePicker from './DetailImportTemplatePicker.vue'
+import PrintDataSourceHeaderTable from './PrintDataSourceHeaderTable.vue'
+import { useEditorValue } from '@/vue/useEditorValue'
 
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
 const DATA_SOURCE_DEFINITION_FORM_CODE = 'print-designer.datasource-definition'
@@ -92,8 +95,16 @@ const dataSourceDefinitionForm = ref<StoredFormDefinition | null>(null)
 const activeDefinition = ref<PrintDataSourceFormDefinition | null>(null)
 const definitionsLoading = ref(true)
 const definitionError = ref('')
+useVxeMessage(definitionError, 'error')
 const selectorModel = ref<Record<string, unknown>>({ formCode: '' })
 const formModel = ref<Record<string, unknown>>({})
+const headerMode = ref<'form' | 'table'>('form')
+const headerRowIndex = ref(0)
+const readonly = useEditorValue('data source readonly', () => props.editor.getIsReadonly())
+const headerRows = computed(() => {
+	const source = editorPrintDataSource.value
+	return source?.type === 'inline' && Array.isArray(source.rows) ? source.rows : []
+})
 const activeSourceTab = ref<'header' | 'detail'>('detail')//
 const detailTables = computed(() =>
 	activeDefinition.value ? getPrintDataSourceDetailTables(activeDefinition.value.schema) : [],
@@ -161,7 +172,7 @@ const activeDetailTable = computed(() =>
 )
 const detailRows = computed(() => {
 	const table = activeDetailTable.value
-	return table ? getPrintDataSourceDetailRows(getWorkspaceDataSource(), table.field) : []
+	return table ? getPrintDataSourceDetailRows(getWorkspaceDataSource(), table.field, headerRowIndex.value) : []
 })
 const actionMessage = ref('')
 const actionMessageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
@@ -431,6 +442,8 @@ async function handleFetchDetailData(
 	formValues = formModel.value,
 	reportFailure = false,
 ) {
+	const targetRowIndex = headerRowIndex.value
+	const targetDefinitionCode = activeDefinition.value?.code
 	const sourceCode = readString(table.dataSourceScript)
 	if (!sourceCode) {
 		setActionMessage(`明细“${table.label}”尚未配置 dataSourceScript。`)
@@ -458,7 +471,8 @@ async function handleFetchDetailData(
 			// Keep the raw first row so generated table row keys cannot become fields.
 			rows: rows.slice(0, 1),
 		})
-		updateDetailRows(table.field, rows)
+		if (targetDefinitionCode !== activeDefinition.value?.code) return
+		updateDetailRows(table.field, rows, targetRowIndex)
 		activeDetailTableId.value = table.id
 		setActionMessage(`已获取 ${rows.length} 行“${table.label}”数据。`)
 		return rows
@@ -771,13 +785,15 @@ function convertImportedRows(matrix: unknown[][], table: PrintDataSourceDetailTa
 		.map((row) => Object.fromEntries(columns.map((column, index) => [column.field, row[fieldIndexes[index]] ?? ''])))
 }
 
-function updateDetailRows(field: string, rows: Record<string, unknown>[]) {
-	detailFormModel.value = { ...detailFormModel.value, [field]: rows }
+function updateDetailRows(field: string, rows: Record<string, unknown>[], rowIndex = headerRowIndex.value) {
+	if (readonly.value) return
+	if (rowIndex === headerRowIndex.value) detailFormModel.value = { ...detailFormModel.value, [field]: rows }
 	const source = editorPrintDataSource.value
 	if (!source || source.type !== 'inline') return
 	const inlineSource = source as Extract<PrintDataSourceConfig, { type: 'inline' }>
 	const sourceRows = inlineSource.rows.length ? inlineSource.rows.map((row) => ({ ...row })) : [{}]
-	sourceRows[0][field] = rows
+	if (!sourceRows[rowIndex]) return
+	sourceRows[rowIndex][field] = rows
 	editorPrintDataSource.value = { ...inlineSource, rows: sourceRows }
 }
 
@@ -785,12 +801,13 @@ function syncDetailFormModel(source = getWorkspaceDataSource()) {
 	detailFormModel.value = Object.fromEntries(
 		detailTables.value.map((table) => [
 			table.field,
-			getPrintDataSourceDetailRows(source, table.field),
+			getPrintDataSourceDetailRows(source, table.field, headerRowIndex.value),
 		]),
 	)
 }
 
 function handleDetailFormUpdate(value: Record<string, unknown>) {
+	if (readonly.value) return
 	const nextModel = Object.fromEntries(
 		detailTables.value.map((table) => [
 			table.field,
@@ -804,10 +821,7 @@ function handleDetailFormUpdate(value: Record<string, unknown>) {
 	const rows = inlineSource.rows.length ? inlineSource.rows : [{}]
 	editorPrintDataSource.value = {
 		...inlineSource,
-		rows: rows.map((row) => ({
-			...row,
-			...nextModel,
-		})),
+		rows: rows.map((row, index) => index === headerRowIndex.value ? { ...row, ...nextModel } : row),
 	}
 }
 
@@ -1032,13 +1046,28 @@ function applyFormModel(
 	value: Record<string, unknown>,
 	definition: PrintDataSourceFormDefinition
 ) {
-	editorPrintDataSource.value = createInlinePrintDataSource(value, definition, getWorkspaceDataSource())
+	editorPrintDataSource.value = createInlinePrintDataSource(value, definition, getWorkspaceDataSource(), headerRowIndex.value)
+}
+
+function handleHeaderRowsUpdate(rows: Record<string, unknown>[]) {
+	const source = getWorkspaceDataSource()
+	if (readonly.value || !source || source.type !== 'inline') return
+	editorPrintDataSource.value = { ...source, rows }
+	headerRowIndex.value = Math.min(headerRowIndex.value, Math.max(0, rows.length - 1))
+	syncFormModel()
+	syncDetailFormModel()
+}
+
+function handleHeaderRowChange(index: number) {
+	headerRowIndex.value = index
+	syncFormModel()
+	syncDetailFormModel()
 }
 
 function syncFormModel() {
 	const definition = activeDefinition.value
 	formModel.value = definition
-		? getPrintDataSourceFormModel(getWorkspaceDataSource(), definition.schema)
+		? getPrintDataSourceFormModel(getWorkspaceDataSource(), getPrintDataSourceHeaderSchema(definition.schema), headerRowIndex.value)
 		: {}
 }
 
@@ -1051,6 +1080,7 @@ async function activateDefinition(code: string, resetModel: boolean) {
 	}
 
 	activeDefinition.value = definition
+	headerRowIndex.value = 0
 	activeSourceTab.value = 'detail'//
 	const detailDefinitions = getPrintDataSourceDetailTables(definition.schema)
 	const workspaceSource = getWorkspaceDataSource()
@@ -1162,6 +1192,7 @@ watch(
 			return
 		}
 		syncFormModel()
+		syncDetailFormModel()
 	}
 )
 
@@ -1202,11 +1233,7 @@ watch(
 		<div v-if="definitionsLoading" class="lowcode-form-panel__state" role="status">
 			正在加载低代码表单...
 		</div>
-		<div v-else-if="definitionError" class="lowcode-form-panel__state lowcode-form-panel__state--error"
-			role="alert">
-			<p>{{ definitionError }}</p>
-			<button type="button" @click="loadDefinitions">重新加载</button>
-		</div>
+		<button v-else-if="definitionError" type="button" @click="loadDefinitions">重新加载</button>
 		<div v-else-if="activeDefinition" class="data-source-panel__body">
 			<div class="data-source-panel__tabs" role="tablist" aria-label="数据源区域">
 				<button type="button" :class="['data-source-panel__tab', { 'is-active': activeSourceTab === 'detail' }]"
@@ -1219,11 +1246,26 @@ watch(
 				</button>
 			</div>
 			<div v-if="activeSourceTab === 'header'" class="data-source-panel__header-form" role="tabpanel">
-				<LowCodeForm :key="activeDefinition.code" :model-value="formModel"
+				<div class="data-source-panel__header-mode" role="group" aria-label="表头显示模式">
+					<button type="button" :class="['data-source-panel__tab', { 'is-active': headerMode === 'form' }]" :aria-pressed="headerMode === 'form'" @click="headerMode = 'form'">表单模式</button>
+					<button type="button" :class="['data-source-panel__tab', { 'is-active': headerMode === 'table' }]" :aria-pressed="headerMode === 'table'" @click="headerMode = 'table'">表格模式</button>
+				</div>
+				<PrintDataSourceHeaderTable v-if="headerMode === 'table'" :rows="headerRows"
+					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)" :detail-tables="detailTables"
+					:readonly="readonly" @update:rows="handleHeaderRowsUpdate" />
+				<template v-else>
+					<vxe-select v-if="headerRows.length > 1" class="data-source-panel__record-selector" :model-value="headerRowIndex" @update:model-value="handleHeaderRowChange">
+						<vxe-option v-for="(_, index) in headerRows" :key="index" :label="`表头记录 ${index + 1}`" :value="index" />
+					</vxe-select>
+					<LowCodeForm :key="`${activeDefinition.code}:${headerRowIndex}`" :model-value="formModel" :disabled="readonly"
 					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)"
 					@update:model-value="handleModelUpdate" />
+				</template>
 			</div>
 			<div v-else class="data-source-panel__detail" role="tabpanel">
+				<vxe-select v-if="headerRows.length > 1" class="data-source-panel__record-selector" :model-value="headerRowIndex" @update:model-value="handleHeaderRowChange">
+					<vxe-option v-for="(_, index) in headerRows" :key="index" :label="`表头记录 ${index + 1}`" :value="index" />
+				</vxe-select>
 				<div class="data-source-panel__detail-toolbar">
 					<div class="data-source-panel__detail-actions">
 
@@ -1236,6 +1278,8 @@ watch(
 				</div>
 				<LowCodeForm
 					v-if="detailTables.length"
+					:key="`${activeDefinition.code}:${headerRowIndex}`"
+					:disabled="readonly"
 					:model-value="detailFormModel"
 					:schema="detailFormSchema"
 					class="data-source-panel__detail-form"

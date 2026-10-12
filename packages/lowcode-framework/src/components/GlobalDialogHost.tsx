@@ -39,6 +39,7 @@ import { globalDrawerInstances } from '../runtime/global-drawer-core';
 import type { LowCodePageBlock, LowCodeRuntimeEvent } from '../types/lowcode';
 import { lowCodeEditPageModeScopeKey } from '../runtime/page-runtime';
 import '../styles/global-dialog.scss';
+import { showVxeMessage } from '../utils/vxe-message';
 
 type ContentNodeMeta = {
   key?: string;
@@ -243,6 +244,7 @@ async function handleDialogAction<TValues extends Record<string, unknown>>(
     instance.errorMessage = error instanceof Error
       ? error.message
       : 'The operation could not be completed.';
+    showVxeMessage(instance.errorMessage, 'error');
   } finally {
     instance.busyAction = '';
   }
@@ -741,9 +743,6 @@ export default defineComponent({
                 v-slots={{
                   default: () => (
                     <div class="lc-global-dialog__body">
-                      {instance.errorMessage
-                        ? <div class="lc-global-dialog__error" role="alert">{instance.errorMessage}</div>
-                        : null}
                       {renderBody(instance) as any}
                     </div>
                   ),

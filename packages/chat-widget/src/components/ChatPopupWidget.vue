@@ -53,11 +53,6 @@
           </button>
         </header>
 
-        <div v-if="socket.lastError.value" class="ecw-chat__alert">
-          <span>{{ socket.lastError.value.message }}</span>
-          <button type="button" @click="reconnect">重试</button>
-        </div>
-
         <div class="ecw-chat__search-row">
           <label class="ecw-chat__search">
             <i class="ri-search-line" aria-hidden="true" />
@@ -86,10 +81,6 @@
 
         <div class="ecw-chat__list">
           <p v-if="loadingConversations" class="ecw-chat__state">加载中...</p>
-          <p v-else-if="conversationError" class="ecw-chat__state ecw-chat__state--error">
-            {{ conversationError }}
-          </p>
-
           <template v-else-if="activeNav === 'chats'">
             <p v-if="visibleConversations.length === 0" class="ecw-chat__state">暂无聊天记录</p>
             <button
@@ -182,9 +173,6 @@
 
           <section ref="messageListEl" class="ecw-chat__messages">
             <p v-if="loadingMessages" class="ecw-chat__state">加载消息中...</p>
-            <p v-else-if="messageError" class="ecw-chat__state ecw-chat__state--error">
-              {{ messageError }}
-            </p>
             <div v-else-if="visibleMessages.length === 0" class="ecw-chat__empty-dialog">
               <i class="ri-chat-smile-3-line" aria-hidden="true" />
               <strong>还没有消息</strong>
@@ -280,6 +268,7 @@ const props = withDefaults(
     currentUserId: ''
   }
 );
+const emit = defineEmits<{ error: [message: string] }>();
 
 const navItems: Array<{ key: NavKey; label: string; icon: string }> = [
   { key: 'chats', label: '聊天', icon: 'ri-message-3-line' },
@@ -299,6 +288,11 @@ const loadingConversations = ref(false);
 const loadingMessages = ref(false);
 const conversationError = ref('');
 const messageError = ref('');
+watch(conversationError, (message) => { if (message) emit('error', message); }, { flush: 'sync' });
+watch(messageError, (message) => { if (message) emit('error', message); }, { flush: 'sync' });
+watch(() => props.socket.lastError.value?.message, (message) => {
+  if (message) emit('error', message);
+}, { flush: 'sync' });
 const draft = ref('');
 const messageListEl = ref<HTMLElement | null>(null);
 let socketRetained = false;

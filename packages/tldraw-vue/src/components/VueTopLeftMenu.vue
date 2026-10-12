@@ -86,6 +86,12 @@ const isTemplateSaving = ref(false)
 const printPreviewOpen = ref(false)
 const printPreviewLoading = ref(false)
 const printPreviewError = ref<string | null>(null)
+watch(templateError, content => {
+	if (content) void VxeUI.modal.message({ content, status: 'error' })
+}, { flush: 'sync' })
+watch(printPreviewError, content => {
+	if (content) void VxeUI.modal.message({ content, status: 'error' })
+}, { flush: 'sync' })
 const printPreviewPages = ref<PrintPageRenderResult[]>([])
 const printPreviewPageIndex = ref(0)
 const printPreviewPageSize = ref(3)
@@ -192,11 +198,11 @@ const printPreviewPageLabel = computed(
 )
 
 async function showModalAlert(content: string, title = '提示') {
-	await VxeUI.modal.confirm({
-		title,
+	await VxeUI.modal.message({
 		content,
-		mask: false,
-		lockView: false,
+		status: /失败|错误/.test(title + content)
+			? 'error'
+			: /已保存|成功/.test(title + content) ? 'success' : 'warning',
 	}).catch(() => false)
 }
 
@@ -685,7 +691,6 @@ async function saveCurrentTemplate() {
 	} catch (error) {
 		const message = getTemplateErrorMessage(error, '模板保存失败')
 		templateError.value = message
-		await showModalAlert(message, '模板保存失败')
 	} finally {
 		isTemplateSaving.value = false
 	}
@@ -728,7 +733,6 @@ async function deleteTemplate(template: VueTemplateRecord) {
 	} catch (error) {
 		const message = getTemplateErrorMessage(error, '模板删除失败')
 		templateError.value = message
-		await showModalAlert(message, '模板删除失败')
 	}
 }
 
@@ -1023,10 +1027,7 @@ onBeforeUnmount(() => {
 			:style="embeddedPopoverStyle"
 		>
 			<div class="top-menu-template-title">模板</div>
-			<div v-if="templateError" class="top-menu-template-state top-menu-template-state--error">
-				{{ templateError }}
-			</div>
-			<div v-else-if="isTemplateLoading" class="top-menu-template-state">加载中...</div>
+			<div v-if="isTemplateLoading" class="top-menu-template-state">加载中...</div>
 			<div v-else-if="templates.length === 0" class="top-menu-template-state">暂无模板</div>
 			<div v-else class="top-menu-template-list">
 				<div v-for="template in templates" :key="template.id" class="top-menu-template-row">
@@ -1223,7 +1224,6 @@ onBeforeUnmount(() => {
 			>
 				<div class="print-preview-body" @pointerdown.stop @wheel.stop>
 					<div v-if="printPreviewLoading" class="print-preview-loading">正在生成预览...</div>
-					<div v-else-if="printPreviewError" class="print-preview-error">{{ printPreviewError }}</div>
 					<div v-else class="print-preview-pages">
 						<figure
 							v-for="page in pagedPrintPreviewPages"

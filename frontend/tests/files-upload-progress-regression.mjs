@@ -15,11 +15,13 @@ assert.match(
   /isImage\(file\)\s*&&\s*\['uploaded',\s*'ready'\]\.includes\(file\.status\)/,
   'Only uploaded or ready images may request download URLs for thumbnails.',
 );
-assert.match(
+assert.doesNotMatch(
   filesPage,
   /uploadDialog\.phase === 'failed' && errorMessage/,
-  'The upload dialog should expose the concrete failure reason.',
+  'Upload failures should use the global VXE message instead of inline dialog text.',
 );
+assert.match(filesPage, /useVxeMessage\(errorMessage, 'error'\)/);
+assert.match(filesPage, /showVxeMessage\('文件已上传完成。', 'success'\)/);
 assert.match(
   filesApi,
   /attempt = 0[\s\S]*?attempt \+ 1[\s\S]*?xhr\.ontimeout/,
