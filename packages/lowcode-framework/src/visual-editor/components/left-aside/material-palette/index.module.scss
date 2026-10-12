@@ -1,0 +1,188 @@
+.materialPalette {
+  min-height: 100%;
+  background: #f8fafc;
+}
+
+.listGroup {
+  display: grid;
+  margin: 0;
+  padding: 10px;
+  gap: 10px;
+  align-content: start;
+  list-style: none;
+}
+
+.listGroupItem {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 112px;
+  margin: 0;
+  padding: 35px 10px 10px;
+  overflow: hidden;
+  border: 1px solid #dbe3ec;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  cursor: grab;
+  font: inherit;
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #3b82f6;
+    box-shadow: 0 6px 16px rgb(37 99 235 / 12%);
+    outline: 0;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.materialHeader {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 27px;
+  padding: 0 8px 0 10px;
+  border-bottom: 1px solid #e8edf3;
+  background: #f8fafc;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.materialLabel {
+  min-width: 0;
+  overflow: hidden;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 26px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dragHandle {
+  flex: none;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+.materialPreview {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  max-height: 76px;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  pointer-events: none;
+
+  > :global(*) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    max-height: 76px;
+    box-sizing: border-box;
+  }
+
+  :global(.lc-field),
+  :global(.lc-legacy-field) {
+    min-width: 0;
+    font-size: 11px !important;
+  }
+
+  :global(input:not([type='checkbox']):not([type='radio'])),
+  :global(textarea),
+  :global(select) {
+    min-height: 28px !important;
+    font-size: 11px !important;
+    box-sizing: border-box;
+  }
+
+  :global(button) {
+    pointer-events: none;
+  }
+}
+
+.materialFallback {
+  display: grid;
+  min-height: 52px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+  place-items: center;
+}
+
+.dragGhost {
+  border-color: #60a5fa;
+  background: #eff6ff;
+  opacity: 0.55;
+}
+
+.dragChosen {
+  border-color: #3b82f6;
+}
+
+.emptyState {
+  display: grid;
+  min-height: 160px;
+  padding: 24px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+  place-items: center;
+}
+
+@media (max-width: 1024px) {
+  .listGroup {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .listGroupItem {
+    min-height: 84px;
+    padding: 29px 6px 6px;
+  }
+
+  .materialHeader {
+    height: 23px;
+    padding: 0 6px;
+  }
+
+  .materialLabel {
+    font-size: 10px;
+    line-height: 22px;
+  }
+
+  .dragHandle {
+    font-size: 13px;
+  }
+
+  .materialPreview {
+    min-height: 42px;
+    max-height: 50px;
+
+    > :global(*) {
+      max-height: 50px;
+    }
+  }
+}

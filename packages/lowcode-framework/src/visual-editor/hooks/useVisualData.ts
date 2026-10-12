@@ -22,7 +22,11 @@ import { CacheEnum } from '../../enums';
 export const localKey = CacheEnum.PAGE_DATA_KEY;
 
 // 注入jsonData的key
-export const injectKey: InjectionKey<ReturnType<typeof initVisualData>> = Symbol();
+// Keep the key stable when Vite reloads this module while an existing provider
+// remains mounted. The data itself still belongs to each provider instance.
+export const injectKey: InjectionKey<ReturnType<typeof initVisualData>> = Symbol.for(
+  '@enlearn/lowcode-framework/visual-editor/data',
+);
 
 interface IState {
   currentBlock: VisualEditorBlockData; // 当前正在操作的组件

@@ -118,7 +118,9 @@
 
   const handleSidebarClick = (event: MouseEvent) => {
     if (!isMobileViewport.value || !(event.target instanceof Element)) return;
-    if (event.target.closest('[class*="list-group-item"]')) mobileLeftOpen.value = false;
+    if (event.target.closest('[data-material-card], [class*="list-group-item"]')) {
+      mobileLeftOpen.value = false;
+    }
   };
 
   onMounted(() => {

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <style>html, body, #app { width: 100%; height: 100%; margin: 0; }</style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import '../assets/styles/visual-editor-utilities.scss';
+      import { createApp, defineComponent, h, provide } from 'vue';
+      import { $$formDesigner } from '../../packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service';
+      import * as originalContext from '../../packages/lowcode-framework/src/visual-editor/hooks/useVisualData';
+      window.__errors = [];
+      window.addEventListener('error', (event) => window.__errors.push(String(event.error || event.message)));
+      window.addEventListener('unhandledrejection', (event) => window.__errors.push(String(event.reason)));
+      window.__contextCheck = async () => {
+        const reloadedContext = await import(
+          '../../packages/lowcode-framework/src/visual-editor/hooks/useVisualData.ts?context-regression'
+        );
+        const data = originalContext.initVisualData();
+        const nestedData = originalContext.initVisualData();
+        let received;
+        let nestedReceived;
+        const Consumer = defineComponent({ setup() {
+          received = reloadedContext.useVisualData();
+          return () => h('div', 'context probe');
+        } });
+        const NestedConsumer = defineComponent({ setup() {
+          nestedReceived = reloadedContext.useVisualData();
+          return () => h('div', 'nested context probe');
+        } });
+        const NestedProvider = defineComponent({ setup() {
+          provide(reloadedContext.injectKey, nestedData);
+          return () => h(NestedConsumer);
+        } });
+        const Provider = defineComponent({ setup() {
+          provide(originalContext.injectKey, data);
+          return () => [h(Consumer), h(NestedProvider)];
+        } });
+        const container = document.createElement('div');
+        document.body.append(container);
+        const probeApp = createApp(Provider);
+        probeApp.mount(container);
+        probeApp.unmount();
+        container.remove();
+        return {
+          sameKey: originalContext.injectKey === reloadedContext.injectKey,
+          receivedContext: received === data,
+          isolatedNestedContext: nestedReceived === nestedData && nestedReceived !== received,
+        };
+      };
+      window.__openDesigner = (title = '表单设计测试') => {
+        void $$formDesigner({ title, fields: [], layout: [], onConfirm: () => undefined });
+      };
+      window.__openDesigner();
+    </script>
+  </body>
+</html>

@@ -1,8 +1,6 @@
 import { computed, defineComponent, inject } from 'vue';
 import { cloneDeep } from 'lodash-es';
-import Draggable from 'vuedraggable';
 import { Document } from '../../../common/remix-icons';
-import styles from '../base-widgets/index.module.scss';
 import { visualConfig } from '../../../../../visual.config';
 import { createNewBlock, type VisualEditorComponent } from '../../../../visual-editor.utils';
 import { useVisualData } from '../../../../hooks/useVisualData';
@@ -11,8 +9,7 @@ import {
   formDesignerTableFieldOptionsKey,
 } from '../../../../form-designer-context';
 import type { LowCodeOption } from '../../../../../types/lowcode';
-
-const DraggableView = Draggable as any;
+import MaterialPalette from '../../material-palette';
 
 type ColumnInputMaterial = VisualEditorComponent & {
   columnField: string;
@@ -89,7 +86,7 @@ export default defineComponent({
   icon: Document,
   order: 6.5,
   setup() {
-    const { currentPath, currentPage, currentBlock, setCurrentBlock, updatePageBlock } = useVisualData();
+    const { currentPage } = useVisualData();
     const mode = inject(formDesignerModeKey, null);
     const injectedTableFieldOptions = inject(formDesignerTableFieldOptionsKey, null);
     const inputComponent = visualConfig.componentMap.input;
@@ -122,40 +119,12 @@ export default defineComponent({
       block.props.placeholder = `请输入${material.columnLabel}`;
       return block;
     };
-    const addMaterial = (material: ColumnInputMaterial) => {
-      const block = cloneComponent(material);
-      if (currentBlock.value?.focus) currentBlock.value.focus = false;
-      block.focus = true;
-      updatePageBlock(currentPath.value, [...(currentPage.value.blocks ?? []), block]);
-      setCurrentBlock(block);
-    };
-
     return () => (
-      <div class="column-components-panel">
-        {materials.value.length ? (
-          <DraggableView
-            class={styles.listGroup}
-            sort={false}
-            forceFallback={false}
-            list={materials.value}
-            group={{ name: 'components', pull: 'clone', put: false }}
-            clone={cloneComponent}
-            item-key="key"
-          >
-            {{
-              item: ({ element }: { element: ColumnInputMaterial }) => (
-                <button type="button" class={styles.listGroupItem} data-label={element.columnLabel} onClick={() => addMaterial(element)}>
-                  {element.preview()}
-                </button>
-              ),
-            }}
-          </DraggableView>
-        ) : (
-          <div class="column-components-empty">
-            <span>当前关联表格没有可添加的列</span>
-          </div>
-        )}
-      </div>
+      <MaterialPalette
+        items={materials.value}
+        cloneItem={(material) => cloneComponent(material as ColumnInputMaterial)}
+        emptyText="当前关联表格没有可添加的列"
+      />
     );
   },
 });
