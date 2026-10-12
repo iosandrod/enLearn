@@ -22,7 +22,6 @@ export default defineComponent({
       default: undefined,
     },
     emptyText: { type: String, default: '暂无可添加的组件' },
-    renderPreview: { type: Boolean, default: true },
   },
   setup(props) {
     const {
@@ -70,11 +69,7 @@ export default defineComponent({
                     <Rank class={styles.dragHandle} />
                   </span>
                   <span class={styles.materialPreview} data-material-preview>
-                    {props.renderPreview ? (
-                      element.preview()
-                    ) : (
-                      <span class={styles.materialFallback}>{element.label}</span>
-                    )}
+                    {element.preview()}
                   </span>
                 </button>
               ),

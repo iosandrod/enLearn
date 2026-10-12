@@ -106,7 +106,7 @@ async function main() {
     field: 'id',
     id: 'page-1',
     tableName: 'lowcode_pages',
-    clientMode: 'admin',
+    clientMode: 'user',
   });
   assert.deepEqual(result, {
     id: 'page-1',

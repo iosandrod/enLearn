@@ -519,7 +519,7 @@ async function loadData(options: Record<string, any> = {}) {
   if (!requestedId) return getTemplateInfo();
   const api = host.getServiceApi();
   const rows = await api.invoke<any[]>('admin', 'listItems', {
-    tableName: 'print_templates', filters: { id: requestedId }, page: 1, pageSize: 1, limit: 1,
+    resource: 'print_templates', filters: { id: requestedId }, page: 1, pageSize: 1, limit: 1,
   });
   const record = readTemplateRows(rows)[0];
   if (!record) throw new Error(`未找到打印模板：${requestedId}`);//
@@ -542,7 +542,7 @@ async function loadTemplatePage(append: boolean) {
     const search = templateSearch.value.trim();//
     if (search) filters.name = { op: 'ilike', value: search };
     const response = await host.getServiceApi().invoke<any>('admin', 'listItems', {
-      tableName: 'print_templates',
+      resource: 'print_templates',
       filters,
       page,
       pageSize: templatePageSize,
@@ -693,7 +693,7 @@ function normalizePreviewValue(value: unknown, depth = 0): string | null {
 }
 
 setTimeout(() => {
-  loadData({ templateId: '228fe240-fa67-4e43-b640-a9d335eb1616' }).catch((error) => {
+  loadData({ templateId: 'bfb929f8-1f7d-4571-8c09-47f6a3a3c07d' }).catch((error) => {
   });
 },500)
 async function save(options: Record<string, any> = {}) {
@@ -728,7 +728,14 @@ async function save(options: Record<string, any> = {}) {
       dataSourceCode: String(templateInfo.dataSourceCode || templateInfo.workspace?.printDataSourceCode || '').trim(),
     },
   };
-  const result = await api.invoke<any>('admin', 'saveItem', { resource: 'print_templates', ...(id ? { id } : {}), data: payload });
+  let result: any;
+  try {
+    result = await api.invoke<any>('admin', 'saveItem', { resource: 'print_templates', ...(id ? { id } : {}), data: payload });
+    if (result == null) throw new Error('保存失败：未返回保存记录，请检查记录是否存在及是否具有写入权限。');
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '模板保存失败';
+    throw error;
+  }
   templateId.value = String(result?.id || id || '').trim();
   templateName.value = String(result?.name || payload.name);
   templateVersion.value = Number.isInteger(result?.version) && result.version > 0 ? result.version : templateVersion.value;

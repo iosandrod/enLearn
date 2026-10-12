@@ -456,6 +456,27 @@ export async function getUserAuthorization(
   return loadUserAuthorization(client, userId, options.accountId);
 }
 
+export async function isSystemAdministrator(context: ServiceContext) {
+  if (!context.authorization) return false;
+  const { user } = await getCurrentUser(context);
+  // Read the authoritative database records, never JWT user_metadata or input.
+  const client = createSupabaseClient('admin', context);
+  const { data: profile, error: profileError } = await client
+    .from('users').select('role').eq('id', user.id).maybeSingle();
+  if (profileError) throw new ForbiddenException(profileError.message);
+  if (isLegacyAdminProfile(profile as Record<string, unknown> | null)) return true;
+  const { data: roles, error: roleError } = await client
+    .from('admin_user_roles')
+    .select('admin_roles!inner(code,status)')
+    .eq('user_id', user.id)
+    .is('account_id', null)
+    .eq('admin_roles.code', 'admin')
+    .eq('admin_roles.status', 'active')
+    .limit(1);
+  if (roleError) throw new ForbiddenException(roleError.message);
+  return Boolean(roles?.length);
+}
+
 export async function getFreshUserAccounts(client: SupabaseClient) {
   const { data, error } = await client.rpc('get_accounts');
   if (error) {

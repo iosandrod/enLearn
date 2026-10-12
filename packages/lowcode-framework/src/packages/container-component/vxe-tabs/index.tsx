@@ -68,7 +68,7 @@ function syncSlots(block: VisualEditorBlockData, props: Record<string, any>, pan
 export default {
   key: 'vxe-tabs',
   moduleName: 'containerComponents',
-  label: 'VXE页签容器',
+  label: '页签容器',
   preview: () => (
     <div class={styleModule.preview}>
       <div class={styleModule.previewTabs}><span class={styleModule.previewTabActive}>基础信息</span><span class={styleModule.previewTab}>详细信息</span></div>

@@ -45,10 +45,12 @@ function createListClient(calls: QueryCall[]) {
     },
   };
 
-  return { from: () => query };
+  const client = { from: () => query, schema: (_schema: string) => client };
+  return client;
 }
 
 class UserScopedService extends BaseService {
+  protected override async isAdministrator() { return false; }
   readonly queryCalls: QueryCall[] = [];
   inspectionCount = 0;
   hasUserIdColumn = true;
@@ -80,6 +82,10 @@ class UserScopedService extends BaseService {
   protected override async inspectTableHasUserIdColumn() {
     this.inspectionCount += 1;
     return this.hasUserIdColumn;
+  }
+
+  protected override async inspectTableHasAccessLevelColumn() {
+    return false;
   }
 
   protected override async assertPermission() {
@@ -116,12 +122,58 @@ class PostgrestUserScopedService extends UserScopedService {
   }
 }
 
+class PublicReadService extends BaseService {
+  protected override async isAdministrator() { return false; }
+  readonly queryCalls: QueryCall[] = [];
+  accessLevelInspections = 0;
+
+  protected override resources(): ResourceConfigMap {
+    return {
+      public_rows: {
+        tableName: 'public_rows',
+        clientMode: 'user',
+        ownerField: 'user_id',
+        accountField: 'account_id',
+        publicRead: {
+          enabled: true,
+          select: 'id,name,access_level',
+          filters: { access_level: 'free' },
+          defaultPageSize: 10,
+          maxPageSize: 25,
+        },
+      },
+      private_rows: {
+        tableName: 'private_rows',
+        clientMode: 'user',
+      },
+    };
+  }
+
+  protected override async createCrudClient(): Promise<SupabaseClient> {
+    return createListClient(this.queryCalls) as never;
+  }
+
+  protected override async tryReadCurrentUser(context: ServiceContext) {
+    return context.userId ? { id: context.userId } as never : undefined;
+  }
+
+  protected override async inspectTableHasUserIdColumn() {
+    return true;
+  }
+
+  protected override async inspectTableHasAccessLevelColumn(tableName: string) {
+    this.accessLevelInspections += 1;
+    return ['public_rows', 'public.public_rows', 'generic_rows', 'public.generic_rows'].includes(tableName);
+  }
+}
+
 function readFirstItemData(operation?: Record<string, unknown>) {
   const items = operation?.items as Array<{ data: Record<string, unknown> }> | undefined;
   return items?.[0]?.data;
 }
 
 class GenericAdminService extends AdminService {
+  protected override async isAdministrator() { return false; }
   inserted?: Record<string, unknown>;
   updated?: Record<string, unknown>;
 
@@ -266,6 +318,101 @@ async function main() {
 
   await generic.saveForTest({ id: 'row-1', data: { name: 'updated', user_id: OTHER_USER_ID } });
   assert.equal(generic.updated?.user_id, OTHER_USER_ID);
+
+  const publicRead = new PublicReadService();
+  await publicRead.execute('listItems', {
+    resource: 'public_rows',
+    filters: { access_level: 'pro' },
+    pageSize: 999,
+  }, { serviceName: 'admin' });
+  assert.deepEqual(publicRead.queryCalls.find(([name]) => name === 'select'), [
+    'select', 'id,name,access_level', undefined,
+  ]);
+  assert.deepEqual(
+    publicRead.queryCalls.filter(([name, field]) => name === 'eq' && field === 'access_level'),
+    [['eq', 'access_level', 'free'], ['eq', 'access_level', 'pro']],
+    'caller filters must be ANDed with mandatory public filters',
+  );
+  assert.deepEqual(publicRead.queryCalls.find(([name]) => name === 'range'), ['range', 0, 24]);
+  assert.equal(publicRead.accessLevelInspections, 1, 'schema detection must be cached');
+  assert.equal(publicRead.queryCalls.some(([name]) => name === 'is' || name === 'or'), false,
+    'free rows must not be restricted to user_id=NULL');
+
+  const signedInRead = new PublicReadService();
+  await signedInRead.execute('listItems', { resource: 'public_rows' }, {
+    serviceName: 'admin',
+    authorization: 'Bearer test',
+    userId: USER_ID,
+  });
+  assert.deepEqual(signedInRead.queryCalls.find(([name]) => name === 'select'), [
+    'select', 'id,name,access_level', undefined,
+  ]);
+  assert.equal(
+    signedInRead.queryCalls.some(([name, field]) => name === 'eq' && field === 'access_level'),
+    false,
+    'signed-in account-less reads rely on RLS and may include personal rows',
+  );
+
+  for (const tableName of ['public_rows', 'public.public_rows']) {
+    const tableRead = new PublicReadService();
+    const result = await tableRead.execute('listItems', {
+      tableName,
+      select: '*',
+      clientMode: 'admin',
+      filters: { access_level: 'pro' },
+      responseMode: 'page',
+      page: 1,
+      pageSize: 999,
+    }, { serviceName: 'admin' });
+    assert.deepEqual(result, { rows: [], total: 0, page: 1, pageSize: 25 });
+    assert.deepEqual(tableRead.queryCalls.find(([name]) => name === 'select'), [
+      'select', 'id,name,access_level', { count: 'exact' },
+    ]);
+    assert.deepEqual(
+      tableRead.queryCalls.filter(([name]) => name === 'eq'),
+      [['eq', 'access_level', 'free'], ['eq', 'access_level', 'pro']],
+      'tableName reads must retain mandatory public/free filters',
+    );
+    assert.deepEqual(tableRead.queryCalls.find(([name]) => name === 'range'), ['range', 0, 24]);
+    await assert.rejects(
+      tableRead.execute('createItem', { tableName, data: { name: 'forbidden' } }, { serviceName: 'admin' }),
+      /未登录/,
+    );
+  }
+  const genericRead = new PublicReadService();
+  for (const serviceName of ['admin', 'print', 'lowcode']) {
+    await genericRead.execute('listItems', {
+      tableName: 'public.generic_rows', clientMode: 'admin',
+    }, { serviceName });
+  }
+  assert.equal(genericRead.accessLevelInspections, 1);
+  assert.deepEqual(genericRead.queryCalls.filter(([name]) => name === 'eq'), [
+    ['eq', 'access_level', 'free'], ['eq', 'access_level', 'free'], ['eq', 'access_level', 'free'],
+  ], 'unregistered access_level tables must use the same free filter across services');
+  assert.equal(genericRead.queryCalls.some(([name]) => name === 'is'), false);
+  for (const postData of [
+    { tableName: 'private_rows' },
+    { tableName: 'public.private_rows' },
+    { tableName: 'unregistered_rows' },
+    { tableName: 'other.public_rows' },
+    { resource: 'unregistered_rows', tableName: 'public_rows' },
+    {},
+  ]) {
+    await assert.rejects(
+      publicRead.execute('listItems', postData, { serviceName: 'admin' }),
+      /未登录/,
+    );
+  }
+  await assert.rejects(
+    publicRead.execute('listItems', { resource: 'private_rows' }, { serviceName: 'admin' }),
+    /未登录/,
+  );
+  await assert.rejects(
+    publicRead.execute('createItem', {
+      resource: 'public_rows', data: { name: 'forbidden' },
+    }, { serviceName: 'admin' }),
+    /未登录/,
+  );
 
   console.log('User-scoped CRUD tests passed.');
 }

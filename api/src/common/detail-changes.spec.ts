@@ -10,6 +10,7 @@ type PreparedCall = {
 };
 
 class TestAdminService extends AdminService {
+  protected override async isAdministrator() { return false; }
   preparedCall?: PreparedCall;
   dynamicConfig?: Record<string, unknown>;
 

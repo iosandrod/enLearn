@@ -11,6 +11,7 @@ import PrintDataSourceManager from './PrintDataSourceManager.vue'
 const SCRIPT_META_FORM_CODE = 'print-designer.datasource-script-meta'
 
 type ServiceApi = {
+	isAuthenticated?(): boolean
 	invoke<TResponse = unknown>(serviceName: string, serviceMethod: string, postData?: Record<string, unknown>): Promise<TResponse>
 }
 
@@ -25,6 +26,7 @@ type RemoteDataSource = {
 	enabled: boolean
 	version: number
 	updated_at?: string
+	access_level?: 'free' | 'pro' | 'enterprise'
 }
 
 const props = defineProps<{
@@ -39,6 +41,7 @@ const editorKey = ref(0)
 const draft = ref<RemoteDataSource>(createDraft())
 const loading = ref(true)
 const saving = ref(false)
+const readOnlyCatalog = ref(false)
 const message = ref('')
 useVxeMessage(message, () => /失败|错误|请先|不能为空|只能/.test(message.value) ? 'error' : 'success')
 const metaSchema = ref<LowCodeFormSchema | null>(null)
@@ -61,6 +64,7 @@ const editorOptions = computed(() => ({
 	minimap: { enabled: false },
 	formatOnPaste: true,
 	wordWrap: 'on' as const,
+	readOnly: readOnlyCatalog.value,
 }))
 
 onMounted(() => {
@@ -140,7 +144,7 @@ async function loadSources() {
 	loading.value = true
 	message.value = ''
 	try {
-		const rows = await props.serviceApi.invoke<unknown[]>('print', 'listManagedDataSources')
+		const rows = await loadAvailableSources()
 		updateTypeormOptions(rows)
 		sources.value = Array.isArray(rows)
 			? rows.filter((row): row is RemoteDataSource => isRemoteDataSource(row) && row.type === 'script')
@@ -156,6 +160,41 @@ async function loadSources() {
 	} finally {
 		loading.value = false
 	}
+}
+
+async function loadAvailableSources() {
+	try {
+		if (props.serviceApi.isAuthenticated?.() === false) return await loadPublicCatalog()
+		const rows = await props.serviceApi.invoke<unknown[]>('print', 'listManagedDataSources')
+		readOnlyCatalog.value = false
+		return rows
+	} catch (error) {
+		if (!isAuthenticationContextError(error)) throw error
+		return loadPublicCatalog()
+	}
+}
+
+async function loadPublicCatalog() {
+	const rows = await props.serviceApi.invoke<unknown[]>('admin', 'listItems', {
+		resource: 'print_datasource_script',
+		sorts: [{ field: 'code', direction: 'asc' }],
+		limit: 200,
+	})
+	readOnlyCatalog.value = true
+	return Array.isArray(rows) ? rows.map((row) => isRecord(row) ? {
+		...row,
+		type: 'script',
+		script: '',
+	} : row) : []
+}
+
+function isAuthenticationContextError(error: unknown) {
+	const message = error instanceof Error
+		? error.message
+		: isRecord(error)
+			? String(error.message ?? error.statusMessage ?? error.error ?? '')
+			: String(error ?? '')
+	return /未登录|authentication required|x-account-id is required/i.test(message)
 }
 
 function updateTypeormOptions(rows: unknown) {
@@ -183,6 +222,7 @@ function selectSource(source: RemoteDataSource) {
 }
 
 function createSource() {
+	if (readOnlyCatalog.value) return
 	selectedId.value = ''
 	draft.value = createDraft()
 	editorKey.value += 1
@@ -194,6 +234,7 @@ function updateScript(value: string) {
 }
 
 function openConfig() {
+	if (readOnlyCatalog.value) return
 	void openGlobalDialog({
 		title: '数据源管理',
 		width: 980,
@@ -205,7 +246,7 @@ function openConfig() {
 }
 
 async function saveSource() {
-	if (saving.value || loading.value || metaSchemaLoading.value || !metaSchema.value) return
+	if (readOnlyCatalog.value || saving.value || loading.value || metaSchemaLoading.value || !metaSchema.value) return
 	metaForm.value?.commitPendingValues()
 	if (!metaForm.value || !(await metaForm.value.validate())) return
 	if (!draft.value.code.trim()) {
@@ -248,6 +289,7 @@ async function saveSource() {
 }
 
 async function deleteSource() {
+	if (readOnlyCatalog.value) return
 	if (!draft.value.id) {
 		createSource()
 		return
@@ -281,7 +323,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 					<strong>打印脚本</strong>
 					<span>{{ sources.length }} 个脚本</span>
 				</div>
-				<button type="button" class="print-remote-data-source-manager__icon-button" title="新建脚本" @click="createSource">
+				<button v-if="!readOnlyCatalog" type="button" class="print-remote-data-source-manager__icon-button" title="新建脚本" @click="createSource">
 					<i class="ri-add-line" aria-hidden="true" />
 				</button>
 			</div>
@@ -306,7 +348,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 					<strong>{{ draft.name || '未命名脚本' }}</strong>
 					<span>Script 数据源脚本</span>
 				</div>
-				<div class="print-remote-data-source-manager__actions">
+				<div v-if="!readOnlyCatalog" class="print-remote-data-source-manager__actions">
 					<button type="button" class="print-remote-data-source-manager__button" title="打开数据源管理" @click="openConfig">
 						<i class="ri-settings-3-line" aria-hidden="true" />
 						<span>管理数据源</span>
@@ -322,13 +364,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 				</div>
 			</header>
 			<div class="print-remote-data-source-manager__meta">
-				<div v-if="metaSchemaLoading" class="print-remote-data-source-manager__state" role="status">正在加载脚本表单...</div>
+				<div v-if="readOnlyCatalog" class="print-remote-data-source-manager__state">
+					{{ draft.code || '-' }} · {{ draft.access_level || 'free' }}
+				</div>
+				<div v-else-if="metaSchemaLoading" class="print-remote-data-source-manager__state" role="status">正在加载脚本表单...</div>
 				<button v-else-if="metaSchemaError" type="button" class="print-remote-data-source-manager__button" @click="loadMetaSchema">重新加载</button>
 				<LowCodeForm v-else-if="metaSchema" ref="metaForm" :key="editorKey" :schema="metaSchema"
-					:model-value="metaModel" :option-sources="optionSources" :disabled="loading || saving" vertical
+					:model-value="metaModel" :option-sources="optionSources" :disabled="readOnlyCatalog || loading || saving" vertical
 					@update:model-value="updateMetaModel" />
 			</div>
-			<div class="print-remote-data-source-manager__editor-shell">
+			<p v-if="readOnlyCatalog" class="print-remote-data-source-manager__state">公共数据源仅展示结构。登录后可管理个人脚本和数据库连接。</p>
+			<div v-else class="print-remote-data-source-manager__editor-shell">
 				<div class="print-remote-data-source-manager__editor">
 					<MonacoEditor :key="editorKey" :code="draft.script" :vid="draft.id || draft.code" :layout="{ width: 0, height: 0 }"
 						:options="editorOptions" :on-change="updateScript" />

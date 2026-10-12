@@ -1168,7 +1168,7 @@ sales-orders|{
                     {
                         "_vid": "vid_sales-order-child-tabs",
                         "focus": false,
-                        "label": "VXE页签容器",
+                        "label": "页签容器",
                         "model": {
                         },
                         "props": {
@@ -3087,7 +3087,7 @@ sales-orders-edit|{
                                 "focus": false,
                                 "hooks": [
                                 ],
-                                "label": "VXE页签容器",
+                                "label": "页签容器",
                                 "model": {
                                 },
                                 "props": {
@@ -10528,7 +10528,7 @@ sales-orders-edit|{
                     {
                         "_vid": "vid_sales-order-lines-tabs",
                         "focus": false,
-                        "label": "VXE页签容器",
+                        "label": "页签容器",
                         "model": {
                         },
                         "props": {

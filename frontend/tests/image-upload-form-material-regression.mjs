@@ -20,7 +20,8 @@ assert.match(visualMaterial, /image:\s*\{[\s\S]*?runtimeComponent: 'vxe-upload'/
 assert.match(visualMaterial, /fileTypes: \['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'\]/);
 assert.match(visualMaterial, /showPreview: true/);
 assert.match(visualMaterial, /previewType: 'image'/);
-assert.match(visualConfig, /'image'/);
+assert.match(visualConfig, /Object\.entries\(formMaterialVisualComponents\)/);
+assert.match(visualConfig, /visualConfig\.registry\('formComponents', name, widget\)/);
 assert.match(attrEditor, /'vxe-upload': 'image'/);
 assert.match(attrEditor, /image: 'vxe-upload'/);
 assert.match(attrEditor, /nextComponentKey === 'image'/);

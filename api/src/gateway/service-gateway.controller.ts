@@ -14,6 +14,7 @@ import { isPublicServiceName, type PublicServiceName } from '../common/service-b
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { ServiceRouterService } from './service-router.service';
 import { requireActiveAccount } from '../common/utils/account-context';
+import { assertSaveResult } from '../common/save-result';
 import {
   executeDurableIdempotentServiceWrite,
   isIdempotentServiceWrite
@@ -136,10 +137,12 @@ export class ServiceGatewayController {
     const allowAnonymousOptionItemsRead =
       serviceName === 'admin' && ANONYMOUS_OPTION_ITEMS_METHODS.has(serviceMethod) &&
       !contextAuthorization && !accountId;
+    const allowMetadataPublicRead =
+      serviceMethod === 'listItems' && (!contextAuthorization || !accountId);
 
     let data: unknown;
     try {
-      // 除公开的低代码和选项读取外，验证用户、账套成员关系和账套状态。
+      // 无账套的资源读取交由资源元数据和 RLS 校验，其他调用验证账套。
       const resolvedContext: ServiceContext = allowAnonymousLowCodeRead || allowAnonymousOptionItemsRead
         ? {
             authorization: contextAuthorization,
@@ -147,17 +150,23 @@ export class ServiceGatewayController {
             serviceName,
             accountId: DEFAULT_ANONYMOUS_ACCOUNT_ID
           }
+        : allowMetadataPublicRead
+          ? { authorization: contextAuthorization, requestId, serviceName }
         : (await requireActiveAccount(
             { authorization: contextAuthorization, requestId, serviceName },
             accountId
           )).context;
       // 将业务参数与可信上下文交给路由器，由其分发至 workflow 或对应领域服务。
-      const invoke = () => this.router.invoke(
+      const invoke = async () => {
+        const result = await this.router.invoke(
           serviceName,
           serviceMethod,
           postData,
           resolvedContext
         );
+        if (serviceMethod === 'saveItem') assertSaveResult(result);
+        return result;
+      };
       // 对带请求 ID 的写操作执行持久化幂等控制，防止网络重试造成重复写入。
       data = requestId && resolvedContext.userId && resolvedContext.accountId &&
         isIdempotentServiceWrite(serviceMethod, postData)
@@ -171,6 +180,8 @@ export class ServiceGatewayController {
             invoke
           )
         : await invoke();
+      // Also reject empty responses cached by older versions.
+      if (serviceMethod === 'saveItem') assertSaveResult(data);
     } catch (error) {
       const elapsedMs = Date.now() - startedAt;
       const requestIdSuffix = requestId
@@ -184,8 +195,8 @@ export class ServiceGatewayController {
       );
 
       // 将 JWT 相关的底层错误统一转换为 401，避免泄露认证实现细节。
-      if (isAuthTokenError(error)) {
-        throw new UnauthorizedException('Authentication required.');
+      if (isAuthTokenError(error) || /X-Account-Id is required\.?/i.test(readErrorMessage(error))) {
+        throw new UnauthorizedException('未登录');
       }
 
       throw error;

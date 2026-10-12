@@ -1482,7 +1482,7 @@ button {
 
 .designer-side-panel .top-menu-toolbar {
 	align-items: stretch;
-	width: 100%;
+	width: 243px;
 	max-width: none;
 	min-height: 0;
 	height: auto;
@@ -4681,8 +4681,8 @@ button {
 	display: flex;
 	align-items: center;
 	gap: 2px;
-	width: max-content;
-	max-width: calc(100vw - 84px);
+	width: 240px;
+	/* max-width: calc(100vw - 84px); */
 	height: 38px;
 	padding: 4px;
 	border: 1px solid #d9dee6;
@@ -4758,7 +4758,7 @@ button {
 
 .top-menu-panel--canvas-shortcuts .top-menu-toolbar {
 	flex-wrap: wrap;
-	width: max-content;
+	width: 243px;
 	max-width: 100%;
 	height: auto;
 	min-height: 38px;

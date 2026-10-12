@@ -123,9 +123,10 @@ export class AuthService {
 
   async listPublicLowCodeCatalog() {
     const admin = createSupabaseClient('admin');
+    const publicReader = createSupabaseClient('public');
     const [materials, formDefinitions] = await Promise.all([
       this.listPublicLowCodeMaterials(admin),
-      listAllPublicCatalogRows((from, to) => admin
+      listAllPublicCatalogRows((from, to) => publicReader
         .from('lowcode_form_definitions')
         .select('id,code,name,description,schema,enabled,created_at,updated_at')
         .eq('enabled', true)

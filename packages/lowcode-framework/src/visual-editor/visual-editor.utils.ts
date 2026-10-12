@@ -366,7 +366,6 @@ export const VisualDragProvider = (() => {
 
 // 组件模块
 export type ComponentModules = {
-  baseWidgets: VisualEditorComponent[]; // 基础组件
   formComponents: VisualEditorComponent[]; // 表单组件
   containerComponents: VisualEditorComponent[]; // 容器组件
   businessComponents: VisualEditorComponent[]; // 业务组件
@@ -378,7 +377,6 @@ export type ComponentModules = {
  */
 export function createVisualEditorConfig() {
   const componentModules: ComponentModules = {
-    baseWidgets: [],
     formComponents: [],
     containerComponents: [],
     businessComponents: [],

@@ -32,6 +32,8 @@
     "test:signin-account": "node tests/signin-account-field-regression.mjs",
     "test:vxe-select-searchable": "node tests/vxe-select-searchable-regression.mjs",
     "test:dev-user-login": "node tests/dev-user-login-regression.mjs",
+    "test:logout-user-storage": "node tests/logout-user-storage-regression.mjs",
+    "test:missing-account-auth": "node tests/missing-account-auth-regression.mjs",
     "test:files-auth-loading": "node tests/files-auth-loading-regression.mjs",
     "test:signed-upload-cors": "node tests/signed-upload-cors-regression.mjs",
 	"test:files-upload-progress": "node tests/files-upload-progress-regression.mjs",

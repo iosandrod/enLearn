@@ -52,6 +52,7 @@ try {
   });
 
   const firstDesigner = page.locator('.form-designer-dialog').first();
+  assert.equal(await firstDesigner.locator('.left-aside__tabs button', { hasText: '基本组件' }).count(), 0);
   await firstDesigner.locator('.left-aside__tabs button', { hasText: '表单组件' }).click();
   await firstDesigner.locator('[data-material-card]').first().click();
   await firstDesigner.locator('.left-aside__tabs button', { hasText: '图层' }).click();

@@ -11,6 +11,10 @@ import type { ServiceContext } from './interfaces/service-executor';
 class RequiredFilterTestService extends BaseService {
   calls = 0;
 
+  protected override async inspectTableHasAccessLevelColumn() {
+    return false;
+  }
+
   protected override resources(): ResourceConfigMap {
     return {
       test_rows: {
@@ -29,6 +33,10 @@ class RequiredFilterTestService extends BaseService {
 class PagedResourceTestService extends BaseService {
   selectOptions: unknown;
   selectedRange: [number, number] | null = null;
+
+  protected override async inspectTableHasAccessLevelColumn() {
+    return false;
+  }
 
   protected override async inspectTableHasUserIdColumn() {
     return false;

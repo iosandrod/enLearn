@@ -1,5 +1,6 @@
 import { computed, ref, type Ref } from 'vue';
 import { getContentResponse } from './spa-content';
+import { clearUserLocalStorage } from '../utils/userStorage';
 
 type AsyncDataOptions<T> = {
   default?: () => T;
@@ -170,9 +171,7 @@ function persistAuthSession(payload: unknown) {
 
 function clearAuthSession() {
   clearLowCodeHttpResponseCache();
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+  clearUserLocalStorage(localStorage);
 }
 
 function withQuery(url: string, query?: Record<string, unknown>) {
@@ -217,8 +216,13 @@ function isAuthFailure(statusCode: number, message: string) {
     normalized.includes('jwt expired') ||
     normalized.includes('invalid jwt') ||
     normalized.includes('invalid token') ||
-    normalized.includes('authentication required')
+    normalized.includes('authentication required') ||
+    normalized.includes('x-account-id is required')
   );
+}
+
+function isMissingAccountContext(message: string) {
+  return message.toLowerCase().includes('x-account-id is required');
 }
 
 function canRefreshForPath(apiPath: string) {
@@ -287,6 +291,8 @@ async function refreshStoredSession() {
         return false;
       }
 
+      // A refresh that started before logout must not restore the old session.
+      if (getStoredRefreshToken() !== refreshToken) return false;
       persistAuthSession(payload);
       return Boolean((payload as { session?: { access_token?: string } } | null)?.session?.access_token);
     })()
@@ -342,21 +348,23 @@ export async function authenticatedFetchResponse(
   if (!response.ok) {
     const payload = parseResponsePayload(await response.clone().text());
     const statusMessage = readPayloadMessage(payload, response.statusText);
+    const missingAccountContext = isMissingAccountContext(statusMessage);
+    const authFailure = isAuthFailure(response.status, statusMessage);
 
-    if (!didRetryAuth && isAuthFailure(response.status, statusMessage) && canRefreshForPath(apiPath)) {
+    if (!didRetryAuth && authFailure && !missingAccountContext && canRefreshForPath(apiPath) && getStoredAccessToken() === token) {
       const refreshed = await refreshStoredSession();
       if (refreshed) {
         return authenticatedFetchResponse(url, options, true);
       }
     }
 
-    if (isAuthFailure(response.status, statusMessage)) {
+    if (authFailure && !apiPath.startsWith('/auth/signout') && getStoredAccessToken() === token) {
       clearExpiredAuthSession();
     }
 
     throw createError({
-      statusCode: response.status,
-      statusMessage,
+      statusCode: authFailure ? 401 : response.status,
+      statusMessage: missingAccountContext ? '未登录' : statusMessage,
     });
   }
 
@@ -400,15 +408,16 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}) {
 
 async function fetchBackendUncached<T>(url: string, options: FetchOptions = {}) {
   const apiPath = normalizeApiPath(withQuery(url, options.query));
-  const response = await authenticatedFetchResponse(url, options);
+  const signingOut = apiPath.startsWith('/auth/signout');
+  // Capture authentication headers before clearing local data. Logout does not
+  // refresh/retry an expired token, and local cleanup never waits for the server.
+  const responsePromise = authenticatedFetchResponse(url, options, signingOut);
+  if (signingOut) clearAuthSession();
+  const response = await responsePromise;
   const payload = parseResponsePayload(await response.text());
 
   if (apiPath.startsWith('/auth/signin') || apiPath.startsWith('/auth/signup') || apiPath.startsWith('/auth/session')) {
     persistAuthSession(payload);
-  }
-
-  if (apiPath.startsWith('/auth/signout')) {
-    clearAuthSession();
   }
 
   return payload as T;

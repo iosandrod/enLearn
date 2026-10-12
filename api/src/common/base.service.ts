@@ -4,7 +4,8 @@ import {
   ConflictException,
   ForbiddenException,
   HttpException,
-  GatewayTimeoutException
+  GatewayTimeoutException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
@@ -13,9 +14,11 @@ import {
   createSupabaseClient,
   getCurrentUser,
   getUserAuthorization,
+  isSystemAdministrator,
   hasRequiredPermission
 } from './utils/supabase';
 import { getEnv } from './utils/env';
+import { assertSaveResult } from './save-result';
 import { parseRegisteredCommandFunction, validateRegisteredCommandSource } from '../workflow/runtime/registered-command.runtime';
 
 const DYNAMIC_CRUD_RPC = 'execute_dynamic_crud';
@@ -139,6 +142,14 @@ export type ResourceListConfig = {
   maxPageSize?: number;
 };
 
+export type ResourcePublicReadConfig = {
+  enabled?: boolean;
+  select?: string;
+  filters?: Record<string, unknown>;
+  defaultPageSize?: number;
+  maxPageSize?: number;
+};
+
 export type ResourceDetailRelation = {
   resource?: string;
   foreignKey: string;
@@ -188,6 +199,9 @@ export type ResourceConfig = {
   ownerField?: string;
   accountField?: string;
   permissions?: ResourcePermissions;
+  publicRead?: ResourcePublicReadConfig;
+  /** Derived from the database schema, never from request parameters. */
+  accessLevelRead?: boolean;
   defaults?: Record<string, unknown> | ((ctx: CrudContext) => Record<string, unknown> | Promise<Record<string, unknown>>);
   detailRelations?: Record<string, ResourceDetailRelation>;
   afterSaveRelations?: Record<string, ResourceAfterSaveRelation>;
@@ -255,6 +269,8 @@ export abstract class BaseService implements ServiceExecutor {
     expiresAt: number;
   }>();
   private readonly userIdColumnRequests = new Map<string, Promise<boolean>>();
+  private readonly accessLevelColumnCache = new Map<string, { value: boolean; expiresAt: number }>();
+  private readonly accessLevelColumnRequests = new Map<string, Promise<boolean>>();
 
   protected async readResourceMetadata(context: ServiceContext = {}): Promise<ResourceConfigMap> {
     const injectedResources = this.resources();
@@ -401,19 +417,21 @@ export abstract class BaseService implements ServiceExecutor {
       switch (method) {
         case 'listItems':
           await this.readResourceMetadata(context);
-          this.assertPublicResourceAccess(postData, 'list');
+          this.assertPublicResourceAccess(
+            postData, 'list', context, await this.resolveListResource(postData, context)
+          );
           return this.listItems(postData, context);
         case 'createItem':
           await this.readResourceMetadata(context);
-          this.assertPublicResourceAccess(postData, 'create');
+          this.assertPublicResourceAccess(postData, 'create', context);
           return this.createItem(postData, context);
         case 'updateItem':
           await this.readResourceMetadata(context);
-          this.assertPublicResourceAccess(postData, 'update');
+          this.assertPublicResourceAccess(postData, 'update', context);
           return this.updateItem(postData, context);
         case 'deleteItem':
           await this.readResourceMetadata(context);
-          this.assertPublicResourceAccess(postData, 'delete');
+          this.assertPublicResourceAccess(postData, 'delete', context);
           return this.deleteItem(postData, context);
         case 'saveItem':
           {
@@ -429,13 +447,14 @@ export abstract class BaseService implements ServiceExecutor {
                 postData.id ?? postData[primaryKey] ?? data.id ?? data[primaryKey]
               )
                 ? 'update'
-                : 'create'
+                : 'create',
+              context
             );
           }
           return this.saveItem(postData, context);
         case 'runAction':
           await this.readResourceMetadata(context);
-          this.assertPublicResourceAccess(postData, 'action');
+          this.assertPublicResourceAccess(postData, 'action', context);
           return this.runResourceAction(postData, context);
         default:
           return this.executeAction(method, postData, context);
@@ -597,12 +616,15 @@ export abstract class BaseService implements ServiceExecutor {
     }
 
     const itemType = this.readListItemsType(postData);
+    const resource = await this.resolveListResource(postData, context);
+    if (resource?.config.accessLevelRead) {
+      return this.runCrud('list', postData, context, resource);
+    }
     const listHandler = this.listItemHandlers()[itemType];
     if (listHandler) {
       return listHandler(postData, context);
     }
 
-    const resource = this.tryResolveResource(postData, itemType);
     if (resource) {
       return this.runCrud('list', postData, context, resource);
     }
@@ -612,11 +634,11 @@ export abstract class BaseService implements ServiceExecutor {
       return this.handleListItems(postData, context);
     }
 
-    const clientMode = this.readOptionalString(postData.clientMode ?? postData.client_mode);
+    const isAdministrator = await this.isAdministrator(context);
     const client = await this.createCrudClient({
       tableName,
-      clientMode: clientMode === 'admin' ? 'admin' : 'user'
-    }, context);
+      clientMode: 'user'
+    }, context, isAdministrator);
     const select = this.readOptionalString(postData.select) || '*';
     const pageSize = this.readListItemsLimit(postData);
     const page = Math.min(Math.max(Math.trunc(this.readNumber(postData.page, 1)), 1), 100000);
@@ -626,13 +648,13 @@ export abstract class BaseService implements ServiceExecutor {
     const selectOptions = withCount || responseMode === 'page' ? { count: 'exact' as const } : undefined;
     let query = this.fromTable(client, tableName).select(select, selectOptions);
 
-    if (await this.tableHasUserIdColumn(tableName, context)) {
+    if (!isAdministrator && await this.tableHasUserIdColumn(tableName, context)) {
       const userId = await this.resolveCurrentUserId(context);
       query = this.applyUserIdReadScope(query, userId);
     }
 
     const accountField = this.accountFieldForTable(tableName);
-    if (accountField) {
+    if (accountField && !isAdministrator) {
       query = query.eq(accountField, this.accountValue(context, accountField));
     }
 
@@ -731,6 +753,7 @@ export abstract class BaseService implements ServiceExecutor {
       if (action === 'delete') ctx.result = await this.performDelete(ctx);
 
       await this.runHooks(ctx, [this.hookName('after', action), 'afterAction']);
+      if (action === 'create' || action === 'update') assertSaveResult(ctx.result);
       return ctx.result;
     } catch (error) {
       ctx.meta.error = error;
@@ -745,10 +768,13 @@ export abstract class BaseService implements ServiceExecutor {
     context: ServiceContext,
     resource: { name: string; config: ResourceConfig }
   ): Promise<CrudContext> {
-    const client = await this.createCrudClient(resource.config, context);
+    const isAdministrator = await this.isAdministrator(context);
+    const client = await this.createCrudClient(resource.config, context, isAdministrator);
     const user = await this.tryReadCurrentUser(context, resource.config);
     const data = this.readDataPayload(postData);
-    this.assertAccountPayload(resource.config, context, data);
+    if (!isAdministrator && (action !== 'list' || !resource.config.accessLevelRead)) {
+      this.assertAccountPayload(resource.config, context, data);
+    }
     const id = this.readId(postData, resource.config);
     const ids = this.readIds(postData, resource.config);
 
@@ -765,11 +791,23 @@ export abstract class BaseService implements ServiceExecutor {
       user,
       id,
       ids,
-      meta: {}
+      meta: { isAdministrator }
     };
   }
 
-  protected async createCrudClient(resource: ResourceConfig, context: ServiceContext) {
+  protected async isAdministrator(context: ServiceContext) {
+    return isSystemAdministrator(context);
+  }
+
+  protected async createCrudClient(resource: ResourceConfig, context: ServiceContext, isAdministrator = false) {
+    if (isAdministrator) return createSupabaseClient('admin', context);
+    // Public resources always use an end-user database role so their RLS is
+    // enforced, even if older metadata still declares clientMode=admin.
+    if (resource.publicRead?.enabled === true) {
+      return context.authorization
+        ? (await getCurrentUser(context)).client
+        : createSupabaseClient('public', context);
+    }
     if (resource.clientMode === 'admin') {
       return createSupabaseClient('admin', context);
     }
@@ -781,17 +819,39 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected assertPublicResourceAccess(
     postData: ServicePostData,
-    action: ServiceAction
+    action: ServiceAction,
+    context: ServiceContext = {},
+    resolvedResource?: { name: string; config: ResourceConfig }
   ) {
-    const resource = this.tryResolveResource(postData);
+    const resource = resolvedResource ?? this.tryResolveResource(postData);
     if (resource?.config.internalActions?.includes(action)) {
       throw new ForbiddenException(
         `${action} on resource ${resource.name} is only available through its service method.`
       );
     }
+
+    if (!context.serviceName || context.accountId) return;
+
+    const requestedResource = this.readOptionalString(postData.resource);
+    if (
+      action === 'list' &&
+      (!requestedResource || resource?.name === requestedResource) &&
+      resource?.config.publicRead?.enabled === true
+    ) {
+      return;
+    }
+
+    if (!context.authorization) throw new UnauthorizedException('未登录');
+    throw new ForbiddenException('This resource is not available without an active account context.');
   }
 
   protected async tryReadCurrentUser(context: ServiceContext, resource: ResourceConfig) {
+    if (
+      !context.authorization &&
+      resource.publicRead?.enabled === true
+    ) {
+      return undefined;
+    }
     if (resource.clientMode === 'admin') {
       try {
         return (await getCurrentUser(context)).user;
@@ -1045,15 +1105,15 @@ export abstract class BaseService implements ServiceExecutor {
         .map((name) => {
           const config = resources[name];
           if (!config) throw new BadRequestException(`Unknown dynamic CRUD resource: ${name}.`);
-          return [
+          const serialized = this.serializeDynamicResourceConfig(
             name,
-            this.serializeDynamicResourceConfig(
-              name,
-              config,
-              this.userIdColumnCache.get(this.userIdColumnCacheKey(config.tableName))
-                ?.hasUserIdColumn === true
-            )
-          ];
+            config,
+            this.userIdColumnCache.get(this.userIdColumnCacheKey(config.tableName))
+              ?.hasUserIdColumn === true
+          );
+          return [name, ctx.meta.isAdministrator === true
+            ? { ...serialized, client_mode: 'admin', owner_field: null, account_field: null }
+            : serialized];
         })
     );
 
@@ -1117,7 +1177,7 @@ export abstract class BaseService implements ServiceExecutor {
           ...this.buildDatabaseHookInput(ctx.resource, ctx.input)
         };
     const config = this.buildDynamicCrudConfig(ctx);
-    if (ctx.context.authorization) {
+    if (ctx.context.authorization && ctx.meta.isAdministrator !== true) {
       const adminClient = createSupabaseClient('admin', ctx.context);
       const { data: registeredHash, error: hashError } = await adminClient.rpc(
         'get_dynamic_crud_resource_hash',
@@ -1143,10 +1203,10 @@ export abstract class BaseService implements ServiceExecutor {
         }
       }
     }
-    const userClient = ctx.context.authorization && ctx.resource.clientMode !== 'admin'
+    const userClient = ctx.context.authorization && ctx.resource.clientMode !== 'admin' && ctx.meta.isAdministrator !== true
       ? (await getCurrentUser(ctx.context)).client
       : undefined;
-    const rpcClient = ctx.resource.clientMode === 'admin'
+    const rpcClient = ctx.resource.clientMode === 'admin' || ctx.meta.isAdministrator === true
       ? ctx.client
       : userClient ?? ctx.client;
     const { data, error } = await rpcClient.rpc(DYNAMIC_CRUD_RPC, {
@@ -1169,6 +1229,7 @@ export abstract class BaseService implements ServiceExecutor {
       throw new BadRequestException(error.message);
     }
 
+    if (action === 'create' || action === 'update') assertSaveResult(data);
     return data;
   }
 
@@ -1199,28 +1260,32 @@ export abstract class BaseService implements ServiceExecutor {
       ctx.input.responseMode ?? ctx.input.response_mode
     );
     const paged = withCount || responseMode === 'page';
+    const accountlessPublicRead =
+      (!ctx.context.accountId || !ctx.context.authorization) &&
+      ctx.resource.publicRead?.enabled === true
+        ? ctx.resource.publicRead
+        : undefined;
+    const guestPublicRead = !ctx.user ? accountlessPublicRead : undefined;
     let query = this.fromTable(ctx.client, ctx.resource.tableName)
       .select(
-        ctx.resource.select ?? '*',
+        accountlessPublicRead?.select ?? ctx.resource.select ?? '*',
         paged ? { count: 'exact' as const } : undefined
       );
 
-    const hasUserIdColumn = await this.tableHasUserIdColumn(ctx.resource.tableName, ctx.context);
-    if (hasUserIdColumn) {
-      query = this.applyUserIdReadScope(
-        query,
-        await this.resolveCurrentUserId(ctx.context, ctx.user)
-      );
+    const hasUserIdColumn = ctx.meta.isAdministrator !== true && !ctx.resource.accessLevelRead &&
+      await this.tableHasUserIdColumn(ctx.resource.tableName, ctx.context);
+    if (hasUserIdColumn && !ctx.resource.accessLevelRead) {
+      query = this.applyUserIdReadScope(query, await this.resolveCurrentUserId(ctx.context, ctx.user));
     }
 
     if (
-      ctx.resource.ownerField && ctx.user &&
+      ctx.meta.isAdministrator !== true && !ctx.resource.accessLevelRead && ctx.resource.ownerField && ctx.user &&
       !(hasUserIdColumn && ctx.resource.ownerField === 'user_id')
     ) {
       query = query.eq(ctx.resource.ownerField, ctx.user.id);
     }
 
-    if (ctx.resource.accountField) {
+    if (ctx.meta.isAdministrator !== true && ctx.resource.accountField && !ctx.resource.accessLevelRead) {
       query = query.eq(
         ctx.resource.accountField,
         this.accountValue(ctx.context, ctx.resource.accountField)
@@ -1229,6 +1294,7 @@ export abstract class BaseService implements ServiceExecutor {
 
     const defaultFilters = ctx.resource.list?.defaultFilters ?? {};
     query = this.applyListItemsFilters(query, defaultFilters);
+    query = this.applyListItemsFilters(query, guestPublicRead?.filters);
     query = this.applyListItemsFilters(query, ctx.filters);
 
     const sorts = this.readCrudSorts(ctx);
@@ -1239,7 +1305,7 @@ export abstract class BaseService implements ServiceExecutor {
       });
     }
 
-    const limit = this.readCrudLimit(ctx.input, ctx.resource);
+    const limit = this.readCrudLimit(ctx.input, ctx.resource, accountlessPublicRead);
     const offset = this.readCrudOffset(ctx.input, limit);
     query = query.range(offset, offset + limit - 1);
 
@@ -1332,7 +1398,7 @@ export abstract class BaseService implements ServiceExecutor {
           id: undefined,
           ids: [],
           result: undefined,
-          meta: {}
+          meta: { isAdministrator: ctx.meta.isAdministrator === true }
         };
         await this.assertPermission(detailContext);
 
@@ -1569,7 +1635,7 @@ export abstract class BaseService implements ServiceExecutor {
           id: undefined,
           ids: [],
           result: undefined,
-          meta: {}
+          meta: { isAdministrator: ctx.meta.isAdministrator === true }
         };
         if (mode === 'replace' || (rawCreates as unknown[]).length > 0) {
           await this.assertPermission(detailContext);
@@ -1875,7 +1941,7 @@ export abstract class BaseService implements ServiceExecutor {
         id: undefined,
         ids: [],
         result: undefined,
-        meta: {}
+        meta: { isAdministrator: ctx.meta.isAdministrator === true }
       };
       await this.assertPermission(targetContext);
       const payload = await this.buildWritePayload(targetContext, 'update', data);
@@ -2004,14 +2070,17 @@ export abstract class BaseService implements ServiceExecutor {
     if (ctx.user && userFields) {
       if (action === 'create' && userFields.createdBy) payload[userFields.createdBy] = ctx.user.id;
       if (userFields.updatedBy) payload[userFields.updatedBy] = ctx.user.id;
-      if (userFields.owner && !payload[userFields.owner]) payload[userFields.owner] = ctx.user.id;
+      if (userFields.owner && !payload[userFields.owner] && (ctx.meta.isAdministrator !== true || action === 'create')) {
+        payload[userFields.owner] = ctx.user.id;
+      }
     }
 
     if (ctx.resource.ownerField && ctx.user && action === 'create') {
       payload[ctx.resource.ownerField] = payload[ctx.resource.ownerField] ?? ctx.user.id;
     }
 
-    if (ctx.resource.accountField) {
+    if (ctx.resource.accountField && (ctx.meta.isAdministrator !== true ||
+      (action === 'create' && payload[ctx.resource.accountField] === undefined))) {
       payload[ctx.resource.accountField] = this.accountValue(
         ctx.context,
         ctx.resource.accountField
@@ -2033,6 +2102,8 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async assertPermission(ctx: CrudContext) {
+    if (ctx.meta.isAdministrator === true) return;
+    if (ctx.action === 'list' && !ctx.user && ctx.resource.publicRead?.enabled === true) return;
     const required = ctx.resource.permissions?.[ctx.action];
     if (!required) return;
     if (ctx.action === 'list' && ctx.serviceName === 'lowcode' && !ctx.context.authorization) {
@@ -2134,6 +2205,56 @@ export abstract class BaseService implements ServiceExecutor {
   protected userIdColumnCacheKey(tableName: string) {
     const parts = tableName.split('.').map((part) => part.trim());
     return parts.length === 1 ? `public.${parts[0]}` : parts.join('.');
+  }
+
+  protected async inspectTableHasAccessLevelColumn(tableName: string, context: ServiceContext) {
+    const client = createSupabaseClient('admin', context);
+    const { error } = await this.fromTable(client, tableName).select('access_level').limit(0);
+    if (!error) return true;
+    if (['42703', 'PGRST204', '42P01', 'PGRST205'].includes(error.code)) return false;
+    throw new BadRequestException(`Could not inspect resource access for table ${tableName}: ${error.message}`);
+  }
+
+  protected async tableHasAccessLevelColumn(tableName: string, context: ServiceContext) {
+    const key = this.userIdColumnCacheKey(tableName);
+    const cached = this.accessLevelColumnCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) return cached.value;
+    const pending = this.accessLevelColumnRequests.get(key);
+    if (pending) return pending;
+    const request = this.inspectTableHasAccessLevelColumn(tableName, context)
+      .then((value) => {
+        this.accessLevelColumnCache.set(key, { value, expiresAt: Date.now() + 30_000 });
+        return value;
+      })
+      .finally(() => this.accessLevelColumnRequests.delete(key));
+    this.accessLevelColumnRequests.set(key, request);
+    return request;
+  }
+
+  protected async resolveListResource(postData: ServicePostData, context: ServiceContext) {
+    const resource = this.tryResolveResource(postData, this.readListItemsType(postData));
+    const tableName = resource?.config.tableName || this.readOptionalString(postData.tableName ?? postData.table_name);
+    if (!tableName) return resource;
+    const accessLevelRead = resource?.config.accessLevelRead === true ||
+      await this.tableHasAccessLevelColumn(tableName, context);
+    if (!accessLevelRead) return resource;
+    const config = resource?.config ?? { tableName };
+    return {
+      name: resource?.name ?? tableName.split('.').at(-1)!,
+      config: {
+        ...config,
+        accessLevelRead: true,
+        clientMode: 'user' as const,
+        publicRead: {
+          ...config.publicRead,
+          enabled: true,
+          select: config.publicRead?.select ?? config.select,
+          filters: { ...config.publicRead?.filters, access_level: 'free' },
+          defaultPageSize: config.publicRead?.defaultPageSize ?? 100,
+          maxPageSize: config.publicRead?.maxPageSize ?? 200,
+        },
+      },
+    };
   }
 
   protected async resolveCurrentUserId(
@@ -2385,9 +2506,16 @@ export abstract class BaseService implements ServiceExecutor {
     return [{ field: orderBy, direction, nulls: 'last' }];
   }
 
-  protected readCrudLimit(postData: ServicePostData, resource: ResourceConfig) {
-    const fallback = resource.list?.defaultPageSize ?? 300;
-    const max = resource.list?.maxPageSize ?? 1000;
+  protected readCrudLimit(
+    postData: ServicePostData,
+    resource: ResourceConfig,
+    publicRead?: ResourcePublicReadConfig
+  ) {
+    const fallback = publicRead?.defaultPageSize ?? resource.list?.defaultPageSize ?? 300;
+    const configuredMax = resource.list?.maxPageSize ?? 1000;
+    const max = publicRead?.maxPageSize === undefined
+      ? configuredMax
+      : Math.min(configuredMax, publicRead.maxPageSize);
     const value = postData.pageSize ?? postData.page_size ?? postData.limit;
     return Math.min(Math.max(Math.trunc(this.readNumber(value, fallback)), 1), max);
   }
@@ -2442,10 +2570,12 @@ export abstract class BaseService implements ServiceExecutor {
     const entityCode = this.readOptionalString(postData.entityCode ?? postData.entity_code);
     const tableName = this.readOptionalString(postData.tableName ?? postData.table_name);
     const match = Object.entries(resources).find(([, resource]) =>
-      resource.code === entityCode ||
-      resource.tableName === tableName ||
-      resource.tableName === 'public.' + tableName ||
-      'public.' + resource.tableName === tableName
+      (entityCode && resource.code === entityCode) ||
+      (tableName && (
+        resource.tableName === tableName ||
+        resource.tableName === 'public.' + tableName ||
+        'public.' + resource.tableName === tableName
+      ))
     );
     return match ? { name: match[0], config: this.withResourceCode(match[0], match[1]) } : undefined;
   }

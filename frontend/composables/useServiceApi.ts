@@ -24,6 +24,7 @@ type LowCodeListCacheEntry = {
 
 const lowCodeListCache = new Map<string, LowCodeListCacheEntry>();
 const lowCodeListRequests = new Map<string, Promise<unknown>>();
+let lowCodeAuthScope = '';
 
 function cloneLowCodeCacheValue<T>(value: T): T {
   if (value === undefined || value === null) return value;
@@ -230,6 +231,7 @@ function createRequestId() {
 
 export function useServiceApi() {
   const { request } = useAuthenticatedFetch();
+  const authState = useAuthState();
 
   async function getPublicLowCodeCatalog<TMaterial = unknown, TFormDefinition = unknown>() {
     const response = await request<PublicLowCodeCatalog<TMaterial, TFormDefinition>>(
@@ -252,6 +254,14 @@ export function useServiceApi() {
     postData: Record<string, unknown> = {},
     options: ServiceInvokeOptions = {}
   ) {
+    const nextAuthScope = authState.user.value
+      ? `${authState.user.value.id}:${authState.activeAccount.value?.account_id ?? ''}`
+      : 'guest';
+    if (lowCodeAuthScope !== nextAuthScope) {
+      lowCodeAuthScope = nextAuthScope;
+      lowCodeListCache.clear();
+      lowCodeListRequests.clear();
+    }
     const lowCodeTable = serviceName === 'lowcode' && serviceMethod === 'listItems'
       ? readLowCodeTable(postData)
       : undefined;
@@ -347,6 +357,7 @@ export function useServiceApi() {
   }
 
   return {
+    isAuthenticated: () => Boolean(authState.user.value),
     invoke,
     listItems,
     firstItem,

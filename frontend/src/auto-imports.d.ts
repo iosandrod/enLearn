@@ -9,6 +9,8 @@ declare global {
   const $fetch: typeof import('@/src/spa-compat').$fetch
   const EffectScope: typeof import('vue').EffectScope
   const aiPageContextInternals: typeof import('../composables/useAiPageContext').aiPageContextInternals
+  const auto: typeof import('../composables/authConfig').auto
+  const autoLogin: typeof import('../composables/authConfig').autoLogin
   const clearAiPageContext: typeof import('../composables/useAiPageContext').clearAiPageContext
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
@@ -147,6 +149,7 @@ declare module 'vue' {
     readonly $fetch: UnwrapRef<typeof import('@/src/spa-compat')['$fetch']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly aiPageContextInternals: UnwrapRef<typeof import('../composables/useAiPageContext')['aiPageContextInternals']>
+    readonly autoLogin: UnwrapRef<typeof import('../composables/authConfig')['autoLogin']>
     readonly clearAiPageContext: UnwrapRef<typeof import('../composables/useAiPageContext')['clearAiPageContext']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>

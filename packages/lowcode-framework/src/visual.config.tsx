@@ -1,27 +1,18 @@
 import { createVisualEditorConfig } from './visual-editor/visual-editor.utils';
-import baseWidgets from './packages/base-widgets';
+import { formMaterialVisualComponents } from './visual-editor/form-material-visual-components';
+import legacyTextComponent from './visual-editor/legacy-text-component';
 import containerComponent from './packages/container-component';
 import chartComponent from './packages/chart-component';
 import businessComponent from './packages/business-component';
 
 export const visualConfig = createVisualEditorConfig();
-const formComponentKeys = new Set([
-  'array-table',
-  'checkbox',
-  'image',
-  'input',
-  'picker',
-  'radio',
-  'rate',
-  'slider',
-  'stepper',
-  'sub-form',
-  'switch',
-]);
-// 注册基础控件
-Object.entries(baseWidgets).forEach(([name, widget]) =>
-  visualConfig.registry(formComponentKeys.has(name) ? 'formComponents' : 'baseWidgets', name, widget),
+// 注册表单控件
+Object.entries(formMaterialVisualComponents).forEach(([name, widget]) =>
+  visualConfig.registry('formComponents', name, widget),
 );
+// Existing page schemas can contain text nodes; keep them renderable without
+// exposing the retired basic materials in the palette.
+visualConfig.componentMap.text = legacyTextComponent;
 // 注册容器组件
 Object.entries(containerComponent).forEach(([name, widget]) =>
   visualConfig.registry('containerComponents', name, widget),

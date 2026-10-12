@@ -35,6 +35,7 @@ const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
 const DEV_AUTO_LOGIN_DISABLED_KEY = 'enlearn_dev_auto_login_disabled';
 
 let initPromise: Promise<void> | null = null;
+let authEpoch = 0;
 
 function shouldUseDevAutoLogin() {
   if (!import.meta.env.DEV) return false;
@@ -325,7 +326,8 @@ function isUnauthenticatedError(error: unknown) {
     message.includes('authentication required') ||
     message.includes('jwt expired') ||
     message.includes('invalid jwt') ||
-    message.includes('invalid token')
+    message.includes('invalid token') ||
+    message.includes('x-account-id is required')
   );
 }
 
@@ -368,6 +370,7 @@ export function useAuth() {
   async function runInit(force = false) {
     if (import.meta.server) return;
     if (ready.value && !force && user.value && activeAccount.value) return;
+    const epoch = authEpoch;
 
     const hasStoredSession = Boolean(
       window.localStorage.getItem(ACCESS_TOKEN_KEY) ||
@@ -377,10 +380,12 @@ export function useAuth() {
     if (hasStoredSession) {
       try {
         const payload = await $fetch<AppAuthPayload>('/api/auth/me');
+        if (epoch !== authEpoch) return;
         applyAuthPayload(payload);
         restoreDevTestUser();
         return;
       } catch (error) {
+        if (epoch !== authEpoch) return;
         if (isUnauthenticatedError(error)) {
           clearAuthPayload();
         } else {
@@ -391,7 +396,7 @@ export function useAuth() {
       }
     }
 
-    if (!user.value && shouldUseDevAutoLogin()) {
+    if (!user.value && shouldUseDevAutoLogin()&&autoLogin==true) {
       try {
         await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS, { devAutoLogin: true });
         restoreDevTestUser();
@@ -603,21 +608,15 @@ export function useAuth() {
 
   async function signOut() {
     disableDevAutoLogin();
-    await $fetch('/api/auth/signout', { method: 'POST' });
-    window.localStorage.removeItem(DEV_TEST_USER_KEY);
-    window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+    authEpoch += 1;
+    const signOutRequest = $fetch('/api/auth/signout', { method: 'POST' }).catch((error) => {
+      console.warn('Server sign-out failed; the local session has been cleared.', error);
+    });
     activeDevTestUserId.value = '';
     devTestUsers.value = [];
-    user.value = null;
-    profile.value = null;
-    permissions.value = [];
-    accounts.value = [];
-    if (activeAccount.value) accountEpoch.value += 1;
-    activeAccount.value = null;
-    accountRequired.value = false;
-    session.value = null;
-    ready.value = true;
+    clearAuthPayload();
     await navigateTo('/signin');
+    await signOutRequest;
   }
 
   return {

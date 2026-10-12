@@ -82,8 +82,7 @@ const props = withDefaults(
 )
 
 const formModel = ref<ShapeFormModel>({})
-let skipNextMultiModelChange = false
-let previousMultiFormModel: ShapeFormModel = {}
+const multiShapeEditedFields = new Set<string>()
 const formDefinitions = ref<Record<string, LowCodeFormSchema>>({})
 const formDefinitionsLoading = ref(true)
 const formDefinitionError = ref('')
@@ -355,6 +354,32 @@ function handleModelUpdate(value: ShapeFormModel) {
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
 	}
+}
+
+function handleMultiShapeFieldInteraction(event: Event) {
+	if (!isMultiShapeFormActive.value || props.columnOnly || !event.isTrusted) return
+	const target = event.target
+	if (!(target instanceof Element)) return
+	const field = target.closest('[data-lc-field]')?.getAttribute('data-lc-field')
+	if (field) multiShapeEditedFields.add(field)
+}
+
+function handleMultiShapeFieldChange(payload: {
+	field: { field: string; component: string }
+	value: unknown
+	previousValue: unknown
+}) {
+	if (!isMultiShapeFormActive.value || props.columnOnly) return
+	const field = payload.field.field
+	// Materials can emit defaults on mount; a batch patch must come from an edited field.
+	if (!multiShapeEditedFields.has(field) || Object.is(payload.value, payload.previousValue)) return
+	const key = normalizeBasePropertyFieldName(field)
+	const isDimension = key === 'w' || key === 'h' || key === 'qrSize'
+	if (payload.field.component === 'lc-number-input' || isDimension) {
+		const numeric = getFiniteFormNumber(payload.value)
+		if (numeric === null || (isDimension && numeric <= 0)) return
+	}
+	applyMultiShapeFormModel({ [field]: payload.value })
 }
 
 function handleColumnModelUpdate(value: ShapeFormModel) {
@@ -1027,6 +1052,7 @@ function onMaterialColumnSelect(event: Event) {
 
 watch(
 	[
+		selectedShapeIds,
 		selectedShape,
 		isMultiShapeFormActive,
 		multiSelectedShapeType,
@@ -1076,24 +1102,6 @@ watch(selectedShape, (shape) => {
 })
 
 watch(
-	formModel,
-	(model) => {
-		if (!isMultiShapeFormActive.value) return
-		if (skipNextMultiModelChange) {
-			skipNextMultiModelChange = false
-			return
-		}
-		const changedModel: ShapeFormModel = {}
-		for (const key of Object.keys(model)) {
-			if (!Object.is(model[key], previousMultiFormModel[key])) changedModel[key] = model[key]
-		}
-		previousMultiFormModel = { ...model }
-		applyMultiShapeFormModel(changedModel)
-	},
-	{ deep: true }
-)
-
-watch(
 	[uploadedImageShapeKeys, imagePropertySchema],
 	() => {
 		if (!usesUploadedImageSource(imagePropertySchema.value)) return
@@ -1112,8 +1120,7 @@ watch(uploadedBoxBackgroundKeys, () => {
 }, { immediate: true })
 
 function syncFormModel() {
-	skipNextMultiModelChange = false
-	previousMultiFormModel = {}
+	multiShapeEditedFields.clear()
 
 	if (isCanvasFormActive.value) {
 		formModel.value = getWorkspaceFormModel()
@@ -1121,7 +1128,6 @@ function syncFormModel() {
 	}
 
 	if (isMultiShapeFormActive.value) {
-		skipNextMultiModelChange = true
 		formModel.value = {}
 		return
 	}
@@ -1146,7 +1152,7 @@ function applyMultiShapeFormModel(model: ShapeFormModel) {
 		}
 	}, { history: 'record' })
 
-	if (multiSelectedShapeType.value === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
+	if ('src' in model && multiSelectedShapeType.value === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		for (const shape of selected) {
 			void hydrateUploadedImageShape(shape.id, readImageFileId(model.src))
 		}
@@ -1649,7 +1655,7 @@ function toFiniteNumber(value: unknown, fallback: number) {
 }
 
 function getFiniteFormNumber(value: unknown) {
-	if (value === '' || value === null || value === undefined) return null
+	if (value === null || value === undefined || (typeof value === 'string' && !value.trim())) return null
 	const numeric = Number(value)
 	return Number.isFinite(numeric) ? numeric : null
 }
@@ -1682,6 +1688,10 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 	<section
 		class="lowcode-form-panel"
 		aria-label="低代码属性表单"
+		@pointerdown.capture="handleMultiShapeFieldInteraction"
+		@keydown.capture="handleMultiShapeFieldInteraction"
+		@input.capture="handleMultiShapeFieldInteraction"
+		@change.capture="handleMultiShapeFieldInteraction"
 		@pointerdown.stop
 		@pointermove.stop
 		@keydown.stop
@@ -1744,6 +1754,7 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 			:model-value="formModel"
 			:schema="activeSchema"
 			@update:model-value="handleModelUpdate"
+			@field-change="handleMultiShapeFieldChange"
 		/>
 	</section>
 </template>

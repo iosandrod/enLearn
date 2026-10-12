@@ -4275,3 +4275,24 @@ const sampleText = getFooterSampleText(editor, tableFooter.id)
 			text: FOOTER_SAMPLE_TEXT,
 		},
 	} as TLShapePartial)
+
+   const result = await serviceApi.invoke<{
+    pages?: LowCodePageRecord[];
+    formDefinitions?: unknown[];
+  }>('lowcode', 'getPrintDesignerResources', {
+    pageCodes: [
+      PRINT_DESIGNER_PAGE_CODE,
+      PRINT_TEMPLATE_LIST_PAGE_CODE,
+      PRINT_TEMPLATE_EDIT_PAGE_CODE,
+    ],
+    formCodes: PRINT_DESIGNER_FORM_CODES,
+    formCodeContains: 'print-designer.',
+  });
+  const pages = Array.isArray(result?.pages) ? result.pages : [];
+  const pageByCode = new Map(pages.map((page) => [page.code, page]));
+
+  return {
+    designerPage: asPage(pageByCode.get(PRINT_DESIGNER_PAGE_CODE)),
+    templateListPage: asPage(pageByCode.get(PRINT_TEMPLATE_LIST_PAGE_CODE)),
+    templateEditPage: asPage(pageByCode.get(PRINT_TEMPLATE_EDIT_PAGE_CODE)),
+  };

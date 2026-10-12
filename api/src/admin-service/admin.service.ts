@@ -272,6 +272,7 @@ export class AdminService extends BaseService {
     this.assertIdentifier(primaryKey, 'primaryKey');
 
     const payload = { ...this.readDataPayload(postData) };
+    const isAdministrator = await this.isAdministrator(context);
     // __details is a low-code transport envelope, never a generic table field.
     delete payload.__details;
     // Older low-code clients send the record identity in filters while
@@ -326,7 +327,7 @@ export class AdminService extends BaseService {
     // Account-scoped generic tables must receive the active account id for
     // INSERT so their RLS WITH CHECK policy can authorize the new row. Do not
     // trust a client-supplied account id from the form payload.
-    if (tableColumns.has('account_id')) {
+    if (tableColumns.has('account_id') && !isAdministrator) {
       const accountId = this.accountValue(context, 'account_id');
       const suppliedAccountId = payload.account_id;
       if (
@@ -337,6 +338,8 @@ export class AdminService extends BaseService {
         throw new ForbiddenException('The requested data belongs to a different account set.');
       }
       payload.account_id = accountId;
+    } else if (tableColumns.has('account_id') && !hasId && payload.account_id === undefined) {
+      payload.account_id = this.accountValue(context, 'account_id');
     }
     if (!hasId && tableColumns.has('user_id')) {
       const userId = await this.resolveCurrentUserId(context);
@@ -354,12 +357,7 @@ export class AdminService extends BaseService {
       throw new BadRequestException('Save data is required.');
     }
 
-    // Generic admin CRUD still uses the authenticated client so table RLS remains authoritative.
-    // admin.saveItem is the generic administrative CRUD endpoint. Use the
-    // service-role client here; the authenticated user is still validated by
-    // the gateway, while table-specific RLS policies must not turn a valid
-    // admin update into a false "record was not found" response.
-    const client = await this.createCrudClient({ tableName, clientMode: 'admin' }, context);
+    const client = await this.createCrudClient({ tableName, clientMode: 'user' }, context, isAdministrator);
     const table = this.fromTable(client, tableName);
     const query = hasId
       ? table.update(payload).eq(primaryKey, id)
@@ -947,6 +945,13 @@ export class AdminService extends BaseService {
         : ['table', 'relation', 'from']
     );
     const relation = readRelationIdentifier(relationName, 'source_config.table');
+    // System dictionaries can use the existing admin reader, but this view
+    // must evaluate print resource RLS as its actual caller.
+    if (relation.schema === 'public' && relation.name === 'print_data_source_form_definition_options') {
+      client = context.authorization
+        ? (await getCurrentUser(context)).client
+        : createSupabaseClient('public', context);
+    }
     const labelField = readConfigString(sourceConfig, ['labelField', 'label_field'], 'label');
     const valueField = readConfigString(sourceConfig, ['valueField', 'value_field'], 'value');
     const disabledField = readConfigString(sourceConfig, ['disabledField', 'disabled_field']);

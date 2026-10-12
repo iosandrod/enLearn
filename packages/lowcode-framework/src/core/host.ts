@@ -9,6 +9,7 @@ import {
 } from 'vue';
 
 export type LowCodeHostServiceApi = {
+  isAuthenticated?(): boolean;
   invoke<T = unknown>(
     serviceName: string,
     serviceMethod: string,

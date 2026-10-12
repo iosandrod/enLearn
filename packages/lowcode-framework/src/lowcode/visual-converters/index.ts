@@ -407,7 +407,7 @@ function createFormDesignerLayoutBlocks(
           block: { id: `form-layout-${path.join('-')}-tabs-${index}`, kind: 'tabs', tabs: [] },
           componentKey: 'vxe-tabs',
           moduleName: 'containerComponents',
-          label: 'VXE页签容器',
+          label: '页签容器',
           path: [...path, `tabs${index}`],
           props: {
             panes,
@@ -852,7 +852,7 @@ function convertRuntimeBlockToVisual(
       block,
       componentKey: 'vxe-tabs',
       moduleName: 'containerComponents',
-      label: 'VXE页签容器',
+      label: '页签容器',
       path,
       props: {
         blockId: block.id,
@@ -968,7 +968,7 @@ function convertRuntimeBlockToVisual(
     return createVisualBlock({
       block,
       componentKey: 'text',
-      moduleName: 'baseWidgets',
+      moduleName: 'businessComponents',
       label: '文本',
       path,
       props: {

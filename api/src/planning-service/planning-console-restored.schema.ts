@@ -4463,7 +4463,7 @@ export const PLANNING_CONSOLE_RESTORED_SCHEMA = {
           {
             "_vid": "vid_planning_console_tabs",
             "focus": false,
-            "label": "VXE页签容器",
+            "label": "页签容器",
             "model": {},
             "props": {
               "type": "default",
@@ -4826,7 +4826,7 @@ export const PLANNING_CONSOLE_RESTORED_SCHEMA = {
                     {
                       "_vid": "vid_planning_console_issues_tabs",
                       "focus": false,
-                      "label": "VXE页签容器",
+                      "label": "页签容器",
                       "model": {},
                       "props": {
                         "type": "default",
@@ -5146,7 +5146,7 @@ export const PLANNING_CONSOLE_RESTORED_SCHEMA = {
                     {
                       "_vid": "vid_planning_console_orders_tabs",
                       "focus": false,
-                      "label": "VXE页签容器",
+                      "label": "页签容器",
                       "model": {},
                       "props": {
                         "type": "default",
@@ -5544,7 +5544,7 @@ export const PLANNING_CONSOLE_RESTORED_SCHEMA = {
                     {
                       "_vid": "vid_planning_console_supply_tabs",
                       "focus": false,
-                      "label": "VXE页签容器",
+                      "label": "页签容器",
                       "model": {},
                       "props": {
                         "type": "default",

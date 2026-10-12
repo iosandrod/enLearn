@@ -30,6 +30,7 @@ function createClient(rpcCalls: RpcCall[]) {
 }
 
 class TestChatService extends ChatService {
+  protected override async isAdministrator() { return false; }
   constructor(private readonly fakeClient: ReturnType<typeof createClient>) {
     super();
   }
@@ -81,6 +82,7 @@ class TestChatService extends ChatService {
 }
 
 class TestPaymentService extends PaymentService {
+  protected override async isAdministrator() { return false; }
   constructor(private readonly fakeClient: ReturnType<typeof createClient>) {
     super();
   }
@@ -121,6 +123,7 @@ class TestPaymentService extends PaymentService {
 }
 
 class TestUserService extends UserService {
+  protected override async isAdministrator() { return false; }
   constructor(private readonly fakeClient: ReturnType<typeof createClient>) {
     super();
   }
