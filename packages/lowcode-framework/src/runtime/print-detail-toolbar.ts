@@ -1,5 +1,7 @@
 import type { ArrayTableToolbarButton, ArrayTableToolbarExecute } from '../lowcode/form-materials/array-table-types';
 
+export type { ArrayTableToolbarExecutionContext } from '../lowcode/form-materials/array-table-types';
+
 export type PrintDetailAction = 'fetch' | 'syncFields' | 'clear' | 'import' | 'configure' | 'delete';
 
 /** Keep the designer panel and data import dialog in the same order. */

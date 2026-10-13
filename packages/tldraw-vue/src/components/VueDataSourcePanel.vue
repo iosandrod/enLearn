@@ -1058,6 +1058,21 @@ function handleHeaderRowsUpdate(rows: Record<string, unknown>[]) {
 	syncDetailFormModel()
 }
 
+async function saveHeaderDetailTables(tables: PrintDataSourceDetailTable[]) {
+	const definition = activeDefinition.value
+	if (readonly.value || !definition) return false
+	const schema = { ...definition.schema, printDetail: tables }
+	await host.getServiceApi().invoke('lowcode', 'saveItem', {
+		resource: 'lowcode_form_definitions',
+		id: definition.id,
+		data: { schema },
+	})
+	activeDefinition.value = { ...definition, schema }
+	applyWorkspaceDetailTables(tables)
+	syncDetailFormModel()
+	return true
+}
+
 function handleHeaderRowChange(index: number) {
 	headerRowIndex.value = index
 	syncFormModel()
@@ -1252,6 +1267,7 @@ watch(
 				</div>
 				<PrintDataSourceHeaderTable v-if="headerMode === 'table'" :rows="headerRows"
 					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)" :detail-tables="detailTables"
+					:save-detail-tables="saveHeaderDetailTables"
 					:readonly="readonly" @update:rows="handleHeaderRowsUpdate" />
 				<template v-else>
 					<vxe-select v-if="headerRows.length > 1" class="data-source-panel__record-selector" :model-value="headerRowIndex" @update:model-value="handleHeaderRowChange">
