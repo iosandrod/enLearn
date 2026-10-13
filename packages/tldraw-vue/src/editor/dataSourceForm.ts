@@ -9,6 +9,7 @@ import type {
 
 export type PrintDataSourceFormSchema = LowCodeFormSchema & {
 	printDetail?: LowCodeField[] | PrintDataSourceDetailTable[]
+	printHeader?: { dataSourceScript?: string; mode?: 'append' | 'replace' }
 }
 
 export interface PrintDataSourceFormDefinition {

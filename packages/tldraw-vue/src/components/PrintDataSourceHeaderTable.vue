@@ -23,10 +23,14 @@ const props = defineProps<{
 	readonly: boolean
 	activeRowIndex?: number
 	compact?: boolean
+	busy?: boolean
 }>()
 const emit = defineEmits<{
 	'update:rows': [rows: PrintDataRow[]]
 	'select-row': [index: number]
+	'import': []
+	'fetch': []
+	'configure-script': []
 }>()
 const host = useLowCodeHost()
 const errorMessage = ref('')
@@ -64,7 +68,12 @@ const tableSchema = computed<LowCodeFormSchema>(() => ({
 			removable: false,
 			copyable: false,
 			actionWidth: 162,
-			toolbarButtons: [{ code: 'create', label: '新增行', execute: () => editRow() }],
+			toolbarButtons: [
+				{ code: 'create', label: '新增行', execute: () => editRow() },
+				{ code: 'import', label: '导入', execute: () => emit('import') },
+				{ code: 'fetch', label: '获取数据', execute: () => emit('fetch') },
+				{ code: 'configure-script', label: '设置关联脚本', execute: () => emit('configure-script') },
+			],
 			rowActions: [
 				{ code: 'edit', label: '编辑', status: 'primary' },
 				{ code: 'copy', label: '复制' },
@@ -80,7 +89,7 @@ const tableSchema = computed<LowCodeFormSchema>(() => ({
 			onRowDblclick: ({ index }: { index: number }) => {
 				if (index >= 0 && index < props.rows.length) void editRow(index)
 			},
-			rowClassName,
+			rowClassName: createRowClassName(props.activeRowIndex),
 		},
 	}],
 	actions: [],
@@ -238,12 +247,12 @@ function selectRow(index: number) {
 	if (index >= 0 && index < props.rows.length) emit('select-row', index)
 }
 
-function rowClassName({ rowIndex }: { rowIndex: number }) {
-	return rowIndex === props.activeRowIndex ? 'print-header-table__row--active' : ''
+function createRowClassName(activeRowIndex?: number) {
+	return ({ rowIndex }: { rowIndex: number }) => rowIndex === activeRowIndex ? 'print-header-table__row--active' : ''
 }
 
 async function editRow(index?: number) {
-	if (props.readonly) return
+	if (props.readonly || props.busy) return
 	errorMessage.value = ''
 	const row = index === undefined ? {} : props.rows[index]
 	const model = clone({
@@ -301,13 +310,13 @@ async function editRow(index?: number) {
 }
 
 function copyRow(index: number) {
-	if (props.readonly) return
+	if (props.readonly || props.busy) return
 	const rows = [...props.rows]
 	rows.splice(index + 1, 0, clone(rows[index]))
 	emit('update:rows', rows)
 }
 function deleteRow(index: number) {
-	if (!props.readonly) emit('update:rows', props.rows.filter((_, rowIndex) => rowIndex !== index))
+	if (!props.readonly && !props.busy) emit('update:rows', props.rows.filter((_, rowIndex) => rowIndex !== index))
 }
 </script>
 
@@ -315,7 +324,7 @@ function deleteRow(index: number) {
 	<div class="print-header-table" :class="{ 'print-header-table--compact': compact }">
 		<p class="print-header-table__hint">{{ rows.length }} 条表头记录 · {{ compact ? '点击表头行查看下方明细，双击或点击编辑修改当前记录。' : '普通列来自表单字段；点击编辑录入当前记录及明细。' }}</p>
 		<div class="print-header-table__grid">
-			<LowCodeForm :schema="tableSchema" :model-value="tableModel" :disabled="readonly" />
+			<LowCodeForm :schema="tableSchema" :model-value="tableModel" :disabled="readonly || busy" />
 		</div>
 	</div>
 </template>

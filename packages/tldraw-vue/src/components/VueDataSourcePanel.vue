@@ -31,6 +31,7 @@ import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
 import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 import { syncPrintDetailFields } from '@/editor/printDetailFieldSync'
+import { importPrintDetailData } from '@/editor/printDetailImport'
 import PrintScriptManager from './PrintRemoteDataSourceManager.vue'
 import DetailImportTemplatePicker from './DetailImportTemplatePicker.vue'
 import PrintDataSourceHeaderTable from './PrintDataSourceHeaderTable.vue'
@@ -100,6 +101,8 @@ const selectorModel = ref<Record<string, unknown>>({ formCode: '' })
 const formModel = ref<Record<string, unknown>>({})
 const headerMode = ref<'form' | 'table'>('form')
 const headerRowIndex = ref(0)
+const headerDataBusy = ref(false)
+let panelActive = true
 const readonly = useEditorValue('data source readonly', () => props.editor.getIsReadonly())
 const headerRows = computed(() => {
 	const source = editorPrintDataSource.value
@@ -886,6 +889,7 @@ async function saveDataSourceDefinition(
 		title: name || code,
 		columns: 1,
 		printDetail: detailTableDefinitions ?? existingSchema?.printDetail ?? [],
+		...(existingSchema?.printHeader ? { printHeader: existingSchema.printHeader } : {}),
 	}
 	await serviceApi.invoke('lowcode', id ? 'saveItem' : 'saveItem', {
 		resource: 'lowcode_form_definitions',
@@ -1058,6 +1062,108 @@ function handleHeaderRowsUpdate(rows: Record<string, unknown>[]) {
 	syncDetailFormModel()
 }
 
+async function handleConfigureHeaderScript() {
+	const definition = activeDefinition.value
+	if (!definition || readonly.value || headerDataBusy.value) return
+	headerDataBusy.value = true
+	try {
+		await openGlobalDialog<{ dataSourceScript: string; mode: 'append' | 'replace' }>({
+			title: '表头关联数据脚本', width: 600, className: 'print-header-script-dialog',
+			model: {
+				dataSourceScript: definition.schema.printHeader?.dataSourceScript ?? '',
+				mode: definition.schema.printHeader?.mode ?? 'append',
+			},
+			content: [{ type: 'form', form: { schema: {
+				columns: 1,
+				fields: [
+					{ field: 'dataSourceScript', label: '关联脚本编码', component: 'vxe-select',optionsCode:'print_datasource_script' ,//
+						props: { placeholder: '填写打印脚本管理中的编码；留空解除关联', } },
+					{ field: 'mode', label: '获取方式', component: 'vxe-select', options: [
+						{ label: '追加到现有表头记录', value: 'append' },
+						{ label: '替换全部表头记录及其明细', value: 'replace' },
+					] },
+				], actions: [],
+			} } }],
+			actions: [
+				{ code: 'cancel', label: '取消', role: 'cancel' },
+				{ code: 'confirm', label: '保存', role: 'confirm', status: 'primary' },
+			],
+			onConfirm: async ({ model }) => {
+				if (!panelActive || readonly.value || activeDefinition.value?.id !== definition.id) return false
+				const current = activeDefinition.value
+				const schema = { ...current.schema, printHeader: {
+					dataSourceScript: readString(model.dataSourceScript),
+					mode: model.mode === 'replace' ? 'replace' as const : 'append' as const,
+				} }
+				await host.getServiceApi().invoke('lowcode', 'saveItem', {
+					resource: 'lowcode_form_definitions', id: current.id, data: { schema },
+				})
+				if (panelActive && activeDefinition.value?.id === current.id) {
+					activeDefinition.value = { ...activeDefinition.value, schema }
+					setActionMessage('表头关联脚本已保存。')
+				}
+			},
+		})
+	} catch (error) {
+		if (panelActive) setActionMessage(error instanceof Error ? error.message : '表头关联脚本保存失败。')
+	} finally {
+		headerDataBusy.value = false
+	}
+}
+
+async function runHeaderDataAction(action: (definition: PrintDataSourceFormDefinition) => Promise<{
+	rows: Record<string, unknown>[]; mode: 'append' | 'replace'
+} | undefined>) {
+	const definition = activeDefinition.value
+	if (!definition || readonly.value || headerDataBusy.value) return
+	const source = getWorkspaceDataSource()
+	headerDataBusy.value = true
+	try {
+		const result = await action(definition)
+		if (!result || !panelActive || readonly.value || activeDefinition.value?.id !== definition.id) return
+		if (source !== getWorkspaceDataSource()) {
+			setActionMessage('表头数据已变化，本次结果未写入，请重新操作。')
+			return
+		}
+		handleHeaderRowsUpdate(result.mode === 'replace' ? result.rows : [...headerRows.value, ...result.rows])
+		setActionMessage(`已载入 ${result.rows.length} 条表头记录。`)
+	} catch (error) {
+		if (panelActive) setActionMessage(error instanceof Error ? error.message : '表头数据载入失败。')
+	} finally {
+		headerDataBusy.value = false
+	}
+}
+
+async function handleImportHeaderData() {
+	await runHeaderDataAction(async definition => {
+		const columns = getPrintDataSourceHeaderSchema(definition.schema).fields
+			.filter(field => !detailTables.value.some(table => table.field === field.field))
+			.map(field => ({ field: field.field, title: field.label || field.field }))
+		if (!columns.length) throw new Error('请先配置表头字段，再导入数据。')
+		return importPrintDetailData(host.getServiceApi(), { id: 'header', field: 'header', label: '表头', columns }, {
+			title: '导入表头数据', emptyMessage: 'Excel 中没有可导入的表头数据。',
+		})
+	})
+}
+
+async function handleFetchHeaderData() {
+	if (!readString(activeDefinition.value?.schema.printHeader?.dataSourceScript)) {
+		await handleConfigureHeaderScript()
+		return
+	}
+	await runHeaderDataAction(async definition => {
+		const result = await host.getServiceApi().invoke<unknown>('print', 'resolveDataSource', {
+			sourceCode: definition.schema.printHeader!.dataSourceScript,
+			params: { ...formModel.value },
+		})
+		const rows = Array.isArray(result) ? result
+			: isRecord(result) && Array.isArray(result.records) ? result.records
+				: isRecord(result) && Array.isArray(result.data) ? result.data : null
+		if (!rows || !rows.every(isRecord)) throw new Error('表头数据源脚本必须返回对象数组、{ records } 或 { data }。')
+		return { rows: JSON.parse(JSON.stringify(rows)), mode: definition.schema.printHeader?.mode === 'replace' ? 'replace' : 'append' }
+	})
+}
+
 async function saveHeaderDetailTables(tables: PrintDataSourceDetailTable[]) {
 	const definition = activeDefinition.value
 	if (readonly.value || !definition) return false
@@ -1178,6 +1284,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+	panelActive = false
 	window.removeEventListener('enlearn:print-data-source-import', handlePrintDataSourceImportRequest)
 	window.removeEventListener('enlearn:print-detail-action', handlePrintDetailActionRequest)
 	if (actionMessageTimer.value) clearTimeout(actionMessageTimer.value)
@@ -1268,6 +1375,8 @@ watch(
 				<PrintDataSourceHeaderTable v-if="headerMode === 'table'" :rows="headerRows"
 					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)" :detail-tables="detailTables"
 					:save-detail-tables="saveHeaderDetailTables"
+					:busy="headerDataBusy" @import="handleImportHeaderData" @fetch="handleFetchHeaderData"
+					@configure-script="handleConfigureHeaderScript"
 					:readonly="readonly" @update:rows="handleHeaderRowsUpdate" />
 				<template v-else>
 					<vxe-select v-if="headerRows.length > 1" class="data-source-panel__record-selector" :model-value="headerRowIndex" @update:model-value="handleHeaderRowChange">
@@ -1282,6 +1391,8 @@ watch(
 				<PrintDataSourceHeaderTable :rows="headerRows" compact
 					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)" :detail-tables="detailTables"
 					:save-detail-tables="saveHeaderDetailTables" :readonly="readonly" :active-row-index="headerRowIndex"
+					:busy="headerDataBusy" @import="handleImportHeaderData" @fetch="handleFetchHeaderData"
+					@configure-script="handleConfigureHeaderScript"
 					@select-row="handleHeaderRowChange" @update:rows="handleHeaderRowsUpdate" />
 				<LowCodeForm
 					v-if="detailTables.length"

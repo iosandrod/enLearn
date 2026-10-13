@@ -32,6 +32,7 @@ import {
 	getVueMaterialSectionHeightModel,
 	getVueMaterialVisibilityModel,
 	getVueMaterialSections,
+	isVueMaterialSectionVisible,
 	normalizeVueMaterialSections,
 	updateVueMaterialShapeLayout,
 	type VueMaterialShape,
@@ -178,11 +179,13 @@ const materialDataSourceFieldOptions = computed(() =>
 const activeSchema = computed(() => {
 	const code = activeFormCode.value
 	const schema = code ? formDefinitions.value[code] ?? null : null
-	if (!schema || activeFormCode.value !== propertyFormCode('vue-material')) return schema
+	if (!schema || !['vue-material', 'vue-material-section'].some((type) => code === propertyFormCode(type))) return schema
 	return {
 		...schema,
 		fields: schema.fields.map((field) =>
-			field.field === 'dataSourceField'
+			field.field === 'h' || ['pageHeaderHeight', 'tableHeaderHeight', 'tableFooterHeight', 'pageFooterHeight'].includes(field.field)
+				? { ...field, props: { ...field.props, min: 0, max: undefined } }
+				: field.field === 'dataSourceField'
 				? {
 					...field,
 					options: materialDataSourceFieldOptions.value,
@@ -839,7 +842,8 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 				: {}
 			const visibleHeightCache = Object.fromEntries(
 				getVueMaterialSections(editor, shape.id)
-					.filter((section) => section.props.zone !== 'tableBody' && section.props.h > 0)
+					.filter((section) => section.props.zone !== 'tableBody' &&
+						(section.props.h > 0 || isVueMaterialSectionVisible(editor, section)))
 					.map((section) => [section.props.zone, section.props.h])
 			)
 			const shapePartial: TLShapePartial = { ...partial }
@@ -870,8 +874,8 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			const layoutModel: Record<string, number> = {}
 			if ('x' in model) layoutModel.x = toFiniteNumber(model.x, shape.x)
 			if ('y' in model) layoutModel.y = toFiniteNumber(model.y, shape.y)
-			if ('w' in model) layoutModel.w = clampNumber(model.w, 280, 4096, toFiniteNumber(currentProps.w, 500))
-			if ('h' in model) layoutModel.h = clampNumber(model.h, 272, 4096, toFiniteNumber(currentProps.h, 500))
+			if ('w' in model) layoutModel.w = clampNumber(model.w, 100, 4096, toFiniteNumber(currentProps.w, 500))
+			if ('h' in model) layoutModel.h = Math.max(0, toFiniteNumber(model.h, toFiniteNumber(currentProps.h, 500)))
 
 			editor.run(() => {
 				if (Object.keys(shapePartial).length > 2) editor.updateShape(shapePartial)
@@ -892,7 +896,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 				const heightChanges = sections.map((section) => {
 					if (!( `${section.props.zone}Height` in model)) return null
 					const value = Number(model[`${section.props.zone}Height`])
-					return Number.isFinite(value) && value > 0
+					return Number.isFinite(value) && value >= 0
 						? { id: section.id, type: 'vue-material-section', props: { h: value } }
 						: null
 				}).filter(Boolean) as TLShapePartial[]
@@ -913,7 +917,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		apply(editor, shape, model) {
 			const currentProps = getProps(shape)
 			const propsPartial: Record<string, unknown> = {}
-			if ('h' in model) propsPartial.h = clampNumber(model.h, 24, 4096, toFiniteNumber(currentProps.h, 60))
+			if ('h' in model) propsPartial.h = Math.max(0, toFiniteNumber(model.h, toFiniteNumber(currentProps.h, 60)))
 			if ('zone' in model) propsPartial.zone = getOptionValue(model.zone, materialZoneOptions, currentProps.zone ?? 'pageHeader')
 			editor.updateShape({
 				...getCommonPartial(shape, model),

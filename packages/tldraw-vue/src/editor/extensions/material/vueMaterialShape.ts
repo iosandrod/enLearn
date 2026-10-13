@@ -58,6 +58,7 @@ const FIXED_MATERIAL_SECTION_ZONES = new Set<VueMaterialSectionZone>([
 ])
 
 const MATERIAL_CONTAINER_FRAME_META_KEY = '__materialContainerListFrame'
+const MATERIAL_SECTION_HIDDEN_META_KEY = '__materialSectionHidden'
 
 export interface VueMaterialSectionDefinition {
 	zone: VueMaterialSectionZone
@@ -74,35 +75,35 @@ export const VUE_MATERIAL_SECTION_DEFINITIONS: readonly VueMaterialSectionDefini
 		zone: 'pageHeader',
 		label: '页头',
 		defaultHeight: 60,
-		minHeight: 36,
+		minHeight: 0,
 		receivesChildren: true,
 	},
 	{
 		zone: 'tableHeader',
 		label: '表头',
 		defaultHeight: 66,
-		minHeight: 40,
+		minHeight: 0,
 		receivesChildren: true,
 	},
 	{
 		zone: 'tableBody',
 		label: '表体',
 		defaultHeight: 242,
-		minHeight: 120,
+		minHeight: 0,
 		receivesChildren: false,
 	},
 	{
 		zone: 'tableFooter',
 		label: '表尾',
 		defaultHeight: 66,
-		minHeight: 40,
+		minHeight: 0,
 		receivesChildren: true,
 	},
 	{
 		zone: 'pageFooter',
 		label: '页尾',
 		defaultHeight: 66,
-		minHeight: 36,
+		minHeight: 0,
 		receivesChildren: true,
 	},
 ]
@@ -545,13 +546,14 @@ export function normalizeVueMaterialSections(
 
 		const section = sectionsByZone.get(definition.zone)
 		const cached = Number(cachedHeights[definition.zone])
-		const configuredHeight = section?.props.h && section.props.h > 0
-			? section.props.h
-			: Number.isFinite(cached) && cached > 0 ? cached : definition.defaultHeight
-		nextCachedHeights[definition.zone] = configuredHeight
-
 		const visibilityKey = VISIBILITY_KEY_BY_ZONE[definition.zone]
 		const visible = !visibilityKey || materialMeta[visibilityKey] !== false
+		// A collapsed visible section keeps height zero; a hidden section restores
+		// its cached height when shown again.
+		const configuredHeight = section && ((visible && section.meta?.[MATERIAL_SECTION_HIDDEN_META_KEY] !== true) || section.props.h > 0)
+			? Math.max(0, section.props.h)
+			: Number.isFinite(cached) && cached >= 0 ? cached : definition.defaultHeight
+		nextCachedHeights[definition.zone] = configuredHeight
 		heightsByZone.set(
 			definition.zone,
 			visible ? Math.max(definition.minHeight, configuredHeight) : 0
@@ -568,6 +570,8 @@ export function normalizeVueMaterialSections(
 	for (const definition of VUE_MATERIAL_SECTION_DEFINITIONS) {
 		const section = sectionsByZone.get(definition.zone)
 		const h = heightsByZone.get(definition.zone) ?? 0
+		const visibilityKey = VISIBILITY_KEY_BY_ZONE[definition.zone]
+		const hidden = Boolean(visibilityKey && materialMeta[visibilityKey] === false)
 
 		if (!section) {
 			missingSections.push({
@@ -576,6 +580,7 @@ export function normalizeVueMaterialSections(
 				parentId: material.id,
 				x: 0,
 				y,
+				meta: { [MATERIAL_SECTION_HIDDEN_META_KEY]: hidden },
 				props: {
 					w: targetWidth,
 					h,
@@ -588,13 +593,15 @@ export function normalizeVueMaterialSections(
 			!approximatelyEqual(section.y, y) ||
 			!approximatelyEqual(section.props.w, targetWidth) ||
 			!approximatelyEqual(section.props.h, h) ||
-			section.props.label !== definition.label
+			section.props.label !== definition.label ||
+			section.meta?.[MATERIAL_SECTION_HIDDEN_META_KEY] !== hidden
 		) {
 			changes.push({
 				id: section.id,
 				type: 'vue-material-section',
 				x: 0,
 				y,
+				meta: { ...section.meta, [MATERIAL_SECTION_HIDDEN_META_KEY]: hidden },
 				props: {
 					w: targetWidth,
 					h,
@@ -748,11 +755,11 @@ export function getVueMaterialSectionHeightModel(editor: Editor, materialId: TLS
 		VUE_MATERIAL_SECTION_DEFINITIONS
 			.filter((definition) => FIXED_MATERIAL_SECTION_ZONES.has(definition.zone))
 			.map((definition) => {
-				const sectionHeight = sectionsByZone.get(definition.zone)?.props.h ?? 0
+				const section = sectionsByZone.get(definition.zone)
 				const cachedHeight = Number(cachedHeights[definition.zone])
-				const height = sectionHeight > 0
-					? sectionHeight
-					: Number.isFinite(cachedHeight) && cachedHeight > 0
+				const height = section && ((isVueMaterialSectionVisible(editor, section) && section.meta?.[MATERIAL_SECTION_HIDDEN_META_KEY] !== true) || section.props.h > 0)
+					? Math.max(0, section.props.h)
+					: Number.isFinite(cachedHeight) && cachedHeight >= 0
 						? cachedHeight
 						: definition.defaultHeight
 				return [definition.zone + 'Height', height]

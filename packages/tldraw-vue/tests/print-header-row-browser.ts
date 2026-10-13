@@ -27,7 +27,7 @@ const editor = panelMode ? createVueEditor(document.getElementById('editor')!, {
 const source = editor ? getEditorPrintDataSource(editor) : undefined
 const definition = {
 	id: 'row-test', code: 'print-designer.datasource.row-test', name: '表头行测试', enabled: true, table_name: null,
-	schema: { ...schema, printDetail: tables },
+	schema: { ...schema, printDetail: tables, printHeader: { dataSourceScript: '', mode: 'append' as 'append' | 'replace' } },
 }
 if (source) source.value = {
 	type: 'inline', formCode: definition.code, detailField: 'items', detailTables: tables,
@@ -44,10 +44,15 @@ const serviceApi = {
 			fetches.push(JSON.parse(JSON.stringify(payload)))
 			if (deferFetch) await new Promise<void>(resolve => { releaseFetch = resolve })
 			if (failFetch) throw new Error('测试获取失败')
+			if (payload.sourceCode === 'test-header') return { data: [{ code: 'C', extra: { keep: 'fetched' }, items: [{ amount: 330 }], notes: [{ amount: 'C-note' }] }] }
 			const code = payload.params.code
 			return { records: [{ amount: payload.params.detailField === 'notes' ? `${code}-fetched-note` : code === 'A' ? 101 : 220, tag: `${code}-${payload.params.detailField}` }], metadata: [{ field: 'amount', title: '金额' }, { field: 'tag', title: '标记' }] }
 		}
-		if (method === 'saveItem') { saves.push(JSON.parse(JSON.stringify(payload))); return {} }
+		if (method === 'saveItem') {
+			saves.push(JSON.parse(JSON.stringify(payload)))
+			if (payload.id === definition.id && payload.data?.schema) definition.schema = JSON.parse(JSON.stringify(payload.data.schema))
+			return {}
+		}
 		if (payload.resource !== 'lowcode_form_definitions') return []
 		const code = payload.filters?.code
 		if (code === definition.code) return [structuredClone(definition)]
@@ -80,7 +85,11 @@ Object.assign(window, { headerRowTest: {
 	fetches: () => fetches,
 	saves: () => saves,
 	events: () => ({ detailEvents, importEvents }),
-	setReadonly: (value: boolean) => { readonly.value = value },
+	setReadonly: (value: boolean) => { readonly.value = value; editor?.updateInstanceState({ isReadonly: value }) },
+	setRows: (value: typeof rows.value) => {
+		if (source?.value?.type === 'inline') source.value = { ...source.value, rows: value }
+		else rows.value = value
+	},
 	selectedRow: () => selectedRow.value,
 	deferFetch: (value: boolean) => { deferFetch = value },
 	failFetch: (value: boolean) => { failFetch = value },

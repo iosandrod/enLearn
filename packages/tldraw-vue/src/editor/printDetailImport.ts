@@ -15,7 +15,11 @@ type DetailImportConfig = {
 }
 
 /** This import owns its file picker and returns data without touching workspace records. */
-export async function importPrintDetailData(serviceApi: LowCodeHostServiceApi, table: PrintDataSourceDetailTable) {
+export async function importPrintDetailData(
+	serviceApi: LowCodeHostServiceApi,
+	table: PrintDataSourceDetailTable,
+	options: { title?: string; emptyMessage?: string } = {},
+) {
 	let schema: LowCodeFormSchema = {
 		columns: 2,
 		fields: [
@@ -39,7 +43,7 @@ export async function importPrintDetailData(serviceApi: LowCodeHostServiceApi, t
 		// Keep local import available when the form catalog cannot be reached.
 	}
 	const result = await openGlobalDialog<DetailImportConfig>({
-		title: '导入明细数据', width: 680,
+		title: options.title ?? '导入明细数据', width: 680,
 		model: { hasFieldRow: true, hasChineseRow: false, sheetName: '', mode: 'append' },
 		content: [
 			{ type: 'form', form: { schema } },
@@ -83,6 +87,6 @@ export async function importPrintDetailData(serviceApi: LowCodeHostServiceApi, t
 	if (config.hasChineseRow) dataRows.shift()
 	const rows = dataRows.filter(row => row.some(value => value.trim()))
 		.map(row => Object.fromEntries(columns.map((column, index) => [column.field, row[indexes[index]] ?? ''])))
-	if (!rows.length) throw new Error('Excel 中没有可导入的明细数据。')
+	if (!rows.length) throw new Error(options.emptyMessage ?? 'Excel 中没有可导入的明细数据。')
 	return { rows, mode: config.mode }
 }

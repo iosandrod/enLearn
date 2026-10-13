@@ -383,6 +383,7 @@ const explicitTableConfig = computed(() => {
     'minHeight',
     'maxHeight',
     'rowHeight',
+    'rowClassName',
     'headerHeight',
     'headerRowHeight',
     'footerHeight',
