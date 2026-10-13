@@ -179,6 +179,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import {
   Handle,
   Position,

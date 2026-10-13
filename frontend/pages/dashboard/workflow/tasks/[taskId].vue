@@ -114,6 +114,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 type WorkflowTaskStatus = 'pending' | 'claimed' | 'completed' | 'canceled';
 type ProcessInstanceStatus = 'running' | 'approved' | 'rejected' | 'canceled' | 'terminated' | 'failed';
 

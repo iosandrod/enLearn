@@ -136,6 +136,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { VxeUI } from 'vxe-pc-ui';
 import { confirmLowCodePage } from '@enlearn/lowcode-framework/runtime';
 

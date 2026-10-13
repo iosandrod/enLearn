@@ -239,6 +239,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { VxeUI } from 'vxe-pc-ui';
 import type { FileFolder, FileObject } from '~/composables/useFilesApi';
 

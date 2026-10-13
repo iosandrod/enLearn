@@ -2,9 +2,13 @@
 
 本方案使用 6 张核心表，按用户最新确认复用 `public.planning_item` 作为物料主数据，不新建物料表。所有 `item_id` 使用 `(account_id, item_id)` 复合外键关联已有物料，不能引用其他账套的物料。物料编码、名称和单位沿用 `planning_item` 的 `name`、`display_name`、`uom` 等实际字段，不在 WMS 中复制主数据。
 
-建表及过账函数：[wms-core-schema.sql](wms-core-schema.sql)。本次交付数据库核心建表稿，不包含菜单、低代码页面、Nest 服务注册或外部系统同步。
+建表及过账函数参考：[wms-core-schema.sql](wms-core-schema.sql)。正式部署迁移为 `supabase/migrations/20261013140000_wms_shrink_to_six_core_tables.sql`，包含旧表清理、六表建表、JSON 注释、资源元数据、菜单和低代码页面；未修改前后端代码。
 
-2026-10-11 已核对用户指定目标库：`planning_item` 含 327 条物料，`id`、`account_id` 均为 UUID，已有 `(account_id,id)` 唯一约束，满足本稿关联要求。目标库已有 35 张完整版 `wms_*` 表，其中仓库、库位、库存余额和库存流水与本稿同名但结构不同；核对时这 4 张表为空。核心建表稿不放入自动迁移目录，尚未在远端执行；字段注释迁移已单独执行。SQL 采用普通 `create table`，遇到同名表会失败并回滚；建表前仍需明确旧 WMS 的兼容或替换方案，不能静默覆盖。
+2026-10-13 已在用户指定目标库提交精简迁移。旧版 35 张 WMS 表均为空；迁移在加锁后再次检查数据，使用显式 `DROP TABLE ... RESTRICT` 删除，再创建六张核心表，净减少 29 张表。`planning_item` 的 327 条物料数据保持不变。其他模块的表及低代码页面保持不变。旧的入库、出库、调拨、盘点和调整列表及编辑页共 10 页已删除，关联的资源和菜单同步清理。
+
+“出入库管理”菜单现在包含出入库单据、仓库管理、库位管理、库存余额、库存流水五个低代码列表；单据、仓库、库位各有一个编辑页，共八页。五类库存业务由统一单据的 `type` 区分。物料选择器通过 admin 服务的 `planning_item` 资源读取已有物料，不新建物料表。资源名必须与数据库表名一致；`20261013150000_wms_material_resource_name_fix.sql` 将最初错误的 `wms_material` 别名及页面引用统一为 `planning_item`，planning 服务的同名资源保持不变。新增的物料 RLS 策略只提供 WMS 权限下的账套内读取。库存余额与流水不提供页面编辑，过账使用下述数据库函数；本次没有增加页面过账按钮。
+
+迁移前的完整 PostgreSQL 17.6 自定义格式备份保存于 `E:\enLearn-backups\wms-shrink-20261013\before-wms-shrink.dump`。备份目录的 `README.md` 记录校验值及恢复说明。正式迁移只适用于已核对的 35 张空旧表，重复运行或发现非空表、意外表集合、外部依赖时会中止。
 
 ## 命名及公共字段
 
@@ -68,9 +72,9 @@ select public.wms_post_document(:account_id, :document_id);
 
 ## 接入范围及兼容
 
-6 张表均启用 RLS，权限复用现有 `is_active_account_member` 与 `has_account_permission`。迁移登记 `wms.core.view` 和 `wms.core.manage`，不自动给角色授权。普通认证用户可以按权限维护档案和草稿；库存余额和流水仅能读取，过账通过函数完成。
+6 张表均启用 RLS，权限复用现有 `is_active_account_member` 与 `has_account_permission`。迁移登记 `wms.core.view` 和 `wms.core.manage`，将已有角色的 `wms.view` / `wms.manage` 授权映射到新权限，再删除旧权限；不向原本没有 WMS 权限的角色新增授权。普通认证用户可以按权限维护档案和草稿；库存余额和流水仅能读取，过账通过函数完成。
 
-执行建表稿前需已有 `basejump.accounts`、`auth.users`、`planning_item`（`id uuid`、`account_id uuid`，含 `(account_id,id)` 唯一约束）、`admin_permissions` 和现有权限函数。目标库的物料关联要求已核对通过。本稿不改动物料表；远端执行仍需解决同名 WMS 表冲突。
+执行新库建表参考脚本前需已有 `basejump.accounts`、`auth.users`、`planning_item`（`id uuid`、`account_id uuid`，含 `(account_id,id)` 唯一约束）、`admin_permissions` 和现有权限函数。目标库已核对并完成同名旧表替换。正式迁移不改动物料字段及业务数据，只补充 WMS 只读 RLS 策略与实际外键关系的 JSON 注释。
 
 首期没有独立的物料、批次、入库/出库头行、盘点头行、库存预留、条码、托盘、拣货、上架任务、接口日志等表，也不实现序列号、保质期、库存成本或订单预占。批次仅作为数量维度。
 
@@ -82,4 +86,4 @@ select public.wms_post_document(:account_id, :document_id);
 
 PostgreSQL 16 隔离验证覆盖：6 表建表及过账函数、模拟物料表的复合外键、跨账套引用拦截、RLS、出入库/调拨/盘点/调整、重复过账、库存不足时整单回滚、并发扣减防超卖、余额与流水对账和流水不可变。测试使用模拟 `planning_item`，其关联键与目标库已核对一致，不在远端创建测试业务数据。
 
-字段注释迁移已在隔离库验证 6 表共 72 个字段全部为合法 JSON，重复执行通过；已在用户指定目标库事务执行并提交，读回确认现有 4 表共 64 个字段全部包含 `title`、`type`、`align`、`description`。目标库的 `wms_document` 和 `wms_document_line` 尚未创建，相关注释随核心建表稿部署。此次远端变更仅涉及字段 COMMENT。
+正式提交前在 PostgreSQL 17.6 目标库完整演练迁移并回滚，使用现有认证用户、账套和物料验证入库 5、出库 2、重复过账后库存仍为 3，以及普通认证角色不能直接修改库存余额。所有测试业务数据已回滚。八个页面通过项目低代码 schema 校验；未执行浏览器交互验收。提交后读回确认六张核心表和全部 72 个字段都有合法 JSON 注释；其他模块表集合、页面 ID/编码及物料数据校验值保持不变。

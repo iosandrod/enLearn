@@ -284,6 +284,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { VxeUI } from 'vxe-pc-ui';
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue';
 

@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import type { AiProposal } from '../../types/ai';
 import { useAiAssistant } from '../../composables/useAiAssistant';
 

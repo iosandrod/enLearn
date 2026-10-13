@@ -487,6 +487,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {VxeUI} from 'vxe-pc-ui';
 import { useServiceApi } from '../composables/useServiceApi';

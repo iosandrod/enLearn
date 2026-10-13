@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { onMounted, ref } from 'vue';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../../utils/lowCodePages';

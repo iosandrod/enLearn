@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
 import {
   loadLowCodeFormDefinition,

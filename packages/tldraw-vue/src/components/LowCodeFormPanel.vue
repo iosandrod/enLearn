@@ -59,6 +59,7 @@ import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
 
 type ShapeFormModel = Record<string, unknown>
+type MaterialColumnSelection = { materialShapeId: TLShape['id']; field: string }
 
 type ShapeFormDescriptor = {
 	title: string
@@ -88,8 +89,14 @@ const formDefinitionsLoading = ref(true)
 const formDefinitionError = ref('')
 const formDefinitionIds = ref<Record<string, string>>({})
 const materialColumnFormCode = propertyFormCode('vue-material-column')
-const selectedMaterialColumn = ref<{ materialShapeId: TLShape['id']; field: string } | null>(null)
+const selectedMaterialColumn = ref<MaterialColumnSelection | null>(null)
 const columnFormModel = ref<ShapeFormModel>({})
+const columnFormRef = ref<{ commitPendingValues(): void } | null>(null)
+const columnModelUpdate = computed(() => {
+	// Keep each rendered form tied to its selection, including updates emitted during blur.
+	const selection = selectedMaterialColumn.value
+	return (value: ShapeFormModel) => handleColumnModelUpdate(value, selection)
+})
 const imageSourceError = ref('')
 useVxeMessage(imageSourceError, 'error')
 const designingForm = ref(false)
@@ -382,17 +389,21 @@ function handleMultiShapeFieldChange(payload: {
 	applyMultiShapeFormModel({ [field]: payload.value })
 }
 
-function handleColumnModelUpdate(value: ShapeFormModel) {
+function handleColumnModelUpdate(
+	value: ShapeFormModel,
+	selection: MaterialColumnSelection | null = selectedMaterialColumn.value,
+) {
 	if (!showMaterialColumnTab.value || props.editor.getIsReadonly()) return
-	columnFormModel.value = value
+	if (!selection || selection !== selectedMaterialColumn.value) return
 	const shape = selectedMaterialShape.value
-	const selection = selectedMaterialColumn.value
 	const source = editorPrintDataSource.value
-	if (!shape || !selection) return
+	const column = selectedMaterialColumnValue.value
+	if (!shape || !column) return
 	const field = String(shape.props.dataSourceField ?? '').trim()
 	if (!field || selection.materialShapeId !== shape.id) return
+	columnFormModel.value = value
 	const nextColumn = {
-		...(selectedMaterialColumnValue.value ?? {}),
+		...column,
 		...(isRecord(cloneSerializableValue(value)) ? cloneSerializableValue(value) as Record<string, unknown> : {}),
 	} as Record<string, unknown>
 	for (const key of ['props', 'formatter']) {
@@ -1047,6 +1058,9 @@ function onMaterialColumnSelect(event: Event) {
 	const shape = props.editor.getShape(detail?.materialShapeId as TLShape['id'])
 	const field = typeof detail?.field === 'string' ? detail.field.trim() : ''
 	if (shape?.type !== 'vue-material' || !field) return
+	const current = selectedMaterialColumn.value
+	if (current?.materialShapeId === shape.id && current.field === field) return
+	columnFormRef.value?.commitPendingValues()
 	selectedMaterialColumn.value = { materialShapeId: shape.id, field }
 }
 
@@ -1074,12 +1088,12 @@ watch(
 )
 
 watch(
-	[selectedShape, selectedMaterialColumn, editorPrintDataSource, () => props.workspaceRevision],
+	[selectedMaterialColumnValue, () => props.workspaceRevision],
 	() => {
 		const column = selectedMaterialColumnValue.value
 		columnFormModel.value = column ? createMaterialColumnFormModel(column) : {}
 	},
-	{ immediate: true },
+	{ immediate: true, flush: 'sync' },
 )
 
 function createMaterialColumnFormModel(column: Record<string, unknown>): ShapeFormModel {
@@ -1741,10 +1755,11 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 		</div>
 		<div v-else-if="props.columnOnly && showMaterialColumnTab && materialColumnSchema" class="lowcode-form-panel__column-form">
 			<LowCodeForm
-				:key="`${formKey}:column-only:${selectedMaterialColumn?.field ?? ''}`"
+				ref="columnFormRef"
+				:key="`${formKey}:column-only:${selectedMaterialColumn?.materialShapeId ?? ''}:${selectedMaterialColumn?.field ?? ''}`"
 				:model-value="columnFormModel"
 				:schema="materialColumnSchema"
-				@update:model-value="handleColumnModelUpdate"
+				@update:model-value="columnModelUpdate"
 			/>
 		</div>
 		<div v-else-if="!props.columnOnly && emptyMessage" class="lowcode-form-panel__empty">{{ emptyMessage }}</div>

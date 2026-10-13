@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { signUpSchema } from '~/schemas/auth';
 import { savePendingSignup } from '~/utils/pending-signup';
 import { SITE_NAME, SITE_SHORT_NAME } from '../config/site';

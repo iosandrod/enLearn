@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compileScript, parse } from '@vue/compiler-sfc';
 
 const frontendRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = resolve(frontendRoot, '..');
@@ -58,6 +59,14 @@ const forbiddenBindings = [
 
 for (const file of (await Promise.all(sourceRoots.map(sourceFiles))).flat()) {
   const source = await readFile(file, 'utf8');
+  if (file.startsWith(frontendRoot) && extname(file) === '.vue' && /\buseVxeMessage\s*\(/.test(source)) {
+    const { descriptor } = parse(source, { filename: file });
+    const script = compileScript(descriptor, { id: file });
+    assert.ok(
+      script.imports?.useVxeMessage && !script.imports.useVxeMessage.isType,
+      `${file} must import useVxeMessage at runtime without relying on auto-import scanning.`,
+    );
+  }
   assert.doesNotMatch(source, /VxeUI\.modal\.alert\(/, `${file} still uses a blocking alert for feedback.`);
   for (const binding of forbiddenBindings) {
     assert.doesNotMatch(

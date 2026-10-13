@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import type { NotificationMessage } from '~/composables/useNotificationApi';
 
 const notificationApi = useNotificationApi();

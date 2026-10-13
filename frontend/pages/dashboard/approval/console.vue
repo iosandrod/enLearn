@@ -83,6 +83,7 @@
 </template>
 
 <script setup lang="ts">
+import { useVxeMessage } from '~/composables/useVxeMessage';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import {
   ApprovalRuntimeViewer,
