@@ -21,18 +21,70 @@ const props = defineProps<{
 	detailTables: readonly PrintDataSourceDetailTable[]
 	saveDetailTables: (tables: PrintDataSourceDetailTable[]) => Promise<boolean>
 	readonly: boolean
+	activeRowIndex?: number
+	compact?: boolean
 }>()
-const emit = defineEmits<{ 'update:rows': [rows: PrintDataRow[]] }>()
+const emit = defineEmits<{
+	'update:rows': [rows: PrintDataRow[]]
+	'select-row': [index: number]
+}>()
 const host = useLowCodeHost()
 const errorMessage = ref('')
 useVxeMessage(errorMessage, 'error')
-// VXE assigns row keys internally; keep those keys out of the workspace data.
-const displayRows = computed(() => JSON.parse(JSON.stringify(props.rows)) as PrintDataRow[])
 const columns = computed(() => [
 	...props.schema.fields.filter(field => !props.detailTables.some(table => table.field === field.field))
 		.map(field => ({ field: field.field, title: field.label || field.field, detail: false })),
 	...props.detailTables.map(table => ({ field: table.field, title: table.label, detail: true })),
 ])
+// This display model is never saved: row actions edit the original records,
+// preserving nested detail arrays and fields absent from the header schema.
+const tableModel = computed(() => ({
+	records: props.rows.map(row => Object.fromEntries(columns.value.map(column => {
+		const value = row[column.field]
+		return [
+			column.field,
+			column.detail ? `${Array.isArray(value) ? value.length : 0} 条明细` : cellText(row, column.field),
+		]
+	}))),
+}))
+const tableSchema = computed<LowCodeFormSchema>(() => ({
+	columns: 1,
+	fields: [{
+		field: 'records',
+		label: '表头记录',
+		component: 'lc-array-table',
+		showTitle: false,
+		props: {
+			columns: columns.value.map(column => ({
+				field: column.field, title: column.title, component: 'lc-text', minWidth: 150,
+			})),
+			height: '100%',
+			showSeq: true,
+			movable: false,
+			removable: false,
+			copyable: false,
+			actionWidth: 162,
+			toolbarButtons: [{ code: 'create', label: '新增行', execute: () => editRow() }],
+			rowActions: [
+				{ code: 'edit', label: '编辑', status: 'primary' },
+				{ code: 'copy', label: '复制' },
+				{ code: 'delete', label: '删除', status: 'danger' },
+			],
+			onRowAction: ({ actionCode, index }: { actionCode: string; index: number }) => {
+				if (index < 0 || index >= props.rows.length) return
+				if (actionCode === 'edit') void editRow(index)
+				else if (actionCode === 'copy') copyRow(index)
+				else if (actionCode === 'delete') deleteRow(index)
+			},
+			onRowClick: ({ index }: { index: number }) => selectRow(index),
+			onRowDblclick: ({ index }: { index: number }) => {
+				if (index >= 0 && index < props.rows.length) void editRow(index)
+			},
+			rowClassName,
+		},
+	}],
+	actions: [],
+}))
 type RowForm = {
 	commitPendingValues(): void
 	validate(): Promise<boolean>
@@ -182,6 +234,14 @@ function cellText(row: PrintDataRow, field: string) {
 	return typeof value === 'object' ? JSON.stringify(value) : String(value)
 }
 
+function selectRow(index: number) {
+	if (index >= 0 && index < props.rows.length) emit('select-row', index)
+}
+
+function rowClassName({ rowIndex }: { rowIndex: number }) {
+	return rowIndex === props.activeRowIndex ? 'print-header-table__row--active' : ''
+}
+
 async function editRow(index?: number) {
 	if (props.readonly) return
 	errorMessage.value = ''
@@ -252,42 +312,27 @@ function deleteRow(index: number) {
 </script>
 
 <template>
-	<div class="print-header-table">
-		<div class="print-header-table__toolbar">
-			<span>{{ rows.length }} 条表头记录</span>
-			<button type="button" class="lowcode-form-panel__action" :disabled="readonly" @click="editRow()">新增行</button>
-		</div>
-		<p class="print-header-table__hint">普通列来自表单字段；明细列保留数组，点击编辑录入当前记录的明细。</p>
+	<div class="print-header-table" :class="{ 'print-header-table--compact': compact }">
+		<p class="print-header-table__hint">{{ rows.length }} 条表头记录 · {{ compact ? '点击表头行查看下方明细，双击或点击编辑修改当前记录。' : '普通列来自表单字段；点击编辑录入当前记录及明细。' }}</p>
 		<div class="print-header-table__grid">
-			<vxe-table :data="displayRows" border auto-resize height="auto" @cell-dblclick="({ rowIndex }: { rowIndex: number }) => editRow(rowIndex)">
-				<vxe-column type="seq" title="序号" width="52" />
-				<vxe-column v-for="column in columns" :key="column.field" :field="column.field" :title="column.title" min-width="150">
-					<template #default="{ row, rowIndex }">
-						<button v-if="column.detail" type="button" class="lowcode-form-panel__action" :disabled="readonly" @click="editRow(rowIndex)">
-							{{ Array.isArray(row[column.field]) ? row[column.field].length : 0 }} 条明细 · 编辑
-						</button>
-						<span v-else>{{ cellText(row, column.field) }}</span>
-					</template>
-				</vxe-column>
-				<vxe-column title="操作" width="162" fixed="right">
-					<template #default="{ rowIndex }">
-						<div class="print-header-table__actions">
-							<button type="button" :disabled="readonly" @click="editRow(rowIndex)">编辑</button>
-							<button type="button" :disabled="readonly" @click="copyRow(rowIndex)">复制</button>
-							<button type="button" :disabled="readonly" @click="deleteRow(rowIndex)">删除</button>
-						</div>
-					</template>
-				</vxe-column>
-			</vxe-table>
+			<LowCodeForm :schema="tableSchema" :model-value="tableModel" :disabled="readonly" />
 		</div>
 	</div>
 </template>
 
 <style scoped>
 .print-header-table { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 10px; padding: 12px; }
-.print-header-table__toolbar, .print-header-table__actions { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .print-header-table__hint { margin: 0; font-size: 12px; color: #64748b; line-height: 1.6; }
 .print-header-table__grid { flex: 1; min-height: 0; }
-.print-header-table__actions button { padding: 3px; border: 0; background: transparent; color: #1d73d8; cursor: pointer; }
-.print-header-table__actions button:disabled { color: #94a3b8; cursor: default; }
+.print-header-table__grid :deep(.lc-form),
+.print-header-table__grid :deep(.lc-form-grid),
+.print-header-table__grid :deep(.lc-form-grid-cell),
+.print-header-table__grid :deep(.vxe-form--item),
+.print-header-table__grid :deep(.vxe-form--item-inner),
+.print-header-table__grid :deep(.vxe-form--item-content),
+.print-header-table__grid :deep(.lc-field) { height: 100%; min-height: 0; }
+.print-header-table__grid :deep(.vxe-form--item-inner) { padding: 0; }
+.print-header-table--compact { height: 220px; flex: 0 0 220px; padding: 0; gap: 6px; }
+.print-header-table--compact :deep(.vxe-body--row) { cursor: pointer; }
+.print-header-table :deep(.print-header-table__row--active > .vxe-body--column) { background: #eaf3ff; }
 </style>

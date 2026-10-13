@@ -18,6 +18,9 @@
       :style="formLayoutStyle"
       @tab-change="(key) => emit('tab-change', key)"
     >
+      <template v-if="$slots['tabs-extra']" #tabs-extra="slotProps">
+        <slot name="tabs-extra" v-bind="slotProps" />
+      </template>
       <template #field="{ field }">
         <vxe-form-item
           v-bind="resolveFormItemProps(field)"

@@ -1279,19 +1279,10 @@ watch(
 				</template>
 			</div>
 			<div v-else class="data-source-panel__detail" role="tabpanel">
-				<vxe-select v-if="headerRows.length > 1" class="data-source-panel__record-selector" :model-value="headerRowIndex" @update:model-value="handleHeaderRowChange">
-					<vxe-option v-for="(_, index) in headerRows" :key="index" :label="`表头记录 ${index + 1}`" :value="index" />
-				</vxe-select>
-				<div class="data-source-panel__detail-toolbar">
-					<div class="data-source-panel__detail-actions">
-
-						<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary"
-							@click="handleAddDetailTable">
-							<i class="ri-add-line" aria-hidden="true" />
-							<span>添加明细</span>
-						</button>
-					</div>
-				</div>
+				<PrintDataSourceHeaderTable :rows="headerRows" compact
+					:schema="getPrintDataSourceHeaderSchema(activeDefinition.schema)" :detail-tables="detailTables"
+					:save-detail-tables="saveHeaderDetailTables" :readonly="readonly" :active-row-index="headerRowIndex"
+					@select-row="handleHeaderRowChange" @update:rows="handleHeaderRowsUpdate" />
 				<LowCodeForm
 					v-if="detailTables.length"
 					:key="`${activeDefinition.code}:${headerRowIndex}`"
@@ -1301,9 +1292,18 @@ watch(
 					class="data-source-panel__detail-form"
 					@update:model-value="handleDetailFormUpdate"
 					@tab-change="handleDetailTabChange"
-				/>
+				>
+					<template #tabs-extra>
+						<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary"
+							:disabled="readonly" @click="handleAddDetailTable">
+							<i class="ri-add-line" aria-hidden="true" />
+							<span>添加明细</span>
+						</button>
+					</template>
+				</LowCodeForm>
 				<div v-else class="lowcode-form-panel__state">
-					暂未添加明细子表，请先点击“添加子表”。
+					<button type="button" class="lowcode-form-panel__action lowcode-form-panel__action--primary"
+						:disabled="readonly" @click="handleAddDetailTable">添加明细</button>
 				</div>
 			</div>
 		</div>

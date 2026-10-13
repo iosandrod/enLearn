@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <div class="lc-array-table__viewport">
+    <div class="lc-array-table__viewport" v-if="_show">
       <vxe-table
       ref="tableRef"
       class="lc-array-table__grid"
@@ -855,7 +855,10 @@ function copyRow(row: Record<string, unknown>) {
   commitRows();
   emitConfiguredEvent('onRowCopy', rowEventPayload(copy));
 }
-
+const _show = ref(false);
+onMounted(() => {
+  setTimeout(() => (_show.value = true), 100);//
+})
 function moveRow(row: Record<string, unknown>, offset: number) {
   if (isReadonly.value) return;
   const location = findRowLocation(row);

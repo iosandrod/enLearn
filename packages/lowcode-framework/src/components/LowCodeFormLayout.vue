@@ -16,6 +16,9 @@
             :fields-by-key="fieldsByKey"
             @tab-change="(key) => emit('tab-change', key)"
           >
+            <template v-if="$slots['tabs-extra']" #tabs-extra="slotProps">
+              <slot name="tabs-extra" v-bind="slotProps" />
+            </template>
             <template #field="{ field }">
               <slot name="field" :field="field" />
             </template>
@@ -29,6 +32,9 @@
         :fields-by-key="fieldsByKey"
         @tab-change="(key) => emit('tab-change', key)"
       >
+        <template v-if="$slots['tabs-extra']" #tabs-extra="slotProps">
+          <slot name="tabs-extra" v-bind="slotProps" />
+        </template>
         <template #field="{ field }">
           <slot name="field" :field="field" />
         </template>
@@ -45,6 +51,9 @@
           :padding="false"
           @update:model-value="(key) => setActiveTab(node, index, String(key))"
         >
+          <template v-if="$slots['tabs-extra']" #tab-suffix>
+            <slot name="tabs-extra" :node="node" />
+          </template>
           <vxe-tab-pane
             v-for="tab in node.tabs"
             :key="tab.key"
@@ -60,6 +69,9 @@
                 :fields-by-key="fieldsByKey"
                 @tab-change="(key) => emit('tab-change', key)"
               >
+                <template v-if="$slots['tabs-extra']" #tabs-extra="slotProps">
+                  <slot name="tabs-extra" v-bind="slotProps" />
+                </template>
                 <template #field="{ field }">
                   <slot name="field" :field="field" />
                 </template>
@@ -106,6 +118,7 @@ const readInjectedFormValues = inject<() => Record<string, unknown>>(
 
 defineSlots<{
   field(props: { field: LowCodeField }): unknown;
+  'tabs-extra'?(props: { node: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }> }): unknown;
 }>();
 
 const activeTabKeys = reactive<Record<string, string>>({});

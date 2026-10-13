@@ -6079,6 +6079,7 @@ button {
 	flex-direction: column;
 	padding: 12px;
 	background: #f8fafc;
+	gap: 12px;
 }
 .data-source-panel__detail >:last-child {
 	flex:1;
