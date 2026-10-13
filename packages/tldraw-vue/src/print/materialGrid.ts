@@ -179,22 +179,29 @@ function createMaterialGridPage(
 	listUsesFrame: boolean,
 ): MaterialGridPage {
 	const contentHeight = rows.reduce((total, row) => total + row.height, 0)
-	// Keep the full table-body height so the preview has the same blank area and
-	// footer position as the canvas when the current page has fewer rows.
-	const renderedHeight = Math.max(0, tableBody.props.h)
-	const unusedHeight = Math.max(0, tableBody.props.h - Math.min(
-		tableBody.props.h,
-		Math.max(headerHeight + contentHeight, headerHeight)
-	))
+	// Table previews end at the last actual row. Container lists retain their
+	// frame layout; their items may occupy multiple columns on the same line.
+	const renderedHeight = listLayout
+		? Math.max(0, tableBody.props.h)
+		: Math.max(0, Math.min(tableBody.props.h, headerHeight + contentHeight))
+	const unusedHeight = Math.max(0, tableBody.props.h - renderedHeight)
 	const updates: TLShapePartial[] = []
 
-	if (tableFooter && unusedHeight > 0) {
-		const footerY = tableBody.y + renderedHeight
+	if (unusedHeight > 0) {
 		updates.push({
-			id: tableFooter.id,
+			id: tableBody.id,
 			type: 'vue-material-section',
-			y: footerY,
+			props: { h: renderedHeight },
 		})
+		if (tableFooter) {
+			// Descendants keep their local dimensions/coordinates and move with
+			// the section, including nested frames, groups and locked elements.
+			updates.push({
+				id: tableFooter.id,
+				type: 'vue-material-section',
+				y: tableBody.y + renderedHeight,
+			})
+		}
 	}
 
 	return {

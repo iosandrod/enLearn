@@ -1,4 +1,4 @@
-import { reactive, ref } from 'vue';
+import { reactive, ref, unref } from 'vue';
 import { createPrintDetailToolbar, requestPrintDetailAction } from './print-detail-toolbar';
 import type { ArrayTableToolbarExecute } from '../lowcode/form-materials/array-table-types';
 import LowCodePageRenderer from '../components/LowCodePageRenderer.vue';
@@ -25,6 +25,8 @@ import {
   openGlobalDialog,
   type GlobalDialogConfig,
   type GlobalDialogResult,
+  type GlobalDialogFormConfig,
+  type GlobalDialogMaybeRef,
 } from './global-dialog-core';
 import type {
   LowCodePageRuntimeGridState,
@@ -123,6 +125,11 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
   disablePageAutoLoad?: boolean;
   includeEventHistory?: boolean;
   maxEventHistory?: number;
+  /** Interactive LowCodeForm mode (no page runtime/submission). Schema still comes from formCode. */
+  formOptions?: Omit<GlobalDialogFormConfig, 'schema'>;
+  /** Customize a private reactive copy, e.g. supply editor-specific options. */
+  configureForm?: (schema: LowCodeFormSchema) => void;
+  confirmDisabled?: GlobalDialogMaybeRef<boolean>;
   onRuntimeEvent?: (
     event: LowCodeRuntimeEvent,
     payload: LowCodePageConfirmPayload,
@@ -149,7 +156,8 @@ async function resolveFormDefinitionPage(config: LowCodePageConfirmDialogConfig)
     throw new Error(`数据源表单“${formCode}”不存在或配置无效。`);
   }
 
-  const formSchema = createImportFormSchema(schema as Record<string, unknown>, formCode);
+  const formSchema = reactive(createImportFormSchema(cloneValue(schema), formCode));
+  config.configureForm?.(formSchema);
   const formId = `confirm-form-${formCode.replace(/[^a-zA-Z0-9_-]+/g, '-')}`;
   const initialValues = config.formInitialValues?.[formId]
     ?? config.formInitialValues?.[formCode]
@@ -703,6 +711,9 @@ export async function openLowCodePageConfirmDialog(
   config: LowCodePageConfirmDialogConfig,
 ): Promise<LowCodePageConfirmDialogResult> {
     const page = prepareConfirmPage(await resolveReferencePage(config), config);
+    if (config.formCode && config.formOptions) {
+      return openInteractiveFormConfirmDialog(page, config);
+    }
     const resultAction = readString(config.confirmAction ?? config.resultAction, 'confirm');
     const requireSelection = config.requireSelection === true;
     const includeEventHistory = config.includeEventHistory !== false;
@@ -816,6 +827,7 @@ export async function openLowCodePageConfirmDialog(
           label: config.confirmLabel ?? '确定',
           role: 'confirm',
           status: 'primary',
+          disabled: config.confirmDisabled,
           onClick: async () => {
             let payload = createPayload();
             if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
@@ -875,4 +887,66 @@ export async function openLowCodePageConfirmDialog(
     });
     return result as LowCodePageConfirmDialogResult;
 
+}
+
+/** Reuses GlobalDialogHost's LowCodeForm validation and field-change lifecycle. */
+async function openInteractiveFormConfirmDialog(
+  page: LowCodePageRecord,
+  config: LowCodePageConfirmDialogConfig,
+): Promise<LowCodePageConfirmDialogResult> {
+  if (config.submitOnConfirm) throw new Error('Interactive confirmForm does not support submitOnConfirm.');
+  const block = page.schema.blocks[0];
+  if (block?.kind !== 'form') throw new Error('confirmForm requires a form definition.');
+  const formOptions = config.formOptions!;
+  const events: LowCodeRuntimeEvent[] = [];
+  let lastEvent: LowCodeRuntimeEvent | undefined;
+  const createPayload = (values: Record<string, unknown>): LowCodePageConfirmPayload => ({
+    page,
+    resolvedData: {},
+    formModels: { [block.id]: cloneValue(values) },
+    searchFilters: {},
+    gridStates: {},
+    selectedRows: [],
+    rows: [],
+    events: [...events],
+    ...(lastEvent ? { event: lastEvent, lastEvent } : {}),
+  });
+  return await openGlobalDialog({
+    ...(config.dialog ?? {}),
+    title: config.title ?? page.title,
+    width: config.width ?? 'min(560px, calc(100vw - 24px))',
+    height: config.height,
+    className: mergeDialogClassName(config.className ?? config.dialog?.className),
+    props: { destroyOnClose: true, ...(config.dialog?.props ?? {}), ...(config.props ?? {}) },
+    model: cloneValue(unref(formOptions.model) ?? block.initialValues ?? {}),
+    form: {
+      ...formOptions,
+      schema: block.schema,
+      onFieldChange: async (change, context) => {
+        await formOptions.onFieldChange?.(change, context);
+        const event: LowCodeRuntimeEvent = {
+          name: 'form.fieldChange', blockId: block.id, blockKind: 'form', timestamp: Date.now(),
+          payload: { ...change, values: cloneValue(unref(formOptions.model) ?? context.model) },
+        };
+        lastEvent = event;
+        if (config.includeEventHistory !== false) {
+          events.push(event);
+          const max = Math.max(1, Number(config.maxEventHistory ?? 50));
+          if (events.length > max) events.splice(0, events.length - max);
+        }
+        await config.onRuntimeEvent?.(event, createPayload(unref(formOptions.model) ?? context.model));
+      },
+    },
+    showFooter: true,
+    actions: [
+      { code: 'cancel', label: config.cancelLabel ?? '取消', role: 'cancel' },
+      { code: 'confirm', label: config.confirmLabel ?? '确定', role: 'confirm', status: 'primary', disabled: config.confirmDisabled },
+    ],
+    onConfirm: async (context) => {
+      const values = unref(formOptions.model) ?? context.model;
+      const payload = createPayload(values);
+      if ((await config.beforeConfirm?.(payload)) === false) return false;
+      return { close: true, action: config.confirmAction ?? config.resultAction ?? 'confirm', values: cloneValue(values), payload };
+    },
+  }) as LowCodePageConfirmDialogResult;
 }

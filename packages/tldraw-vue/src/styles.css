@@ -2697,8 +2697,6 @@ button {
 
 .vue-material-shape {
 	z-index: 0;
-	border: calc(1.5px * var(--inverse-zoom)) solid #111827;
-	
 	box-shadow:
 		0 calc(1px * var(--inverse-zoom)) calc(3px * var(--inverse-zoom)) rgb(15 23 42 / 0.22),
 		0 0 0 calc(1px * var(--inverse-zoom)) rgb(255 255 255 / 0.72) inset;

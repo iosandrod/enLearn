@@ -4,6 +4,8 @@
 
 本次仅接入本地预览及其浏览器打印链路。服务端预览和 PDF 导出尚未接入。原有字段绑定、命名高级表达式及节点 JavaScript 表达式保持兼容。
 
+“插入公式”通过 `confirmForm({ formCode: 'print-designer.formula' })` 打开，表单字段、布局和静态选项存储于数据库 `lowcode_form_definitions`；明细源、字段、分页选项和示例结果由当前编辑器动态提供。插入后的公式仍作为节点文本随模板保存，不单独创建公式历史记录。部署时执行迁移 `supabase/migrations/20261013100000_print_formula_confirm_form.sql`，或运行 `pnpm --dir api exec tsx scripts/apply-print-formula-confirm-form.ts` 应用并验证表单定义。
+
 | 示例 | 结果含义 |
 | --- | --- |
 | `{{TOTAL(items.amount)}}` | 当前单据 items 明细的金额合计，SUM 为别名 |

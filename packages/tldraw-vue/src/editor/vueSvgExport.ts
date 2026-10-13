@@ -581,7 +581,6 @@ export function createVueTableSvg(
 export function createVueMaterialSvg(shape: VueMaterialSvgShape): SvgExportNode {
 	const width = Math.max(1, shape.props.w)
 	const height = Math.max(1, shape.props.h)
-	const hideContainerListBorder = shape.props.containerList === true && shape.props.showBorder === false
 
 	return createElement(
 		'g',
@@ -590,8 +589,7 @@ export function createVueMaterialSvg(shape: VueMaterialSvgShape): SvgExportNode 
 			width,
 			height,
 			fill: '#ffffff',
-			stroke: hideContainerListBorder ? 'none' : VUE_MATERIAL_TABLE_BORDER_COLOR,
-			strokeWidth: 1.5,
+			stroke: 'none',
 		})
 	)
 }
