@@ -26,7 +26,6 @@ export {
 	getPrintNodeExpression,
 	getPrintNodeExpressionId,
 	PRINT_NODE_EXPRESSION_ID_META_KEY,
-	PRINT_NODE_EXPRESSION_META_KEY,
 } from './nodeExpression'
 export { PrintManager } from './PrintManager'
 export { PrintCancelledError, PrintQueue } from './queue'

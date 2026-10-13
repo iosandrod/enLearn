@@ -80,6 +80,20 @@ export class PrintRenderer {
 		return jobs
 	}
 
+	createExpressionContext(config: PrintJobConfig, job: PrintRenderJob, index: number, total: number): PrintExpressionContext {
+		const currentTables = getCurrentTablesData(job.materialGridPlan, job.materialGridPageIndex ?? index)
+		return {
+			row: job.row,
+			record: job.row,
+			currentDetailRows: getPrintPreviewDetailRows(job.row),
+			data: config.data ?? [],
+			currentTable: currentTables,
+			currentTables,
+			dataSource: config.dataSource,
+			index, pageNo: index + 1, total,
+		}
+	}
+
 	async renderPage(
 		config: PrintJobConfig,
 		row: Record<string, unknown>,
@@ -93,17 +107,7 @@ export class PrintRenderer {
 		} = {}
 	): Promise<PrintPageRenderResult> {
 		const shapeIds = this.getTemplateShapeIds(config)
-		const context = {
-			row,
-			currentDetailRows: getPrintPreviewDetailRows(row),
-			data: config.data ?? [],
-			currentTable: getCurrentTablesData(options.materialGridPlan, options.materialGridPageIndex ?? index),
-			currentTables: getCurrentTablesData(options.materialGridPlan, options.materialGridPageIndex ?? index),
-			dataSource: config.dataSource,
-			index,
-			pageNo: index + 1,
-			total,
-		}
+		const context = this.createExpressionContext(config, { row, ...options }, index, total)
 		const updates: TLShapePartial[] = []
 		const temporaryListFrameShapes = options.materialGridPlan
 			? this.createContainerListFrameShapes(options.materialGridPlan, options.materialGridPageIndex ?? index, context, config)

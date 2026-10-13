@@ -1,5 +1,6 @@
 import { evaluateNamedPrintExpression } from './expressions.ts'
 import { getPrintPreviewDetailRows } from './dataSource.ts'
+import { evaluatePrintFormula, isPrintFormula } from './formula.ts'
 import type { PrintExpressionConfig, PrintExpressionContext, PrintNamedExpression } from './types'
 
 const EXPRESSION_PATTERN = /{{\s*([^{}]+?)\s*}}/g
@@ -10,9 +11,14 @@ export function resolveTemplateString(
 	config: PrintExpressionConfig = {}
 ) {
 	return template.replace(EXPRESSION_PATTERN, (raw, expression: string) => {
-		const value = resolveExpression(expression.trim(), context, config)
-		if (value === undefined) return resolveMissingValue(raw, expression.trim(), context, config)
-		return formatExpressionValue(value)
+		try {
+			const value = resolveExpression(expression.trim(), context, config)
+			if (value === undefined) return resolveMissingValue(raw, expression.trim(), context, config)
+			return formatExpressionValue(value)
+		} catch (error) {
+			if (!isPrintFormula(expression)) throw error
+			throw new Error(`公式“${raw}”解析失败：${error instanceof Error ? error.message : String(error)}`)
+		}
 	})
 }
 
@@ -46,9 +52,13 @@ function resolveExpression(
 	config: PrintExpressionConfig
 ) {
 	const [pathExpression, ...filterExpressions] = expression.split('|').map((part) => part.trim())
-	let value = resolvePathExpression(pathExpression, context, config)
+	const formula = isPrintFormula(pathExpression)
+	let value = formula ? evaluatePrintFormula(pathExpression, context) : resolvePathExpression(pathExpression, context, config)
 
 	for (const filterExpression of filterExpressions) {
+		if (formula && !/^(upper|lower|json|fixed(?::\d+)?)$/.test(filterExpression)) {
+			throw new Error(`不支持公式格式化“${filterExpression}”`)
+		}
 		value = applyFilter(value, filterExpression)
 	}
 
@@ -103,7 +113,9 @@ function applyFilter(value: unknown, filterExpression: string) {
 	if (name === 'lower') return formatExpressionValue(value).toLowerCase()
 	if (name === 'json') return JSON.stringify(value)
 	if (name === 'fixed') {
+		if (value == null) return value
 		const digits = Number(args[0] ?? 2)
+		if (!Number.isInteger(digits) || digits < 0 || digits > 100) throw new Error('小数位必须是 0 到 100 之间的整数')
 		const number = Number(value)
 		return Number.isFinite(number) ? number.toFixed(Number.isFinite(digits) ? digits : 2) : value
 	}

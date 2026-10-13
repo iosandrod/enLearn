@@ -182,6 +182,8 @@ export type ExpressionMissingValue =
 
 export interface PrintExpressionContext {
 	row: PrintDataRow
+	/** Complete parent record, retained when a repeated list replaces the current row. */
+	record?: PrintDataRow
 	/** Current record for each detail source being iterated, keyed by source field. */
 	currentDetailRows?: Record<string, PrintDataRow>
 	data?: readonly PrintDataRow[]

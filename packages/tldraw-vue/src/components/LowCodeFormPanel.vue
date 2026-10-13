@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
+import VueFormulaEditorDialog from './VueFormulaEditorDialog.vue'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import {
 	$$formDesigner,
@@ -24,7 +25,7 @@ import type {
 	LowCodeFormSchema,
 	LowCodeOption,
 } from '@enlearn/lowcode-framework/types/lowcode'
-import { isShapeId, type Editor, type TLShape, type TLShapePartial } from '@tldraw/editor'
+import { isShapeId, type Editor, type TLShape, type TLShapeId, type TLShapePartial } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useVxeMessage } from '@enlearn/lowcode-framework/utils/vxe-message'
 import {
@@ -83,6 +84,9 @@ const props = withDefaults(
 )
 
 const formModel = ref<ShapeFormModel>({})
+const formulaShapeId = ref<TLShapeId | null>(null)
+const formulaFormRef = ref<{ commitPendingValues(): void } | null>(null)
+const formulaReadonly = useEditorValue('formula insertion readonly', () => props.editor.getIsReadonly())
 const multiShapeEditedFields = new Set<string>()
 const formDefinitions = ref<Record<string, LowCodeFormSchema>>({})
 const formDefinitionsLoading = ref(true)
@@ -361,6 +365,21 @@ function handleModelUpdate(value: ShapeFormModel) {
 	if (shape.type === 'vue-image' && usesUploadedImageSource(activeSchema.value)) {
 		void hydrateUploadedImageShape(shape.id, readImageFileId(value.src))
 	}
+}
+
+function openFormulaEditor() {
+	formulaFormRef.value?.commitPendingValues()
+	const shape = selectedShape.value
+	if (shape && typeof getProps(shape).text === 'string' && !props.editor.getIsReadonly()) formulaShapeId.value = shape.id
+}
+
+function insertFormula(formula: string) {
+	const shape = formulaShapeId.value ? props.editor.getShape(formulaShapeId.value) : undefined
+	if (!shape || props.editor.getIsReadonly() || typeof getProps(shape).text !== 'string') return
+	props.editor.markHistoryStoppingPoint('insert print formula')
+	props.editor.updateShape({ id: shape.id, type: shape.type, props: { text: `${getProps(shape).text}${formula}` } } as TLShapePartial)
+	formulaShapeId.value = null
+	syncFormModel()
 }
 
 function handleMultiShapeFieldInteraction(event: Event) {
@@ -1765,11 +1784,27 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 		<div v-else-if="!props.columnOnly && emptyMessage" class="lowcode-form-panel__empty">{{ emptyMessage }}</div>
 		<LowCodeForm
 			v-else-if="!props.columnOnly && activeSchema"
+			ref="formulaFormRef"
 			:key="formKey"
 			:model-value="formModel"
 			:schema="activeSchema"
 			@update:model-value="handleModelUpdate"
 			@field-change="handleMultiShapeFieldChange"
-		/>
+		>
+			<template #field-extra="{ field }">
+				<button v-if="field.field === 'text' && selectedShape && typeof getProps(selectedShape).text === 'string'"
+					type="button" class="lowcode-form-panel__formula-button" :disabled="formulaReadonly" @click="openFormulaEditor">
+					<i class="ri-functions" aria-hidden="true" /> 插入公式
+				</button>
+			</template>
+		</LowCodeForm>
+		<VueFormulaEditorDialog v-if="formulaShapeId" :key="formulaShapeId" :editor="editor" :shape-id="formulaShapeId"
+			:workspace-revision="workspaceRevision" :get-workspace-template-config="getWorkspaceTemplateConfig"
+			@close="formulaShapeId = null" @insert="insertFormula" />
 	</section>
 </template>
+
+<style scoped>
+.lowcode-form-panel__formula-button { align-self: start; margin-top: 6px; padding: 4px 8px; border: 1px solid #bfdbfe; border-radius: 5px; background: #eff6ff; color: #1d4ed8; font-size: 12px; cursor: pointer; }
+.lowcode-form-panel__formula-button:disabled { opacity: .5; cursor: default; }
+</style>

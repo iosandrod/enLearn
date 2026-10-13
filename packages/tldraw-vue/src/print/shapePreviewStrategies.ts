@@ -17,7 +17,12 @@ abstract class ShapePreviewStrategy implements PrintShapePreviewStrategy {
 
 	resolve(shape: TLShape, context: PrintExpressionContext, config?: PrintExpressionConfig) {
 		if (!this.supports(shape)) return null
-		const resolvedProps = this.resolveProps(shape, context, config)
+		let resolvedProps: TLShape['props'] | null
+		try {
+			resolvedProps = this.resolveProps(shape, context, config)
+		} catch (error) {
+			throw new Error(`节点 ${shape.id} 的打印模板解析失败：${error instanceof Error ? error.message : String(error)}`)
+		}
 		if (!resolvedProps) return null
 
 		const nodeExpressionResult = evaluatePrintNodeExpression(shape, context)

@@ -38,6 +38,7 @@
             @patch-model="(payload) => patchFieldValues(field, payload)"
             @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
+          <slot name="field-extra" :field="field" />
         </vxe-form-item>
       </template>
     </LowCodeFormLayout>
@@ -68,6 +69,7 @@
             @patch-model="(payload) => patchFieldValues(field, payload)"
             @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
+          <slot name="field-extra" :field="field" />
         </vxe-form-item>
       </div>
     </div>

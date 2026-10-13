@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Editor, TLContent, TLPageId, TLShapeId } from '@tldraw/editor'
+import type { Editor, TLContent, TLPageId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { VxeUI } from 'vxe-pc-ui'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
@@ -7,11 +7,7 @@ import {
 	TopMenuController,
 	type TopMenuGridActionId,
 } from '@/editor/interactions/TopMenuController'
-import { isVueMaterialShape } from '@/editor/extensions/material/vueMaterialShape'
-import {
-	getPrintDataSourceDetailRows,
-} from '@/editor/dataSourceForm'
-import { getMaterialColumns } from '@/editor/materialColumnOperations'
+import { createLocalPrintJobConfig } from '@/print/localConfig'
 import {
 	cloneVueTemplateContent,
 	cloneVueTemplateRecord,
@@ -35,16 +31,10 @@ import {
 	ensurePrintExpressionsLoaded,
 	type PrintExpressionConfig,
 	type PrintJobConfig,
-	type PrintMaterialGridCollection,
-	type PrintMaterialGridColumn,
-	type PrintMaterialGridConfig,
 	type PrintPageRenderResult,
 } from '@/print'
 import { useEditorValue } from '@/vue/useEditorValue'
-import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
-import { vueMaterialRowDefaults } from '@/editor/defaults'
 import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
-import type { PrintDataSourceConfig } from '@/print/types'
 import { ToolbarController } from '@/editor/interactions/ToolbarController'
 import type { CanvasTool, VueGeoShape } from '@/editor/interactions/types'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
@@ -105,21 +95,6 @@ let printPreviewResizeObserver: ResizeObserver | null = null
 const controller = new TopMenuController(props.editor)
 const editorPrintDataSource = getEditorPrintDataSource(props.editor)
 const host = useLowCodeHost()
-
-const PRINT_SAMPLE_ROWS = [] as any
-
-const PRINT_MATERIAL_SAMPLE_COLUMNS: PrintMaterialGridColumn[] = [
-
-] as any
-
-const PRINT_MATERIAL_SAMPLE_ROWS = Array.from({ length: 23 }, (_, index) => {
-	const no = index + 1
-
-	return {}
-})
-
-const DEFAULT_PRINT_PAGE_SIZE_MM = { w: 80, h: 80 }
-const DEFAULT_PRINT_PX_PER_MM = DEFAULT_PX_PER_MM
 
 type TemplatePageContent = { id: TLPageId; name: string; content: TLContent }
 type TemplateDocumentContent = VueTemplateDocument
@@ -504,109 +479,7 @@ function goToNextPrintPreviewPage() {
 }
 
 function createPrintJobConfig(expression?: PrintExpressionConfig): PrintJobConfig {
-	const shapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	const materialGrids = createMaterialGridConfigs(shapeIds, editorPrintDataSource.value)
-	const printPage = getCurrentPrintPageConfig()
-
-	return {
-		previewSettings: props.getWorkspaceTemplateConfig?.()?.previewSettings,
-		template: {
-			shapeIds,
-			pageBounds: printPage.pageBounds,
-			pxPerMm: printPage.pxPerMm,
-			materialGrids,
-		},
-		data: materialGrids
-			? [PRINT_SAMPLE_ROWS[0] ?? {}]
-			: (PRINT_SAMPLE_ROWS.length ? PRINT_SAMPLE_ROWS : [{}]),
-		dataSource: editorPrintDataSource.value,
-		expression,
-		page: {
-			widthMm: printPage.pageSizeMm.w,
-			heightMm: printPage.pageSizeMm.h,
-			copies: 1,
-			background: true,
-			backgroundStyle: printPage.background,
-		},
-		export: {
-			format: 'png',
-			pixelRatio: 2,
-			padding: 0,
-		},
-		printer: {
-			type: 'browser',
-			title: '打印预览',
-		},
-	}
-}
-
-function getCurrentPrintPageConfig() {
-	const workspace = props.getWorkspaceTemplateConfig?.()
-	const pxPerMm = workspace?.pxPerMm ?? DEFAULT_PRINT_PX_PER_MM
-	const pageBounds = workspace?.pageBounds
-	const pageSizeMm =
-		workspace?.pageSizeMm ??
-		(pageBounds
-			? {
-					w: pageBounds.w / pxPerMm,
-					h: pageBounds.h / pxPerMm,
-				}
-			: DEFAULT_PRINT_PAGE_SIZE_MM)
-
-	return {
-		pageSizeMm,
-		pageBounds:
-			pageBounds ??
-			{
-				x: 0,
-				y: 0,
-				w: pageSizeMm.w * pxPerMm,
-				h: pageSizeMm.h * pxPerMm,
-			},
-		pxPerMm,
-		background: workspace?.background,
-	}
-}
-
-function createMaterialGridConfigs(
-	shapeIds: readonly TLShapeId[],
-	dataSource?: PrintDataSourceConfig
-): PrintMaterialGridCollection | undefined {
-	const materialGrids: Record<string, PrintMaterialGridConfig> = {}
-	const hasConfiguredDataSource =
-		dataSource?.type === 'inline' && typeof dataSource.formCode === 'string'
-
-	for (const shapeId of shapeIds) {
-		const shape = props.editor.getShape(shapeId)
-		if (!isVueMaterialShape(shape)) continue
-		const dataSourceField = String(shape.props.dataSourceField ?? '').trim()
-		const isBound = Boolean(hasConfiguredDataSource && dataSourceField)
-		const inlineDetail = isBound ? getPrintDataSourceDetailRows(dataSource, dataSourceField) : []
-		const configuredColumns = getMaterialColumns(dataSource, dataSourceField, shape.props.columns)
-		const columns = shape.props.columns !== undefined || configuredColumns.length
-			? configuredColumns
-			: (isBound ? [] : PRINT_MATERIAL_SAMPLE_COLUMNS)
-		const data = isBound ? inlineDetail : []
-		const headerRowHeight = shape.props.headerRowHeight ?? vueMaterialRowDefaults.headerRowHeight
-		const bodyRowHeight = shape.props.bodyRowHeight ?? vueMaterialRowDefaults.bodyRowHeight
-		materialGrids[shape.id] = {
-			data,
-			columns,
-			headerHeight: Number.isFinite(headerRowHeight) && headerRowHeight > 0
-				? headerRowHeight
-				: vueMaterialRowDefaults.headerRowHeight,
-			minRowHeight: Number.isFinite(bodyRowHeight) && bodyRowHeight > 0
-				? bodyRowHeight
-				: vueMaterialRowDefaults.bodyRowHeight,
-			fontSize: 12,
-			lineHeight: 14,
-			cellPaddingX: 6,
-			cellPaddingY: 5,
-			emptyText: isBound ? '' : '',
-		}
-	}
-
-	return Object.keys(materialGrids).length ? materialGrids : undefined
+	return createLocalPrintJobConfig(props.editor, props.getWorkspaceTemplateConfig?.(), editorPrintDataSource.value, expression)
 }
 
 async function toggleTemplateMenu(event?: MouseEvent) {

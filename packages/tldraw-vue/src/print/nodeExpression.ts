@@ -2,7 +2,6 @@ import type { TLShape } from '@tldraw/editor'
 import { geoOptions } from '../editor/shapeProps/options.ts'
 import type { PrintExpressionContext } from './types'
 
-export const PRINT_NODE_EXPRESSION_META_KEY = 'printExpression'
 export const PRINT_NODE_EXPRESSION_ID_META_KEY = 'printExpressionId'
 
 type NodeExpressionFunction = (context: Readonly<PrintExpressionContext>) => unknown
@@ -12,9 +11,6 @@ const VUE_GEO_SHAPES = new Set(geoOptions.map(({ value }) => value))
 const expressionFunctionCache = new Map<string, NodeExpressionFunction>()
 
 export function getPrintNodeExpression(shape: Pick<TLShape, 'meta'> & { props?: unknown }) {
-	const metadataSource = shape.meta?.[PRINT_NODE_EXPRESSION_META_KEY]
-	if (typeof metadataSource === 'string' && metadataSource.trim()) return metadataSource
-
 	const props = shape.props as Record<string, unknown> | undefined
 	const propertySource = props?.expression
 	return typeof propertySource === 'string' ? propertySource : ''

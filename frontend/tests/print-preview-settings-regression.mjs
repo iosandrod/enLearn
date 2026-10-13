@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [designer, panel, canvas, templateStore, topMenu, renderer, materialGrid, prefetch, migration] = await Promise.all([
+const [designer, panel, canvas, templateStore, topMenu, localConfig, renderer, materialGrid, prefetch, migration] = await Promise.all([
   readFile(new URL('../../packages/tldraw-vue/src/TldrawVue.vue', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/tldraw-vue/src/components/VuePreviewSettingsPanel.vue', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/tldraw-vue/src/components/VueCanvas.vue', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/tldraw-vue/src/editor/templateStore.ts', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/tldraw-vue/src/components/VueTopLeftMenu.vue', import.meta.url), 'utf8'),
+  readFile(new URL('../../packages/tldraw-vue/src/print/localConfig.ts', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/tldraw-vue/src/print/renderer.ts', import.meta.url), 'utf8'),
   readFile(new URL('../../packages/tldraw-vue/src/print/materialGrid.ts', import.meta.url), 'utf8'),
   readFile(new URL('../utils/printDesignerLowCode.ts', import.meta.url), 'utf8'),
@@ -22,7 +23,8 @@ assert.match(panel, /applyWorkspaceTemplateConfig\?\.\(\{ previewSettings:/);
 assert.match(canvas, /previewSettings: previewSettings\.value/);
 assert.match(canvas, /hasOwnProperty\.call\(config, 'previewSettings'\)/);
 assert.match(templateStore, /previewSettings\?: PrintPreviewSettings/);
-assert.match(topMenu, /previewSettings: props\.getWorkspaceTemplateConfig\?\.\(\)\?\.previewSettings/);
+assert.match(topMenu, /createLocalPrintJobConfig\(props\.editor, props\.getWorkspaceTemplateConfig\?\.\(\)/);
+assert.match(localConfig, /previewSettings: workspace\?\.previewSettings/);
 assert.match(renderer, /config\.previewSettings\?\.mode === 'data'/);
 assert.match(materialGrid, /selectedMaterialId/);
 assert.match(prefetch, /print-designer\.preview-settings/);
