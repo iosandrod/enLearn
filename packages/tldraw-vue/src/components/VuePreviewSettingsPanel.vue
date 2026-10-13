@@ -59,13 +59,13 @@ const schema = computed(() => definition.value ? {
 	}),
 } : null)
 const selectionMessage = computed(() => {
-	if (model.value.mode === 'component') {
-		if (!materialOptions.value.length) return '请先在当前画布添加物料表格组件。'
-		if (!materialOptions.value.some(option => option.value === model.value.materialId)) return '已选组件不在当前画布中，请重新选择。'
-	} else {
-		if (!detailOptions.value.length) return '请先配置表头或明细数据源。'
-		if (!detailOptions.value.some(option => option.value === model.value.detailField)) return '已选分页数据源不存在，请重新选择。'
-	}
+	// if (model.value.mode === 'component') {
+	// 	if (!materialOptions.value.length) return '请先在当前画布添加物料表格组件。'
+	// 	if (!materialOptions.value.some(option => option.value === model.value.materialId)) return '已选组件不在当前画布中，请重新选择。'
+	// } else {
+	// 	if (!detailOptions.value.length) return '请先配置表头或明细数据源。'
+	// 	if (!detailOptions.value.some(option => option.value === model.value.detailField)) return '已选分页数据源不存在，请重新选择。'
+	// }
 	return ''
 })
 useVxeMessage(selectionMessage, 'warning')
