@@ -72,7 +72,8 @@ router.beforeEach(async (to) => {
 
   if (to.meta.auth) {
     await auth.init();
-    if (!auth.user.value || !auth.activeAccount.value) return '/signin';
+    const isDashboardRoute = to.path === '/dashboard' || to.path.startsWith('/dashboard/');
+    if (isDashboardRoute && (!auth.user.value || !auth.activeAccount.value)) return '/signin';
   }
 
   if (to.meta.guest) {

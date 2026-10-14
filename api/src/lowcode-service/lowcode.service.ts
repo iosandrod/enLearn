@@ -295,6 +295,9 @@ export class LowCodeService extends BaseService {
     const pageCode = readString(postData.pageCode ?? postData.page_code);
     if (!pageCode) throw new BadRequestException('pageCode is required.');
 
+    // Saved search models belong to a user; anonymous pages use their default filters.
+    if (!context.authorization?.trim()) return [];
+
     const { client } = await getCurrentUser(context);
     const { data, error } = await client
       .from('admin_search_models')

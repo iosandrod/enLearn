@@ -139,6 +139,9 @@ export class ServiceGatewayController {
       !contextAuthorization && !accountId;
     const allowMetadataPublicRead =
       serviceMethod === 'listItems' && (!contextAuthorization || !accountId);
+    const allowAnonymousSearchModelsRead =
+      serviceName === 'lowcode' && serviceMethod === 'listSearchModels' &&
+      !contextAuthorization?.trim();
     // Submission authentication is controlled by each form's database policy.
     const allowFormSubmission = serviceName === 'lowcode' && serviceMethod === 'submitForm';
 
@@ -152,7 +155,7 @@ export class ServiceGatewayController {
             serviceName,
             accountId: DEFAULT_ANONYMOUS_ACCOUNT_ID
           }
-        : allowMetadataPublicRead || allowFormSubmission
+        : allowMetadataPublicRead || allowFormSubmission || allowAnonymousSearchModelsRead
           ? { authorization: contextAuthorization, requestId, serviceName }
         : (await requireActiveAccount(
             { authorization: contextAuthorization, requestId, serviceName },

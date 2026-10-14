@@ -266,10 +266,10 @@ function redirectToSignIn() {
 }
 
 function clearExpiredAuthSession() {
-  const hadSession = Boolean(getStoredAccessToken() || getStoredRefreshToken());
   clearAuthSession();
 
-  if (hadSession || window.location.pathname.startsWith('/dashboard')) {
+  const path = window.location.pathname;
+  if (path === '/dashboard' || path.startsWith('/dashboard/')) {
     redirectToSignIn();
   }
 }

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
 import { ServiceGatewayController } from './service-gateway.controller';
+import { LowCodeService } from '../lowcode-service/lowcode.service';
 
 async function main() {
   const invocations: Array<Record<string, unknown>> = [];
@@ -86,7 +87,45 @@ async function main() {
     (error: unknown) => error instanceof UnauthorizedException,
   );
 
-  console.log('Service gateway public reads and form submission routing tests passed.');
+  const lowcode = new LowCodeService();
+  const searchModelsController = new ServiceGatewayController({
+    async invoke(serviceName: string, method: string, postData: Record<string, unknown>, context: Record<string, unknown>) {
+      assert.equal(serviceName, 'lowcode');
+      return lowcode.execute(method, postData, context);
+    },
+  } as never);
+  for (const authorization of [undefined, '', '   ']) {
+    for (const accountId of [undefined, '00000000-0000-4000-8000-000000000001']) {
+      const response = await searchModelsController.service(
+        { serviceName: 'lowcode', serviceMethod: 'listSearchModels', postData: { pageCode: 'print-templates' } },
+        authorization, undefined, accountId,
+      );
+      assert.deepEqual(response, {
+        success: true, serviceName: 'lowcode', serviceMethod: 'listSearchModels', data: [],
+      }, 'Anonymous search-model hydration must succeed, even with a leftover account header.');
+    }
+  }
+  assert.deepEqual(await lowcode.execute('listSearchModels', { page_code: 'print-templates' }, {}), []);
+  await assert.rejects(
+    searchModelsController.service({ serviceName: 'lowcode', serviceMethod: 'listSearchModels', postData: {} }),
+    (error: unknown) => error instanceof BadRequestException && error.message === 'pageCode is required.',
+  );
+  for (const method of ['saveSearchModel', 'createSearchModel']) {
+    await assert.rejects(
+      searchModelsController.service({ serviceName: 'lowcode', serviceMethod: method, postData: {} }),
+      (error: unknown) => error instanceof UnauthorizedException,
+    );
+  }
+  await assert.rejects(
+    searchModelsController.service(
+      { serviceName: 'lowcode', serviceMethod: 'listSearchModels', postData: { pageCode: 'print-templates' } },
+      'Bearer authenticated-user',
+    ),
+    (error: unknown) => error instanceof UnauthorizedException,
+    'Authenticated requests must still require an active account.',
+  );
+
+  console.log('Service gateway public reads, anonymous search models, and form submission routing tests passed.');
 }
 
 void main().catch((error) => {

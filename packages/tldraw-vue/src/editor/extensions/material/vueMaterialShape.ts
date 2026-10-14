@@ -3,9 +3,12 @@ import {
 	Group2d,
 	Rectangle2d,
 	Vec,
+	createBindingId,
 	createShapeId,
 	resizeBox,
 	type Editor,
+	type TLAsset,
+	type TLBinding,
 	type TLResizeInfo,
 	type TLShape,
 	type TLShapeId,
@@ -58,7 +61,14 @@ const FIXED_MATERIAL_SECTION_ZONES = new Set<VueMaterialSectionZone>([
 ])
 
 const MATERIAL_CONTAINER_FRAME_META_KEY = '__materialContainerListFrame'
+const MATERIAL_CONTAINER_CACHE_META_KEY = '__materialContainerCache'
 const MATERIAL_SECTION_HIDDEN_META_KEY = '__materialSectionHidden'
+
+type MaterialContainerCache = {
+	shapes: TLShape[]
+	bindings: TLBinding[]
+	assets: TLAsset[]
+}
 
 export interface VueMaterialSectionDefinition {
 	zone: VueMaterialSectionZone
@@ -669,19 +679,72 @@ function syncVueMaterialContainerFrame(editor: Editor, material: VueMaterialShap
 		.find((section) => section.props.zone === 'tableBody')
 	if (!tableBody) return
 
-	const frame = getVueMaterialContainerFrame(editor, tableBody.id)
-	const generatedFrame = frame?.meta?.[MATERIAL_CONTAINER_FRAME_META_KEY] === true
+	const frames = editor.getSortedChildIdsForParent(tableBody.id)
+		.map((id) => editor.getShape(id))
+		.filter((shape): shape is VueFrameShape => shape?.type === 'vue-frame')
 	if (material.props.containerList !== true) {
-		if (generatedFrame && frame.opacity !== 0) {
-			editor.updateShape({ id: frame.id, type: 'vue-frame', opacity: 0 } as TLShapePartial)
+		if (!frames.length) return
+		const shapeIds = editor.getShapeAndDescendantIds(frames.map((frame) => frame.id))
+		const shapes = [...shapeIds].map((id) => editor.getShape(id))
+			.filter((shape): shape is TLShape => Boolean(shape))
+		const bindings = new Map<TLBinding['id'], TLBinding>()
+		const assets = new Map<TLAsset['id'], TLAsset>()
+		for (const shape of shapes) {
+			if ('assetId' in shape.props && shape.props.assetId) {
+				const asset = editor.getAsset(shape.props.assetId)
+				if (asset) assets.set(asset.id, asset)
+			}
+			for (const binding of editor.getBindingsInvolvingShape(shape.id)) {
+				if (shapeIds.has(binding.fromId) && shapeIds.has(binding.toId)) {
+					bindings.set(binding.id, binding)
+				}
+			}
+		}
+		// Store a detached snapshot before deleting: deletion can update bound arrows.
+		const cache = JSON.parse(JSON.stringify({
+			shapes, bindings: [...bindings.values()], assets: [...assets.values()],
+		})) as MaterialContainerCache
+		editor.run(() => {
+			setVueMaterialContainerCache(editor, material.id, cache)
+			editor.deleteShapes(frames.map((frame) => frame.id))
+		}, { ignoreShapeLock: true })
+		return
+	}
+
+	if (frames.length) {
+		for (const frame of frames) {
+			if (frame.meta?.[MATERIAL_CONTAINER_FRAME_META_KEY] === true && frame.opacity === 0) {
+				editor.updateShape({ id: frame.id, type: 'vue-frame', opacity: 1 } as TLShapePartial)
+			}
 		}
 		return
 	}
 
-	if (frame) {
-		if (generatedFrame && frame.opacity === 0) {
-			editor.updateShape({ id: frame.id, type: 'vue-frame', opacity: 1 } as TLShapePartial)
-		}
+	const cache = material.meta?.[MATERIAL_CONTAINER_CACHE_META_KEY] as MaterialContainerCache | null | undefined
+	if (cache?.shapes?.length) {
+		// Fresh IDs also let a copied material restore its own independent container.
+		const snapshot = JSON.parse(JSON.stringify(cache)) as MaterialContainerCache
+		const ids = new Map(snapshot.shapes.map((shape) => [shape.id, createShapeId()]))
+		const shapes = snapshot.shapes.map((shape): TLShape => ({
+			...shape,
+			id: ids.get(shape.id)!,
+			parentId: ids.get(shape.parentId as TLShapeId) ?? tableBody.id,
+			opacity: shape.meta?.[MATERIAL_CONTAINER_FRAME_META_KEY] === true && shape.opacity === 0
+				? 1 : shape.opacity,
+		}))
+		const bindings = snapshot.bindings.map((binding): TLBinding => ({
+			...binding,
+			id: createBindingId(),
+			fromId: ids.get(binding.fromId)!,
+			toId: ids.get(binding.toId)!,
+		}))
+		editor.run(() => {
+			// Cached images must survive template saves that only export canvas assets.
+			editor.createAssets(snapshot.assets.filter((asset) => !editor.getAsset(asset.id)))
+			editor.createShapes(shapes)
+			editor.createBindings(bindings)
+			setVueMaterialContainerCache(editor, material.id, null)
+		}, { ignoreShapeLock: true })
 		return
 	}
 
@@ -704,6 +767,17 @@ function syncVueMaterialContainerFrame(editor: Editor, material: VueMaterialShap
 		},
 		meta: { [MATERIAL_CONTAINER_FRAME_META_KEY]: true },
 	}])
+}
+
+function setVueMaterialContainerCache(editor: Editor, materialId: TLShapeId, cache: MaterialContainerCache | null) {
+	const material = editor.getShape<VueMaterialShape>(materialId)
+	if (!material) return
+	// Read the latest metadata so section-height updates in this layout pass survive.
+	editor.updateShape({
+		id: material.id,
+		type: 'vue-material',
+		meta: { ...material.meta, [MATERIAL_CONTAINER_CACHE_META_KEY]: cache },
+	} as TLShapePartial)
 }
 
 export function reparentShapesIntoVueMaterialSections(editor: Editor, materialId: TLShapeId) {
@@ -815,6 +889,19 @@ export function isVueMaterialSectionVisible(
 	const key = VISIBILITY_KEY_BY_ZONE[section.props.zone]
 	if (!key) return true
 	return (parent.meta as Record<string, unknown> | undefined)?.[key] !== false
+}
+
+export function isVueMaterialShapeVisible(editor: Editor, shapeId: TLShapeId) {
+	// Read the live record so visibility also reacts when a top-level shape is
+	// reparented into a section after its canvas component has mounted.
+	let current = editor.getShape(shapeId)
+	while (current) {
+		if (isVueMaterialSectionShape(current) && !isVueMaterialSectionVisible(editor, current)) {
+			return false
+		}
+		current = editor.getShape(current.parentId)
+	}
+	return true
 }
 
 export function getVueMaterialVisibilityModel(shape: VueMaterialShape) {
