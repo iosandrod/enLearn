@@ -14,6 +14,7 @@
       @ready="handleReady"
       @content-change="markDirty"
       @template-select="handleTemplateSelect"
+      @template-delete="handleTemplateDelete"
       @template-search-change="handleTemplateSearchChange"
       @template-status-change="handleTemplateStatusChange"
       @template-refresh="refreshTemplateItems"
@@ -26,6 +27,7 @@
 import { inject, nextTick, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import { useLowCodeHost } from '../../../core/host';
 import { registerLowCodeMaterialRuntimeController } from '../../../runtime/material-controller-registry';
+import { openGlobalDialog } from '../../../runtime/global-dialog';
 import { useVxeMessage } from '../../../utils/vxe-message';
 const props = defineProps<{
   block: Record<string, any>;
@@ -614,6 +616,7 @@ function loadMoreTemplateItems() {
 }
 
 async function handleTemplateSelect(selectedId: string) {
+  if (busy.value) return;
   const id = String(selectedId || '').trim();
   if (!id || id === String(templateId.value || '').trim()) return;
   // if (templateDirty.value && typeof window !== 'undefined' && !window.confirm('加载模板会放弃当前未保存的修改，是否继续？')) {
@@ -624,6 +627,54 @@ async function handleTemplateSelect(selectedId: string) {
     await loadData({ templateId: id });
   } catch (error) {
     message.value = error instanceof Error ? error.message : '模板加载失败';
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function handleTemplateDelete(selectedId: string) {
+  const id = String(selectedId || '').trim();
+  if (!id || busy.value) return;
+  const template = templateItems.value.find((item) => item.id === id);
+  if (!template) return;
+
+  busy.value = true;
+  try {
+    const result = await openGlobalDialog({
+      id: `print-template-delete-confirm-${id}`,
+      title: '删除模板',
+      width: 'min(440px, calc(100vw - 32px))',
+      showFooter: true,
+      body: () => `确定删除模板“${template.name}”吗？删除后无法恢复。`,
+      actions: [
+        { code: 'cancel', label: '取消', role: 'cancel' },
+        { code: 'confirm', label: '删除', role: 'confirm', status: 'danger' },
+      ],
+      onConfirm: async () => {
+        await host.getServiceApi().invoke('admin', 'deleteItem', {
+          resource: 'print_templates',
+          id,
+        });
+      },
+    });
+    if (result.action !== 'confirm') return;
+
+    const deletingCurrentTemplate = id === String(templateId.value || '').trim();
+    templateItems.value = templateItems.value.filter((item) => item.id !== id);
+    templateTotal.value = Math.max(0, templateTotal.value - 1);
+    if (deletingCurrentTemplate) {
+      // Keep the canvas content recoverable while detaching it from the deleted record.
+      templateId.value = '';
+      templateVersion.value = 1;
+      templateStatus.value = '尚未保存';
+      templateDirty.value = true;
+      dirty.value = true;
+      emitTemplateInfo();
+    }
+    await refreshTemplateItems();
+    message.value = `模板“${template.name}”已删除`;
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '模板删除后刷新失败';
   } finally {
     busy.value = false;
   }
@@ -692,10 +743,10 @@ function normalizePreviewValue(value: unknown, depth = 0): string | null {
   return null;
 }
 
-setTimeout(() => {
-  loadData({ templateId: '228fe240-fa67-4e43-b640-a9d335eb1616' }).catch((error) => {
-  });
-},500)
+// setTimeout(() => {
+//   loadData({ templateId: '228fe240-fa67-4e43-b640-a9d335eb1616' }).catch((error) => {
+//   });
+// },500)
 async function save(options: Record<string, any> = {}) {
   if (options?.savedRecord && typeof options.savedRecord === 'object') {
     const result = options.savedRecord;

@@ -39,12 +39,32 @@ const shapes = new Map()
 const editor = {
 	getShape: id => shapes.get(id),
 	getSortedChildIdsForParent: parentId => [...shapes.values()].filter(s => s.parentId === parentId).map(s => s.id),
+	getShapeAndDescendantIds(ids) {
+		const result = new Set(ids)
+		for (const id of result) this.getSortedChildIdsForParent(id).forEach(childId => result.add(childId))
+		return result
+	},
+	run(callback, options = {}) {
+		const previous = this.ignoreShapeLock
+		this.ignoreShapeLock = options.ignoreShapeLock ?? previous
+		try { callback() } finally { this.ignoreShapeLock = previous }
+	},
 	updateShape(partial) {
 		const shape = shapes.get(partial.id)
+		if (!this.ignoreShapeLock) {
+			if (shape.isLocked && partial.isLocked !== false) return
+			if (!shape.isLocked) {
+				let parent = shapes.get(shape.parentId)
+				while (parent) {
+					if (parent.isLocked) return
+					parent = shapes.get(parent.parentId)
+				}
+			}
+		}
 		shapes.set(partial.id, { ...shape, ...partial, props: { ...shape.props, ...partial.props }, meta: { ...shape.meta, ...partial.meta } })
 	},
 	updateShapes(partials) { partials.forEach(p => this.updateShape(p)) },
-	createShapes(partials) { partials.forEach(p => shapes.set(p.id, { meta: {}, ...p })) },
+	createShapes(partials) { partials.forEach(p => shapes.set(p.id, { meta: {}, isLocked: false, ...p })) },
 }
 const materialId = 'shape:material'
 const partials = api.createVueMaterialShapePartials({ id: materialId, rect: { x: 0, y: 0, w: 500, h: 12 }, sectionIds: [] })
@@ -84,8 +104,43 @@ sectionUtil.editor = editor
 const header = editor.getShape(headerId)
 assert.equal(sectionUtil.onBeforeUpdate(header, { ...header, props: { ...header.props, h: 0.5 } }), undefined)
 
+// A hidden region locks nested content even below an already locked container.
+// Showing it unlocks all content; other regions and subsequent layout edits
+// retain their existing locks, coordinates and values.
+const body = api.getVueMaterialSections(editor, materialId).find(s => s.props.zone === 'tableBody')
+editor.createShapes([{ id: 'shape:body-child', type: 'vue-text', parentId: body.id, isLocked: true, props: { text: 'body' } }])
+for (const zone of ['pageHeader', 'tableHeader', 'tableFooter', 'pageFooter']) {
+	const section = api.getVueMaterialSections(editor, materialId).find(s => s.props.zone === zone)
+	const visibilityKey = `show${zone[0].toUpperCase()}${zone.slice(1)}`
+	editor.updateShape({ id: materialId, meta: { [visibilityKey]: true } })
+	api.normalizeVueMaterialSections(editor, materialId)
+	const containerId = `shape:${zone}-container`
+	const textId = `shape:${zone}-text`
+	editor.createShapes([
+		{ id: containerId, type: 'group', parentId: section.id, isLocked: true, props: {} },
+		{ id: textId, type: 'vue-text', parentId: containerId, x: 8, y: 12, props: { text: zone } },
+	])
+	api.normalizeVueMaterialSections(editor, materialId)
+	assert.equal(editor.getShape(containerId).isLocked, true, 'Layout edits must preserve visible manual locks')
+	for (let cycle = 0; cycle < 2; cycle++) {
+		editor.updateShape({ id: materialId, meta: { [visibilityKey]: false } })
+		api.normalizeVueMaterialSections(editor, materialId)
+		assert.equal(editor.getShape(containerId).isLocked, true)
+		assert.equal(editor.getShape(textId).isLocked, true, 'Nested descendants must lock despite locked ancestors')
+		editor.updateShape({ id: textId, props: { text: 'blocked edit' } })
+		assert.equal(editor.getShape(textId).props.text, zone, 'Hidden content must reject edits')
+		editor.updateShape({ id: materialId, meta: { [visibilityKey]: true } })
+		api.normalizeVueMaterialSections(editor, materialId)
+		assert.equal(editor.getShape(containerId).isLocked, false)
+		assert.equal(editor.getShape(textId).isLocked, false)
+		assert.equal(editor.getShape(textId).x, 8)
+		assert.equal(editor.getShape(textId).y, 12)
+		assert.equal(editor.getShape('shape:body-child').isLocked, true, 'Table body locks must remain unchanged')
+	}
+}
+
 const filename = '../src/components/LowCodeFormPanel.vue'
 const parsed = parse(readFileSync(new URL(filename, import.meta.url), 'utf8'), { filename })
 assert.equal(parsed.errors.length, 0)
 compileScript(parsed.descriptor, { id: 'material-height-regression' })
-console.log('Material height regression passed: creation, drag, updates, zero height, hide/show and property-panel compilation.')
+console.log('Material height regression passed: creation, drag, updates, zero height, hide/show, nested section locking and property-panel compilation.')

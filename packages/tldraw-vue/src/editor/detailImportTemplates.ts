@@ -20,7 +20,7 @@ export const detailImportTemplates: ReadonlyArray<{
 	{
 		id: 'field-title',
 		label: 'field + title 行',
-		description: '第一行字段名，第二行标题',
+		description: '第一行标题，第二行字段名',
 		config: { hasFieldRow: true, hasChineseRow: true },
 	},
 	{

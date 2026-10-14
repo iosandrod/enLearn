@@ -39,14 +39,15 @@ function flattenColumns(columns: readonly PrintDataSourceDetailColumn[]): PrintD
 		return column.field ? [column, ...children] : children
 	})
 }
-
+//提交
+//submit
 function getPreviewRows(template: typeof detailImportTemplates[number]) {
 	const rows: Array<{ kind: 'field' | 'title' | 'data'; values: string[] }> = []
-	if (template.config.hasFieldRow) {
-		rows.push({ kind: 'field', values: previewColumns.value.map((column) => column.field) })
-	}
 	if (template.config.hasChineseRow) {
 		rows.push({ kind: 'title', values: previewColumns.value.map((column) => column.title || column.field) })
+	}
+	if (template.config.hasFieldRow) {
+		rows.push({ kind: 'field', values: previewColumns.value.map((column) => column.field) })
 	}
 	for (let row = 0; row < 2; row += 1) {
 		rows.push({

@@ -41,8 +41,8 @@ const MIN_PAGE_SIZE_MM = 10
 const MAX_PAGE_SIZE_MM = 1000
 
 export const DEFAULT_WORKSPACE_PAGE_SIZE_MM: WorkspacePageSizeMm = {
-	w: 80,
-	h: 80,
+	w: 150,
+	h: 150,//
 }
 
 export class WorkspaceBoundsManager {

@@ -2,7 +2,8 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { BaseService } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
@@ -211,6 +212,8 @@ export class LowCodeService extends BaseService {
 
   protected override async executeAction(method: string, postData: Record<string, unknown>, context: ServiceContext) {
     switch (method) {
+      case 'submitForm':
+        return this.submitForm(postData, context);
       case 'listTablePageOptions':
         return this.listTablePageOptions(context);
       case 'listTableColumns':
@@ -238,6 +241,25 @@ export class LowCodeService extends BaseService {
       default:
         return super.executeAction(method, postData, context);
     }
+  }
+
+  private async submitForm(postData: Record<string, unknown>, context: ServiceContext) {
+    const formCode = readString(postData.formCode);
+    if (!formCode) throw new BadRequestException('formCode is required.');
+    if (!this.isRecord(postData.data)) throw new BadRequestException('data must be a JSON object.');
+    const client = context.authorization
+      ? (await getCurrentUser(context)).client
+      : createSupabaseClient('public');
+    const { data, error } = await client.rpc('submit_lowcode_form', {
+      p_form_code: formCode,
+      p_data: postData.data,
+    });
+    if (error?.code === '42501') {
+      if (!context.authorization) throw new UnauthorizedException(error.message);
+      throw new ForbiddenException(error.message);
+    }
+    if (error) throw new BadRequestException(error.message);
+    return data;
   }
 
   private async saveSearchModel(

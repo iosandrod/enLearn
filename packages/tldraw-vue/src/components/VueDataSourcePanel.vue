@@ -32,6 +32,7 @@ import PrintDataSourceDetailDesigner from './PrintDataSourceDetailDesigner.vue'
 import { openPrintDetailColumnsDialog } from '@/editor/printDetailColumnsDialog'
 import { syncPrintDetailFields } from '@/editor/printDetailFieldSync'
 import { importPrintDetailData } from '@/editor/printDetailImport'
+import { analyzePrintDataSourceExcel } from '@/editor/printDataSourceExcel'
 import PrintScriptManager from './PrintRemoteDataSourceManager.vue'
 import DetailImportTemplatePicker from './DetailImportTemplatePicker.vue'
 import PrintDataSourceHeaderTable from './PrintDataSourceHeaderTable.vue'
@@ -40,6 +41,7 @@ import { useEditorValue } from '@/vue/useEditorValue'
 const SELECTOR_FORM_CODE = 'print-designer.datasource-selector'
 const DATA_SOURCE_DEFINITION_FORM_CODE = 'print-designer.datasource-definition'
 const DETAIL_IMPORT_FORM_CODE = 'print-designer.datasource-detail-import'
+const EXCEL_DATA_SOURCE_FORM_CODE = 'print-designer.datasource-excel'
 
 type DataSourceAction = 'add' | 'manage' | 'design'
 
@@ -49,6 +51,12 @@ type DetailImportConfig = {
 	sheetName: string
 	mode: 'append' | 'replace'
 }
+
+type ExcelDataSourceImportConfig = Pick<DetailImportConfig, 'hasFieldRow' | 'hasChineseRow' | 'sheetName'> & {
+	appendExisting: boolean
+}
+
+type ExcelAppendTarget = { id: string; code: string; rowIndex: number }
 
 type DetailImportRowsHandler = (
 	rows: Record<string, unknown>[],
@@ -182,6 +190,14 @@ const actionMessageTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const detailDataLoadingTableId = ref('')
 const fetchedDetailResults = new Map<string, { metadata: unknown; rows: Record<string, unknown>[] }>()
 const importFileInput = ref<HTMLInputElement | null>(null)
+const dataSourceExcelInput = ref<HTMLInputElement | null>(null)
+const dataSourceExcelBusy = ref(false)
+const dataSourceExcelMessage = ref('')
+useVxeMessage(dataSourceExcelMessage, 'success')
+const dataSourceExcelError = ref('')
+useVxeMessage(dataSourceExcelError, 'error')
+const pendingExcelDataSourceConfig = ref<ExcelDataSourceImportConfig | null>(null)
+const pendingExcelAppendTarget = ref<ExcelAppendTarget | null>(null)
 const pendingDetailImportConfig = ref<DetailImportConfig | null>(null)
 const pendingDetailImportHandler = ref<DetailImportRowsHandler | null>(null)
 const emit = defineEmits<{
@@ -270,6 +286,177 @@ async function handleAddDataSource() {
 		},100)
 		},//
 	})
+}
+
+async function handleImportExcelDataSource() {
+	if (readonly.value || definitionsLoading.value || dataSourceExcelBusy.value) return
+	dataSourceExcelError.value = ''
+	dataSourceExcelBusy.value = true
+	pendingExcelDataSourceConfig.value = null
+	pendingExcelAppendTarget.value = null
+	try {
+		const model: ExcelDataSourceImportConfig = {
+			hasFieldRow: true,
+			hasChineseRow: false,
+			sheetName: '',
+			appendExisting: false,
+		}
+		const schema = await loadExcelDataSourceImportSchema()
+		const appendField = schema.fields.find(field => field.field === 'appendExisting')
+		if (appendField) appendField.props = { ...appendField.props, disabled: !getExcelAppendTarget() }
+		const result = await openGlobalDialog<ExcelDataSourceImportConfig>({
+			title: '导入 Excel 数据源', width: 680, model,
+			content: [
+				{ type: 'form', key: 'excel-data-source-import-form', form: { schema } },
+				{ type: 'render', key: 'excel-data-source-import-template-picker', render: (context) => h(DetailImportTemplatePicker, {
+					modelValue: {
+						hasFieldRow: Boolean(context.model.hasFieldRow),
+						hasChineseRow: Boolean(context.model.hasChineseRow),
+					},
+					'onUpdate:modelValue': (value) => context.updateModel(value),
+				}) },
+			],
+			actions: [
+				{ code: 'cancel', label: '取消', role: 'cancel' },
+				{ code: 'confirm', label: '选择文件', role: 'confirm', status: 'primary' },
+			],
+			onConfirm: ({ model: values }) => {
+				if (!panelActive || readonly.value) return false
+				if (values.appendExisting && !getExcelAppendTarget()) throw new Error('没有当前数据源，不能追加明细。')
+			},
+		})
+		if (result.action !== 'confirm' || !panelActive || readonly.value) return
+		pendingExcelDataSourceConfig.value = {
+			hasFieldRow: Boolean(result.values.hasFieldRow),
+			hasChineseRow: Boolean(result.values.hasChineseRow),
+			sheetName: readString(result.values.sheetName),
+			appendExisting: Boolean(result.values.appendExisting),
+		}
+		if (pendingExcelDataSourceConfig.value.appendExisting) {
+			pendingExcelAppendTarget.value = getExcelAppendTarget()
+			if (!pendingExcelAppendTarget.value) throw new Error('没有当前数据源，不能追加明细。')
+		}
+		// Match detail import: the native picker only opens after configuration is confirmed.
+		dataSourceExcelInput.value?.click()
+	} catch (error) {
+		dataSourceExcelError.value = error instanceof Error ? error.message : 'Excel 导入配置打开失败。'
+	} finally {
+		dataSourceExcelBusy.value = false
+	}
+}
+
+async function loadExcelDataSourceImportSchema(): Promise<LowCodeFormSchema> {
+	try {
+		const rows = await host.getServiceApi().invoke<unknown[]>('lowcode', 'listItems', {
+			resource: 'lowcode_form_definitions', filters: { code: EXCEL_DATA_SOURCE_FORM_CODE, enabled: true }, limit: 1,
+		})
+		const schema = Array.isArray(rows) ? (rows[0] as Record<string, unknown> | undefined)?.schema : undefined
+		if (isLowCodeFormSchema(schema)) {
+			const copy = structuredClone(schema)
+			if (!copy.fields.some(field => field.field === 'appendExisting')) {
+				copy.fields.push({ field: 'appendExisting', label: '追加现有明细', component: 'vxe-switch', defaultValue: false })
+			}
+			return copy
+		}
+	} catch {
+		// Keep the import dialog available when the catalog is temporarily unavailable.
+	}
+	return {
+		title: 'Excel 导入配置', columns: 2,
+		fields: [
+			{ field: 'hasFieldRow', label: '包含 field 行', component: 'vxe-switch', defaultValue: true },
+			{ field: 'hasChineseRow', label: '包含中文行', component: 'vxe-switch', defaultValue: false },
+			{ field: 'sheetName', label: '工作表名称（数据源名称）', component: 'vxe-input', props: { placeholder: '留空使用第一个工作表' } },
+			{ field: 'appendExisting', label: '追加现有明细', component: 'vxe-switch', defaultValue: false },
+		], actions: [],
+	}
+}
+
+function getExcelAppendTarget(): ExcelAppendTarget | null {
+	const definition = activeDefinition.value
+	const source = getWorkspaceDataSource()
+	return definition && source?.type === 'inline' && source.formCode === definition.code
+		? { id: definition.id, code: definition.code, rowIndex: headerRowIndex.value }
+		: null
+}
+
+function requireExcelAppendDefinition(target: ExcelAppendTarget | null) {
+	const current = getExcelAppendTarget()
+	if (!target || !current) throw new Error('没有当前数据源，不能追加明细。')
+	if (current.id !== target.id || current.code !== target.code || current.rowIndex !== target.rowIndex) {
+		throw new Error('当前数据源或表头记录已切换，请重新导入明细。')
+	}
+	return activeDefinition.value!
+}
+
+async function handleDataSourceExcelChange(event: Event) {
+	const input = event.target as HTMLInputElement
+	const file = input.files?.[0]
+	input.value = ''
+	const config = pendingExcelDataSourceConfig.value
+	const appendTarget = pendingExcelAppendTarget.value
+	pendingExcelDataSourceConfig.value = null
+	pendingExcelAppendTarget.value = null
+	if (!file || !config || readonly.value || dataSourceExcelBusy.value) return
+	dataSourceExcelError.value = ''
+	dataSourceExcelBusy.value = true
+	try {
+		if (config.appendExisting) requireExcelAppendDefinition(appendTarget)
+		// debugger//
+		const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true })
+		const sheetName =workbook?.SheetNames?.[0]|| config?.sheetName//
+		const sheet = workbook.Sheets[sheetName]
+		if (!sheet) throw new Error(`未找到工作表“${sheetName}”。`)
+		const selectedWorkbook = { SheetNames: [sheetName], Sheets: { [sheetName]: sheet } }
+		const headerRowCount = Number(config.hasFieldRow) + Number(config.hasChineseRow)
+		const imported = analyzePrintDataSourceExcel(selectedWorkbook, { detail_1: headerRowCount })
+		if (!panelActive || readonly.value) return
+		if (config.appendExisting) {
+			const definition = requireExcelAppendDefinition(appendTarget)
+			const existingTables = getPrintDataSourceDetailTables(definition.schema)
+			const source = getWorkspaceDataSource() as Extract<PrintDataSourceConfig, { type: 'inline' }>
+			const usedFields = new Set([
+				...definition.schema.fields.map(field => field.field),
+				...getPrintDataSourceHeaderSchema(definition.schema).fields.map(field => field.field),
+				...existingTables.map(table => table.field),
+				...source.rows.flatMap(row => Object.keys(row)),
+			])
+			let index = 1
+			while (usedFields.has(`detail_${index}`)) index++
+			const originalTable = imported.tables[0]
+			const table = { ...originalTable, id: createDetailTableId(), field: `detail_${index}` }
+			const tables = [...existingTables, table]
+			const schema = { ...definition.schema, printDetail: tables }
+			// Save before changing local state so a failed save leaves the existing source intact.
+			await host.getServiceApi().invoke('lowcode', 'saveItem', {
+				resource: 'lowcode_form_definitions', id: definition.id, data: { schema },
+			})
+			if (!panelActive || readonly.value) return
+			requireExcelAppendDefinition(appendTarget)
+			activeDefinition.value = { ...definition, schema }
+			activeDetailTableId.value = table.id
+			applyWorkspaceDetailTables(tables)
+			updateDetailRows(table.field, imported.model[originalTable.field], appendTarget!.rowIndex)
+			syncDetailFormModel()
+			activeSourceTab.value = 'detail'
+			dataSourceExcelMessage.value = `已在数据源“${definition.name}”中添加明细“${sheetName}”并保存。`
+			return
+		}
+		const code = `print-designer.datasource.${crypto.randomUUID()}`
+		await persistDataSourceDefinition({ code, name: sheetName }, {
+			title: sheetName, columns: 1, fields: [], actions: [], printDetail: imported.tables,
+		})
+		if (!panelActive || readonly.value) return
+		await activateDefinition(code, true)
+		if (!panelActive || readonly.value || activeDefinition.value?.code !== code) return
+		for (const table of imported.tables) updateDetailRows(table.field, imported.model[table.field], 0)
+		syncDetailFormModel()
+		dataSourceExcelMessage.value = `数据源“${sheetName}”已保存，并已生成明细表。`
+	} catch (error) {
+		dataSourceExcelError.value = error instanceof Error ? error.message : 'Excel 数据源导入失败。'
+	} finally {
+		dataSourceExcelBusy.value = false
+	}
 }
 
 function handleManagePrintScripts() {
@@ -866,6 +1053,21 @@ async function saveDataSourceDefinition(
 	existingSchema?: PrintDataSourceFormDefinition['schema'],
 	detailTableDefinitions?: PrintDataSourceDetailTable[],
 ): Promise<string> {
+	const schema = {
+		...createLowCodeFormSchemaFromDesignerResult(result),
+		title: readString(model.name) || readString(model.code),
+		columns: 1,
+		printDetail: detailTableDefinitions ?? existingSchema?.printDetail ?? [],
+		...(existingSchema?.printHeader ? { printHeader: existingSchema.printHeader } : {}),
+	}
+	return persistDataSourceDefinition(model, schema, id)
+}
+
+async function persistDataSourceDefinition(
+	model: Record<string, unknown>,
+	schema: PrintDataSourceFormDefinition['schema'],
+	id?: string,
+): Promise<string> {
 	const code = readString(model.code)
 	const name = readString(model.name)
 	const tableName = readString(model.tableName)||readString(model.table_name)
@@ -883,13 +1085,6 @@ async function saveDataSourceDefinition(
 		if (Array.isArray(existing) && existing.length) {
 			throw new Error(`数据源编码“${code}”已存在。`)
 		}
-	}
-	const schema = {
-		...createLowCodeFormSchemaFromDesignerResult(result),
-		title: name || code,
-		columns: 1,
-		printDetail: detailTableDefinitions ?? existingSchema?.printDetail ?? [],
-		...(existingSchema?.printHeader ? { printHeader: existingSchema.printHeader } : {}),
 	}
 	await serviceApi.invoke('lowcode', id ? 'saveItem' : 'saveItem', {
 		resource: 'lowcode_form_definitions',
@@ -1325,6 +1520,8 @@ watch(
 		@keydown.stop @keyup.stop @keypress.stop @wheel.stop @contextmenu.prevent.stop>
 		<input ref="importFileInput" class="data-source-panel__file-input" type="file" accept=".xlsx,.xls,.csv"
 			@change="handleImportFileChange" />
+		<input ref="dataSourceExcelInput" class="data-source-panel__file-input" type="file" accept=".xlsx,.xls,.csv"
+			@change="handleDataSourceExcelChange" />
 		<header class="lowcode-form-panel__header">
 			<div class="lowcode-form-panel__heading">
 				<div class="lowcode-form-panel__title">数据源</div>
@@ -1338,6 +1535,11 @@ watch(
 					:disabled="definitionsLoading" title="添加数据源" @click="handleAddDataSource">
 					<i class="ri-add-line" aria-hidden="true" />
 					<span>添加</span>
+				</button>
+				<button type="button" class="lowcode-form-panel__action" title="从 Excel 创建数据源"
+					:disabled="readonly || definitionsLoading || dataSourceExcelBusy" @click="handleImportExcelDataSource">
+					<i class="ri-file-excel-2-line" aria-hidden="true" />
+					<span>{{ dataSourceExcelBusy ? '导入中…' : '导入 Excel' }}</span>
 				</button>
 				<button type="button" class="lowcode-form-panel__action" title="管理打印脚本" @click="handleManagePrintScripts">
 					<i class="ri-file-code-line" aria-hidden="true" />

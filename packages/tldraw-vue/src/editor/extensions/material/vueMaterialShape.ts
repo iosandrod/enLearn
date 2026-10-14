@@ -565,6 +565,7 @@ export function normalizeVueMaterialSections(
 
 	let y = 0
 	const changes: TLShapePartial[] = []
+	const lockChanges: TLShapePartial[] = []
 	const missingSections: TLShapePartial<VueMaterialSectionShape>[] = []
 
 	for (const definition of VUE_MATERIAL_SECTION_DEFINITIONS) {
@@ -572,6 +573,17 @@ export function normalizeVueMaterialSections(
 		const h = heightsByZone.get(definition.zone) ?? 0
 		const visibilityKey = VISIBILITY_KEY_BY_ZONE[definition.zone]
 		const hidden = Boolean(visibilityKey && materialMeta[visibilityKey] === false)
+		// Keep hidden descendants locked, and unlock every descendant when the
+		// section is shown. Ordinary layout edits retain locks in visible sections.
+		if (section && visibilityKey && (hidden || section.meta?.[MATERIAL_SECTION_HIDDEN_META_KEY] !== hidden)) {
+			for (const descendantId of editor.getShapeAndDescendantIds([section.id])) {
+				if (descendantId === section.id) continue
+				const descendant = editor.getShape(descendantId)
+				if (descendant && descendant.isLocked !== hidden) {
+					lockChanges.push({ id: descendant.id, type: descendant.type, isLocked: hidden } as TLShapePartial)
+				}
+			}
+		}
 
 		if (!section) {
 			missingSections.push({
@@ -633,6 +645,10 @@ export function normalizeVueMaterialSections(
 		}
 		if (changes.length > 0) {
 			editor.updateShapes(changes)
+		}
+		if (lockChanges.length > 0) {
+			// Nested children must also update when their parent is already locked.
+			editor.run(() => editor.updateShapes(lockChanges), { ignoreShapeLock: true })
 		}
 		syncVueMaterialContainerFrame(editor, material)
 	})

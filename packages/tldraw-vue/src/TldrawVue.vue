@@ -78,6 +78,7 @@ const emit = defineEmits<{
 	'workspace-config-change': [config: VueTemplateWorkspaceConfig]
 	'mode-change': [mode: DesignerMode]
 	'template-select': [templateId: string]
+	'template-delete': [templateId: string]
 	'template-search-change': [value: string]
 	'template-status-change': [value: string]
 	'template-refresh': []
@@ -115,6 +116,7 @@ const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
 const dataSourceTreeRef = ref<{ closeMobileDrawer(): void } | null>(null)
 const failedTemplatePreviewIds = ref<Set<string>>(new Set())
+const templateContextMenu = ref<{ templateId: string; templateName: string; x: number; y: number } | null>(null)
 const dataSourceDrawerOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
 const presentationConfig = ref<PresentationConfig>(clonePresentationConfig(DEFAULT_PRESENTATION_CONFIG))
@@ -143,10 +145,42 @@ const designerTabs = [
 ] as const
 
 function selectTemplate(templateId: string) {
+	closeTemplateContextMenu()
 	emit('template-select', templateId)
 	if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches) {
 		mobilePanelOpen.value = false
 	}
+}
+
+function openTemplateContextMenu(template: VueTemplatePreviewItem, event: MouseEvent) {
+	templateContextMenu.value = {
+		templateId: template.id,
+		templateName: template.name,
+		x: Math.max(8, Math.min(event.clientX, window.innerWidth - 152)),
+		y: Math.max(8, Math.min(event.clientY, window.innerHeight - 56)),
+	}
+}
+
+function closeTemplateContextMenu() {
+	templateContextMenu.value = null
+}
+
+function deleteTemplateFromContextMenu() {
+	const templateId = templateContextMenu.value?.templateId
+	closeTemplateContextMenu()
+	if (templateId) emit('template-delete', templateId)
+}
+
+function handleTemplateContextMenuPointerDown(event: PointerEvent) {
+	if (!templateContextMenu.value) return
+	const target = event.target
+	if (!(target instanceof Element) || !target.closest('.designer-template-context-menu')) {
+		closeTemplateContextMenu()
+	}
+}
+
+function handleTemplateContextMenuKeyDown(event: KeyboardEvent) {
+	if (event.key === 'Escape') closeTemplateContextMenu()
 }
 
 function handleTemplatePreviewError(templateId: string) {
@@ -167,6 +201,7 @@ function handleTemplateStatusInput(event: Event) {
 }
 
 function handleTemplatePanelScroll(event: Event) {
+	closeTemplateContextMenu()
 	if (activeDesignerTab.value !== 'templates' || props.templateLoading || !props.templateHasMore) return
 	const target = event.currentTarget as HTMLElement | null
 	if (!target) return
@@ -310,6 +345,7 @@ function cancelToolbarDrag(event: PointerEvent) {
 }
 
 function selectDesignerTab(tabId: typeof designerTabs[number]['id']) {
+	closeTemplateContextMenu()
 	activeDesignerTab.value = tabId
 	if (tabId === 'dataSource') {
 		mobilePanelOpen.value = false
@@ -633,6 +669,10 @@ onMounted(() => {
 	window.addEventListener('keydown', onKeyDown)
 	window.addEventListener('enlearn:material-column-select', handleMaterialColumnSelect)
 	window.addEventListener('enlearn:print-designer-mode-change', handleExternalDesignerModeChange)
+	document.addEventListener('pointerdown', handleTemplateContextMenuPointerDown, true)
+	window.addEventListener('keydown', handleTemplateContextMenuKeyDown)
+	window.addEventListener('blur', closeTemplateContextMenu)
+	window.addEventListener('resize', closeTemplateContextMenu)
 	notifyDesignerModeState(designerMode.value)
 })
 
@@ -640,6 +680,10 @@ onBeforeUnmount(() => {
 	window.removeEventListener('keydown', onKeyDown)
 	window.removeEventListener('enlearn:material-column-select', handleMaterialColumnSelect)
 	window.removeEventListener('enlearn:print-designer-mode-change', handleExternalDesignerModeChange)
+	document.removeEventListener('pointerdown', handleTemplateContextMenuPointerDown, true)
+	window.removeEventListener('keydown', handleTemplateContextMenuKeyDown)
+	window.removeEventListener('blur', closeTemplateContextMenu)
+	window.removeEventListener('resize', closeTemplateContextMenu)
 	stopEditorChangeListener?.()
 	stopEditorChangeListener = null
 	stopEditorSelectionListener?.()
@@ -712,6 +756,7 @@ onBeforeUnmount(() => {
 									class="designer-template-card"
 									:class="{ 'is-active': props.activeTemplateId === template.id }"
 									:title="`加载模板：${template.name}`"
+									@contextmenu.prevent.stop="openTemplateContextMenu(template, $event)"
 									@click="selectTemplate(template.id)">
 									<span class="designer-template-card__preview">
 										<img v-if="template.preview && !failedTemplatePreviewIds.has(template.id)"
@@ -722,6 +767,17 @@ onBeforeUnmount(() => {
 									<span class="designer-template-card__name">{{ template.name }}</span>
 								</button>
 							</div>
+							<Teleport to="body">
+							<div v-if="templateContextMenu" class="designer-template-context-menu"
+								:style="{ left: `${templateContextMenu.x}px`, top: `${templateContextMenu.y}px` }"
+								role="menu" :aria-label="`${templateContextMenu.templateName}模板操作`"
+								@pointerdown.stop @contextmenu.prevent.stop>
+								<button type="button" role="menuitem" @click="deleteTemplateFromContextMenu">
+									<i class="ri-delete-bin-line" aria-hidden="true" />
+									<span>删除模板</span>
+								</button>
+							</div>
+							</Teleport>
 							<div v-if="props.templateLoading" class="designer-template-panel__state">正在加载模板...</div>
 							<button v-else-if="props.templateHasMore" class="designer-template-panel__load-more"
 								type="button" @click="emit('template-load-more')">加载更多</button>

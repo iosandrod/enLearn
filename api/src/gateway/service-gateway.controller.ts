@@ -139,10 +139,12 @@ export class ServiceGatewayController {
       !contextAuthorization && !accountId;
     const allowMetadataPublicRead =
       serviceMethod === 'listItems' && (!contextAuthorization || !accountId);
+    // Submission authentication is controlled by each form's database policy.
+    const allowFormSubmission = serviceName === 'lowcode' && serviceMethod === 'submitForm';
 
     let data: unknown;
     try {
-      // 无账套的资源读取交由资源元数据和 RLS 校验，其他调用验证账套。
+      // 表单提交和无账套的资源读取交由数据库校验，其他调用验证账套。
       const resolvedContext: ServiceContext = allowAnonymousLowCodeRead || allowAnonymousOptionItemsRead
         ? {
             authorization: contextAuthorization,
@@ -150,7 +152,7 @@ export class ServiceGatewayController {
             serviceName,
             accountId: DEFAULT_ANONYMOUS_ACCOUNT_ID
           }
-        : allowMetadataPublicRead
+        : allowMetadataPublicRead || allowFormSubmission
           ? { authorization: contextAuthorization, requestId, serviceName }
         : (await requireActiveAccount(
             { authorization: contextAuthorization, requestId, serviceName },

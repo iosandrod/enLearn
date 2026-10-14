@@ -30,6 +30,7 @@ export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.datasource-selector',
   'print-designer.datasource-definition',
   'print-designer.datasource-detail-import',
+  'print-designer.datasource-excel',
   'print-designer.datasource-typeorm',
   'print-designer.datasource-script-meta',
   'print-designer.detail-table-columns',

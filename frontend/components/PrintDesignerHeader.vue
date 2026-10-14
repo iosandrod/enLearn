@@ -90,10 +90,44 @@
         :class="{ 'print-app-actions--push': accountSetting }"
         aria-label="设计器快捷导航"
       >
-        <RouterLink class="print-app-action-link print-app-action-link--home" to="/">
-          <i class="ri-home-5-line" aria-hidden="true" />
-          <span>首页</span>
-        </RouterLink>
+        <div class="print-app-contact">
+          <button
+            class="print-app-action-link print-app-action-link--contact"
+            type="button"
+            :aria-expanded="contactMenuOpen"
+            aria-controls="print-app-contact-menu"
+            aria-haspopup="dialog"
+            aria-label="联系作者"
+            @click="toggleContactMenu"
+          >
+            <i class="ri-customer-service-2-line" aria-hidden="true" />
+            <span>联系作者</span>
+            <i :class="contactMenuOpen ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'" aria-hidden="true" />
+          </button>
+          <div
+            v-if="contactMenuOpen"
+            id="print-app-contact-menu"
+            class="print-app-user-menu print-app-contact-menu"
+            role="dialog"
+            aria-label="联系作者"
+          >
+            <div class="print-app-user-menu__summary">
+              <span class="print-app-user-menu__avatar" aria-hidden="true">峰</span>
+              <span><small>作者信息</small><strong>{{ PRINT_AUTHOR.name }}</strong></span>
+            </div>
+            <p class="print-app-contact-menu__description">{{ PRINT_AUTHOR.description }}</p>
+            <div class="print-app-user-menu__links">
+              <button type="button" @click="handleContactAuthor">
+                <i class="ri-wechat-line" aria-hidden="true" />
+                联系作者
+              </button>
+              <button type="button" :disabled="feedbackOpen" @click="handleFeedback">
+                <i class="ri-feedback-line" aria-hidden="true" />
+                提交反馈
+              </button>
+            </div>
+          </div>
+        </div>
 
         <span v-if="!authReady" class="print-app-auth-loading" role="status">
           <i class="ri-loader-4-line" aria-hidden="true" />
@@ -113,7 +147,7 @@
               :aria-expanded="userMenuOpen"
               aria-controls="print-app-user-menu"
               aria-haspopup="dialog"
-              @click="userMenuOpen = !userMenuOpen"
+              @click="toggleUserMenu"
             >
               <span class="print-app-user__avatar" aria-hidden="true">{{ userInitial }}</span>
               <span class="print-app-user__copy">
@@ -174,16 +208,24 @@
       </nav>
     </div>
   </header>
+  <GlobalDialogHost />
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue';
+import { confirmForm, GlobalDialogHost, openGlobalDialog } from '@enlearn/lowcode-framework/runtime';
+import { showVxeMessage } from '../composables/useVxeMessage';
+import { PRINT_AUTHOR } from '../config/site';
+import { LOW_CODE_FORM_CODES } from '../utils/lowCodeFormDefinitions';
 
 defineProps<{ accountSetting?: boolean }>();
 
 const auth = useAuth();
+const serviceApi = useServiceApi();
 const headerRef = ref<HTMLElement | null>(null);
 const userMenuOpen = ref(false);//
+const contactMenuOpen = ref(false);
+const feedbackOpen = ref(false);
 const designerActionsOpen = ref(false);
 const signingOut = ref(false);
 const templateConfig:any=inject('printTemplateConfig');
@@ -230,6 +272,88 @@ function closeUserMenu() {
   userMenuOpen.value = false;
 }
 
+function toggleContactMenu() {
+  contactMenuOpen.value = !contactMenuOpen.value;
+  closeUserMenu();
+}
+
+function toggleUserMenu() {
+  userMenuOpen.value = !userMenuOpen.value;
+  contactMenuOpen.value = false;
+}
+async function handleContactAuthor() {
+  contactMenuOpen.value = false;
+  await openGlobalDialog({
+    title: '联系作者',
+    width: 'min(760px, calc(100vw - 24px))',
+    className: 'print-contact-qr-dialog',
+    props: { escClosable: true, maskClosable: true, showZoom: false, resize: false },
+    actions: [{ code: 'close', label: '关闭', role: 'close' }],
+    content: {
+      type: 'render',
+      render: () => h('div', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))',
+          gap: '24px',
+          padding: '4px 8px 12px',
+          textAlign: 'center',
+        },
+      }, [
+        h('div', { style: { display: 'grid', gap: '10px', justifyItems: 'center' } }, [
+          h('strong', { style: { color: '#24313f', fontSize: '14px' } }, '添加作者微信'),
+          h('img', {
+            src: '/images/contact/author-wechat.jpg',
+            alt: '作者微信二维码',
+            style: { width: 'min(280px, 100%)', aspectRatio: '1', objectFit: 'contain', borderRadius: '8px' },
+          }),
+          h('small', { style: { color: '#7b8795', fontSize: '11px' } }, '扫码添加微信交流'),
+        ]),
+        h('div', { style: { display: 'grid', gap: '10px', justifyItems: 'center' } }, [
+          h('strong', { style: { color: '#24313f', fontSize: '14px' } }, '加入交流学习群'),
+          h('img', {
+            src: '/images/contact/learning-group.jpg',
+            alt: '交流学习群二维码',
+            style: { width: 'min(280px, 100%)', aspectRatio: '1', objectFit: 'contain', borderRadius: '8px' },
+          }),
+          h('small', { style: { color: '#7b8795', fontSize: '11px' } }, '扫码加入学习交流群'),
+        ]),
+      ]),
+    },
+  });
+}
+function connectDesigner() {
+}
+async function handleFeedback() {
+  if (feedbackOpen.value) return;
+  contactMenuOpen.value = false;
+  feedbackOpen.value = true;
+  try {
+    const result = await confirmForm({
+      formCode: LOW_CODE_FORM_CODES.printFeedback,
+      serviceApi,
+      title: '提交反馈',
+      width: 'min(560px, calc(100vw - 24px))',
+      formInitialValues: {
+        [LOW_CODE_FORM_CODES.printFeedback]: { type: 'suggestion', title: '', content: '', contact:  '' },
+      },
+      beforeConfirm: async ({ formModels }) => {
+        const values = Object.values(formModels)[0];
+        if (!values) throw new Error('反馈表单尚未加载完成。');
+        await serviceApi.invoke('lowcode', 'submitForm', {
+          formCode: LOW_CODE_FORM_CODES.printFeedback,
+          data: values,
+        });
+      },
+    });
+    if (result.action === 'confirm') showVxeMessage('反馈已提交，感谢你的建议。', 'success');
+  } catch (error) {
+    showVxeMessage(error instanceof Error ? error.message : '反馈表单加载失败，请重试。', 'error');
+  } finally {
+    feedbackOpen.value = false;
+  }
+}
+
 function handleDesignerActionsClick(event: MouseEvent) {
   if ((event.target as HTMLElement | null)?.closest('button')) designerActionsOpen.value = false;
 }
@@ -237,6 +361,7 @@ function handleDesignerActionsClick(event: MouseEvent) {
 function handleDocumentPointerDown(event: PointerEvent) {
   if (!headerRef.value?.contains(event.target as Node)) {
     closeUserMenu();
+    contactMenuOpen.value = false;
     designerActionsOpen.value = false;
   }
 }
@@ -244,6 +369,7 @@ function handleDocumentPointerDown(event: PointerEvent) {
 function handleDocumentKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeUserMenu();
+    contactMenuOpen.value = false;
     designerActionsOpen.value = false;
   }
 }
@@ -610,6 +736,13 @@ onBeforeUnmount(() => {
 
 .print-app-action-link:hover { background: #f3f6f8; color: #182230; }
 
+.print-app-contact { position: relative; }
+.print-app-action-link--contact { border: 0; background: transparent; cursor: pointer; font-family: inherit; }
+.print-app-action-link--contact[aria-expanded='true'] { background: #f3f6f8; color: #182230; }
+.print-app-contact-menu { width: min(280px, calc(100vw - 18px)); }
+.print-app-contact-menu__description { margin: 0; padding: 0 16px 16px; color: #7b8795; font-size: 12px; line-height: 1.6; }
+.print-app-contact-menu .print-app-user-menu__links button { color: #485465; }
+
 .print-app-login {
   min-width: 78px;
   border: 1px solid #182230;
@@ -755,8 +888,9 @@ onBeforeUnmount(() => {
 
 @media (max-width: 860px) {
   .print-app-header__inner { gap: 12px; padding: 0 14px; }
-  .print-app-action-link--home span { display: none; }
-  .print-app-action-link--home { width: 36px; padding: 0; }
+  .print-app-action-link--contact span { display: none; }
+  .print-app-action-link--contact { width: 36px; padding: 0; }
+  .print-app-action-link--contact > i:last-child { display: none; }
 }
 
 @media (max-width: 680px) {
@@ -842,7 +976,6 @@ onBeforeUnmount(() => {
   .print-app-header__inner { gap: 0 7px; padding: 0 8px 8px; }
   .print-app-brand__copy,
   .print-app-header__divider,
-  .print-app-action-link--home,
   .print-app-user__copy { display: none; }
   .print-app-brand__mark { width: 34px; height: 34px; flex-basis: 34px; }
   .print-app-context strong { font-size: 13px; }
