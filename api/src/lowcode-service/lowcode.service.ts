@@ -203,6 +203,10 @@ export class LowCodeService extends BaseService {
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
+    if (this.isRuntimePageBatchRequest(postData)) {
+      const filters = postData.filters as Record<string, unknown>;
+      return this.getRuntimePagesByCodes(this.readRequestedCodes(filters.code), context);
+    }
     if (this.isRuntimePageCompatibilityRequest(postData)) {
       return [await this.getRuntimePage(this.runtimePageLookup(postData), context)];
     }
@@ -843,6 +847,22 @@ export class LowCodeService extends BaseService {
 
     if (Array.isArray(schema.blocks)) visit(schema.blocks);
     if (Array.isArray(schema.overlays)) visit(schema.overlays);
+  }
+
+  private isRuntimePageBatchRequest(postData: Record<string, unknown>) {
+    const tableName = readString(postData.tableName ?? postData.table_name);
+    if (tableName !== 'lowcode_pages' || readString(postData.resource)) return false;
+    const filters = this.isRecord(postData.filters) ? postData.filters : {};
+    if (Object.keys(filters).length !== 1 || !Array.isArray(filters.code)) return false;
+    const codes = this.readRequestedCodes(filters.code);
+    // Only full code lookups use the runtime path; paginated/filtered lists
+    // retain the generic listItems behavior.
+    return codes.length > 0 && filters.code.length <= 100
+      && Number(postData.limit ?? 0) >= codes.length
+      && Number(postData.offset ?? 0) === 0
+      && Number(postData.page ?? 1) === 1
+      && !postData.withCount && !postData.with_count
+      && !postData.responseMode && !postData.response_mode;
   }
 
   private isRuntimePageCompatibilityRequest(postData: Record<string, unknown>) {

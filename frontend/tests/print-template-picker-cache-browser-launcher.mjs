@@ -43,7 +43,8 @@ function isPageDefinitionRequest(entry, code) {
   return body?.serviceName === 'lowcode' &&
     body?.serviceMethod === 'listItems' &&
     body?.postData?.tableName === 'lowcode_pages' &&
-    body?.postData?.filters?.code === code;
+    (body?.postData?.filters?.code === code ||
+      (Array.isArray(body?.postData?.filters?.code) && body.postData.filters.code.includes(code)));
 }
 
 function isTemplateListRequest(entry) {

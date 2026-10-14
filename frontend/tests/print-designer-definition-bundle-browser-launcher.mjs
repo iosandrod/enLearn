@@ -75,8 +75,12 @@ try {
       request.serviceMethod === 'getPrintDesignerResources';
   });
   console.log(JSON.stringify(definitionRequests, null, 2));
-  assert.equal(definitionRequests.length, 1, `Expected one bundled definition request, received ${definitionRequests.length}.`);
-  assert.equal(definitionRequests[0].serviceMethod, 'getPrintDesignerResources');
+  assert.equal(definitionRequests.length, 2, `Expected two batch listItems definition requests, received ${definitionRequests.length}.`);
+  assert.ok(definitionRequests.every((request) => request.serviceMethod === 'listItems'));
+  const pagesRequest = definitionRequests.find((request) => request.postData.tableName === 'lowcode_pages');
+  assert.deepEqual(pagesRequest?.postData.filters.code, ['print-designer', 'print-templates', 'print-templates-edit']);
+  const formsRequest = definitionRequests.find((request) => request.postData.resource === 'lowcode_form_definitions');
+  assert.ok(formsRequest?.postData.filters.code.includes('print-designer.feedback'));
   assert.deepEqual(pageErrors, []);
 } finally {
   await context.close();

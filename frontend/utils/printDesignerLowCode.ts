@@ -37,6 +37,8 @@ export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.background',
   'print-designer.preview-settings',
   'print-designer.formula',
+  'print-designer.feedback',
+  'print-account-setting',
   'presentation-animation',
 ] as const;
 
@@ -46,10 +48,6 @@ export type PrintDesignerLowCodePrefetch = {
   templateEditPage: LowCodePageRecord | null;
 };
 
-function asPage(value: unknown) {
-  return value && typeof value === 'object' ? value as LowCodePageRecord : null;
-}
-
 /**
  * Warms the low-code resources used by the print designer. The service API
  * owns the session cache and request coalescing; this helper only defines the
@@ -58,5 +56,31 @@ function asPage(value: unknown) {
 export async function prefetchPrintDesignerLowCodeResources(
   serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
 ): Promise<PrintDesignerLowCodePrefetch> {
- return
-}//
+  const pageCodes = [
+    PRINT_DESIGNER_PAGE_CODE,
+    PRINT_TEMPLATE_LIST_PAGE_CODE,
+    PRINT_TEMPLATE_EDIT_PAGE_CODE,
+  ];
+  const [pageResult] = await Promise.allSettled([
+    serviceApi.invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
+      tableName: 'lowcode_pages',
+      filters: { code: pageCodes },
+      includeData: true,
+      limit: pageCodes.length,
+    }),
+    serviceApi.invoke('lowcode', 'listItems', {
+      resource: 'lowcode_form_definitions',
+      filters: { code: [...PRINT_DESIGNER_FORM_CODES], enabled: true },
+      limit: PRINT_DESIGNER_FORM_CODES.length,
+    }),
+  ]);
+  const pages = pageResult.status === 'fulfilled' && Array.isArray(pageResult.value)
+    ? pageResult.value
+    : [];
+  const pageByCode = new Map(pages.map((page) => [page.code, page]));
+  return {
+    designerPage: pageByCode.get(PRINT_DESIGNER_PAGE_CODE) ?? null,
+    templateListPage: pageByCode.get(PRINT_TEMPLATE_LIST_PAGE_CODE) ?? null,
+    templateEditPage: pageByCode.get(PRINT_TEMPLATE_EDIT_PAGE_CODE) ?? null,
+  };
+}

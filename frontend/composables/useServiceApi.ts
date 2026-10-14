@@ -117,6 +117,13 @@ function withCachedLowCodeRows(
       lowCodeListCache.set(lowCodeCacheKey(table, code.trim(), postData), {
         value: cloneLowCodeCacheValue(row),
       });
+      // Runtime page listItems returns the complete page for either mode.
+      // A full prefetch also satisfies metadata lookups used by save dialogs.
+      if (table === 'lowcode_pages' && !postData.resource && postData.includeData !== false) {
+        lowCodeListCache.set(lowCodeCacheKey(table, code.trim(), {
+          ...postData, includeData: false,
+        }), { value: cloneLowCodeCacheValue(row) });
+      }
     }
   });
 }
