@@ -867,16 +867,12 @@ async function handleMaterialCreate(material: PrintMaterialDraft) {
   }
 }
 
-async function handleMaterialSelect(materialId: string, point?: { x: number; y: number }) {
+function handleMaterialSelect(materialId: string, point?: { x: number; y: number }) {
   const id = String(materialId || '').trim();
   if (!id || busy.value) return;
   busy.value = true;
   try {
-    const response = await host.getServiceApi().invoke<any>('admin', 'listItems', {
-      resource: 'print_materials', filters: { id }, page: 1, pageSize: 1, limit: 1,
-    });
-    const row = readTemplateRows(response)[0];
-    const material = row ? normalizeMaterialItem(row) : null;
+    const material = materialItems.value.find((item) => item.id === id);
     if (!material) throw new Error(`未找到素材：${id}`);
     designer.value?.insertPrintMaterial?.(material, point);
     markDirty();
@@ -1185,6 +1181,7 @@ function handleReady() {
   readyPromiseResolve = undefined;
   emitTemplateInfo();
   void refreshTemplateItems();
+  void refreshMaterialItems();
   void loadData({ templateId: props.block.templateId }).catch((error) => {
     message.value = error instanceof Error ? error.message : '模板加载失败';
   });

@@ -11,6 +11,10 @@ const [designer, canvas, contextMenu, materialDrag, host, styles, migration, con
   readFile(new URL('../../supabase/migrations/20261015150000_print_materials.sql', import.meta.url), 'utf8'),
   readFile(new URL('../../supabase/migrations/20261015160000_print_material_confirm_form.sql', import.meta.url), 'utf8'),
 ]);
+const materialSelectHandler = host.slice(
+  host.indexOf('function handleMaterialSelect'),
+  host.indexOf('async function handleMaterialDelete'),
+);
 
 assert.match(designer, /\{ id: 'materials', label: '素材'/, 'The left panel must expose a material tab.');
 assert.match(designer, /保存选中节点/, 'The material panel must save selected canvas nodes.');
@@ -25,6 +29,11 @@ assert.match(designer, /sourceFile: file[\s\S]*mimeType: file\.type[\s\S]*fileSi
   'Image material drafts must pass the original File and only small image metadata.');
 assert.match(designer, /materialType === 'image'/, 'Image materials must have a dedicated insertion path.');
 assert.match(designer, /putContentOntoCurrentPage\([\s\S]*select: true/, 'Node and group materials must be reusable on the canvas.');
+assert.match(host, /void refreshTemplateItems\(\);[\s\S]*void refreshMaterialItems\(\);[\s\S]*void loadData\(/,
+  'Templates and materials must both load when the designer becomes ready.');
+assert.match(host, /function loadMoreMaterialItems\(\)[\s\S]*materialHasMore\.value[\s\S]*loadMaterialPage\(true\)/,
+  'Material pagination must append the next page when more rows are available.');
+assert.match(host, /materialPageSize = 12/, 'Materials must load in bounded pages.');
 assert.match(materialDrag, /PRINT_MATERIAL_MIME = 'application\/x-enlearn-print-material'/,
   'Material drag and drop must use a dedicated transfer type.');
 assert.match(designer, /draggable="true"[\s\S]*@dragstart="startMaterialDrag\(\$event, material\)"/,
@@ -33,6 +42,10 @@ assert.match(canvas, /types\.includes\(PRINT_MATERIAL_MIME\)[\s\S]*emit\('materi
   'The canvas must accept material drops and forward the drop point.');
 assert.match(designer, /function insertPrintMaterial\(material: PrintMaterialItem, point\?[\s\S]*const insertionPoint = point/,
   'Dropped materials must be inserted at the canvas drop point.');
+assert.match(materialSelectHandler, /materialItems\.value\.find\(\(item\) => item\.id === id\)/,
+  'Clicking or dropping a material must reuse the data already loaded in the panel.');
+assert.doesNotMatch(materialSelectHandler, /invoke|listItems|print_materials/,
+  'Clicking or dropping a material must not issue another material request.');
 assert.match(styles, /\.designer-material-panel/, 'The new material panel must have production styles.');
 assert.match(host, /import \{ confirmForm, openGlobalDialog \}/, 'Saving a material must use the shared confirmForm helper.');
 assert.match(host, /MATERIAL_SAVE_FORM_CODE = 'print-designer\.material-save'/,
