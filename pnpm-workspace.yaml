@@ -1,6 +1,7 @@
 packages:
   - "mobile-package/*"
   - "api"
+  - "api-print"
   - "frontend"
   - "mobile-app"
   - "learning-app"

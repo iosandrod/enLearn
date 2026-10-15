@@ -743,10 +743,10 @@ function normalizePreviewValue(value: unknown, depth = 0): string | null {
   return null;
 }
 
-// setTimeout(() => {
-//   loadData({ templateId: '228fe240-fa67-4e43-b640-a9d335eb1616' }).catch((error) => {
-//   });
-// },500)
+setTimeout(() => {
+  loadData({ templateId: '12dd0e9b-d4ec-476a-85d4-48a61e2e49e1' }).catch((error) => {
+  });
+},500)
 async function save(options: Record<string, any> = {}) {
   if (options?.savedRecord && typeof options.savedRecord === 'object') {
     const result = options.savedRecord;

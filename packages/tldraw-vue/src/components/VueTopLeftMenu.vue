@@ -38,6 +38,7 @@ import { getEditorPrintDataSource } from '@/editor/workspaceDataSource'
 import { ToolbarController } from '@/editor/interactions/ToolbarController'
 import type { CanvasTool, VueGeoShape } from '@/editor/interactions/types'
 import type { VueToolbarToolDefinition } from '@/editor/vueEditorExtensions'
+import VueRemotePrintPreview from './VueRemotePrintPreview.vue'
 
 const props = defineProps<{
 	editor: Editor
@@ -74,6 +75,8 @@ const templateError = ref<string | null>(null)
 const isTemplateLoading = ref(false)
 const isTemplateSaving = ref(false)
 const printPreviewOpen = ref(false)
+const remotePreviewRef = ref<InstanceType<typeof VueRemotePrintPreview> | null>(null)
+const remotePreviewLoading = ref(false)
 const printPreviewLoading = ref(false)
 const printPreviewError = ref<string | null>(null)
 watch(templateError, content => {
@@ -143,15 +146,15 @@ const canvasQuickActions = computed(() => {
 		action('duplicate', '复制', '⧉', !hasSelection.value, duplicateSelection),
 		toolAction('hand', '抓手', '✋'),
 		action('redo', '重做', '↷', !canRedo.value, redo),
-		action('preview', '预览', '👁', printPreviewLoading.value, () => runCanvasPrintAction('preview')),
+		action('preview', '预览', '👁', printPreviewLoading.value || remotePreviewLoading.value, () => runCanvasPrintAction('preview')),
 		toolAction('text', '文字', 'T'),
 		action('delete', '删除', '×', !hasSelection.value, deleteSelection),
-		action('print', '打印', '🖶', printPreviewLoading.value, () => runCanvasPrintAction('print')),
+		action('print', '打印', '🖶', printPreviewLoading.value || remotePreviewLoading.value, () => runCanvasPrintAction('print')),
 	]
 })
 
 async function runCanvasPrintAction(action: 'preview' | 'print') {
-	if (printPreviewLoading.value) return
+	if (printPreviewLoading.value || remotePreviewLoading.value) return
 	emit('before-action')
 	closeMenus()
 	printPreviewLoading.value = true
@@ -385,6 +388,7 @@ function runGridAction(actionId: TopMenuGridActionId) {
 }
 
 async function previewPrint() {
+	if (remotePreviewLoading.value) return
 	emit('before-action')
 	closeMenus()
 	if (canPreviewPrint.value && props.runCommand && await props.runCommand('print.preview')) return
@@ -409,17 +413,27 @@ async function previewPrint() {
 }
 
 async function printCurrentPage() {
+	if (remotePreviewLoading.value) return
 	emit('before-action')
 	closeMenus()
-	if (canPrint.value && props.runCommand && await props.runCommand('print.print')) return
-
+	printPreviewLoading.value = true
 	try {
+		if (canPrint.value && props.runCommand && await props.runCommand('print.print')) return
 		const expressions = await ensurePrintExpressionsLoaded(host.getServiceApi(), { refresh: true })
 		const manager = new PrintManager(props.editor)
 		await manager.print(createPrintJobConfig(createPrintExpressionConfig(expressions)))
 	} catch (error) {
 		await showModalAlert(getTemplateErrorMessage(error, '打印失败'), '打印失败')
+	} finally {
+		printPreviewLoading.value = false
 	}
+}
+
+function previewPrintRemotely() {
+	if (printPreviewLoading.value || remotePreviewLoading.value) return
+	emit('before-action')
+	closeMenus()
+	void remotePreviewRef.value?.open()
 }
 
 async function printPreviewPagesNow() {
@@ -852,7 +866,7 @@ onBeforeUnmount(() => {
 				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印预览"
 				title="打印预览"
-				:disabled="printPreviewLoading"
+				:disabled="printPreviewLoading || remotePreviewLoading"
 				@click="previewPrint"
 			>
 				<span class="top-menu-button-icon" aria-hidden="true">&#128065;</span>
@@ -862,9 +876,21 @@ onBeforeUnmount(() => {
 				v-if="showActionControls"
 				type="button"
 				class="top-menu-icon-button top-menu-labeled-button"
+				aria-label="远程预览"
+				title="远程预览"
+				:disabled="printPreviewLoading || remotePreviewLoading"
+				@click="previewPrintRemotely"
+			>
+				<span class="top-menu-button-icon" aria-hidden="true">☁</span>
+				<span class="top-menu-button-label">远程预览</span>
+			</button>
+			<button
+				v-if="showActionControls"
+				type="button"
+				class="top-menu-icon-button top-menu-labeled-button"
 				aria-label="打印"
 				title="打印"
-				:disabled="printPreviewLoading"
+				:disabled="printPreviewLoading || remotePreviewLoading"
 				@click="printCurrentPage"
 			>
 				<span class="top-menu-button-icon" aria-hidden="true">&#128438;</span>
@@ -1079,6 +1105,9 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
+		<VueRemotePrintPreview v-if="showActionControls" ref="remotePreviewRef" :editor="props.editor"
+			:get-workspace-template-config="props.getWorkspaceTemplateConfig"
+			@loading-change="remotePreviewLoading = $event" />
 		<Teleport v-if="showActionControls" to="body">
 			<vxe-modal
 				v-model="printPreviewOpen"

@@ -1,0 +1,20 @@
+{
+  "name": "enlearn-print-preview-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "playwright-core": "1.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsx": "^4.19.2",
+    "typescript": "^5.4.5"
+  }
+}

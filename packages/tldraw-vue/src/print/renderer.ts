@@ -100,6 +100,7 @@ export class PrintRenderer {
 		index: number,
 		total: number,
 		options: {
+			output?: 'svg'
 			materialGridPlan?: MaterialGridPrintPlan
 			materialGridPageIndex?: number
 			resumePlan?: ResumePrintPlan
@@ -157,6 +158,18 @@ export class PrintRenderer {
 		try {
 			this.applyShapeUpdates(updates)
 			const exportBounds = this.getExportBounds(config)
+			if (options.output === 'svg') {
+				const result = shapeIds.length ? await this.editor.getSvgString(shapeIds, {
+					bounds: exportBounds, background: false, padding: 0, darkMode: false,
+				}) : undefined
+				return {
+					svg: result?.svg ?? '', dataUrl: '', width: exportBounds.width, height: exportBounds.height,
+					pageNo: index + 1, index, row,
+					backgroundUrl: config.page.backgroundStyle?.imageUrl,
+					backgroundColor: config.page.backgroundStyle?.color ?? '#ffffff',
+					backgroundStyle: config.page.backgroundStyle,
+				}
+			}
 			const pixelRatio = config.export?.pixelRatio ?? 2
 			const backgroundStyle = config.page.backgroundStyle
 			const sourceBackgroundUrl = backgroundStyle?.imageUrl?.trim() ?? ''

@@ -85,6 +85,7 @@ function transformTldrawVueTsxPlugin() {
 export default defineConfig({
   publicDir: resolve(__dirname, '..', 'public'),
   define: {
+    'import.meta.env.VITE_PRINT_API_BASE_URL': JSON.stringify(env.VITE_PRINT_API_BASE_URL ?? ''),
     'import.meta.server': 'false',
     'import.meta.client': 'true',
     'import.meta.env.VITE_API_BASE_URL': JSON.stringify(

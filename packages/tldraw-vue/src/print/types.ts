@@ -264,6 +264,8 @@ export interface PrinterAdapter {
 }
 
 export interface PrintPageRenderResult {
+	/** Vector content used when the final rasterization runs on the preview server. */
+	svg?: string
 	dataUrl: string
 	width: number
 	height: number
