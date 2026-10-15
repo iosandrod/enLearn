@@ -41,6 +41,7 @@ import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
 import type { PrintPreviewSettings } from '@/print/types'
 import { PRINT_DATA_SOURCE_FIELD_MIME } from '@/editor/printDataSourceFields'
 import { dropPrintDataSourceField } from '@/editor/interactions/printDataSourceDrop'
+import { PRINT_MATERIAL_MIME } from '@/editor/printMaterials'
 
 const props = defineProps<{
 	editor: Editor
@@ -53,6 +54,8 @@ const props = defineProps<{
 const emit = defineEmits<{
 	'tool-change': [tool: CanvasTool, geoShape?: VueGeoShape]
 	'workspace-config-change': [config: VueTemplateWorkspaceConfig]
+	'save-as-material': [shapeIds: TLShapeId[]]
+	'material-drop': [materialId: string, point: { x: number; y: number }]
 }>()
 
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -367,6 +370,18 @@ function onSelectionDoubleClick(event: MouseEvent) {
 async function onCanvasDrop(event: DragEvent) {
 	event.preventDefault()
 	controller.updateViewport()
+	if (event.dataTransfer?.types.includes(PRINT_MATERIAL_MIME)) {
+		event.stopPropagation()
+		if (props.editor.getIsReadonly()) return
+		const materialId = event.dataTransfer.getData(PRINT_MATERIAL_MIME).trim()
+		const point = props.editor.screenToPage({ x: event.clientX, y: event.clientY })
+		if (!materialId || !workspaceBounds.containsPoint(point)) return
+		emit('material-drop', materialId, { x: point.x, y: point.y })
+		controller.closeContextMenu()
+		emit('tool-change', 'select')
+		containerRef.value?.focus({ preventScroll: true })
+		return
+	}
 	if (event.dataTransfer?.types.includes(PRINT_DATA_SOURCE_FIELD_MIME)) {
 		event.stopPropagation()
 		const path = event.dataTransfer.getData(PRINT_DATA_SOURCE_FIELD_MIME)
@@ -385,6 +400,14 @@ async function onCanvasDrop(event: DragEvent) {
 }
 
 function onCanvasDragOver(event: DragEvent) {
+	if (event.dataTransfer?.types.includes(PRINT_MATERIAL_MIME)) {
+		event.preventDefault()
+		const point = props.editor.screenToPage({ x: event.clientX, y: event.clientY })
+		event.dataTransfer.dropEffect = props.editor.getIsReadonly() || !workspaceBounds.containsPoint(point)
+			? 'none'
+			: 'copy'
+		return
+	}
 	if (event.dataTransfer?.types.includes(PRINT_DATA_SOURCE_FIELD_MIME)) {
 		event.preventDefault()
 		event.dataTransfer.dropEffect = props.editor.getIsReadonly() ? 'none' : 'copy'
@@ -529,6 +552,12 @@ function deleteGuide(guideId: string | null = selectedGuideId.value) {
 }
 
 function onContextMenuAction(actionId: ContextMenuActionId) {
+	if (actionId === 'save-as-material') {
+		const shapeIds = contextMenu.value?.selection.shapeIds.slice() ?? []
+		controller.closeContextMenu()
+		if (shapeIds.length) emit('save-as-material', shapeIds)
+		return
+	}
 	if (actionId === 'edit-expression') {
 		const shapeId = contextMenu.value?.selection.shapeIds[0]
 		controller.closeContextMenu()

@@ -11,6 +11,12 @@
       :template-loading="templateLoading"
       :template-has-more="templateHasMore"
       :template-total="templateTotal"
+      :material-items="materialItems"
+      :material-search="materialSearch"
+      :material-type-filter="materialTypeFilter"
+      :material-loading="materialLoading"
+      :material-has-more="materialHasMore"
+      :material-total="materialTotal"
       @ready="handleReady"
       @content-change="markDirty"
       @template-select="handleTemplateSelect"
@@ -19,15 +25,22 @@
       @template-status-change="handleTemplateStatusChange"
       @template-refresh="refreshTemplateItems"
       @template-load-more="loadMoreTemplateItems"
+      @material-create="handleMaterialCreate"
+      @material-select="handleMaterialSelect"
+      @material-delete="handleMaterialDelete"
+      @material-search-change="handleMaterialSearchChange"
+      @material-type-change="handleMaterialTypeChange"
+      @material-refresh="refreshMaterialItems"
+      @material-load-more="loadMoreMaterialItems"
     />
   </section>
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
+import { inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, toRef } from 'vue';
 import { useLowCodeHost } from '../../../core/host';
 import { registerLowCodeMaterialRuntimeController } from '../../../runtime/material-controller-registry';
-import { openGlobalDialog } from '../../../runtime/global-dialog';
+import { confirmForm, openGlobalDialog } from '../../../runtime/global-dialog';
 import { useVxeMessage } from '../../../utils/vxe-message';
 const props = defineProps<{
   block: Record<string, any>;
@@ -62,8 +75,28 @@ const templateHasMore = ref(false);
 const templateTotal = ref(0);
 const templatePage = ref(1);
 const templatePageSize = 8;
+type PrintMaterialType = 'image' | 'node' | 'group';
+type PrintMaterialItem = {
+  id: string;
+  name: string;
+  materialType: PrintMaterialType;
+  preview?: string | null;
+  content?: unknown;
+};
+type PrintMaterialDraft = Omit<PrintMaterialItem, 'id'> & { content: unknown; sourceFile?: File };
+const materialItems = ref<PrintMaterialItem[]>([]);
+const materialSearch = ref('');
+const materialTypeFilter = ref<'all' | PrintMaterialType>('all');
+const materialLoading = ref(false);
+const materialHasMore = ref(false);
+const materialTotal = ref(0);
+const materialPage = ref(1);
+const materialPageSize = 12;
+const MATERIAL_SAVE_FORM_CODE = 'print-designer.material-save';
 let templateRequestId = 0;
+let materialRequestId = 0;
 let templateSearchTimer: ReturnType<typeof setTimeout> | undefined;
+let materialSearchTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressDirty = false;
 
 function emitTemplateInfo() {
@@ -615,6 +648,280 @@ function loadMoreTemplateItems() {
   if (!templateLoading.value && templateHasMore.value) void loadTemplatePage(true);
 }
 
+async function refreshMaterialItems() {
+  return loadMaterialPage(false);
+}
+
+async function loadMaterialPage(append: boolean) {
+  const requestId = ++materialRequestId;
+  const page = append ? materialPage.value + 1 : 1;
+  materialLoading.value = true;
+  try {
+    const filters: Record<string, unknown> = { status: 'active' };
+    if (materialTypeFilter.value !== 'all') filters.material_type = materialTypeFilter.value;
+    const search = materialSearch.value.trim();
+    if (search) filters.name = { op: 'ilike', value: search };
+    const response = await host.getServiceApi().invoke<any>('admin', 'listItems', {
+      resource: 'print_materials',
+      filters,
+      page,
+      pageSize: materialPageSize,
+      limit: materialPageSize,
+      responseMode: 'page',
+      withCount: true,
+      sorts: [{ field: 'updated_at', direction: 'desc' }],
+    });
+    if (requestId !== materialRequestId) return;
+    const list = readTemplateRows(response)
+      .filter((row) => typeof row.id === 'string' && typeof row.name === 'string')
+      .map(normalizeMaterialItem)
+      .filter((row): row is PrintMaterialItem => Boolean(row));
+    const existing = append ? materialItems.value : [];
+    materialItems.value = [...existing, ...list].filter((item, index, items) => (
+      items.findIndex((candidate) => candidate.id === item.id) === index
+    ));
+    materialPage.value = page;
+    const total = Number(response && typeof response === 'object' && !Array.isArray(response)
+      ? response.total
+      : NaN);
+    materialTotal.value = Number.isFinite(total) ? total : materialItems.value.length;
+    materialHasMore.value = Number.isFinite(total)
+      ? page * materialPageSize < total
+      : list.length >= materialPageSize;
+  } catch (error) {
+    if (requestId === materialRequestId) {
+      console.warn('[label-designer] failed to load material list', error);
+      if (!append) {
+        materialItems.value = [];
+        materialTotal.value = 0;
+      }
+      materialHasMore.value = false;
+    }
+  } finally {
+    if (requestId === materialRequestId) materialLoading.value = false;
+  }
+}
+
+function normalizeMaterialItem(row: Record<string, any>): PrintMaterialItem | null {
+  const materialType = row.material_type ?? row.materialType ?? row.type;
+  if (materialType !== 'image' && materialType !== 'node' && materialType !== 'group') return null;
+  return {
+    id: String(row.id),
+    name: String(row.name),
+    materialType,
+    preview: normalizeTemplatePreview(row),
+    content: row.content,
+  };
+}
+
+function handleMaterialSearchChange(value: string) {
+  materialSearch.value = value;
+  if (materialSearchTimer) clearTimeout(materialSearchTimer);
+  materialSearchTimer = setTimeout(() => {
+    materialSearchTimer = undefined;
+    void refreshMaterialItems();
+  }, 250);
+}
+
+function handleMaterialTypeChange(value: string) {
+  materialTypeFilter.value = value === 'image' || value === 'node' || value === 'group'
+    ? value
+    : 'all';
+  void refreshMaterialItems();
+}
+
+function loadMoreMaterialItems() {
+  if (!materialLoading.value && materialHasMore.value) void loadMaterialPage(true);
+}
+
+function printMaterialUploadEndpoint() {
+  if (import.meta.env.DEV) return '/api/files/upload';
+  return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3300/api').replace(/\/+$/, '') + '/files/upload';
+}
+
+function printMaterialUploadHeaders() {
+  const headers: Record<string, string> = {};
+  if (typeof window === 'undefined') return headers;
+  const token = window.localStorage.getItem('enlearn_access_token');
+  const accountId = window.localStorage.getItem('enlearn_active_account_id');
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (accountId) headers['X-Account-Id'] = accountId;
+  headers['X-Request-Id'] = `print-material-upload-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return headers;
+}
+
+async function uploadPrintMaterialImage(file: File) {
+  const form = new FormData();
+  form.append('file', file, file.name);
+  form.append('visibility', 'public');
+  form.append('folderPath', 'print-materials');
+  form.append('metadata', JSON.stringify({ source: 'print-material', editor: 'tldraw-vue' }));
+  const response = await fetch(printMaterialUploadEndpoint(), {
+    method: 'POST',
+    headers: printMaterialUploadHeaders(),
+    body: form,
+  });
+  const payload = await response.json().catch(() => null) as Record<string, any> | null;
+  if (!response.ok || payload?.success !== true) {
+    throw new Error(String(payload?.message || `图片上传失败（${response.status}）`));
+  }
+  const uploadedFile = payload?.data?.file;
+  const uploadedObject = payload?.data?.object;
+  const fileId = String(uploadedFile?.id || '').trim();
+  const fileUrl = String(uploadedFile?.fileUrl || uploadedFile?.file_url || uploadedObject?.objectUrl || '').trim();
+  if (!fileId || !fileUrl) throw new Error('图片上传成功，但文件服务未返回图片地址。');
+  return { fileId, fileUrl };
+}
+
+async function handleMaterialCreate(material: PrintMaterialDraft) {
+  if (!material?.name || !material?.content || materialLoading.value) return;
+  materialLoading.value = true;
+  try {
+    const model = reactive<Record<string, unknown>>({
+      name: material.name.trim(),
+      materialType: material.materialType,
+      accessLevel: 'free',
+      category: '',
+      tags: '',
+      description: '',
+    });
+    const dialogResult = await confirmForm({
+      formCode: MATERIAL_SAVE_FORM_CODE,
+      serviceApi: host.getServiceApi(),
+      title: '另存为素材',
+      width: 'min(620px, calc(100vw - 24px))',
+      className: 'print-material-confirm-dialog',
+      confirmLabel: '保存素材',
+      formOptions: { model },
+      configureForm: (schema) => {
+        const requiredFields = ['name', 'materialType', 'accessLevel', 'category', 'tags', 'description'];
+        for (const field of requiredFields) {
+          if (!schema.fields.some((item) => item.field === field)) {
+            throw new Error(`素材属性表单缺少字段：${field}`);
+          }
+        }
+      },
+      dialog: {
+        id: 'print-material-save-confirm-dialog',
+        props: { draggable: false, maskClosable: true, escClosable: true },
+      },
+      beforeConfirm: () => {
+        const name = String(model.name ?? '').trim();
+        if (!name) throw new Error('请输入素材名称。');
+        if (model.materialType !== material.materialType) throw new Error('素材类型与当前选区不一致。');
+        if (!['free', 'pro', 'enterprise'].includes(String(model.accessLevel ?? ''))) {
+          throw new Error('请选择有效的访问级别。');
+        }
+        return true;
+      },
+    });
+    if (dialogResult.action !== 'confirm') return;
+
+    const tags = String(model.tags ?? '')
+      .split(/[,，]/)
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    const content = clone(material.content) as Record<string, any>;
+    let preview = normalizePreviewValue(material.preview);
+    if (material.materialType === 'image') {
+      if (!material.sourceFile) throw new Error('请选择需要上传的图片文件。');
+      message.value = `正在上传图片“${material.sourceFile.name}”…`;
+      const uploaded = await uploadPrintMaterialImage(material.sourceFile);
+      content.src = uploaded.fileUrl;
+      content.fileId = uploaded.fileId;
+      preview = uploaded.fileUrl;
+    }
+    const shapes = content && typeof content === 'object' && Array.isArray((content as any).shapes)
+      ? (content as any).shapes
+      : [];
+    const result = await host.getServiceApi().invoke<any>('admin', 'saveItem', {
+      resource: 'print_materials',
+      data: {
+        name: String(model.name).trim(),
+        material_type: material.materialType,
+        content,
+        preview,
+        status: 'active',
+        version: 1,
+        access_level: String(model.accessLevel),
+        metadata: {
+          editor: 'tldraw-vue',
+          schemaVersion: 1,
+          category: String(model.category ?? '').trim(),
+          description: String(model.description ?? '').trim(),
+          tags,
+          shapeCount: material.materialType === 'image' ? 1 : shapes.length,
+          nodeTypes: [...new Set(shapes
+            .map((shape: any) => typeof shape?.type === 'string' ? shape.type : '')
+            .filter(Boolean))],
+        },
+      },
+    });
+    if (!result?.id) throw new Error('素材保存失败：未返回素材记录。');
+    message.value = `素材“${String(model.name).trim()}”已保存`;
+    await refreshMaterialItems();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '素材保存失败';
+  } finally {
+    materialLoading.value = false;
+  }
+}
+
+async function handleMaterialSelect(materialId: string, point?: { x: number; y: number }) {
+  const id = String(materialId || '').trim();
+  if (!id || busy.value) return;
+  busy.value = true;
+  try {
+    const response = await host.getServiceApi().invoke<any>('admin', 'listItems', {
+      resource: 'print_materials', filters: { id }, page: 1, pageSize: 1, limit: 1,
+    });
+    const row = readTemplateRows(response)[0];
+    const material = row ? normalizeMaterialItem(row) : null;
+    if (!material) throw new Error(`未找到素材：${id}`);
+    designer.value?.insertPrintMaterial?.(material, point);
+    markDirty();
+    message.value = `已添加素材“${material.name}”`;
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '素材添加失败';
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function handleMaterialDelete(materialId: string) {
+  const id = String(materialId || '').trim();
+  const material = materialItems.value.find((item) => item.id === id);
+  if (!material || busy.value) return;
+  busy.value = true;
+  try {
+    const result = await openGlobalDialog({
+      id: `print-material-delete-confirm-${id}`,
+      title: '删除素材',
+      width: 'min(440px, calc(100vw - 32px))',
+      showFooter: true,
+      body: () => `确定删除素材“${material.name}”吗？删除后无法恢复。`,
+      actions: [
+        { code: 'cancel', label: '取消', role: 'cancel' },
+        { code: 'confirm', label: '删除', role: 'confirm', status: 'danger' },
+      ],
+      onConfirm: async () => {
+        await host.getServiceApi().invoke('admin', 'deleteItem', {
+          resource: 'print_materials', id,
+        });
+      },
+    });
+    if (result.action !== 'confirm') return;
+    materialItems.value = materialItems.value.filter((item) => item.id !== id);
+    materialTotal.value = Math.max(0, materialTotal.value - 1);
+    await refreshMaterialItems();
+    message.value = `素材“${material.name}”已删除`;
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '素材删除失败';
+  } finally {
+    busy.value = false;
+  }
+}
+
 async function handleTemplateSelect(selectedId: string) {
   if (busy.value) return;
   const id = String(selectedId || '').trim();
@@ -745,7 +1052,7 @@ function normalizePreviewValue(value: unknown, depth = 0): string | null {
 
 setTimeout(() => {
   loadData({ templateId: '12dd0e9b-d4ec-476a-85d4-48a61e2e49e1' }).catch((error) => {
-  });
+  });//素材
 },500)
 async function save(options: Record<string, any> = {}) {
   if (options?.savedRecord && typeof options.savedRecord === 'object') {
@@ -796,6 +1103,7 @@ async function save(options: Record<string, any> = {}) {
   message.value = `模板“${templateName.value}”已保存`;
   emitTemplateInfo();
   void refreshTemplateItems();
+  void refreshMaterialItems();
   return result;
 }
 async function copyData() {
@@ -908,7 +1216,9 @@ onMounted(() => {
 onBeforeUnmount(() => unregisterRuntimeController());
 onBeforeUnmount(() => {
   if (templateSearchTimer) clearTimeout(templateSearchTimer);
+  if (materialSearchTimer) clearTimeout(materialSearchTimer);
   templateRequestId += 1;
+  materialRequestId += 1;
 });
 </script>
 

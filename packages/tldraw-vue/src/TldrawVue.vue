@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Editor, TLShape, TLShapeId } from '@tldraw/editor'
+import { createShapeId, type Editor, type TLContent, type TLShape, type TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import VueBottomToolbar from './components/VueBottomToolbar.vue'
 import VueCanvas from './components/VueCanvas.vue'
@@ -45,6 +45,26 @@ import {
 } from './presentation'
 import { DEFAULT_WORKSPACE_PAGE_SIZE_MM } from './editor/interactions/WorkspaceBoundsManager'
 import { getEditorPrintDataSource } from './editor/workspaceDataSource'
+import { createVueAssetId } from './editor/interactions/VueAssetManager'
+import { PRINT_MATERIAL_MIME } from './editor/printMaterials'
+
+type PrintMaterialType = 'image' | 'node' | 'group'
+
+interface PrintMaterialItem {
+	id: string
+	name: string
+	materialType: PrintMaterialType
+	preview?: string | null
+	content?: unknown
+}
+
+interface PrintMaterialDraft {
+	name: string
+	materialType: PrintMaterialType
+	preview?: string | null
+	content: unknown
+	sourceFile?: File
+}
 
 const props = withDefaults(
 	defineProps<{
@@ -60,6 +80,12 @@ const props = withDefaults(
 		templateLoading?: boolean
 		templateHasMore?: boolean
 		templateTotal?: number
+		materialItems?: readonly PrintMaterialItem[]
+		materialSearch?: string
+		materialTypeFilter?: string
+		materialLoading?: boolean
+		materialHasMore?: boolean
+		materialTotal?: number
 		showTemplateControls?: boolean
 		mode?: DesignerMode
 		showModeControls?: boolean
@@ -83,6 +109,13 @@ const emit = defineEmits<{
 	'template-status-change': [value: string]
 	'template-refresh': []
 	'template-load-more': []
+	'material-create': [material: PrintMaterialDraft]
+	'material-select': [materialId: string, point?: { x: number; y: number }]
+	'material-delete': [materialId: string]
+	'material-search-change': [value: string]
+	'material-type-change': [value: string]
+	'material-refresh': []
+	'material-load-more': []
 }>()
 
 const editorHost = ref<HTMLDivElement | null>(null)
@@ -110,12 +143,15 @@ const editor = shallowRef<Editor | null>(null)
 const activeTool = ref<CanvasTool>('select')
 const currentGeoShape = ref<VueGeoShape>('rectangle')
 const activeDesignerTab = ref<
-	'tools' | 'templates' | 'components' | 'echarts' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'previewSettings' | 'animation'
+	'tools' | 'templates' | 'materials' | 'components' | 'echarts' | 'layers' | 'dataSource' | 'properties' | 'columnProperties' | 'style' | 'background' | 'previewSettings' | 'animation'
 >(props.mode === 'bi' ? 'echarts' : 'tools')
 const showMaterialColumnPanel = ref(false)
 const mobilePanelOpen = ref(false)
 const dataSourceTreeRef = ref<{ closeMobileDrawer(): void } | null>(null)
 const failedTemplatePreviewIds = ref<Set<string>>(new Set())
+const failedMaterialPreviewIds = ref<Set<string>>(new Set())
+const materialFileInput = ref<HTMLInputElement | null>(null)
+const materialActionMessage = ref('')
 const templateContextMenu = ref<{ templateId: string; templateName: string; x: number; y: number } | null>(null)
 const dataSourceDrawerOpen = ref(false)
 const designerMode = ref<DesignerMode>(props.mode)
@@ -132,6 +168,7 @@ const presentationPreviewOpen = ref(false)
 const designerTabs = [
 	{ id: 'tools', label: '工具', icon: '✦' },
 	{ id: 'templates', label: '模板', icon: '▣' },
+	{ id: 'materials', label: '素材', icon: '▧' },
 	{ id: 'components', label: '组件', icon: '◇' },
 	{ id: 'echarts', label: 'ECharts', icon: '▥' },
 	{ id: 'layers', label: '图层', icon: '▱' },
@@ -202,11 +239,201 @@ function handleTemplateStatusInput(event: Event) {
 
 function handleTemplatePanelScroll(event: Event) {
 	closeTemplateContextMenu()
-	if (activeDesignerTab.value !== 'templates' || props.templateLoading || !props.templateHasMore) return
 	const target = event.currentTarget as HTMLElement | null
 	if (!target) return
-	if (target.scrollHeight - target.scrollTop - target.clientHeight < 160) {
+	if (target.scrollHeight - target.scrollTop - target.clientHeight >= 160) return
+	if (activeDesignerTab.value === 'templates' && !props.templateLoading && props.templateHasMore) {
 		emit('template-load-more')
+	}
+	if (activeDesignerTab.value === 'materials' && !props.materialLoading && props.materialHasMore) {
+		emit('material-load-more')
+	}
+}
+
+function materialTypeLabel(type: PrintMaterialType) {
+	if (type === 'image') return '图片'
+	if (type === 'group') return '组合'
+	return '节点'
+}
+
+function handleMaterialPreviewError(materialId: string) {
+	const failed = new Set(failedMaterialPreviewIds.value)
+	failed.add(materialId)
+	failedMaterialPreviewIds.value = failed
+}
+
+function handleMaterialSearchInput(event: Event) {
+	emit('material-search-change', (event.target as HTMLInputElement).value)
+}
+
+function handleMaterialTypeInput(event: Event) {
+	emit('material-type-change', (event.target as HTMLSelectElement).value)
+}
+
+function requestImageMaterial() {
+	materialFileInput.value?.click()
+}
+
+function startMaterialDrag(event: DragEvent, material: PrintMaterialItem) {
+	if (!event.dataTransfer) return
+	event.dataTransfer.effectAllowed = 'copy'
+	event.dataTransfer.setData(PRINT_MATERIAL_MIME, material.id)
+	event.dataTransfer.setData('text/plain', material.name)
+}
+
+function handleMaterialDrop(materialId: string, point: { x: number; y: number }) {
+	emit('material-select', materialId, point)
+}
+
+async function readImageDimensions(file: File) {
+	if (typeof createImageBitmap === 'function') {
+		try {
+			const bitmap = await createImageBitmap(file)
+			const dimensions = { w: bitmap.width, h: bitmap.height }
+			bitmap.close()
+			return dimensions
+		} catch {
+			// SVG and older browser image decoders can require an HTMLImageElement fallback.
+		}
+	}
+	return await new Promise<{ w: number; h: number }>((resolve, reject) => {
+		const imageUrl = URL.createObjectURL(file)
+		const image = new Image()
+		image.onload = () => {
+			URL.revokeObjectURL(imageUrl)
+			resolve({ w: image.naturalWidth, h: image.naturalHeight })
+		}
+		image.onerror = () => {
+			URL.revokeObjectURL(imageUrl)
+			reject(new Error('无法读取图片尺寸'))
+		}
+		image.src = imageUrl
+	})
+}
+
+async function createImageMaterial(event: Event) {
+	const input = event.target as HTMLInputElement
+	const file = input.files?.[0]
+	input.value = ''
+	if (!file) return
+	if (!file.type.startsWith('image/')) {
+		materialActionMessage.value = '请选择图片文件'
+		return
+	}
+	try {
+		const dimensions = await readImageDimensions(file)
+		const name = file.name.replace(/\.[^.]+$/, '') || '图片素材'
+		emit('material-create', {
+			name,
+			materialType: 'image',
+			preview: null,
+			sourceFile: file,
+			content: {
+				name: file.name,
+				mimeType: file.type || null,
+				fileSize: file.size,
+				isAnimated: /image\/(?:gif|webp)/i.test(file.type),
+				w: dimensions.w,
+				h: dimensions.h,
+			},
+		})
+		materialActionMessage.value = `正在设置素材“${name}”…`
+	} catch (error) {
+		materialActionMessage.value = error instanceof Error ? error.message : '图片素材读取失败'
+	}
+}
+
+async function createSelectionMaterial(requestedShapeIds?: readonly TLShapeId[] | Event) {
+	const currentEditor = editor.value
+	if (!currentEditor) return
+	const selectedIds = Array.isArray(requestedShapeIds)
+		? requestedShapeIds.filter((id) => Boolean(currentEditor.getShape(id)))
+		: currentEditor.getSelectedShapeIds()
+	if (!selectedIds.length) {
+		materialActionMessage.value = '请先在画布中选择一个或多个节点'
+		return
+	}
+	try {
+		const rawContent = currentEditor.getContentFromCurrentPage(selectedIds)
+		const content = await currentEditor.resolveAssetsInContent(rawContent)
+		if (!content) throw new Error('无法读取选中节点')
+		const rootCount = Array.isArray(content.rootShapeIds) ? content.rootShapeIds.length : selectedIds.length
+		const materialType: PrintMaterialType = rootCount > 1 ? 'group' : 'node'
+		const nextNumber = (props.materialTotal ?? 0) + 1
+		const name = materialType === 'group' ? `组合素材 ${nextNumber}` : `节点素材 ${nextNumber}`
+		let preview: string | null = null
+		try {
+			const svg = await currentEditor.getSvgString(selectedIds, { background: false, padding: 8 })
+			if (svg?.svg) preview = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.svg)}`
+		} catch {
+			// Preview is optional; the reusable node content remains valid without it.
+		}
+		emit('material-create', {
+			name,
+			materialType,
+			preview,
+			content: cloneTemplateValue(content),
+		})
+		materialActionMessage.value = `正在设置素材“${name}”…`
+	} catch (error) {
+		materialActionMessage.value = error instanceof Error ? error.message : '素材创建失败'
+	}
+}
+
+function insertPrintMaterial(material: PrintMaterialItem, point?: { x: number; y: number }) {
+	const currentEditor = editor.value
+	if (!currentEditor) throw new Error('打印设计器尚未就绪')
+	const insertionPoint = point ?? currentEditor.getViewportPageBounds().center
+	if (material.materialType === 'image') {
+		const content = material.content && typeof material.content === 'object'
+			? material.content as Record<string, any>
+			: {}
+		const src = typeof content.src === 'string' ? content.src : ''
+		const fileId = typeof content.fileId === 'string' ? content.fileId : ''
+		if (!src) throw new Error('图片素材缺少图片内容')
+		const naturalWidth = Math.max(1, Number(content.w) || 180)
+		const naturalHeight = Math.max(1, Number(content.h) || 120)
+		const scale = Math.min(1, 320 / naturalWidth)
+		const w = Math.max(1, Math.round(naturalWidth * scale))
+		const h = Math.max(1, Math.round(naturalHeight * scale))
+		const assetId = createVueAssetId()
+		const shapeId = createShapeId()
+		currentEditor.markHistoryStoppingPoint('insert print material')
+		currentEditor.createAssets([{
+			id: assetId,
+			typeName: 'asset',
+			type: 'image',
+			props: {
+				w: naturalWidth,
+				h: naturalHeight,
+				name: String(content.name || material.name),
+				isAnimated: Boolean(content.isAnimated),
+				mimeType: typeof content.mimeType === 'string' ? content.mimeType : null,
+				src,
+				fileSize: Number(content.fileSize) || undefined,
+			},
+			meta: {},
+		} as any])
+		currentEditor.createShape({
+			id: shapeId,
+			type: 'vue-image',
+			x: insertionPoint.x - w / 2,
+			y: insertionPoint.y - h / 2,
+			props: { w, h, assetId, fileId, src, name: String(content.name || material.name) },
+		} as any)
+		currentEditor.select(shapeId)
+	} else {
+		const content = material.content as TLContent | undefined
+		if (!content || !Array.isArray(content.shapes)) throw new Error('节点素材内容无效')
+		currentEditor.markHistoryStoppingPoint('insert print material')
+		currentEditor.putContentOntoCurrentPage(cloneTemplateValue(content), {
+			point: insertionPoint,
+			select: true,
+		})
+	}
+	materialActionMessage.value = `已添加素材“${material.name}”`
+	if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches) {
+		mobilePanelOpen.value = false
 	}
 }
 const workspaceRevision = ref(0)
@@ -656,6 +883,7 @@ defineExpose({
 	getPluginIds,
 	getWorkspaceTemplateConfig,
 	getDesignerMode: () => designerMode.value,
+	insertPrintMaterial,
 	setDesignerMode,
 	runCommand,
 	previewPrint,
@@ -785,6 +1013,62 @@ onBeforeUnmount(() => {
 							<p v-else-if="!props.templateItems?.length" class="designer-template-panel__empty">暂无可用模板</p>
 						</div>
 					</div>
+					<div v-show="activeDesignerTab === 'materials'" class="designer-tool-view designer-tool-view--materials">
+						<div class="designer-material-panel">
+							<div class="designer-template-panel__header">
+								<div class="designer-template-panel__title">
+									<h2>素材</h2>
+									<span>{{ props.materialTotal ?? props.materialItems?.length ?? 0 }}</span>
+								</div>
+								<button class="designer-template-panel__refresh" type="button"
+									:disabled="props.materialLoading" title="刷新素材" aria-label="刷新素材"
+									@click="emit('material-refresh')">↻</button>
+							</div>
+							<div class="designer-material-panel__actions">
+								<button type="button" @click="createSelectionMaterial">保存选中节点</button>
+								<button type="button" @click="requestImageMaterial">上传图片素材</button>
+								<input ref="materialFileInput" type="file" accept="image/*" hidden @change="createImageMaterial" />
+							</div>
+							<div class="designer-template-panel__filters">
+								<label class="designer-template-panel__search">
+									<input :value="props.materialSearch ?? ''" type="search" aria-label="搜索素材"
+										placeholder="搜索素材" @input="handleMaterialSearchInput" />
+								</label>
+								<select :value="props.materialTypeFilter ?? 'all'" aria-label="素材类型"
+									@change="handleMaterialTypeInput">
+									<option value="all">全部类型</option>
+									<option value="image">图片</option>
+									<option value="node">单节点</option>
+									<option value="group">组合</option>
+								</select>
+							</div>
+							<p v-if="materialActionMessage" class="designer-material-panel__message">{{ materialActionMessage }}</p>
+							<div v-if="props.materialItems?.length" class="designer-template-grid designer-material-grid">
+								<article v-for="material in props.materialItems" :key="material.id" class="designer-material-card">
+									<button type="button" class="designer-material-card__insert" draggable="true"
+										:title="`添加素材：${material.name}`" @dragstart="startMaterialDrag($event, material)"
+										@click="emit('material-select', material.id)">
+										<span class="designer-template-card__preview">
+											<img v-if="material.preview && !failedMaterialPreviewIds.has(material.id)"
+												:src="material.preview" :alt="material.name" draggable="false"
+												@error="handleMaterialPreviewError(material.id)" />
+											<span v-else class="designer-template-card__placeholder">{{ materialTypeLabel(material.materialType) }}</span>
+										</span>
+										<span class="designer-material-card__meta">
+											<strong>{{ material.name }}</strong>
+											<small>{{ materialTypeLabel(material.materialType) }}</small>
+										</span>
+									</button>
+									<button type="button" class="designer-material-card__delete" title="删除素材"
+										:aria-label="`删除素材 ${material.name}`" @click="emit('material-delete', material.id)">×</button>
+								</article>
+							</div>
+							<div v-if="props.materialLoading" class="designer-template-panel__state">正在加载素材...</div>
+							<button v-else-if="props.materialHasMore" class="designer-template-panel__load-more"
+								type="button" @click="emit('material-load-more')">加载更多</button>
+							<p v-else-if="!props.materialItems?.length" class="designer-template-panel__empty">暂无素材</p>
+						</div>
+					</div>
 					<div v-show="activeDesignerTab === 'tools'" class="designer-tool-view designer-tool-view--tools">
 						<section class="designer-tool-section" aria-label="绘制工具">
 							<h2 class="designer-tool-section__title">绘制工具</h2>
@@ -872,6 +1156,8 @@ onBeforeUnmount(() => {
 				<VueCanvas v-if="editor" ref="canvasRef" :editor="editor" :active-tool="activeTool"
 					:current-geo-shape="currentGeoShape" :handle-shortcut="handlePluginShortcut"
 					:toolbar-tools="toolbarTools" @tool-change="selectTool"
+					@save-as-material="createSelectionMaterial"
+					@material-drop="handleMaterialDrop"
 					@workspace-config-change="handleWorkspaceConfigChange" />
 				<VueDataSourceTreePanel v-if="editor && designerMode === 'print'" ref="dataSourceTreeRef" :editor="editor"
 					@configure="openDataSourceDrawer" @before-drag="closeContextAndTopMenus" @drawer-open="mobilePanelOpen = false" />

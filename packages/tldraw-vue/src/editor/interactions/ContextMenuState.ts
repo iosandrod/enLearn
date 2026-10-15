@@ -24,6 +24,7 @@ type BuiltInContextMenuActionId =
 	| 'copy'
 	| 'paste'
 	| 'duplicate'
+	| 'save-as-material'
 	| 'delete'
 	| 'bring-to-front'
 	| 'bring-forward'
@@ -283,6 +284,11 @@ export class ContextMenuState {
 				label: '创建副本',
 				shortcut: 'Ctrl+D',
 				disabled: isReadonly || !hasSelection || !info.hasUnlockedShapes,
+			},
+			{
+				id: 'save-as-material',
+				label: '另存为素材',
+				disabled: !hasSelection,
 			},
 			{
 				id: 'delete',
