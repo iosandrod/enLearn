@@ -2,6 +2,7 @@ packages:
   - "mobile-package/*"
   - "api"
   - "api-print"
+  - "electron-print"
   - "frontend"
   - "mobile-app"
   - "learning-app"

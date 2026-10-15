@@ -9,7 +9,16 @@
 // Reuse the backend-backed page renderer. The designer UI, materials and
 // actions come from the `print-designer` low-code page schema at runtime.
 import PrintDesignerHeader from '../components/PrintDesignerHeader.vue';
+import { useVisitorTracking } from '../composables/useVisitorTracking';
 import PrintDesignerPage from './dashboard/print/lowcode-designer.vue';
+
+const { recordVisit } = useVisitorTracking();
+
+onMounted(() => {
+  void recordVisit('/print-designer').catch((error) => {
+    console.warn('[visitor-records] Failed to record print designer visit.', error);
+  });
+});
 
 const printTemplateConfig = reactive({
  

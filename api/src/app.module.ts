@@ -6,6 +6,7 @@ import { DomainClientModule } from './gateway/domain-client.module';
 import { AiModule } from './ai/ai.module';
 import { InternalServiceController } from './gateway/internal-service.controller';
 import { FileUploadController } from './gateway/file-upload.controller';
+import { VisitorRecordsController } from './gateway/visitor-records.controller';
 
 @Module({
   imports: [
@@ -14,6 +15,11 @@ import { FileUploadController } from './gateway/file-upload.controller';
     DomainClientModule,
     AiModule.forGateway('gateway')
   ],
-  controllers: [ServiceGatewayController, FileUploadController, InternalServiceController]
+  controllers: [
+    ServiceGatewayController,
+    FileUploadController,
+    InternalServiceController,
+    VisitorRecordsController
+  ]
 })
 export class AppModule {}

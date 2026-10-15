@@ -69,6 +69,15 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue';
 import PrintLandingSample from '../components/PrintLandingSample.vue';
+import { useVisitorTracking } from '../composables/useVisitorTracking';
+
+const { recordVisit } = useVisitorTracking();
+
+onMounted(() => {
+  void recordVisit('/').catch((error) => {
+    console.warn('[visitor-records] Failed to record print project visit.', error);
+  });
+});
 
 useSeoMeta({
   title: '打印设计器｜批量出图、数据绑定与业务单据设计',

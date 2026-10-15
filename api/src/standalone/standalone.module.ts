@@ -22,6 +22,7 @@ import { AiModule } from '../ai/ai.module';
 import { InternalServiceController } from '../gateway/internal-service.controller';
 import { FileUploadController } from '../gateway/file-upload.controller';
 import { PrintModule } from '../print-service/print.module';
+import { VisitorRecordsController } from '../gateway/visitor-records.controller';
 
 @Module({
   imports: [
@@ -42,7 +43,12 @@ import { PrintModule } from '../print-service/print.module';
     WorkflowModule,
     AiModule.forGateway('standalone')
   ],
-  controllers: [ServiceGatewayController, FileUploadController, InternalServiceController],
+  controllers: [
+    ServiceGatewayController,
+    FileUploadController,
+    InternalServiceController,
+    VisitorRecordsController
+  ],
   providers: [
     DomainServiceRouter,
     StandaloneServiceRouter,

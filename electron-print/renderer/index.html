@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EnLearn 静默打印</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><span class="brand-icon">印</span><div><strong>EnLearn</strong><small>静默打印服务</small></div></div>
+      <nav>
+        <button class="nav active" data-page="overview">运行状态</button>
+        <button class="nav" data-page="printers">打印机配置</button>
+        <button class="nav" data-page="jobs">任务记录</button>
+        <button class="nav" data-page="settings">客户端设置</button>
+      </nav>
+      <div class="service-state"><span class="dot"></span><div><strong>本地服务运行中</strong><small>127.0.0.1:3302</small></div></div>
+    </aside>
+    <main>
+      <header><div><h1 id="page-title">运行状态</h1><p id="page-subtitle">监控打印服务与最近任务</p></div><button id="refresh" class="secondary">刷新</button></header>
+      <div id="toast" role="status"></div>
+
+      <section id="overview" class="page active">
+        <div class="cards">
+          <article class="metric"><span>打印机</span><strong id="printer-count">--</strong><small>系统已安装</small></article>
+          <article class="metric"><span>等待任务</span><strong id="queue-count">--</strong><small>串行提交到驱动</small></article>
+          <article class="metric"><span>今日已提交</span><strong id="today-success">--</strong><small>已进入系统打印队列</small></article>
+          <article class="metric danger"><span>今日失败</span><strong id="today-failed">--</strong><small>可在任务记录中重试</small></article>
+        </div>
+        <article class="panel">
+          <div class="panel-title"><div><h2>快速测试</h2><p>选择打印机和纸张，发送一张边界测试页</p></div></div>
+          <div class="form-grid quick-test">
+            <label>打印机<select id="quick-printer"></select></label>
+            <label>纸张宽度（mm）<input id="quick-width" type="number" min="1" max="1000" step="0.1" value="100"></label>
+            <label>纸张高度（mm）<input id="quick-height" type="number" min="1" max="1000" step="0.1" value="50"></label>
+            <label>份数<input id="quick-copies" type="number" min="1" max="999" value="1"></label>
+          </div>
+          <button id="test-print" class="primary">测试打印</button>
+          <p class="hint">“成功”表示任务已提交到 Windows 打印队列，不代表打印机已经实际出纸。</p>
+        </article>
+        <article class="panel"><div class="panel-title"><div><h2>最近任务</h2><p>最新 8 条打印结果</p></div></div><div id="recent-jobs" class="table-wrap"></div></article>
+      </section>
+
+      <section id="printers" class="page">
+        <article class="panel"><div class="panel-title"><div><h2>系统打印机</h2><p>设备名来自 Windows，静默打印必须使用精确设备名</p></div></div><div id="printer-list" class="printer-list"></div></article>
+        <article class="panel">
+          <div class="panel-title"><div><h2>当前打印机参数</h2><p>偏移用于修正标签机装纸产生的物理误差</p></div></div>
+          <div class="form-grid">
+            <label>配置打印机<select id="profile-printer"></select></label>
+            <label>纸张宽度（mm）<input id="paper-width" type="number" min="1" max="1000" step="0.1"></label>
+            <label>纸张高度（mm）<input id="paper-height" type="number" min="1" max="1000" step="0.1"></label>
+            <label>横向打印<select id="landscape"><option value="false">否</option><option value="true">是</option></select></label>
+            <label>水平偏移（mm）<input id="offset-x" type="number" min="-100" max="100" step="0.1"></label>
+            <label>垂直偏移（mm）<input id="offset-y" type="number" min="-100" max="100" step="0.1"></label>
+            <label>上边距（mm）<input id="margin-top" type="number" min="0" max="1000" step="0.1"></label>
+            <label>右边距（mm）<input id="margin-right" type="number" min="0" max="1000" step="0.1"></label>
+            <label>下边距（mm）<input id="margin-bottom" type="number" min="0" max="1000" step="0.1"></label>
+            <label>左边距（mm）<input id="margin-left" type="number" min="0" max="1000" step="0.1"></label>
+          </div>
+          <label class="check"><input id="print-background" type="checkbox"> 打印背景颜色和图片</label>
+          <button id="save-profile" class="primary">保存打印机参数</button>
+        </article>
+      </section>
+
+      <section id="jobs" class="page"><article class="panel"><div class="panel-title"><div><h2>打印任务记录</h2><p>保留打印时间、模板、份数、打印机与结果</p></div></div><div id="job-list" class="table-wrap"></div></article></section>
+
+      <section id="settings" class="page">
+        <article class="panel">
+          <div class="panel-title"><div><h2>客户端设置</h2><p>本地接口固定仅允许本机访问</p></div></div>
+          <label class="check"><input id="auto-start" type="checkbox"> Windows 登录后自动运行</label>
+          <label class="wide-label">更新地址（可选）<input id="update-url" type="url" placeholder="https://updates.example.com"></label>
+          <label class="wide-label">任务记录上限<input id="max-history" type="number" min="100" max="10000"></label>
+          <button id="save-settings" class="primary">保存设置</button>
+          <button id="check-update" class="secondary">检查更新</button>
+        </article>
+        <article class="panel"><div class="panel-title"><div><h2>诊断信息</h2><p>发生异常时可将日志文件交给技术人员</p></div></div><dl><dt>本地接口</dt><dd>http://127.0.0.1:3302</dd><dt>日志文件</dt><dd id="log-file">--</dd></dl></article>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
