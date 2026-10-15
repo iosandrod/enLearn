@@ -47,8 +47,9 @@ export class PrinterEngine {
       if (request.format === 'pdf') {
         const body = await window.webContents.printToPDF({
           printBackground: request.printBackground, landscape: request.landscape,
-          pageSize: { width: mmToMicrons(request.page.widthMm), height: mmToMicrons(request.page.heightMm) },
-          margins: request.page.marginMm, scale: request.scale, preferCSSPageSize: true
+          pageSize: { width: mmToInches(request.page.widthMm), height: mmToInches(request.page.heightMm) },
+          margins: Object.fromEntries(Object.entries(request.page.marginMm).map(([key, value]) => [key, mmToInches(value)])),
+          scale: request.scale, preferCSSPageSize: true
         });
         return { body, mimeType: 'application/pdf', filename: request.filename, pageCount: request.records.length };
       }
@@ -88,6 +89,7 @@ function securePreferences() {
 }
 function mmToMicrons(value: number) { return Math.round(value * 1000); }
 function mmToPixels(value: number) { return Math.round(value * 96 / 25.4); }
+function mmToInches(value: number) { return value / 25.4; }
 
 function run(command: string, args: string[]) {
   return new Promise<void>((resolve, reject) => {
