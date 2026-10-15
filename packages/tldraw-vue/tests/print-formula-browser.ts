@@ -15,8 +15,10 @@ import { PrintManager } from '../src/print/PrintManager'
 import { resolveTemplateString } from '../src/print/expression'
 import type { VueTemplateWorkspaceConfig } from '../src/editor/templateStore'
 import formulaMigration from '../../../supabase/migrations/20261013100000_print_formula_confirm_form.sql?raw'
+import formatMigration from '../../../supabase/migrations/20261015110000_print_format_confirm_form.sql?raw'
 
 const formulaSchema = JSON.parse(formulaMigration.split('$schema$')[1])
+const formatSchema = JSON.parse(formatMigration.split('$schema$')[1])
 let missingFormulaDefinition = false
 const formulaDefinitionRequests: Array<Record<string, unknown>> = []
 
@@ -27,21 +29,24 @@ editor.createShape({ id: textId, type: 'vue-text', x: 0, y: 0, props: { text: '�
 editor.select(textId)
 const source = getEditorPrintDataSource(editor)
 source.value = {
-	type: 'inline', detailField: 'items', rows: [{ items: [{ amount: 10 }, { amount: '20' }, { amount: 30 }, { amount: 40 }] }],
+	type: 'inline', detailField: 'items', rows: [{ amount: 12345.6, orderDate: '2026-10-15T14:30:00', items: [{ amount: 10 }, { amount: '20' }, { amount: 30 }, { amount: 40 }] }],
 	detailTables: [{ id: 'items', field: 'items', label: '订单明细', columns: [{ field: 'amount', title: '金额', width: 400 }] }],
 }
 let workspace: VueTemplateWorkspaceConfig = { pageSizeMm: { w: 210, h: 297 }, previewSettings: { mode: 'data', detailField: 'items' } }
 const serviceApi = {
 	async invoke(_service: string, _method: string, payload?: Record<string, unknown>) {
-		if (payload?.resource === 'lowcode_form_definitions' && (payload.filters as Record<string, unknown>)?.code === 'print-designer.formula') {
+		const formCode = (payload?.filters as Record<string, unknown> | undefined)?.code
+		if (payload?.resource === 'lowcode_form_definitions' && formCode === 'print-designer.formula') {
 			formulaDefinitionRequests.push(payload)
 			if (missingFormulaDefinition) return []
 		}
 		if (payload?.resource === 'lowcode_form_definitions') return [{
-			code: payload.filters && (payload.filters as any).code === 'print-designer.formula' ? 'print-designer.formula' : 'print-designer.property.vue-text',
-			schema: payload.filters && (payload.filters as any).code === 'print-designer.formula'
+			code: formCode === 'print-designer.formula' || formCode === 'print-designer.format' ? formCode : 'print-designer.property.vue-text',
+			schema: formCode === 'print-designer.formula'
 				? structuredClone(formulaSchema)
-				: { columns: 1, actions: [], fields: [{ field: 'text', label: '文本', component: 'vxe-textarea' }] },
+				: formCode === 'print-designer.format'
+					? structuredClone(formatSchema)
+					: { columns: 1, actions: [], fields: [{ field: 'text', label: '文本', component: 'vxe-textarea' }] },
 		}]
 		return []
 	},

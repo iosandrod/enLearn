@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { createPrintFormula, getPrintFormulaSources } from '../src/print/formula.ts'
 import { resolveTemplateString } from '../src/print/expression.ts'
+import { applyPrintValueFormat, createPrintValueFormat, getPrintFormatVariables, getPrintValueFormat, getPrintValueFormats } from '../src/print/format.ts'
 import { resolvePrintPreviewRows } from '../src/print/dataSource.ts'
 import { PrintShapePreviewResolver } from '../src/print/shapePreviewStrategies.ts'
 
@@ -24,6 +25,21 @@ assert.equal(resolve('{{TOTAL(items.nested.price)}}'), '2')
 assert.equal(resolve('{{TOTAL(items.amount, "page")}}'), '30.5')
 assert.equal(resolve('{{COUNT(items, "page")}}'), '2')
 assert.equal(resolve('{{TOTAL(items.amount, "all")}}'), '28.5')
+assert.equal(resolveTemplateString('{{amount | number:2:group}}', { ...context, row: { amount: 12345.6 } }), '12,345.60')
+assert.equal(resolveTemplateString('{{date | date:YYYY年MM月DD日}}', { ...context, row: { date: '2026-10-15T14:30:00' } }), '2026年10月15日')
+assert.equal(createPrintValueFormat({ variable: 'amount', type: 'number', digits: 2, useGrouping: true }), '{{amount | number:2:group}}')
+assert.equal(createPrintValueFormat({ variable: 'date', type: 'date', dateFormat: 'YYYY-MM-DD HH:mm:ss' }), '{{date | date:YYYY-MM-DD HH:mm:ss}}')
+assert.throws(() => createPrintValueFormat({ variable: 'constructor', type: 'number' }), /变量/)
+assert.equal(applyPrintValueFormat('金额：{{amount}}', 'amount', '{{amount | number:0}}'), '金额：{{amount | number:0}}')
+assert.equal(applyPrintValueFormat('金额：{{amount | number:2}}', 'amount', '{{amount | number:0}}'), '金额：{{amount | number:0}}')
+assert.equal(applyPrintValueFormat('金额：', 'amount', '{{amount | number:0}}'), '金额：{{amount | number:0}}')
+assert.deepEqual(getPrintValueFormat('金额：{{amount | number:0}}'), { variable: 'amount', type: 'number', digits: 0, useGrouping: false, dateFormat: 'YYYY-MM-DD' })
+assert.deepEqual(getPrintValueFormat('{{amount | number:2:group}}'), { variable: 'amount', type: 'number', digits: 2, useGrouping: true, dateFormat: 'YYYY-MM-DD' })
+assert.deepEqual(getPrintValueFormat('{{orderDate | date:YYYY-MM-DD HH:mm}}'), { variable: 'orderDate', type: 'date', digits: 2, useGrouping: true, dateFormat: 'YYYY-MM-DD HH:mm' })
+assert.equal(getPrintValueFormats('{{amount | number:0}}{{orderDate | date:YYYY/MM/DD}}').length, 2)
+assert.equal(getPrintValueFormat('{{amount | number:0}}{{orderDate | date:YYYY/MM/DD}}', 'orderDate').dateFormat, 'YYYY/MM/DD')
+assert.ok(getPrintFormatVariables(source, source.rows, '{{manualValue}}').some(item => item.value === 'manualValue'))
+assert.ok(getPrintFormatVariables(source, source.rows, '').some(item => item.value === 'items.amount'))
 assert.equal(resolve('{{total}}/{{pageNo}}/{{customer}}'), '99/1/A', 'Existing row fields must keep their priority')
 assert.equal(resolve('{{MAX(items.empty) | fixed:2}}/{{AVERAGE(items.empty) | fixed:2}}'), '/')
 for (const name of ['TOTAL', 'MAX', 'MIN', 'AVERAGE', 'COUNT']) {

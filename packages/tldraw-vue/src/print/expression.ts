@@ -1,6 +1,7 @@
 import { evaluateNamedPrintExpression } from './expressions.ts'
 import { getPrintPreviewDetailRows } from './dataSource.ts'
 import { evaluatePrintFormula, isPrintFormula } from './formula.ts'
+import { PRINT_DATE_FORMATS } from './format.ts'
 import type { PrintExpressionConfig, PrintExpressionContext, PrintNamedExpression } from './types'
 
 const EXPRESSION_PATTERN = /{{\s*([^{}]+?)\s*}}/g
@@ -56,7 +57,7 @@ function resolveExpression(
 	let value = formula ? evaluatePrintFormula(pathExpression, context) : resolvePathExpression(pathExpression, context, config)
 
 	for (const filterExpression of filterExpressions) {
-		if (formula && !/^(upper|lower|json|fixed(?::\d+)?)$/.test(filterExpression)) {
+		if (formula && !/^(upper|lower|json|fixed(?::\d+)?|number(?::\d+(?::group)?)?|date:.+)$/.test(filterExpression)) {
 			throw new Error(`不支持公式格式化“${filterExpression}”`)
 		}
 		value = applyFilter(value, filterExpression)
@@ -107,7 +108,9 @@ function findNamedExpression(
 }
 
 function applyFilter(value: unknown, filterExpression: string) {
-	const [name, ...args] = filterExpression.split(':').map((part) => part.trim())
+	const separator = filterExpression.indexOf(':')
+	const name = (separator < 0 ? filterExpression : filterExpression.slice(0, separator)).trim()
+	const args = (separator < 0 ? [] : filterExpression.slice(separator + 1).split(':')).map((part) => part.trim())
 
 	if (name === 'upper') return formatExpressionValue(value).toUpperCase()
 	if (name === 'lower') return formatExpressionValue(value).toLowerCase()
@@ -119,8 +122,34 @@ function applyFilter(value: unknown, filterExpression: string) {
 		const number = Number(value)
 		return Number.isFinite(number) ? number.toFixed(Number.isFinite(digits) ? digits : 2) : value
 	}
+	if (name === 'number') {
+		if (value == null) return value
+		const digits = Number(args[0] ?? 2)
+		if (!Number.isInteger(digits) || digits < 0 || digits > 20) throw new Error('小数位必须是 0 到 20 之间的整数')
+		const number = Number(value)
+		if (!Number.isFinite(number)) return value
+		return new Intl.NumberFormat('zh-CN', {
+			useGrouping: args[1] === 'group', minimumFractionDigits: digits, maximumFractionDigits: digits,
+		}).format(number)
+	}
+	if (name === 'date') {
+		if (value == null || value === '') return value
+		const format = args.join(':') || 'YYYY-MM-DD'
+		if (!PRINT_DATE_FORMATS.includes(format as typeof PRINT_DATE_FORMATS[number])) throw new Error('不支持的日期格式')
+		const date = value instanceof Date ? value : new Date(value as string | number)
+		if (Number.isNaN(date.getTime())) throw new Error('日期值无效')
+		return formatDate(date, format)
+	}
 
 	return value
+}
+
+function formatDate(date: Date, format: string) {
+	const parts = {
+		YYYY: String(date.getFullYear()), MM: String(date.getMonth() + 1).padStart(2, '0'), DD: String(date.getDate()).padStart(2, '0'),
+		HH: String(date.getHours()).padStart(2, '0'), mm: String(date.getMinutes()).padStart(2, '0'), ss: String(date.getSeconds()).padStart(2, '0'),
+	}
+	return format.replace(/YYYY|MM|DD|HH|mm|ss/g, token => parts[token as keyof typeof parts])
 }
 
 function getPathValue(source: unknown, path: string) {

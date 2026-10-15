@@ -6,6 +6,8 @@
 
 “插入公式”通过 `confirmForm({ formCode: 'print-designer.formula' })` 打开，表单字段、布局和静态选项存储于数据库 `lowcode_form_definitions`；明细源、字段、分页选项和示例结果由当前编辑器动态提供。插入后的公式仍作为节点文本随模板保存，不单独创建公式历史记录。部署时执行迁移 `supabase/migrations/20261013100000_print_formula_confirm_form.sql`，或运行 `pnpm --dir api exec tsx scripts/apply-print-formula-confirm-form.ts` 应用并验证表单定义。
 
+文本属性的“插入公式”右侧提供“格式化”按钮。它同样打开低代码表单，按当前数据源选择变量和格式化类型；数字可设置 0 至 6 位小数以及千分位，日期可选择日期、日期时间和时间格式。确认后更新文本中已有的同名变量格式，若不存在则追加到文本末尾；表达式可随模板保存、预览和打印，例如 `{{amount | number:2:group}}` 或 `{{orderDate | date:YYYY-MM-DD}}`。日期时间按当前设备时区显示。部署时执行迁移 `supabase/migrations/20261015110000_print_format_confirm_form.sql`，或运行 `pnpm --dir api exec tsx scripts/apply-print-format-confirm-form.ts`。
+
 | 示例 | 结果含义 |
 | --- | --- |
 | `{{TOTAL(items.amount)}}` | 当前单据 items 明细的金额合计，SUM 为别名 |

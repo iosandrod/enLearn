@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import LowCodeForm from '@enlearn/lowcode-framework/components/low-code-form'
 import VueFormulaEditorDialog from './VueFormulaEditorDialog.vue'
+import VueFormatEditorDialog from './VueFormatEditorDialog.vue'
+import { applyPrintValueFormat } from '@/print/format'
 import { useLowCodeHost } from '@enlearn/lowcode-framework/core/host'
 import {
 	$$formDesigner,
@@ -86,6 +88,7 @@ const props = withDefaults(
 
 const formModel = ref<ShapeFormModel>({})
 const formulaShapeId = ref<TLShapeId | null>(null)
+const formatShapeId = ref<TLShapeId | null>(null)
 const formulaFormRef = ref<{ commitPendingValues(): void } | null>(null)
 const formulaReadonly = useEditorValue('formula insertion readonly', () => props.editor.getIsReadonly())
 const multiShapeEditedFields = new Set<string>()
@@ -376,12 +379,27 @@ function openFormulaEditor() {
 	if (shape && typeof getProps(shape).text === 'string' && !props.editor.getIsReadonly()) formulaShapeId.value = shape.id
 }
 
+function openFormatEditor() {
+	formulaFormRef.value?.commitPendingValues()
+	const shape = selectedShape.value
+	if (shape && typeof getProps(shape).text === 'string' && !props.editor.getIsReadonly()) formatShapeId.value = shape.id
+}
+
 function insertFormula(formula: string) {
 	const shape = formulaShapeId.value ? props.editor.getShape(formulaShapeId.value) : undefined
 	if (!shape || props.editor.getIsReadonly() || typeof getProps(shape).text !== 'string') return
 	props.editor.markHistoryStoppingPoint('insert print formula')
 	props.editor.updateShape({ id: shape.id, type: shape.type, props: { text: `${getProps(shape).text}${formula}` } } as TLShapePartial)
 	formulaShapeId.value = null
+	syncFormModel()
+}
+
+function insertFormat(variable: string, expression: string) {
+	const shape = formatShapeId.value ? props.editor.getShape(formatShapeId.value) : undefined
+	if (!shape || props.editor.getIsReadonly() || typeof getProps(shape).text !== 'string') return
+	props.editor.markHistoryStoppingPoint('insert print format')
+	props.editor.updateShape({ id: shape.id, type: shape.type, props: { text: applyPrintValueFormat(String(getProps(shape).text), variable, expression) } } as TLShapePartial)
+	formatShapeId.value = null
 	syncFormModel()
 }
 
@@ -1796,19 +1814,27 @@ function getOptionValue(value: unknown, options: readonly LowCodeOption[], fallb
 			@field-change="handleMultiShapeFieldChange"
 		>
 			<template #field-extra="{ field }">
-				<button v-if="field.field === 'text' && selectedShape && typeof getProps(selectedShape).text === 'string'"
-					type="button" class="lowcode-form-panel__formula-button" :disabled="formulaReadonly" @click="openFormulaEditor">
-					<i class="ri-functions" aria-hidden="true" /> 插入公式
-				</button>
+				<div v-if="field.field === 'text' && selectedShape && typeof getProps(selectedShape).text === 'string'" class="lowcode-form-panel__text-actions">
+					<button type="button" class="lowcode-form-panel__formula-button" :disabled="formulaReadonly" @click="openFormulaEditor">
+						<i class="ri-functions" aria-hidden="true" /> 插入公式
+					</button>
+					<button type="button" class="lowcode-form-panel__format-button" :disabled="formulaReadonly" @click="openFormatEditor">
+						<i class="ri-text" aria-hidden="true" /> 格式化
+					</button>
+				</div>
 			</template>
 		</LowCodeForm>
 		<VueFormulaEditorDialog v-if="formulaShapeId" :key="formulaShapeId" :editor="editor" :shape-id="formulaShapeId"
 			:workspace-revision="workspaceRevision" :get-workspace-template-config="getWorkspaceTemplateConfig"
 			@close="formulaShapeId = null" @insert="insertFormula" />
+		<VueFormatEditorDialog v-if="formatShapeId" :key="formatShapeId" :editor="editor" :shape-id="formatShapeId"
+			@close="formatShapeId = null" @apply="insertFormat" />
 	</section>
 </template>
 
 <style scoped>
-.lowcode-form-panel__formula-button { align-self: start; margin-top: 6px; padding: 4px 8px; border: 1px solid #bfdbfe; border-radius: 5px; background: #eff6ff; color: #1d4ed8; font-size: 12px; cursor: pointer; }
-.lowcode-form-panel__formula-button:disabled { opacity: .5; cursor: default; }
+.lowcode-form-panel__text-actions { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+.lowcode-form-panel__formula-button, .lowcode-form-panel__format-button { padding: 4px 8px; border: 1px solid #bfdbfe; border-radius: 5px; background: #eff6ff; color: #1d4ed8; font-size: 12px; cursor: pointer; }
+.lowcode-form-panel__format-button { border-color: #a7f3d0; background: #ecfdf5; color: #047857; }
+.lowcode-form-panel__formula-button:disabled, .lowcode-form-panel__format-button:disabled { opacity: .5; cursor: default; }
 </style>

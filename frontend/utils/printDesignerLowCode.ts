@@ -37,6 +37,7 @@ export const PRINT_DESIGNER_FORM_CODES = [
   'print-designer.background',
   'print-designer.preview-settings',
   'print-designer.formula',
+  'print-designer.format',
   'print-designer.feedback',
   'print-account-setting',
   'presentation-animation',

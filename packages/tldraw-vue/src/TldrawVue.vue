@@ -674,6 +674,7 @@ onMounted(() => {
 	window.addEventListener('blur', closeTemplateContextMenu)
 	window.addEventListener('resize', closeTemplateContextMenu)
 	notifyDesignerModeState(designerMode.value)
+	selectDesignerTab('components')//
 })
 
 onBeforeUnmount(() => {
