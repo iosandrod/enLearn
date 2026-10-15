@@ -655,6 +655,14 @@ async function onPaste(event: ClipboardEvent) {
 	await controller.pasteClipboardData(point, event.clipboardData)
 }
 
+function onCopy(event: ClipboardEvent) {
+	controller.handleClipboardEvent(event, 'copy')
+}
+
+function onCut(event: ClipboardEvent) {
+	controller.handleClipboardEvent(event, 'cut')
+}
+
 function shouldSkipCanvasPaste(event: ClipboardEvent) {
 	const target = event.target as HTMLElement | null
 	const activeElement = document.activeElement as HTMLElement | null
@@ -862,6 +870,8 @@ onMounted(() => {
 	window.addEventListener('resize', onWindowResize)
 	window.addEventListener('keydown', onKeyDown)
 	window.addEventListener('keyup', onKeyUp)
+	window.addEventListener('copy', onCopy)
+	window.addEventListener('cut', onCut)
 	window.addEventListener('paste', onPaste)
 })
 
@@ -869,6 +879,8 @@ onBeforeUnmount(() => {
 	window.removeEventListener('resize', onWindowResize)
 	window.removeEventListener('keydown', onKeyDown)
 	window.removeEventListener('keyup', onKeyUp)
+	window.removeEventListener('copy', onCopy)
+	window.removeEventListener('cut', onCut)
 	window.removeEventListener('paste', onPaste)
 	resizeObserver?.disconnect()
 	removeGuideDragListeners()

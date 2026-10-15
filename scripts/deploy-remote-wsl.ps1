@@ -11,7 +11,6 @@ $wsl = 'C:\Program Files\WSL\wsl.exe'
 $composeFile = '/mnt/c/project/enLearn/docker-compose.yml'
 $envFile = '/mnt/c/project/enLearn/.env.production'
 $projectDir = '/mnt/c/project/enLearn'
-$hostForwardPort = 18081
 $localhostWebPort = 8081
 
 if (-not (Test-Path -LiteralPath $wsl)) {
@@ -37,27 +36,32 @@ function Invoke-Compose {
 }
 
 function Ensure-WindowsPortProxy {
-  Write-Host 'Refreshing Windows HTTP port forwarding...' -ForegroundColor Cyan
-  & $wsl -d $Distro -u root -e bash -lc 'systemctl restart enlearn-host-tunnel.service'
-  if ($LASTEXITCODE -ne 0) {
-    throw 'Could not restart the WSL-to-Windows HTTP tunnel.'
+  Write-Host 'Refreshing direct Windows-to-WSL HTTP forwarding...' -ForegroundColor Cyan
+  & $wsl -d $Distro -u root -e bash -lc 'systemctl disable --now enlearn-host-tunnel.service >/dev/null 2>&1 || true'
+  $wslIp = (((& $wsl -d $Distro -e hostname -I) -join ' ').Trim() -split '\s+')[0]
+  if ([string]::IsNullOrWhiteSpace($wslIp)) {
+    throw 'Could not determine the current WSL IP address.'
   }
 
-  Start-Sleep -Seconds 3
   & netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=80 2>$null
-  & netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=80 connectaddress=127.0.0.1 connectport=$hostForwardPort
+  & netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=80 connectaddress=$wslIp connectport=$localhostWebPort
   if ($LASTEXITCODE -ne 0) {
     throw 'Could not configure Windows port 80 forwarding.'
   }
 
   & netsh interface portproxy delete v4tov4 listenaddress=127.0.0.1 listenport=$localhostWebPort 2>$null
-  & netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=$localhostWebPort connectaddress=127.0.0.1 connectport=$hostForwardPort
+  & netsh interface portproxy add v4tov4 listenaddress=127.0.0.1 listenport=$localhostWebPort connectaddress=$wslIp connectport=$localhostWebPort
   if ($LASTEXITCODE -ne 0) {
     throw "Could not configure Windows localhost:$localhostWebPort forwarding."
   }
-
   & netsh interface portproxy delete v6tov4 listenaddress=::1 listenport=$localhostWebPort 2>$null
-  & netsh interface portproxy add v6tov4 listenaddress=::1 listenport=$localhostWebPort connectaddress=127.0.0.1 connectport=$hostForwardPort 2>$null
+  & netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=$localhostWebPort 2>$null
+
+  if (-not (Get-NetFirewallRule -DisplayName 'enLearn Public HTTP 80' -ErrorAction SilentlyContinue)) {
+    New-NetFirewallRule -DisplayName 'enLearn Public HTTP 80' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 80 -Profile Any | Out-Null
+  }
+  Restart-Service iphlpsvc
+  Write-Host "Port 80 now forwards directly to WSL $wslIp`:$localhostWebPort." -ForegroundColor Green
 }
 
 Write-Host "Checking WSL and Docker..." -ForegroundColor Cyan
@@ -87,11 +91,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 try {
-  $localResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:$localhostWebPort/" -TimeoutSec 10
+  $localResponse = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost/' -TimeoutSec 10
   if ($localResponse.StatusCode -ne 200) { throw "HTTP $($localResponse.StatusCode)" }
-  Write-Host "Windows localhost:$localhostWebPort returned HTTP $($localResponse.StatusCode)." -ForegroundColor Green
+  Write-Host "Windows localhost:80 returned HTTP $($localResponse.StatusCode)." -ForegroundColor Green
 } catch {
-  throw "Windows localhost:$localhostWebPort check failed: $($_.Exception.Message)"
+  throw "Windows localhost:80 check failed: $($_.Exception.Message)"
 }
 
 if ($PublicUrl) {

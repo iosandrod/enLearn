@@ -22,7 +22,7 @@ Write-StartupLog "Starting unified enLearn and Trigger supervisor for $Distro."
 
 while ($true) {
   try {
-    & $PowerShellPath -NoProfile -ExecutionPolicy Bypass -File $AllInOneScript
+    & $PowerShellPath -NoProfile -ExecutionPolicy Bypass -File $AllInOneScript -SkipTrigger
     $exitCode = $LASTEXITCODE
     if ($exitCode -eq 0) {
       Write-StartupLog 'Unified startup completed successfully; keeping the task alive.'

@@ -29,6 +29,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "test:multi-shape-properties": "node tests/multi-shape-properties-regression.mjs",
+    "test:clipboard-fallback": "node tests/clipboard-fallback-regression.mjs",
     "test:material-height": "node tests/material-height-regression.mjs",
     "test:print-data-source-excel": "node --experimental-strip-types tests/print-data-source-excel-regression.mjs",
     "test:print-formulas": "node --experimental-strip-types tests/print-formula-regression.mjs && node --experimental-strip-types tests/print-preview-detail-rows-regression.mjs && node tests/print-formula-browser-regression.mjs",

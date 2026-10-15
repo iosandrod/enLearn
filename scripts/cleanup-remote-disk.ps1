@@ -51,6 +51,12 @@ function Get-VhdxPath {
   throw "找不到 $Distro 的 ext4.vhdx。"
 }
 
+function Get-ShortPath([Parameter(Mandatory)][string]$Path) {
+  $short = (& cmd.exe /c "for %I in (\"$Path\") do @echo %~sI" | Select-Object -First 1).Trim()
+  if ($short -and (Test-Path -LiteralPath $short)) { return $short }
+  return $Path
+}
+
 $script:WslPath = Get-WslPath
 $beforeC = (Get-PSDrive -Name C).Free
 
@@ -77,6 +83,7 @@ if (-not $SkipServiceCheck) {
 if ($CompactVhdx) {
   Assert-Administrator
   $vhdx = Get-VhdxPath
+  $diskpartVhdx = Get-ShortPath $vhdx
   $beforeVhdx = (Get-Item -LiteralPath $vhdx).Length
   Write-Warning '即将关闭 WSL，enLearn、Supabase 和其他 WSL 服务会短暂中断。'
   Invoke-WslRoot 'sync; fstrim -av 2>/dev/null || true'
@@ -87,7 +94,7 @@ if ($CompactVhdx) {
   $diskpart = Join-Path $env:TEMP ("compact-wsl-{0}.txt" -f ([guid]::NewGuid()))
   try {
     @(
-      ('select vdisk file="{0}"' -f $vhdx),
+      ('select vdisk file="{0}"' -f $diskpartVhdx),
       'compact vdisk',
       'exit'
     ) | Out-File -LiteralPath $diskpart -Encoding ASCII

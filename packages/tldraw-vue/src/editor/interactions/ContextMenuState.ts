@@ -232,6 +232,13 @@ export class ContextMenuState {
 		}
 	}
 
+	getClipboardSelectionShapeIds(editor: Editor) {
+		const selectedShapeIds = editor.getSelectedShapeIds().slice()
+		return this.getOutermostSelectedShapes(editor, editor.getSelectedShapes(), selectedShapeIds).map(
+			(shape) => shape.id
+		)
+	}
+
 	private buildItems(
 		editor: Editor,
 		info: {
@@ -466,22 +473,71 @@ export class ContextMenuState {
 		const nav = win.navigator
 		const html = `<div data-tldraw-vue="${encodeURIComponent(payload)}"></div>`
 
-		if (nav.clipboard?.write && win.ClipboardItem) {
-			await nav.clipboard.write([
-				new win.ClipboardItem({
-					'text/html': new Blob([html], { type: 'text/html' }),
-					'text/plain': new Blob([payload], { type: 'text/plain' }),
-				}),
-			])
-			return true
+		try {
+			if (nav.clipboard?.write && win.ClipboardItem) {
+				await nav.clipboard.write([
+					new win.ClipboardItem({
+						'text/html': new Blob([html], { type: 'text/html' }),
+						'text/plain': new Blob([payload], { type: 'text/plain' }),
+					}),
+				])
+				return true
+			}
+
+			if (nav.clipboard?.writeText) {
+				await nav.clipboard.writeText(payload)
+				return true
+			}
+		} catch {
+			// Clipboard API is unavailable in insecure contexts or may be denied by permissions.
 		}
 
-		if (nav.clipboard?.writeText) {
-			await nav.clipboard.writeText(payload)
-			return true
-		}
+		return this.copyTextWithExecCommand(win, payload)
+	}
 
-		return false
+	/**
+	 * Writes clipboard data during a native copy/cut event. This path is synchronous and
+	 * therefore works on HTTP deployments where navigator.clipboard is unavailable.
+	 */
+	copySelectionToClipboardEvent(editor: Editor, shapeIds: TLShapeId[], clipboardData: DataTransfer | null) {
+		if (!clipboardData) return false
+		const payload = this.stringifyContent(editor.getContentFromCurrentPage(shapeIds))
+		const html = `<div data-tldraw-vue="${encodeURIComponent(payload)}"></div>`
+		try {
+			clipboardData.setData('text/html', html)
+			clipboardData.setData('text/plain', payload)
+			return true
+		} catch {
+			return false
+		}
+	}
+
+	private copyTextWithExecCommand(win: Window, payload: string) {
+		const doc = win.document
+		if (!doc?.body || typeof doc.execCommand !== 'function') return false
+		const previousActiveElement = doc.activeElement as HTMLElement | null
+		const textarea = doc.createElement('textarea')
+		textarea.value = payload
+		textarea.setAttribute('readonly', '')
+		textarea.setAttribute('aria-hidden', 'true')
+		textarea.style.position = 'fixed'
+		textarea.style.left = '-9999px'
+		textarea.style.opacity = '0'
+		doc.body.appendChild(textarea)
+		textarea.focus({ preventScroll: true })
+		textarea.select()
+		let copied = false
+		try {
+			copied = doc.execCommand('copy')
+		} catch {
+			copied = false
+		} finally {
+			doc.body.removeChild(textarea)
+			if (previousActiveElement?.isConnected) {
+				previousActiveElement.focus({ preventScroll: true })
+			}
+		}
+		return copied
 	}
 
 	async pasteClipboardData(

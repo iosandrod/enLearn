@@ -930,20 +930,9 @@ export class VueEditorController {
 			return true
 		}
 
-		if (this.matchesShortcut(event, { key: 'x', accel: true })) {
-			void this.runContextMenuShortcut('cut')
-			return true
-		}
-
-		if (this.matchesShortcut(event, { key: 'c', accel: true })) {
-			void this.runContextMenuShortcut('copy')
-			return true
-		}
-
-		if (this.matchesShortcut(event, { key: 'v', accel: true })) {
-			void this.runContextMenuShortcut('paste')
-			return true
-		}
+		// Let the browser emit native copy/cut/paste events. VueCanvas handles those
+		// events synchronously, which also works when navigator.clipboard is blocked
+		// on an HTTP deployment.
 
 		if (event.key === 'Delete' || event.key === 'Backspace') {
 			this.deleteSelection()
@@ -1256,6 +1245,58 @@ export class VueEditorController {
 		)
 		await this.contextMenuState.executeAction(editor, snapshot, actionId)
 		this.resetContainerScroll()
+	}
+
+	handleClipboardEvent(event: ClipboardEvent, operation: 'copy' | 'cut') {
+		if (event.defaultPrevented) return false
+		if (this.shouldSkipClipboardEvent(event)) return false
+		this.selectMaterialParentsForSelectedSections()
+		const editor = this.options.editor
+		const shapeIds = this.contextMenuState.getClipboardSelectionShapeIds(editor)
+		if (!shapeIds.length || (operation === 'cut' && editor.getIsReadonly())) return false
+		if (
+			operation === 'cut' &&
+			!shapeIds.some((shapeId) => {
+				const shape = editor.getShape(shapeId)
+				return Boolean(shape && !editor.isShapeOrAncestorLocked(shape))
+			})
+		)
+			return false
+		if (!this.contextMenuState.copySelectionToClipboardEvent(editor, shapeIds, event.clipboardData)) return false
+		event.preventDefault()
+		if (operation === 'cut') {
+			editor.markHistoryStoppingPoint('cut')
+			editor.deleteShapes(shapeIds)
+		}
+		return true
+	}
+
+	private shouldSkipClipboardEvent(event: ClipboardEvent) {
+		const target = event.target as HTMLElement | null
+		const doc = target?.ownerDocument ?? document
+		const activeElement = doc.activeElement as HTMLElement | null
+		if (this.isEditableClipboardTarget(target) || this.isEditableClipboardTarget(activeElement)) {
+			return true
+		}
+		const container = this.options.getContainer()
+		if (
+			container &&
+			!container.contains(target) &&
+			activeElement !== container &&
+			!container.contains(activeElement)
+		)
+			return true
+		return Boolean(doc.defaultView?.getSelection()?.toString())
+	}
+
+	private isEditableClipboardTarget(element: HTMLElement | null) {
+		if (!element) return false
+		if (element.isContentEditable) return true
+		return Boolean(
+			element.closest(
+				'input, textarea, select, [contenteditable="true"], .lowcode-form-panel, .vue-table-shape'
+			)
+		)
 	}
 
 	private getKeyboardActionScreenPoint() {

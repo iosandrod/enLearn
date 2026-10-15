@@ -311,25 +311,24 @@ if (-not $SkipTrigger) {
   Wait-WslHttp -Uri 'http://127.0.0.1:8030/healthcheck'
 }
 
-Write-Host 'Restarting the stable WSL-to-Windows HTTP tunnel...' -ForegroundColor Cyan
-Invoke-WslRoot "systemctl restart '$tunnelService'"
-Wait-WindowsHttp -Uri "http://127.0.0.1:$TunnelPort/"
-
-Write-Host 'Repairing Windows port forwarding...' -ForegroundColor Cyan
-Add-PortProxy -Type v4tov4 -ListenAddress '0.0.0.0' -ListenPort $PublicPort -ConnectAddress '127.0.0.1' -ConnectPort $TunnelPort
-Add-PortProxy -Type v4tov4 -ListenAddress '127.0.0.1' -ListenPort $WebPort -ConnectAddress '127.0.0.1' -ConnectPort $TunnelPort
-
-# Some Windows clients resolve localhost to ::1 first. Keep the IPv6 loopback path working too.
-try {
-  Add-PortProxy -Type v6tov4 -ListenAddress '::1' -ListenPort $WebPort -ConnectAddress '127.0.0.1' -ConnectPort $TunnelPort
-} catch {
-  Write-Warning "IPv6 localhost proxy was not added: $($_.Exception.Message)"
+Write-Host 'Configuring direct Windows-to-WSL HTTP forwarding...' -ForegroundColor Cyan
+Invoke-WslRoot "systemctl disable --now '$tunnelService' >/dev/null 2>&1 || true"
+$wslIp = (((& $wsl -d $Distro -e hostname -I) -join ' ').Trim() -split '\s+')[0]
+if ([string]::IsNullOrWhiteSpace($wslIp)) {
+  throw 'Could not determine the current WSL IP address.'
 }
+Add-PortProxy -Type v4tov4 -ListenAddress '0.0.0.0' -ListenPort $PublicPort -ConnectAddress $wslIp -ConnectPort $WebPort
+Add-PortProxy -Type v4tov4 -ListenAddress '127.0.0.1' -ListenPort $WebPort -ConnectAddress $wslIp -ConnectPort $WebPort
+& $netsh interface portproxy delete v6tov4 listenaddress=::1 listenport=$WebPort 2>$null | Out-Null
+& $netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=$WebPort 2>$null | Out-Null
+if (-not (Get-NetFirewallRule -DisplayName 'enLearn Public HTTP 80' -ErrorAction SilentlyContinue)) {
+  New-NetFirewallRule -DisplayName 'enLearn Public HTTP 80' -Direction Inbound -Action Allow -Protocol TCP -LocalPort $PublicPort -Profile Any | Out-Null
+}
+Restart-Service iphlpsvc
 
 Write-Host 'Validating local and public entry points...' -ForegroundColor Cyan
-Wait-WindowsHttp -Uri "http://127.0.0.1:$WebPort/"
-Wait-WindowsHttp -Uri "http://localhost:$WebPort/"
 Wait-WindowsHttp -Uri "http://127.0.0.1:$PublicPort/"
+Wait-WindowsHttp -Uri "http://localhost:$PublicPort/"
 
 Write-Host "`n=== Port proxy ===" -ForegroundColor DarkCyan
 & $netsh interface portproxy show all
@@ -347,4 +346,4 @@ Get-ScheduledTask -TaskName $keepAliveTask, $startupTask -ErrorAction SilentlyCo
   Select-Object TaskName, State |
   Format-Table -AutoSize
 
-Write-Host "`nAll services completed: http://localhost:$WebPort/ and Trigger :8030 are responding." -ForegroundColor Green
+Write-Host "`nAll services completed: http://localhost:$PublicPort/ is responding." -ForegroundColor Green
