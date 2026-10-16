@@ -30,11 +30,11 @@ async function refresh() {
 }
 
 function render() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toDateString();
   document.querySelector('#printer-count').textContent = state.printers.length;
   document.querySelector('#queue-count').textContent = state.jobs.filter((job) => job.status === 'queued' || job.status === 'printing').length;
-  document.querySelector('#today-success').textContent = state.jobs.filter((job) => job.createdAt.startsWith(today) && job.status === 'submitted').length;
-  document.querySelector('#today-failed').textContent = state.jobs.filter((job) => job.createdAt.startsWith(today) && job.status === 'failed').length;
+  document.querySelector('#today-success').textContent = state.jobs.filter((job) => new Date(job.createdAt).toDateString() === today && job.status === 'submitted').length;
+  document.querySelector('#today-failed').textContent = state.jobs.filter((job) => new Date(job.createdAt).toDateString() === today && job.status === 'failed').length;
   const options = state.printers.map((printer) => `<option value="${escapeAttr(printer.name)}">${escapeHtml(printer.displayName || printer.name)}</option>`).join('');
   ['#quick-printer', '#profile-printer'].forEach((selector) => { const element = document.querySelector(selector); const previous = element.value; element.innerHTML = options; element.value = previous || state.config.defaultPrinter || state.printers[0]?.name || ''; });
   document.querySelector('#printer-list').innerHTML = state.printers.length ? state.printers.map((printer) => `<div class="printer-item"><div><strong>${escapeHtml(printer.displayName || printer.name)}</strong><small>${escapeHtml(printer.name)}${printer.isDefault ? ' · Windows 默认' : ''}</small></div><div class="printer-actions">${printer.name === state.config.defaultPrinter ? '<span class="status submitted">客户端默认</span>' : `<button class="secondary" data-default-printer="${escapeAttr(printer.name)}">设为默认</button>`}</div></div>`).join('') : '<p>没有检测到系统打印机。</p>';
@@ -42,6 +42,7 @@ function render() {
   document.querySelector('#job-list').innerHTML = jobTable(state.jobs);
   document.querySelector('#auto-start').checked = state.config.autoStart;
   document.querySelector('#update-url').value = state.config.updateFeedUrl || '';
+  document.querySelector('#allowed-origins').value = state.config.allowedOrigins.join(', ');
   document.querySelector('#max-history').value = state.config.maxHistory;
   document.querySelector('#log-file').textContent = state.logFile;
   fillProfile();
@@ -71,7 +72,7 @@ async function testPrint() {
       page: { widthMm: numberValue('#quick-width'), heightMm: numberValue('#quick-height'), marginMm: { top: 0, right: 0, bottom: 0, left: 0 } }
     } });
     toast(result.ok ? '测试页已提交系统打印队列。' : '测试打印失败。', !result.ok); await refresh();
-  } catch (error) { toast(error.message, true); }
+  } catch (error) { await refresh(); toast(error.message, true); }
   finally { setBusy('#test-print', false); }
 }
 
@@ -88,7 +89,7 @@ async function saveProfile() {
 }
 
 async function saveSettings() {
-  try { const result = await api('/config', { method: 'PUT', body: { autoStart: document.querySelector('#auto-start').checked, updateFeedUrl: value('#update-url'), maxHistory: numberValue('#max-history') } }); state.config = result.config; toast('客户端设置已保存。'); }
+  try { const result = await api('/config', { method: 'PUT', body: { autoStart: document.querySelector('#auto-start').checked, updateFeedUrl: value('#update-url'), allowedOrigins: value('#allowed-origins').split(',').map(item => item.trim()).filter(Boolean), maxHistory: numberValue('#max-history') } }); state.config = result.config; toast('客户端设置已保存。'); }
   catch (error) { toast(error.message, true); }
 }
 
@@ -120,3 +121,12 @@ function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, (cha
 function escapeAttr(value) { return escapeHtml(value); }
 
 void refresh();
+setInterval(async () => {
+  if (document.hidden) return;
+  try {
+    const result = await api('/jobs?limit=200'); state.jobs = result.jobs;
+    document.querySelector('#job-list').innerHTML = jobTable(state.jobs);
+    document.querySelector('#recent-jobs').innerHTML = jobTable(state.jobs.slice(0, 8));
+    document.querySelector('#queue-count').textContent = result.queued + (result.running ? 1 : 0);
+  } catch { /* The explicit refresh action displays connection errors. */ }
+}, 3000);

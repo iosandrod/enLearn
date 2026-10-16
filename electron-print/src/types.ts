@@ -16,6 +16,7 @@ export type DesktopConfig = {
   autoStart: boolean;
   maxHistory: number;
   updateFeedUrl: string;
+  allowedOrigins: string[];
   defaultProfile: PrinterProfile;
   printerProfiles: Record<string, PrinterProfile>;
 };

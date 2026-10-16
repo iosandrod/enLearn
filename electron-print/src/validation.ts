@@ -15,9 +15,10 @@ export const DEFAULT_CONFIG: DesktopConfig = {
   host: '127.0.0.1',
   port: 3302,
   defaultPrinter: '',
-  autoStart: true,
+  autoStart: false,
   maxHistory: 1000,
   updateFeedUrl: '',
+  allowedOrigins: ['http://localhost:3301', 'http://127.0.0.1:3301'],
   defaultProfile: DEFAULT_PROFILE,
   printerProfiles: {}
 };
@@ -27,9 +28,11 @@ export function normalizePrintRequest(value: unknown, config: DesktopConfig): Pr
   const printerName = text(input.printerName, config.defaultPrinter, 256, 'printerName');
   if (!printerName) throw new RequestError(400, '未指定打印机，且没有配置默认打印机。');
   const profile = config.printerProfiles[printerName] ?? config.defaultProfile;
+  const css = text(input.css, '', 2 * 1024 * 1024, 'css');
+  if (/<\s*\/\s*style\b/i.test(css)) throw new RequestError(400, 'css 不能包含 HTML 结束标签。');
   return {
     html: safeHtml(input.html),
-    css: text(input.css, '', 2 * 1024 * 1024, 'css'),
+    css,
     records: records(input.records),
     printerName,
     templateName: text(input.templateName, '未命名模板', 200, 'templateName'),
@@ -49,12 +52,14 @@ export function normalizePreviewRequest(value: unknown, config: DesktopConfig): 
   const base = normalizePrintRequest({ ...input, printerName: text(input.printerName, config.defaultPrinter || '__preview__', 256, 'printerName') }, config);
   const format = input.format ?? 'png';
   if (format !== 'pdf' && format !== 'png') throw new RequestError(400, 'format 必须是 pdf 或 png。');
+  const dpi = number(input.dpi, 144, 72, 300, 'dpi');
+  if (format === 'png' && base.page.widthMm * base.page.heightMm * (dpi / 25.4) ** 2 > 40_000_000) throw new RequestError(400, '图片超过 4000 万像素，请降低纸张尺寸或 DPI。');
   return {
     ...base,
     format,
     recordIndex: integer(input.recordIndex, 0, 0, Math.max(0, base.records.length - 1), 'recordIndex'),
     pageIndex: integer(input.pageIndex, 0, 0, 99, 'pageIndex'),
-    dpi: number(input.dpi, 144, 72, 300, 'dpi'),
+    dpi,
     scale: number(input.scale, 1, 0.5, 2, 'scale'),
     filename: filename(input.filename, format)
   };
@@ -68,9 +73,14 @@ export function mergeConfig(current: DesktopConfig, value: unknown): DesktopConf
     autoStart: boolean(input.autoStart, current.autoStart, 'autoStart'),
     maxHistory: integer(input.maxHistory, current.maxHistory, 100, 10000, 'maxHistory'),
     updateFeedUrl: text(input.updateFeedUrl, current.updateFeedUrl, 2000, 'updateFeedUrl'),
+    allowedOrigins: input.allowedOrigins === undefined ? [...current.allowedOrigins] : origins(input.allowedOrigins),
     defaultProfile: input.defaultProfile === undefined ? current.defaultProfile : profile(input.defaultProfile, current.defaultProfile),
     printerProfiles: { ...current.printerProfiles }
   };
+  if (next.updateFeedUrl) {
+    try { const url = new URL(next.updateFeedUrl); if (url.protocol !== 'https:' || url.username || url.password) throw new Error(); }
+    catch { throw new RequestError(400, '更新地址必须是没有账号密码的 HTTPS 地址。'); }
+  }
   if (input.printerProfiles !== undefined) {
     const values = object(input.printerProfiles, 'printerProfiles');
     next.printerProfiles = Object.fromEntries(Object.entries(values).map(([name, item]) => [name, profile(item, current.printerProfiles[name] ?? next.defaultProfile)]));
@@ -83,6 +93,18 @@ function safeHtml(value: unknown) {
   if (!html.trim()) throw new RequestError(400, 'html 不能为空。');
   if (/<\s*\/?\s*(script|iframe|object|embed|base)\b|\bon[a-z]+\s*=|javascript\s*:/i.test(html)) throw new RequestError(400, 'HTML 包含不允许的活动内容。');
   return html;
+}
+
+function origins(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length > 50) throw new RequestError(400, 'allowedOrigins 必须是最多 50 项的数组。');
+  return [...new Set(value.map((item) => {
+    try {
+      if (typeof item !== 'string') throw new Error();
+      const url = new URL(item);
+      if (!['http:', 'https:'].includes(url.protocol) || url.origin !== item || url.username || url.password) throw new Error();
+      return url.origin;
+    } catch { throw new RequestError(400, 'allowedOrigins 必须填写完整来源，例如 https://example.com（不带路径和末尾斜杠）。'); }
+  }))];
 }
 
 function records(value: unknown) {
@@ -102,7 +124,7 @@ function paper(value: unknown, fallback: PaperSettings): PaperSettings {
 }
 
 function box(value: unknown, fallback: MillimeterBox, width: number, height: number): MillimeterBox {
-  if (value === undefined) return { ...fallback };
+  if (value === undefined) value = fallback;
   const input = object(value, 'marginMm');
   return {
     top: number(input.top, fallback.top, 0, height, 'margin.top'), right: number(input.right, fallback.right, 0, width, 'margin.right'),

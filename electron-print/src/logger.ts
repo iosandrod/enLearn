@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 export class Logger {
   readonly file: string;
+  private pending: Promise<void> = Promise.resolve();
   constructor(private readonly directory: string) { this.file = join(directory, 'silent-print.log'); }
 
   async initialize() {
@@ -17,7 +18,9 @@ export class Logger {
     const suffix = data === undefined ? '' : ` ${safeJson(data)}`;
     const line = `${new Date().toISOString()} [${level}] ${message}${suffix}\n`;
     if (level === 'ERROR') console.error(line.trim()); else console.log(line.trim());
-    await appendFile(this.file, line, 'utf8').catch(() => undefined);
+    const write = this.pending.then(async () => { await this.rotate(); await appendFile(this.file, line, 'utf8'); });
+    this.pending = write.catch(() => undefined);
+    await this.pending;
   }
 
   private async rotate() {

@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import type { Server } from 'node:http';
 import { PrintQueue } from './queue.js';
-import { PrinterEngine } from './printer-engine.js';
+import type { PrinterEngine } from './printer-engine.js';
 import { PersistentStore } from './store.js';
 import { Logger } from './logger.js';
 import { normalizePreviewRequest, normalizePrintRequest, RequestError } from './validation.js';
@@ -11,37 +11,44 @@ type ServerHooks = { applyAutoStart: (enabled: boolean) => void; checkForUpdates
 export class DesktopPrintServer {
   private server?: Server;
   constructor(
-    private readonly engine: PrinterEngine,
+    private readonly engine: Pick<PrinterEngine, 'preview' | 'listPrinters' | 'setSystemDefaultPrinter' | 'previewStatus'>,
     private readonly queue: PrintQueue,
     private readonly store: PersistentStore,
     private readonly logger: Logger,
     private readonly hooks: ServerHooks
   ) {}
 
-  async listen() {
+  async listen(port = this.store.config.port) {
     const config = this.store.config;
     this.server = createServer((request, response) => void this.route(request, response));
     this.server.requestTimeout = 120_000;
     this.server.headersTimeout = 10_000;
     await new Promise<void>((resolve, reject) => {
       this.server!.once('error', reject);
-      this.server!.listen(config.port, config.host, () => resolve());
+      this.server!.listen(port, config.host, () => resolve());
     });
     await this.logger.info(`本地打印接口已启动：http://${config.host}:${config.port}`);
+    return this.server.address();
   }
 
   async close() {
     if (!this.server) return;
-    await new Promise<void>((resolve) => this.server!.close(() => resolve()));
+    const closed = new Promise<void>((resolve) => this.server!.close(() => resolve()));
+    this.server.closeAllConnections();
+    await closed;
   }
 
   private async route(request: IncomingMessage, response: ServerResponse) {
-    cors(response);
-    if (request.method === 'OPTIONS') { response.writeHead(204); response.end(); return; }
     const url = new URL(request.url || '/', 'http://127.0.0.1');
     try {
+      const hostname = new URL(`http://${request.headers.host || ''}`).hostname;
+      if (!['localhost', '127.0.0.1', '[::1]'].includes(hostname)) throw new RequestError(403, '拒绝未知 Host。');
+      const origin = request.headers.origin;
+      if (origin && !this.store.config.allowedOrigins.includes(origin)) throw new RequestError(403, '当前网页来源未获允许，请在桌面客户端设置中添加此来源。');
+      cors(response, origin);
+      if (request.method === 'OPTIONS') { response.writeHead(204); response.end(); return; }
       if (request.method === 'GET' && url.pathname === '/health') {
-        return json(response, 200, { ok: true, service: 'enlearn-silent-print', version: process.env.npm_package_version || '0.1.0', ...this.queue.status });
+        return json(response, 200, { ok: true, service: 'enlearn-silent-print', version: '0.1.0', ...this.queue.status, preview: this.engine.previewStatus });
       }
       if (request.method === 'GET' && url.pathname === '/printers') {
         const printers = await this.engine.listPrinters();
@@ -65,20 +72,26 @@ export class DesktopPrintServer {
       }
       if (request.method === 'GET' && url.pathname === '/jobs') {
         const limit = Math.min(500, Math.max(1, Number(url.searchParams.get('limit') || 100)));
-        return json(response, 200, { ok: true, jobs: this.store.jobs.slice(0, limit), ...this.queue.status });
+        return json(response, 200, { ok: true, jobs: this.store.jobs.slice(0, limit).map(publicJob), ...this.queue.status });
+      }
+      const single = url.pathname.match(/^\/jobs\/([^/]+)$/);
+      if (request.method === 'GET' && single) {
+        const job = this.store.findJob(decodeURIComponent(single[1]));
+        if (!job) throw new RequestError(404, '找不到打印任务。');
+        return json(response, 200, { ok: true, job: publicJob(job) });
       }
       const retry = url.pathname.match(/^\/jobs\/([^/]+)\/retry$/);
       if (request.method === 'POST' && retry) {
         const queued = await this.queue.retry(decodeURIComponent(retry[1]));
         const job = queued.job.request.wait ? await queued.completion : queued.job;
-        return json(response, job.status === 'failed' ? 500 : 200, { ok: job.status !== 'failed', job });
+        return json(response, job.status === 'failed' ? 500 : 200, { ok: job.status !== 'failed', job: publicJob(job), error: job.error });
       }
       if (request.method === 'POST' && url.pathname === '/print') {
         const input = normalizePrintRequest(await readJson(request), this.store.config);
         const queued = await this.queue.enqueue(input);
-        if (!input.wait) return json(response, 202, { ok: true, job: queued.job });
+        if (!input.wait) return json(response, 202, { ok: true, job: publicJob(queued.job) });
         const job = await queued.completion;
-        return json(response, job.status === 'failed' ? 500 : 200, { ok: job.status !== 'failed', job, message: job.status === 'submitted' ? '任务已提交到系统打印队列。' : undefined });
+        return json(response, job.status === 'failed' ? 500 : 200, { ok: job.status !== 'failed', job: publicJob(job), error: job.error, message: job.status === 'submitted' ? '任务已提交到系统打印队列。' : undefined });
       }
       if (request.method === 'POST' && url.pathname === '/test-print') {
         const raw = object(await readJson(request), '请求体');
@@ -92,11 +105,17 @@ export class DesktopPrintServer {
         }, this.store.config);
         const queued = await this.queue.enqueue(input);
         const job = await queued.completion;
-        return json(response, job.status === 'failed' ? 500 : 200, { ok: job.status !== 'failed', job });
+        return json(response, job.status === 'failed' ? 500 : 200, { ok: job.status !== 'failed', job: publicJob(job), error: job.error });
       }
       if (request.method === 'POST' && ['/render', '/preview', '/api/print/render', '/api/print/preview'].includes(url.pathname)) {
         const input = normalizePreviewRequest(await readJson(request), this.store.config);
-        const result = await this.engine.preview(input);
+        const controller = new AbortController();
+        const cancel = () => { if (!response.writableEnded) controller.abort(); };
+        response.once('close', cancel);
+        let result;
+        try { result = await this.engine.preview(input, controller.signal); }
+        finally { response.removeListener('close', cancel); }
+        if (response.destroyed) return;
         response.writeHead(200, {
           'content-type': result.mimeType, 'content-length': result.body.byteLength,
           'content-disposition': `inline; filename*=UTF-8''${encodeURIComponent(result.filename)}`,
@@ -117,25 +136,31 @@ export class DesktopPrintServer {
 async function readJson(request: IncomingMessage) {
   if (!/^application\/json(?:\s*;|$)/i.test(request.headers['content-type'] || '')) throw new RequestError(415, 'Content-Type 必须是 application/json。');
   return await new Promise<unknown>((resolve, reject) => {
-    const chunks: Buffer[] = []; let size = 0;
-    request.on('data', (chunk: Buffer) => { size += chunk.length; if (size > 10 * 1024 * 1024) reject(new RequestError(413, '请求体超过 10 MB。')); else chunks.push(chunk); });
+    const chunks: Buffer[] = []; let size = 0; let exceeded = false;
+    request.on('data', (chunk: Buffer) => { if (exceeded) return; size += chunk.length; if (size > 10 * 1024 * 1024) { exceeded = true; chunks.length = 0; reject(new RequestError(413, '请求体超过 10 MB。')); } else chunks.push(chunk); });
     request.once('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch { reject(new RequestError(400, '请求体不是有效 JSON。')); } });
     request.once('error', reject);
+    request.once('aborted', () => reject(new RequestError(400, '请求已中断。')));
   });
 }
 function object(value: unknown, name: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new RequestError(400, `${name}必须是对象。`);
   return value as Record<string, unknown>;
 }
-function cors(response: ServerResponse) {
-  response.setHeader('access-control-allow-origin', '*');
+function cors(response: ServerResponse, origin?: string) {
+  if (origin) response.setHeader('access-control-allow-origin', origin);
+  response.setHeader('vary', 'origin');
+  response.setHeader('access-control-allow-private-network', 'true');
   response.setHeader('access-control-allow-methods', 'GET,POST,PUT,OPTIONS');
   response.setHeader('access-control-allow-headers', 'content-type');
   response.setHeader('access-control-expose-headers', 'content-disposition,x-page-count');
   response.setHeader('x-content-type-options', 'nosniff');
 }
 function json(response: ServerResponse, status: number, payload: unknown) {
+  if (response.destroyed || response.writableEnded) return;
   const body = JSON.stringify(payload);
   response.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(body), 'cache-control': 'no-store' });
   response.end(body);
 }
+
+function publicJob(job: import('./types.js').PrintJob) { const { request: _request, ...record } = job; return record; }
