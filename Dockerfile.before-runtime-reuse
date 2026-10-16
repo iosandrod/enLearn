@@ -1,0 +1,57 @@
+FROM public.ecr.aws/docker/library/node:22-alpine AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV CI=true
+RUN corepack enable
+WORKDIR /app
+
+FROM base AS dependencies
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY api/package.json api/package.json
+COPY frontend/package.json frontend/package.json
+COPY mobile-app/package.json mobile-app/package.json
+COPY packages packages
+RUN pnpm install --frozen-lockfile
+
+FROM dependencies AS frontend-build
+COPY . .
+ARG VITE_API_BASE_URL=/api
+ARG VITE_SOCKET_BASE_URL=
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_SOCKET_BASE_URL=$VITE_SOCKET_BASE_URL
+RUN pnpm --dir frontend build
+
+FROM dependencies AS api-build
+COPY . .
+RUN pnpm --dir api build
+
+FROM base AS api-runtime
+ENV NODE_ENV=production
+ENV API_HOST=0.0.0.0
+ENV API_PORT=3300
+ENV PRINT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN apk add --no-cache \
+  chromium \
+  font-noto-cjk \
+  font-noto-emoji \
+  freetype \
+  harfbuzz \
+  nss
+WORKDIR /app
+COPY --from=api-build /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=api-build /app/pnpm-lock.yaml ./
+COPY --from=api-build /app/api/package.json ./api/package.json
+COPY --from=api-build /app/api/dist ./api/dist
+COPY --from=api-build /app/api/node_modules ./api/node_modules
+COPY --from=api-build /app/node_modules ./node_modules
+COPY --from=api-build /app/packages ./packages
+WORKDIR /app/api
+EXPOSE 3300
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3300/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"
+CMD ["node", "dist/standalone.js"]
+
+FROM public.ecr.aws/docker/library/caddy:2-alpine AS web-runtime
+COPY --from=frontend-build /app/frontend/dist /srv
+COPY Caddyfile /etc/caddy/Caddyfile

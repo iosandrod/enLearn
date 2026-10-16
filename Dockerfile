@@ -10,7 +10,6 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY api/package.json api/package.json
 COPY frontend/package.json frontend/package.json
 COPY mobile-app/package.json mobile-app/package.json
-COPY cpp-typescript/package.json cpp-typescript/package.json
 COPY packages packages
 RUN pnpm install --frozen-lockfile
 
@@ -26,17 +25,10 @@ FROM dependencies AS api-build
 COPY . .
 RUN pnpm --dir api build
 
-FROM dependencies AS planning-build
-COPY . .
-RUN cd cpp-typescript \
-  && npm install --ignore-scripts --legacy-peer-deps \
-  && npm run build \
-  && npm prune --omit=dev --ignore-scripts --legacy-peer-deps
-
 FROM base AS api-runtime
 ENV NODE_ENV=production
 ENV API_HOST=0.0.0.0
-ENV API_PORT=3002
+ENV API_PORT=3300
 ENV PRINT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk add --no-cache \
@@ -54,11 +46,10 @@ COPY --from=api-build /app/api/dist ./api/dist
 COPY --from=api-build /app/api/node_modules ./api/node_modules
 COPY --from=api-build /app/node_modules ./node_modules
 COPY --from=api-build /app/packages ./packages
-COPY --from=planning-build /app/cpp-typescript ./cpp-typescript
 WORKDIR /app/api
-EXPOSE 3002
+EXPOSE 3300
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3002/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:3300/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"
 CMD ["node", "dist/standalone.js"]
 
 FROM public.ecr.aws/docker/library/caddy:2-alpine AS web-runtime
