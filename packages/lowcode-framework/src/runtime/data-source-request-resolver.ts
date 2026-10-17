@@ -8,7 +8,7 @@ import type {
 import type { LowCodePageRuntimeContext } from './page-runtime';
 import type { LowCodePageRendererProps } from './renderer-types';
 import { isRecord, readPath, readString } from './renderer-value-utils';
-import { createLowCodeSearchFilters } from '../lowcode/search-query-logic';
+import { createLowCodeSearchFilters, isActiveSearchValue } from '../lowcode/search-query-logic';
 import { resolveSearchSourceKeys } from './search-source-targets';
 
 type ValueRef<T> = { value: T };
@@ -428,23 +428,16 @@ export class DataSourceRequestResolver {
           resolveSearchSourceKeys(block, blocks, props.page.schema.dataSources).includes(key)) ||
         (block.kind === 'form' && block.formType === 'search' && block.id === key),
       );
-      let sourceFilters = searchFilters.value[key];
-
-      if (!sourceFilters || !Object.keys(sourceFilters).length) {
-        if (!queryBlock || (queryBlock.kind !== 'searchForm' && queryBlock.kind !== 'form')) {
-          return postData;
-        }
-        sourceFilters = createLowCodeSearchFilters(
-          formModels.value[queryBlock.id] ?? {},
+      // The bound form model is the source of truth. Search state is a submitted
+      // snapshot and can be stale after a user edits or clears the form.
+      const sourceFilters = queryBlock && (queryBlock.kind === 'searchForm' || queryBlock.kind === 'form')
+        ? createLowCodeSearchFilters(
+          Object.fromEntries(Object.entries(formModels.value[queryBlock.id] ?? {})
+            .filter(([, value]) => isActiveSearchValue(value))),
           queryBlock.queryLogic ?? queryBlock.schema.queryLogic,
-        );
-        if (!Object.keys(sourceFilters).length) return postData;
-      }
-      if (!Array.isArray(sourceFilters.conditions)) {
-        if (queryBlock && (queryBlock.kind === 'searchForm' || queryBlock.kind === 'form')) {
-          sourceFilters = createLowCodeSearchFilters(sourceFilters, queryBlock.queryLogic ?? queryBlock.schema.queryLogic);
-        }
-      }
+        )
+        : searchFilters.value[key];
+      if (!sourceFilters || !Object.keys(sourceFilters).length) return postData;
 
       return {
         ...postData,

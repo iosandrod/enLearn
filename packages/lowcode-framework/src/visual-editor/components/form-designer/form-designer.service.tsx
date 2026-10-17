@@ -337,15 +337,25 @@ function createDefaultArrayTableColumns() {
 }
 
 function normalizeArrayTableColumns(value: unknown) {
-  const rows = Array.isArray(value)
+  return Array.isArray(value)
     ? value.filter(isRecord).map((column) => cloneDeep(column))
-    : [];
-
-  return rows.length ? rows : createDefaultArrayTableColumns();
+    : createDefaultArrayTableColumns();
 }
 
 function readArrayTableProps(value: unknown) {
   return isRecord(value) ? value : {};
+}
+
+function normalizeArrayTableProps(value: unknown) {
+  const props = readArrayTableProps(value);
+  return {
+    ...cloneDeep(props),
+    columns: normalizeArrayTableColumns(props.columns),
+    toolbarButtons: Array.isArray(props.toolbarButtons)
+      ? cloneDeep(props.toolbarButtons)
+      : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }],
+    rowConfig: readArrayTableRowConfig(props),
+  };
 }
 
 function readArrayTableRowConfig(props: Record<string, unknown>) {
@@ -677,18 +687,8 @@ function createFieldBlock(field: FormDesignerField, index: number) {
   }
 
   if (runtimeComponent === 'lc-array-table') {
-    const fieldProps = readArrayTableProps(field.props);
-
+    Object.assign(block.props, normalizeArrayTableProps(field.props));
     block.props.__lowcodeComponent = 'lc-array-table';
-    block.props.columns = normalizeArrayTableColumns(fieldProps.columns);
-    block.props.toolbarButtons = Array.isArray(fieldProps.toolbarButtons)
-      ? cloneDeep(fieldProps.toolbarButtons)
-      : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }];
-    block.props.rowConfig = readArrayTableRowConfig(fieldProps);
-
-    if (isRecord(fieldProps.defaultRow)) {
-      block.props.defaultRow = cloneDeep(fieldProps.defaultRow);
-    }
   }
 
   if (runtimeComponent === 'base-info') {
@@ -1057,16 +1057,10 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
   }
 
   if (runtimeComponent === 'lc-array-table') {
-    const props = readArrayTableProps(block.props);
-
-    result.props = {
-      columns: normalizeArrayTableColumns(props.columns),
-      toolbarButtons: Array.isArray(props.toolbarButtons)
-        ? cloneDeep(props.toolbarButtons)
-        : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }],
-      rowConfig: readArrayTableRowConfig(props),
-      ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
-    };
+    result.props = normalizeArrayTableProps({
+      ...fieldProps,
+      columns: block.props?.columns,
+    });
     result.propsJson = stringifyFieldProps(result.props);
   }
 

@@ -22,7 +22,7 @@ app.provide(lowCodeHostKey, { serviceApi: { invoke: async (_service, _method, pa
   if (params?.resource !== 'lowcode_form_definitions') return [];
   const codes = Array.isArray(params.filters?.code) ? params.filters.code : [params.filters?.code];
   return codes.filter(Boolean).map(code => ({ id: code, code,
-    schema: { fields: [{ field: 'title', label: '标题', component: 'vxe-input' }], actions: [] },
+    schema: window.__printPropertySchemas?.[code] ?? { fields: [{ field: 'title', label: '标题', component: 'vxe-input' }], actions: [] },
   }));
 } } });
 app.use(installVxeUI);

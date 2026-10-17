@@ -13,9 +13,10 @@
           :key="String(button.code)"
           type="button"
           :class="button.status ? `is-${button.status}` : ''"
-          :disabled="isReadonly || button.disabled === true"
-          @click.stop.prevent="button.command === 'add' || button.code === 'add' ? addRow(button.row) : handleToolbarButtonClick({ name: button.code, option: button })"
+          :disabled="isReadonly || actionRunning || button.disabled === true"
+          @click.stop.prevent="handleToolbarButtonClick({ name: button.code, option: button })"
         >
+          <i v-if="button.icon" :class="button.icon" />
           {{ button.label }}
         </button>
       </div>
@@ -173,7 +174,7 @@
                 action.status ? `is-${action.status}` : '',
               ]"
               :title="rowActionTitle(action, scope.row)"
-              :disabled="isReadonly || isRowActionDisabled(action, scope.row)"
+              :disabled="isReadonly || actionRunning || isRowActionDisabled(action, scope.row)"
               @click="handleRowAction(action, scope.row)"
             >
               <i v-if="action.icon" :class="action.icon" />
@@ -238,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import type { VxeButtonProps } from 'vxe-pc-ui';
 import { useLowCodeHost } from '../../../core/host';
 import {
@@ -255,6 +256,9 @@ import type {
 } from '../../../types/lowcode';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 import { lowCodeOptionSourceRegistry } from '../../../runtime/option-source-registry';
+import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
+import { showVxeMessage } from '../../../utils/vxe-message';
+import { executeArrayTableScript } from '../array-table-script';
 import { normalizeVxeColumnType } from '../../../utils/lowcode';
 import {
   lowCodeMaterialComponentRevision,
@@ -296,6 +300,8 @@ type RowActionText = string | ((payload: Record<string, unknown>) => string);
 
 type ArrayTableRowAction = {
   code: string;
+  command?: string;
+  script?: string;
   label?: RowActionText;
   title?: RowActionText;
   icon?: string;
@@ -315,6 +321,8 @@ const emit = defineEmits<{
 }>();
 
 const host = useLowCodeHost();
+const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
+const actionRunning = ref(false);
 const jsonEditorComponent = computed(() => {
   lowCodeMaterialComponentRevision.value;
   return resolveLowCodeFormMaterialComponent('lc-json-editor');
@@ -529,6 +537,7 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
       row: _row,
       visible: _visible,
       execute: _execute,
+      script: _script,
       ...buttonProps
     }) => ({
       ...buttonProps,
@@ -742,7 +751,7 @@ async function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
   const button = toolbarButtons.value.find((item) =>
     item.code === clickedCode || String(item.code) === String(clickedCode)
   ) ?? (toolbarButtons.value.length === 1 ? toolbarButtons.value[0] : undefined);
-  if (isReadonly.value || !button || button.disabled) return;
+  if (isReadonly.value || actionRunning.value || !button || button.disabled) return;
 
   const actionPayload = {
     action: button,
@@ -754,26 +763,71 @@ async function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
     rawEvent: payload,
   };
 
-  if (typeof button.execute === 'function') {
-    await button.execute({
-      ...actionPayload,
-      click: payload,
-      addRow,
-      setRows: (value) => {
-        rows.value = normalizeRows(value);
-        if (value === undefined) emit('update:modelValue', undefined);
-        else commitRows();
-      },
-    });
-    if (!isSameValue(serializeRows(), normalizeModelValue(props.modelValue))) commitRows();
-    return;
-  }
+  actionRunning.value = true;
+  try {
+    if (button.script?.trim()) {
+      await runActionScript(button.script, 'onToolbarAction', actionPayload);
+      emitConfiguredEvent('onToolbarAction', actionPayload);
+      return;
+    }
+    if (typeof button.execute === 'function') {
+      await button.execute({
+        ...actionPayload,
+        click: payload,
+        addRow,
+        setRows: (value) => {
+          rows.value = normalizeRows(value);
+          if (value === undefined) emit('update:modelValue', undefined);
+          else commitRows();
+        },
+      });
+      if (!isSameValue(serializeRows(), normalizeModelValue(props.modelValue))) commitRows();
+      return;
+    }
 
-  if (button.command === 'add') {
-    addRow(button.row);
-    return;
+    if (button.command === 'add' || button.code === 'add') {
+      addRow(button.row);
+      return;
+    }
+    emitConfiguredEvent('onToolbarAction', actionPayload);
+  } catch (error) {
+    reportActionError(error);
+  } finally {
+    actionRunning.value = false;
   }
-  emitConfiguredEvent('onToolbarAction', actionPayload);
+}
+
+function reportActionError(error: unknown) {
+  if (runtimeBlockEditor?.reportRuntimeError) runtimeBlockEditor.reportRuntimeError(error);
+  else showVxeMessage(error instanceof Error ? error.message : String(error), 'error');
+}
+
+async function runActionScript(script: string, name: string, payload: Record<string, unknown>) {
+  // Send serializable data only, excluding component options and executable callbacks.
+  const action = isRecord(payload.action) ? payload.action : {};
+  const row = isRecord(payload.row) ? payload.row : undefined;
+  const result = await executeArrayTableScript(script, {
+    name: `arrayTable.${name}`,
+    timestamp: Date.now(),
+    payload: {
+      action: { code: action.code, label: typeof action.label === 'string' ? action.label : '', command: action.command },
+      actionCode: payload.actionCode,
+      field: props.field.field,
+      row: row ? cloneRecord(row) : undefined,
+      index: payload.index,
+      rows: serializeRows(),
+      formValues: props.formValues ? cloneRecord(props.formValues) : {},
+    },
+  }, runtimeBlockEditor);
+
+  if (isReadonly.value || !isRecord(result)) return;
+  if (Array.isArray(result.rows)) {
+    rows.value = normalizeRows(result.rows);
+    commitRows();
+  } else if (row && isRecord(result.row) && getRowIndex(row) >= 0) {
+    Object.assign(row, cloneRecord(result.row));
+    commitRows();
+  }
 }
 
 function ensureChildRowKeys(row: Record<string, unknown>) {
@@ -1099,6 +1153,7 @@ function readToolbarButtons(value: unknown): ArrayTableToolbarButton[] {
         mode: (buttonProps.mode as VxeButtonProps['mode'] | undefined) ?? 'button',
         code,
         label,
+        script: typeof button.script === 'string' ? button.script : '',
         ...(command ? { command } : {}),
         ...(execute ? { execute } : {}),
       } as ArrayTableToolbarButton;
@@ -1117,6 +1172,8 @@ function readRowActions(value: unknown): ArrayTableRowAction[] {
     .filter(isRecord)
     .map((action) => ({
       code: readString(action.code),
+      command: readString(action.command),
+      script: typeof action.script === 'string' ? action.script : '',
       label: readRowActionText(action.label),
       title: readRowActionText(action.title),
       icon: readString(action.icon),
@@ -1155,6 +1212,12 @@ function visibleRowActions(row: Record<string, unknown>) {
 }
 
 function isRowActionDisabled(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  if (!action.script?.trim()) {
+    if (action.command === 'remove' && !canRemoveRow(row)) return true;
+    if (action.command === 'moveUp' && getSiblingIndex(row) <= 0) return true;
+    if (action.command === 'moveDown' && getSiblingIndex(row) >= getSiblingRows(row).length - 1) return true;
+    if (action.command === 'addChild' && !treeEnabled.value) return true;
+  }
   return isReadonly.value || resolveRowPredicate(action.disabled, row, false);
 }
 
@@ -1171,13 +1234,27 @@ function rowActionTitle(action: ArrayTableRowAction, row: Record<string, unknown
   return resolveRowActionText(action.title, row) || rowActionLabel(action, row);
 }
 
-function handleRowAction(action: ArrayTableRowAction, row: Record<string, unknown>) {
-  if (isRowActionDisabled(action, row)) return;
-  emitConfiguredEvent('onRowAction', {
+async function handleRowAction(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  if (actionRunning.value || isRowActionDisabled(action, row)) return;
+  const payload = {
     ...rowEventPayload(row),
     action,
     actionCode: action.code,
-  });
+  };
+  actionRunning.value = true;
+  try {
+    if (action.script?.trim()) await runActionScript(action.script, 'onRowAction', payload);
+    else if (action.command === 'copy') copyRow(row);
+    else if (action.command === 'remove') removeRow(row);
+    else if (action.command === 'moveUp') moveRow(row, -1);
+    else if (action.command === 'moveDown') moveRow(row, 1);
+    else if (action.command === 'addChild' && treeEnabled.value) addChildRow(row);
+    emitConfiguredEvent('onRowAction', payload);
+  } catch (error) {
+    reportActionError(error);
+  } finally {
+    actionRunning.value = false;
+  }
 }
 
 function getSelectModelValue(column: ArrayTableColumn, value: unknown): any {

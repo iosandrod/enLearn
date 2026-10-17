@@ -115,7 +115,7 @@ const resolver = new DataSourceRequestResolver({
   host: { getRoute: () => ({}) }, runtime: {},
   resolvedData: { value: {} }, formModels: { value: {} },
   searchFilters: searchState, gridStates: { value: {} },
-  selectedCategoryId: { value: '' }, flattenPageBlocks: () => [converted],
+  selectedCategoryId: { value: '' }, flattenPageBlocks: () => [],
 });
 const source = { serviceName: 'admin', serviceMethod: 'listItems', postData: {
   table: 'test', filters: {
@@ -132,17 +132,17 @@ assert.deepEqual(resolver.resolveRequest('records', source).postData.filters, {
     ] }, filters,
   ],
 }, 'Configured data-source filters must retain array/null semantics beside a query group.');
-searchState.value.records = { keyword: 'Acme' };
+searchState.value.records = { keyword: 'stale' };
 assert.deepEqual(resolver.resolveRequest('records', {
   serviceName: 'admin', serviceMethod: 'listItems', postData: { table: 'test' },
 }).postData.filters, {
-  logic: 'and', conditions: [{ field: 'name', op: 'like', value: 'Acme' }],
-}, 'Raw search state must also use the form query rules when constructing requests.');
-searchState.value.records = {};
+  keyword: 'stale',
+}, 'Sources without a bound query form must keep their explicit runtime search state.');
+const boundModels = { value: { [converted.id]: { keyword: 'Live' } } };
 const liveModelResolver = new DataSourceRequestResolver({
   props: { page: { schema: { blocks: [converted] } } },
   host: { getRoute: () => ({}) }, runtime: {},
-  resolvedData: { value: {} }, formModels: { value: { [converted.id]: { keyword: 'Live' } } },
+  resolvedData: { value: {} }, formModels: boundModels,
   searchFilters: searchState, gridStates: { value: {} },
   selectedCategoryId: { value: '' }, flattenPageBlocks: () => [converted],
 });
@@ -151,6 +151,59 @@ assert.deepEqual(liveModelResolver.resolveRequest('records', {
 }).postData.filters, {
   logic: 'and', conditions: [{ field: 'name', op: 'like', value: 'Live' }],
 }, 'Grid actions fired before default submit handling must use the live query form model.');
+
+boundModels.value[converted.id].keyword = 'Changed';
+const liveSource = { serviceName: 'admin', serviceMethod: 'listItems', postData: { table: 'test' } };
+assert.deepEqual(liveModelResolver.resolveRequest('records', liveSource).postData.filters, {
+  logic: 'and', conditions: [{ field: 'name', op: 'like', value: 'Changed' }],
+}, 'Editing a binding must affect the next request without submitting the query form again.');
+const previousFilters = liveModelResolver.resolveRequest('records', liveSource).postData.filters;
+searchState.value.records = previousFilters;
+for (const emptyValue of ['', '   ', null, undefined, []]) {
+  boundModels.value[converted.id].keyword = emptyValue;
+  assert.equal(liveModelResolver.resolveRequest('records', liveSource).postData.filters, undefined,
+    'Cleared bindings must not fall back to the previous submitted filter tree.');
+}
+assert.deepEqual(previousFilters, {
+  logic: 'and', conditions: [{ field: 'name', op: 'like', value: 'Changed' }],
+}, 'Resolving live values must not mutate previous requests.');
+assert.deepEqual(liveModelResolver.resolveRequest('records', {
+  ...liveSource, postData: { table: 'test', filters: { enabled: true } },
+}).postData.filters, { enabled: true }, 'Clearing a query must retain configured data-source filters.');
+
+const legacyBlock = { ...convertedForm, queryLogic: [], schema: { ...convertedForm.schema, queryLogic: [] } };
+const legacyModel = { value: { [legacyBlock.id]: { keyword: 'Current', count: 0, enabled: false } } };
+const legacyResolver = new DataSourceRequestResolver({
+  props: { page: { schema: { blocks: [legacyBlock] } } },
+  host: { getRoute: () => ({}) }, runtime: {}, resolvedData: { value: {} },
+  formModels: legacyModel, searchFilters: { value: { [legacyBlock.id]: { keyword: 'Old' } } },
+  gridStates: { value: {} }, selectedCategoryId: { value: '' }, flattenPageBlocks: () => [legacyBlock],
+});
+assert.deepEqual(legacyResolver.resolveRequest(legacyBlock.id, liveSource).postData.filters,
+  { keyword: 'Current', count: 0, enabled: false },
+  'Ordinary forms in search mode must use current bindings and retain zero/false values.');
+legacyModel.value[legacyBlock.id] = { keyword: '', count: null, enabled: undefined, tags: [] };
+assert.equal(legacyResolver.resolveRequest(legacyBlock.id, liveSource).postData.filters, undefined,
+  'Forms without query rules must omit cleared bindings from their requests.');
+delete boundModels.value[converted.id];
+assert.equal(liveModelResolver.resolveRequest('records', liveSource).postData.filters, undefined,
+  'A missing bound model must not revive a stale search snapshot.');
+
+const liveSearchState = { value: { records: { name: 'stale' } } };
+const clearedModelResolver = new DataSourceRequestResolver({
+  props: { page: { schema: { blocks: [converted] } } },
+  host: { getRoute: () => ({}) }, runtime: {},
+  resolvedData: { value: {} }, formModels: { value: { [converted.id]: { keyword: '' } } },
+  searchFilters: liveSearchState, gridStates: { value: {} }, selectedCategoryId: { value: '' },
+  flattenPageBlocks: () => [converted],
+});
+assert.equal(
+  clearedModelResolver.resolveRequest('records', {
+    serviceName: 'admin', serviceMethod: 'listItems', postData: { table: 'test' },
+  }).postData.filters,
+  undefined,
+  'Clearing the bound query form must remove stale submitted search filters from requests.',
+);
 
 const renamedGrid = {
   id: 'vid_877ad5473e', kind: 'grid', tableType: 'default', sourceKey: 'vid_877ad5473e',

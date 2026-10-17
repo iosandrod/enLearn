@@ -7,6 +7,8 @@ export type ArrayTableToolbarButton = VxeButtonProps & {
   command?: string;
   row?: Record<string, unknown>;
   visible?: boolean;
+  /** Runs in the isolated low-code runtime. Return { rows } to replace table data. */
+  script?: string;
   execute?: ArrayTableToolbarExecute;
 };
 

@@ -37,6 +37,9 @@ import * as RuntimeGridFieldEditor from '../block-materials/grid/runtime-grid-fi
 import * as RuntimeGridDesigner from '../block-materials/grid/runtime-grid-designer';
 import * as RelateInfo from '../form-materials/base-info/relate-info';
 import * as FormMaterialModel from '../form-materials/useLowCodeFormMaterialModel';
+import * as ArrayTableScript from '../form-materials/array-table-script';
+import * as VxeMessage from '../../utils/vxe-message';
+import ArrayTableColumn from '../form-materials/lc-array-table/ArrayTableColumn.vue';
 import * as ButtonGroupDesigner from '../../visual-editor/components/button-group-designer/button-group-designer.service';
 import * as ButtonScriptMonaco from '../../visual-editor/components/button-group-designer/button-script-monaco';
 import * as MonacoModule from '../../visual-editor/components/common/monaco-editor/monaco';
@@ -98,6 +101,9 @@ const moduleLoaders: Record<string, LowCodeMaterialModuleLoader> = {
   '/lowcode/block-materials/grid/runtime-grid-designer': module(() => RuntimeGridDesigner),
   '/lowcode/form-materials/base-info/relate-info': module(() => RelateInfo),
   '/lowcode/form-materials/useLowCodeFormMaterialModel': module(() => FormMaterialModel),
+  '/lowcode/form-materials/array-table-script': module(() => ArrayTableScript),
+  '/lowcode/form-materials/lc-array-table/ArrayTableColumn.vue': component(() => ArrayTableColumn),
+  '/utils/vxe-message': module(() => VxeMessage),
   // Some database snapshots retain the historical path relative to a
   // form-material directory (`../../material-runtime/...`). Keep this alias
   // so cold-start SFC compilation remains compatible after source files are

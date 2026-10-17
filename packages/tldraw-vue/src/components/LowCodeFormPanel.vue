@@ -61,6 +61,7 @@ import type { PrintDataSourceConfig } from '@/print/types'
 import { useEditorValue } from '@/vue/useEditorValue'
 import { DEFAULT_PX_PER_MM } from '@/editor/interactions/WorkspaceBoundsManager'
 import { isVueTableCellShape } from '@/editor/extensions/table/tableCell'
+import { createPrintDetailColumnsModel, normalizePrintDetailColumns } from '@/editor/printDetailColumns'
 
 type ShapeFormModel = Record<string, unknown>
 type MaterialColumnSelection = { materialShapeId: TLShape['id']; field: string }
@@ -841,6 +842,7 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 		title: '物料节点',
 		formCode: propertyFormCode('vue-material'),
 		toModel(shape) {
+			const materialShape = shape as VueMaterialShape
 			return {
 				...getMaterialFormValues(shape),
 				...getCommonModel(shape),
@@ -848,6 +850,11 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 				...getVueMaterialVisibilityModel(shape as VueMaterialShape),
 				dataSourceField: String(getProps(shape).dataSourceField ?? ''),
 				...getVueMaterialSectionHeightModel(props.editor, shape.id),
+				columns: createPrintDetailColumnsModel(getMaterialColumns(
+					editorPrintDataSource.value,
+					String(materialShape.props.dataSourceField ?? ''),
+					materialShape.props.columns,
+				)),
 			}
 		},
 		apply(editor, shape, model) {
@@ -871,6 +878,8 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			}
 			const materialFormValues = { ...getMaterialFormValues(shape) }
 			for (const key of Object.keys(model)) {
+				// Columns belong to the node props, not the custom-field metadata cache.
+				if (key === 'columns') continue
 				const value = cloneSerializableValue(model[key])
 				materialFormValues[key] = value
 			}
@@ -885,6 +894,12 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 			const propsPartial: Record<string, unknown> = {}
 			for (const key of Object.keys(model)) {
 				if (key === 'w' || key === 'h' || !vueMaterialPropertyRegistry.has(key)) continue
+				if (key === 'columns') {
+					if (Array.isArray(model.columns)) {
+						propsPartial.columns = cloneSerializableValue(normalizePrintDetailColumns(model.columns, false))
+					}
+					continue
+				}
 				propsPartial[key] = vueMaterialPropertyRegistry.normalize(key, model[key], currentProps[key])
 			}
 			if (Object.keys(propsPartial).length) shapePartial.props = propsPartial

@@ -11,7 +11,7 @@ import type {
   MaterialPropFormField,
   MaterialPropValueKind,
 } from './types';
-import type { VxeButtonProps } from 'vxe-pc-ui';
+import type { ArrayTableToolbarButton } from '../../lowcode/form-materials/array-table-types';
 
 type FieldInput = Partial<Omit<MaterialPropFormField, 'target' | 'valueKind'>> &
   Pick<MaterialPropFormField, 'field' | 'label'> & {
@@ -34,15 +34,7 @@ type ArrayTableColumnInput = {
 
 type ArrayTableFieldInput = FieldInput & {
   columns: ArrayTableColumnInput[];
-  toolbarButtons?: Array<
-    VxeButtonProps & {
-      code: string | number;
-      label: string;
-      command?: string;
-      row?: Record<string, unknown>;
-      visible?: boolean;
-    }
-  >;
+  toolbarButtons?: ArrayTableToolbarButton[];
   rowKey?: string;
   defaultRow?: Record<string, unknown>;
   valueMode?: 'object' | 'primitive';
