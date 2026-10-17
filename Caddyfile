@@ -2,13 +2,16 @@
     encode gzip zstd
 
     handle /api/* {
-        reverse_proxy api:3002
+        reverse_proxy api:3300
     }
 
     handle /socket.io/* {
-        reverse_proxy api:3002
+        reverse_proxy api:3300
     }
 
+    handle_path /supabase/* {
+        reverse_proxy host.docker.internal:54321
+    }
     handle {
         root * /srv
 

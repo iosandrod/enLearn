@@ -16,11 +16,11 @@ services:
       TRIGGER_DEV_WORKER_AUTOSTART: ${TRIGGER_DEV_WORKER_AUTOSTART:-0}
       FRONTEND_COMMAND_REDIS_ENABLED: ${FRONTEND_COMMAND_REDIS_ENABLED:-0}
       PLANNING_RUN_MODE: ${PLANNING_RUN_MODE:-inline}
-      PLANNING_ENGINE_MODE: ${PLANNING_ENGINE_MODE:-cpp-typescript}
+      PLANNING_ENGINE_MODE: ${PLANNING_ENGINE_MODE:-process}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     expose:
-      - "3002"
+      - "3300"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3300/api/service').then(() => process.exit(0)).catch(() => process.exit(1))"]
       interval: 30s
@@ -29,6 +29,8 @@ services:
       retries: 3
 
   web:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     build:
       context: .
       target: web-runtime
